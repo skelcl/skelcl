@@ -1,0 +1,17 @@
+Developed by: Research Group Parallel and Distributed Systems
+              Department of Mathematics and Computer Science
+              University of Münster, Germany
+
+              http://skelcl.uni-muenster.de
+
+SkelCL is available under multiple licenses.
+The different licenses are subject to terms and condition as provided in the
+files specifying the license.
+
+  The file "LICENSE-gpl.txt" specifies the use of SkelCL with the GPL license.
+
+  The file "LICENSE-academic.txt" specifies the use of SkelCL with the
+  SkelCL Academic License for non-commercial academic use.
+
+If you are interested in other licensing models, including a commercial-license,
+please contact the author at michel.steuwer@uni-muenster.de.

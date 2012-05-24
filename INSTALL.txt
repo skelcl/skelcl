@@ -1,0 +1,71 @@
+=============================INSTALL SkelCL====================================
+
+Follow the steps bellow to build SkelCL.
+SkelCL uses CMake as its build system and require a modern C++ compiler, since
+features of the C++11 standard are used throughout the implementation.
+
+====
+
+Required for building SkelCL and runing are:
+
+  - a modern C++ compiler with (at least some) C++11 support.
+    Tested with GCC 4.6 and above.
+    Should also work with Clang 3.1 but (yet) untested.
+
+  - CMake 2.6 or above (see: http://www.cmake.org)
+
+  - libcrypto, which is part of OpenSSL
+
+  - libclang, which is part of the llvm releases (see: http://llvm.org/releases)
+
+  - a working OpenCL implementation
+
+  - the GTest library 1.6.0 or above (see: http://code.google.com/p/googletest)
+
+====
+
+For building SkelCL:
+ execute the build.sh file in the SkelCL root directory
+ (only if you are running Ubuntu 12.04 64bit!)
+OR
+ follow the steps manually:
+
+1. Checkout the SkelCL source code into an arbitrary directory, lets call it
+   SKELCL_HOME
+
+2. Download the newest llvm release from http://llvm.org/release and extract
+   it in the directory:
+      
+  SKELCL_HOME/libraries/ssedit/libraries/libclang
+
+3. Donwload the newest GTest release from http://code.google.com/p/googletest
+   and extract it in the directory:
+      
+  SKELCL_HOME/libraries/gtest
+
+4. Use the following command to add a necessary symbolic link:
+
+  ln -s SKELCL_HOME/libraries/gtest SKELCL_HOME/libraries/ssedit/libraries/gtest
+
+5. Now switch in the directory SKELCL_HOME and create a new build directory:
+
+  cd SKELCL_HOME
+  mkdir build
+  cd build
+
+6. Call cmake:
+
+  cmake ..
+
+   If you want to customize some build settings, like the used compiler, use the ccmake or cmake-gui tool to edit the CMake cache.
+
+7. Call make (use the -j option to speed up the compilation):
+
+  make -j4
+
+8. Let all the tests run to verify that SkelCL was build correctly:
+
+  make test
+
+   It should return with 100% of the tests passing.
+

@@ -1,0 +1,5 @@
+Libraries directory for SkelCL.
+Use copies or symbolic links to make the following libraries available.
+Currently used thirdparty libraries:
+  gtest (version 1.6.0)
+

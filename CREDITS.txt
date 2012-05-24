@@ -1,0 +1,21 @@
+The SkelCL Team:
+----------------
+Developed at: Research Group Parallel and Distributed Systems
+              Department of Mathematics and Computer Science
+              University of Münster, Germany
+              http://pvs.uni-muenster.de/
+
+              http://skelcl.uni-muenster.de
+
+----------------
+Main developer:
+
+Michel Steuwer <michel.steuwer@uni-muenster.de>
+
+----------------
+Contributers (alphabetically):
+
+Stefan Breuer
+Tobias Günnewig
+Philipp Kegel
+
