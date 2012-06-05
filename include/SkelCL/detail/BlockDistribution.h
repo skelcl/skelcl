@@ -57,7 +57,7 @@ public:
   BlockDistribution( const DeviceList& deviceList,
                      const Significances& significances );
   BlockDistribution(const BlockDistribution&) = default;
-  ~BlockDistribution() = default;
+  ~BlockDistribution();
   BlockDistribution& operator=(const BlockDistribution&) = default;
 
   bool isBlock() const;

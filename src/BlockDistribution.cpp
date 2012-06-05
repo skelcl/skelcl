@@ -62,6 +62,10 @@ BlockDistribution::BlockDistribution(const DeviceList& deviceList,
   ASSERT(_devices.size() == _significances.size());
 }
 
+BlockDistribution::~BlockDistribution()
+{
+}
+
 bool BlockDistribution::isBlock() const
 {
   return true;

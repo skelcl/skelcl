@@ -145,7 +145,7 @@
 #pragma GCC diagnostic ignored "-Weffc++"
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-pedantic"
+//#pragma GCC diagnostic ignored "-pedantic"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -948,9 +948,9 @@ struct param_traits<detail:: token,param_name>       \
     typedef T param_type;                            \
 };
 
-__PARAM_NAME_INFO_1_0(__DECLARE_PARAM_TRAITS);
+__PARAM_NAME_INFO_1_0(__DECLARE_PARAM_TRAITS)
 #if defined(CL_VERSION_1_1)
-__PARAM_NAME_INFO_1_1(__DECLARE_PARAM_TRAITS);
+__PARAM_NAME_INFO_1_1(__DECLARE_PARAM_TRAITS)
 #endif // CL_VERSION_1_1
 
 #if defined(USE_CL_DEVICE_FISSION)
