@@ -19,7 +19,7 @@ ln -s ../../gtest libraries/ssedit/libraries/gtest
 mkdir build
 
 # call cmake (Step 6)
-(cd build; cmake ...)
+(cd build; cmake ..)
 
 # call make (Step 7)
 (cd build; make -j4)
