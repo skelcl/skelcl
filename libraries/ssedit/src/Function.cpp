@@ -69,8 +69,8 @@ Function::Function(const Cursor& cursor, SourceFile& sourceFile)
   _parameters.reserve( parameterCursors.size() );
 
   std::for_each( parameterCursors.begin(), parameterCursors.end(),
-                 [this](Cursor& cursor){
-                  _parameters.push_back( Parameter(cursor, *_sourceFile) );
+                 [this](Cursor& pCursor){
+                  _parameters.push_back( Parameter(pCursor, *_sourceFile) );
                  } );
 }
 

@@ -183,9 +183,12 @@ void SourceFile::commitRename(Entity& entity, const std::string& newName)
             iter != references.end();
           ++iter) {
     SourceLocation start = iter->getLocation();
+
+    auto offset = start.getSpellingLocation().offset;
+    auto size   = static_cast<unsigned int>(iter->getSpelling().size());
+
     SourceLocation end( clang_getLocationForOffset( _tu.get(), _file,
-                            start.getSpellingLocation().offset
-                          + iter->getSpelling().size() )
+                            offset + size )
                       );
     _deltaTree.insertDelta( Delta(SourceRange(start, end),
                             newName,
@@ -219,9 +222,12 @@ void SourceFile::commitAppendParameter(Function& func, Parameter& param)
   auto lastParam = func.getParameters().back();
 
   SourceLocation lastParamLoc = lastParam.getCursor().getLocation();
+
+  auto offset = lastParamLoc.getSpellingLocation().offset;
+  auto size   = static_cast<unsigned int>(lastParam.getCursor().getSpelling().size());
+
   SourceLocation insertLoc    = clang_getLocationForOffset( _tu.get(), _file,
-                                  lastParamLoc.getSpellingLocation().offset
-                                + lastParam.getCursor().getSpelling().size() );
+                                  offset + size );
 
   SourceRange paramRange = param.getCursor().getExtent();
 
@@ -303,7 +309,7 @@ void SourceFile::writeCommittedChanges()
   {
     std::ofstream file(getFileName(), std::fstream::trunc);
     // write changed content back to file
-    file.write(source.c_str(), source.size());
+    file.write(source.c_str(), static_cast<long>(source.size()));
   }
 }
 
@@ -327,7 +333,7 @@ void SourceFile::writeDelta(const Delta& delta, std::string* source)
 void SourceFile::performReplace(const Delta& delta, std::string* source)
 {
   // ASSERT(delta.getKind() == Delta::REPLACE);
-  int offset = delta.getRange().getStart().offset;
+  auto offset = delta.getRange().getStart().offset;
   source->replace( offset,
                    delta.getRange().length(),
                    delta.getNewToken() );
@@ -337,7 +343,7 @@ void SourceFile::performReplace(const Delta& delta, std::string* source)
 void SourceFile::performInsert(const Delta& delta, std::string* source)
 {
   // ASSERT(delta.getKind() == Delta::INSERT || ...);
-  int offset = delta.getRange().getStart().offset;
+  auto offset = delta.getRange().getStart().offset;
   source->insert( offset, delta.getNewToken() );
 }
 

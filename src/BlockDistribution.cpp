@@ -112,9 +112,11 @@ size_t BlockDistribution::sizeForDevice(
         const size_t totalSize) const
 {
   if (deviceID < _devices.size()-1) {
-    return ( totalSize * _significances.getSignificance(deviceID) );
+    return static_cast<size_t>(
+      totalSize * _significances.getSignificance(deviceID) );
   } else { // "last" device
-    size_t s = totalSize * _significances.getSignificance(deviceID);
+    size_t s = static_cast<size_t>(
+      totalSize * _significances.getSignificance(deviceID) );
     // add rest ...
     size_t r = totalSize;
     for (const auto& devicePtr : _devices) {

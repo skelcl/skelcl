@@ -49,8 +49,7 @@ namespace ssedit {
 Delta::Delta(const SourceRange& range,
              const std::string& newToken,
              Delta::Kind kind)
-  : _range(range), _newToken(newToken),
-    _kind(kind), _next()
+  : _range(range), _newToken(newToken), _next(), _kind(kind)
 {
 }
 

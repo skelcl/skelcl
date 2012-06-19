@@ -130,8 +130,8 @@ private:
     std::shared_ptr<DeltaNode>  _leftNode;
     std::shared_ptr<DeltaNode>  _rightNode;
     std::shared_ptr<DeltaNode>  _parent;
-    short                       _balance;
     std::shared_ptr<Delta>      _delta;
+    short                       _balance;
     bool                        _visited;
   };
 

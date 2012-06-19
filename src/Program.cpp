@@ -314,7 +314,7 @@ void Program::saveBinary()
                               std::ios_base::out
                             | std::ios_base::trunc
                             | std::ios_base::binary);
-      outfile.write(binary.front(), size.front());
+      outfile.write(binary.front(), static_cast<long>(size.front()));
       LOG_DEBUG("Saved binary for device ", devicePtr->id(),
                 " to file ", binaryFilename(_hash, devicePtr));
     } catch (cl::Error err) {

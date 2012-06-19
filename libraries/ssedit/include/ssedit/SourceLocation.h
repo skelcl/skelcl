@@ -48,10 +48,10 @@ namespace ssedit {
 class SourceLocation {
 public:
   struct Location {
-    int     line;
-    int     column;
-    int     offset;
-    CXFile  file;
+    unsigned int  line;
+    unsigned int  column;
+    unsigned int  offset;
+    CXFile        file;
   };
 
   SourceLocation();

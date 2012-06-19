@@ -71,11 +71,12 @@ void _ASSERT(const char* file,
   if (!expression) {
     va_list args;
     va_start(args, formatString);
-    int needed = vsnprintf(NULL, 0, formatString, args) + 1;
+    auto needed = vsnprintf(NULL, 0, formatString, args) + 1;
+    ASSERT(needed > 0);
     {
       std::unique_ptr<char[]> buffer(new char[needed]);
 
-      vsnprintf(&buffer[0], needed, formatString, args);
+      vsnprintf(&buffer[0], static_cast<size_t>(needed), formatString, args);
 
       defaultLogger.log(Logger::Severity::Error, file, line,
                         "Assertion `", expressionString, "' failed. ",

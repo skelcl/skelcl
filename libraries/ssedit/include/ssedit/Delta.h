@@ -80,8 +80,8 @@ private:
 
   SourceRange             _range;
   std::string             _newToken;
-  Kind                    _kind;
   std::shared_ptr<Delta>  _next;
+  Kind                    _kind;
 };
 
 } // namespace ssedit

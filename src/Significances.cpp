@@ -63,8 +63,9 @@ Significances::Significances(size_t deviceCount)
   _values[deviceCount-1] += rest;
 
 #ifndef NDEBUG // in debug build only (to prevent unused variable warning)
-  const value_type zero = 0.0;
-  ASSERT( std::accumulate( _values.cbegin(), _values.cend(), zero ) == one );
+  const value_type zero     = 0.0;
+  const value_type epsilon  = static_cast<value_type>(1.0e-10);
+  ASSERT( std::accumulate( _values.cbegin(), _values.cend(), zero ) - one < epsilon );
 #endif
 }
 
@@ -72,9 +73,10 @@ Significances::Significances(std::initializer_list<value_type> significances)
   : _values( significances.begin(), significances.end() )
 {
 #ifndef NDEBUG // in debug build only (to prevent unused variable warning)
-  const value_type zero = 0.0;
-  const value_type one  = 1.0;
-  ASSERT( std::accumulate( _values.cbegin(), _values.cend(), zero ) == one );
+  const value_type zero     = 0.0;
+  const value_type one      = 1.0;
+  const value_type epsilon  = static_cast<value_type>(1.0e-10);
+  ASSERT( std::accumulate( _values.cbegin(), _values.cend(), zero ) - one < epsilon );
 #endif
 }
 
@@ -82,9 +84,10 @@ void Significances::setSignificances(std::initializer_list<value_type> significa
 {
   _values.assign( significances.begin(), significances.end() );
 #ifndef NDEBUG // in debug build only (to prevent unused variable warning)
-  const value_type zero = 0.0;
-  const value_type one  = 1.0;
-  ASSERT( std::accumulate( _values.cbegin(), _values.cend(), zero ) == one );
+  const value_type zero     = 0.0;
+  const value_type one      = 1.0;
+  const value_type epsilon  = static_cast<value_type>(1.0e-10);
+  ASSERT( std::accumulate( _values.cbegin(), _values.cend(), zero ) - one < epsilon );
 #endif
 }
 

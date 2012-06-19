@@ -92,7 +92,7 @@ protected:
   void updateModifiedStatus(T&& t, Args&&... args);
 
 private:
-  unsigned _workGroupSize;
+  size_t _workGroupSize;
 };
 
 void Skeleton::prepareAdditionalInput()

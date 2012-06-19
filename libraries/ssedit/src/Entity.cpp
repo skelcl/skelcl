@@ -43,21 +43,6 @@
 #include "ssedit/Delta.h"
 #include "ssedit/SourceFile.h"
 
-namespace { // unnamed namespace
-
-using namespace ssedit;
-
-struct IsReferenceOfCursor
-{
-  IsReferenceOfCursor(Cursor cursor) : _cursor(cursor) {}
-  bool operator()(const Cursor& current) {
-    return current.isReferenced(_cursor);
-  }
-  Cursor _cursor;
-};
-
-} // unnamed namespace
-
 namespace ssedit {
 
 Entity::Entity(const Cursor& cursor, SourceFile& sourceFile)

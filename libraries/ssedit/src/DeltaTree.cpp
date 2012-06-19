@@ -47,8 +47,8 @@ namespace {
 class DeltaComparator {
 public:
   int operator()(const ssedit::Delta &lhs, const ssedit::Delta &rhs) {
-    int lhsOffset = lhs.getRange().getStart().offset;
-    int rhsOffset = rhs.getRange().getStart().offset;
+    auto lhsOffset = lhs.getRange().getStart().offset;
+    auto rhsOffset = rhs.getRange().getStart().offset;
     if(lhsOffset < rhsOffset) {
       return -1;
     } else if(lhsOffset > rhsOffset) {
@@ -204,7 +204,7 @@ DeltaTree::ReverseIterator& DeltaTree::ReverseIterator::operator++()
 DeltaTree::DeltaNode::DeltaNode(const Delta& delta,
                                 std::shared_ptr<DeltaTree::DeltaNode> parent)
   : _leftNode(), _rightNode(), _parent(parent),
-    _balance(0), _delta(std::make_shared<Delta>(delta)),
+    _delta(std::make_shared<Delta>(delta)), _balance(0),
     _visited(false)
 {
 }
@@ -391,7 +391,7 @@ void DeltaTree::restructureTree(std::shared_ptr<DeltaNode> p)
       }
     } else {
       auto tmpDeltaNodePtr = p->_leftNode;
-      int bal = tmpDeltaNodePtr->_balance;
+      auto bal = tmpDeltaNodePtr->_balance;
 
       tmpDeltaNodePtr->_balance = 0;
       tmpDeltaNodePtr->_parent->_balance =  bal;

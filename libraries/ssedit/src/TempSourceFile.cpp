@@ -62,9 +62,9 @@ std::string createTmpFile(const std::string& content,
 #define __private\n\
 #define private\n\
 /*!!*/\n");
-    tmpFile.write(openCLFix.c_str(), openCLFix.size());
+    tmpFile.write(openCLFix.c_str(), static_cast<long>(openCLFix.size()));
   }
-  tmpFile.write(content.c_str(), content.size());
+  tmpFile.write(content.c_str(), static_cast<long>(content.size()));
   return tmpFileName;
 }
 
