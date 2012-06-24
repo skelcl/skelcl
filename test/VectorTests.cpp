@@ -37,7 +37,7 @@
 
 #include <gtest/gtest.h>
 
-#include <SkelCL/Distribution.h>
+#include <SkelCL/Distributions.h>
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/detail/Logger.h>
@@ -97,7 +97,7 @@ TEST_F(VectorTest, CopyWithDataOnDevice) {
   for(unsigned i = 0; i < 5; ++i) {
     vi[i] = 5;
   }
-  vi.setDistribution(skelcl::Distribution::Single(0));
+  vi.setDistribution(skelcl::detail::SingleDistribution< skelcl::Vector<int> >());
   vi.createDeviceBuffers();
   vi.copyDataToDevices();
 

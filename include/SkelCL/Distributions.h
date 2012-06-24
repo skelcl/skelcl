@@ -32,87 +32,96 @@
  *****************************************************************************/
  
 ///
-/// \file SingleDistribution.cpp
+/// \file Distributions.h
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include "SkelCL/detail/SingleDistribution.h"
+#ifndef DISTRIBUTION_S_H_
+#define DISTRIBUTION_S_H_
 
-#include "SkelCL/Distribution.h"
-#include "SkelCL/Vector.h"
+// include all distributions
 
-#include "SkelCL/detail/Assert.h"
-#include "SkelCL/detail/Device.h"
+#include "detail/BlockDistribution.h"
+#include "detail/CopyDistribution.h"
+#include "detail/SingleDistribution.h"
 
 namespace skelcl {
 
+namespace distribution {
+
+template <template <typename> class C, typename T>
+std::unique_ptr< skelcl::detail::Distribution< C<T> > >
+    Block( const C<T>& /*c*/ )
+{
+  return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
+            new skelcl::detail::BlockDistribution< C<T> >() );
+}
+
+template <template <typename> class C, typename T>
+std::unique_ptr< skelcl::detail::Distribution< C<T> > >
+    Copy( const C<T>& /*c*/ )
+{
+  return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
+            new skelcl::detail::CopyDistribution< C<T> >() );
+}
+
+template <template <typename> class C, typename T>
+std::unique_ptr< skelcl::detail::Distribution< C<T> > >
+    Single( const C<T>& /*c*/ )
+{
+  return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
+            new skelcl::detail::SingleDistribution< C<T> >() );
+}
+
+template <template <typename> class C, typename T>
+std::unique_ptr< skelcl::detail::Distribution< C<T> > >
+    Default( const C<T>& /*c*/ )
+{
+  return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
+            new skelcl::detail::Distribution< C<T> >() );
+}
+
+} // namespace distribution
+
 namespace detail {
 
-SingleDistribution::SingleDistribution(std::shared_ptr<Device> device)
-  : skelcl::Distribution( {device} )
+// provide function to clone arbitrary distribution while changing the
+// template argument
+
+template <typename T, typename U, template <typename> class C>
+std::unique_ptr< Distribution< C<T> > >
+    cloneAndConvert(const Distribution< C<U> >& dist)
 {
-}
-
-SingleDistribution::~SingleDistribution()
-{
-}
-
-bool SingleDistribution::isSingle() const
-{
-  return true;
-}
-
-void SingleDistribution::startUpload(
-        const std::vector<detail::DeviceBuffer>& deviceBuffers,
-        void* const hostPointer,
-        detail::Event* events) const
-{
-  ASSERT(events != nullptr);
-
-  auto event = _devices.front()->enqueueWrite(
-      deviceBuffers[_devices.front()->id()],
-      hostPointer );
-
-  events->insert(event);
-}
-
-void SingleDistribution::startDownload(
-        const std::vector<detail::DeviceBuffer>& deviceBuffers,
-        void* const hostPointer,
-        detail::Event* events) const
-{
-  ASSERT(events != nullptr);
-
-  auto event = _devices.front()->enqueueRead(
-        deviceBuffers[_devices.front()->id()],
-        hostPointer );
-  events->insert(event);
-}
-
-size_t SingleDistribution::sizeForDevice(
-        const detail::Device::id_type deviceID,
-        const size_t totalSize) const
-{
-  if (_devices.front()->id() == deviceID) {
-    return totalSize;
-  } else {
-    return 0;
+  // block distribution
+  auto block = dynamic_cast<const BlockDistribution< C<U> >*>(&dist);
+  if (block != nullptr) {
+    return std::unique_ptr< Distribution< C<T> > >(
+            new BlockDistribution< C<T> >(*block) );
   }
-}
 
-
-bool SingleDistribution::doCompare(const Distribution& rhs) const
-{
-  bool ret = false;
-  auto const singleRhs = dynamic_cast<const SingleDistribution*>(&rhs);
-  if (singleRhs) {
-    ret = (_devices == singleRhs->_devices);
+  // copy distribution
+  auto copy = dynamic_cast<const CopyDistribution< C<U> >*>(&dist);
+  if (copy != nullptr) {
+    return std::unique_ptr< Distribution< C<T> > >(
+            new CopyDistribution< C<T> >(*copy) );
   }
-  return ret;
+
+  // single distribution
+  auto single = dynamic_cast<const SingleDistribution< C<U> >*>(&dist);
+  if (single != nullptr) {
+    return std::unique_ptr< Distribution< C<T> > >(
+            new SingleDistribution< C<T> >(*single) );
+  }
+
+  // default distribution
+  return std::unique_ptr< Distribution< C<T> > >(
+            new Distribution< C<T> >(dist) );
 }
 
 } // namespace detail
 
 } // namespace skelcl
+
+#endif // DISTRIBUTION_S_H_
 

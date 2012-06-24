@@ -44,13 +44,14 @@
 #include <memory>
 #include <string>
 
-#include "detail/Device.h"
-#include "detail/DeviceBuffer.h"
-#include "detail/DeviceList.h"
-#include "detail/Event.h"
-#include "detail/Significances.h"
+#include "Device.h"
+#include "DeviceBuffer.h"
+#include "DeviceList.h"
+#include "Event.h"
 
 namespace skelcl {
+
+namespace detail {
 
 ///
 /// \class Distribution
@@ -62,17 +63,25 @@ namespace skelcl {
 /// They are accessible through the static member functions
 /// Single, Block and Copy
 ///
-class Distribution {
+template <typename> class Distribution;
+
+template <template <typename> class C, typename T>
+class Distribution< C<T> > {
 public:
   ///
-  /// \brief No default constructor
+  /// \brief Default constructor
   ///
-  Distribution() = delete;
+  Distribution();
 
   ///
-  /// \brief Default copy constructor
+  /// \brief Copy constructor from a distribution of the same container,
+  ///        but arbitrary types stored in the container
   ///
-  Distribution(const Distribution& rhs);
+  template <typename U>
+  Distribution(const Distribution< C<U> >& rhs);
+
+  template <typename U>
+  Distribution(Distribution< C<U> >&& rhs);
 
   ///
   /// \brief Default destructor
@@ -80,74 +89,14 @@ public:
   virtual ~Distribution();
 
   ///
-  /// \brief Default assignment operator
+  /// \brief Assignment operator from a distribution of the same container,
+  ///        but arbitrary types stored in the container
   ///
-  Distribution& operator=(const Distribution& rhs);
+  template <typename U>
+  Distribution& operator=(const Distribution< C<U> >& rhs);
 
-  ///
-  /// \brief Create a new single distribution.
-  ///
-  /// The data is copied to a single device only.
-  ///
-  /// \param deviceID A valid device id identifying a device
-  ///                 to which the data is copied
-  ///
-  /// \return A pointer pointing to a valid single distribution
-  ///
-  static std::shared_ptr<Distribution> Single(const detail::Device::id_type deviceID);
-
-  ///
-  /// \brief Create a new block distribution.
-  ///
-  /// The data is split evenly across all devices and parts are copied to all
-  /// devices available.
-  ///
-  /// \return A pointer pointing to a valid block distribution
-  ///
-  static std::shared_ptr<Distribution> Block();
-
-  ///
-  /// \brief Create a new block distribution.
-  ///
-  /// The data is split across the given devices as specified by the given
-  /// significances.
-  ///
-  /// \param deviceList     Specifies the devices involved in the distribution
-  ///        significances  Specifies how many data each devices gets
-  ///
-  /// \return A pointer pointing to a valid block distribution
-  ///
-  static std::shared_ptr<Distribution>
-    Block(const detail::DeviceList& deviceList,
-          const detail::Significances& significances);
-
-  ///
-  /// \brief Create a new copy distribution.
-  ///
-  /// The data is copied to all devices available.
-  /// When changing from this distribution, the data residing on the first
-  /// device is chosen as the data distributed by the new selected
-  /// distribution.
-  ///
-  /// \return A pointer pointing to a valid copy distribution
-  ///
-  static std::shared_ptr<Distribution> Copy();
-
-  ///
-  /// \brief Create a new copy distribution
-  ///
-  /// The data is copied to all devices available.
-  /// When changing from this distribution, the data from all devices is
-  /// combined by applying the provided function pairwise on the data
-  /// items.
-  ///
-  /// \param func This function is applied pairwise on the data items to combine
-  ///             the data from different devices into one
-  ///
-  /// \return A pointer pointing to a valid copy distribution
-  ///
-  template <typename T>
-  static std::shared_ptr<Distribution> Copy(T(*func)(const T&, const T&));
+  template <typename U>
+  Distribution& operator=(Distribution< C<U> >&& rhs);
 
   ///
   /// \brief Comparison operator
@@ -176,32 +125,11 @@ public:
   bool operator!=(const Distribution& rhs) const;
 
   ///
-  /// \brief States if the distribution is single
-  ///
-  /// \return Returns true only if the distribution is single.
-  ///
-  virtual bool isSingle() const;
-
-  ///
-  /// \brief States if the distribution is block
-  ///
-  /// \return Returns true only if the distribution is block.
-  ///
-  virtual bool isBlock() const;
-
-  ///
-  /// \brief States if the distribution is copy
-  ///
-  /// \return Returns true only if the distribution is copy.
-  ///
-  virtual bool isCopy() const;
-
-  ///
   /// \brief States if the distribution is valid, i.e., single, block or copy
   ///
   /// \return Returns true if the distribution is either single, block or copy
   ///
-  bool isValid() const;
+  virtual bool isValid() const;
 
   ///
   /// \brief Starts copying data pointed by hostPointer to the deviceBuffers
@@ -214,9 +142,8 @@ public:
   ///        events         Event object to allow for explicitly waiting
   ///                       for the copy operation to be completed
   ///
-  virtual void startUpload(const std::vector<detail::DeviceBuffer>& deviceBuffers,
-                           void* const hostPointer,
-                           detail::Event* events) const = 0;
+  virtual void startUpload(C<T>& container,
+                           detail::Event* events) const;
 
   ///
   /// \brief Starts copying data from the deviceBuffers and storing the
@@ -230,9 +157,9 @@ public:
   ///        events         Event object to allow for explicitly waiting
   ///                       for the copy operation to be completed
   ///
-  virtual void startDownload(const std::vector<detail::DeviceBuffer>& deviceBuffers,
-                             void* const hostPointer,
-                             detail::Event* events) const = 0;
+
+  virtual void startDownload(C<T>& container,
+                             detail::Event* events) const;
 
   ///
   /// \brief Returns a list of all devices to which data should be
@@ -272,7 +199,9 @@ public:
   /// \return The number of elements to be stored on the given device
   ///
   virtual size_t sizeForDevice(const detail::Device::id_type deviceID,
-                               const size_t totalSize) const = 0;
+                               const size_t totalSize) const;
+
+  virtual bool dataExchangeOnDistributionChange(Distribution& newDistribution);
 
 protected:
   ///
@@ -307,21 +236,10 @@ private:
   virtual bool doCompare(const Distribution& rhs) const;
 };
 
-} // namespace skelcl
-
-#include "detail/CopyDistribution.h"
-// include implementation of the templated copy distribution, before using it
-
-namespace skelcl {
-
-template <typename T>
-std::shared_ptr<Distribution> Distribution::Copy(T(*func)(const T&, const T&))
-{
-  return std::make_shared<
-            detail::CopyDistribution<T> >( detail::globalDeviceList, func );
-}
+} // namespace detail
 
 } // namespace skelcl
 
+#include "DistributionDef.h"
 
 #endif // DISTRIBUTION_H_

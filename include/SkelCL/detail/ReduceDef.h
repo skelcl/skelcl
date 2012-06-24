@@ -58,12 +58,11 @@
 #include <CL/cl.h>
 #undef  __CL_ENABLE_EXCEPTIONS
 
-#include "../Distribution.h"
+#include "../Distributions.h"
 #include "../Out.h"
 #include "../Source.h"
 
 #include "Assert.h"
-#include "Container.h"
 #include "Device.h"
 #include "DeviceBuffer.h"
 #include "DeviceList.h"
@@ -98,7 +97,7 @@ Vector<T> Reduce<T(T)>::operator()(const Vector<T>& input,
 
 template <typename T>
 template <typename... Args>
-Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
+Vector<T>& Reduce<T(T)>::operator()(Out< Vector<T> > output,
                                     const Vector<T>& input,
                                     Args&&... args)
 {
@@ -106,9 +105,9 @@ Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
   prepareInput(input);
 
   // TODO: relax to multiple devices later
-  ASSERT(input.distribution()->devices().size() == 1);
+  ASSERT(input.distribution().devices().size() == 1);
 
-  auto& device = *(input.distribution()->devices().front());
+  auto& device = *(input.distribution().devices().front());
 
   // ... determine if and how the first reduction step is performed ...
   auto firstLevel  = determineFirstLevelParameters(device, input, output.container());
@@ -152,8 +151,8 @@ template <typename T>
 void Reduce<T(T)>::prepareInput(const Vector<T>& input)
 {
   // set default distribution if required
-  if (!input.distribution()) {
-    input.setDistribution(Distribution::Single(0));
+  if (!input.distribution().isValid()) {
+    input.setDistribution(detail::SingleDistribution< Vector<T> >());
   }
   // create buffers if required
   input.createDeviceBuffers();
@@ -176,8 +175,7 @@ void Reduce<T(T)>::prepareOutput(Vector<T>& output,
     output.resize(size);
   }
   // set output distribution
-  output.setDistribution(
-    Distribution::Single(input.distribution()->devices().front()->id()) );
+  output.setDistribution(input.distribution());
   // create buffers if required
   output.createDeviceBuffers();
 }
@@ -189,7 +187,7 @@ void Reduce<T(T)>::execute(const detail::Device& device,
                            const std::shared_ptr<Level>& level,
                            Args&&... args)
 {
-  ASSERT( level->inputPtr->distribution()->isValid() );
+  ASSERT( level->inputPtr->distribution().isValid() );
 
   auto& outputBuffer= level->outputPtr->deviceBuffer(device);
   auto& inputBuffer = level->inputPtr->deviceBuffer(device);

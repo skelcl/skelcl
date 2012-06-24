@@ -52,12 +52,11 @@
 #include <CL/cl.h>
 #undef  __CL_ENABLE_EXCEPTIONS
 
-#include "../Distribution.h"
+#include "../Distributions.h"
 #include "../Out.h"
 #include "../Source.h"
 
 #include "Assert.h"
-#include "Container.h"
 #include "Device.h"
 #include "KernelUtil.h"
 #include "Logger.h"
@@ -119,33 +118,25 @@ void
 }
 
 template <typename Tleft, typename Tright, typename Tout>
-template <template <typename> class ContainerType,
+template <template <typename> class C,
           typename... Args>
-ContainerType<Tout>
-  Zip<Tout(Tleft, Tright)>::operator()(const ContainerType<Tleft>& left,
-                                       const ContainerType<Tright>& right,
-                                       Args&&... args)
+C<Tout> Zip<Tout(Tleft, Tright)>::operator()(const C<Tleft>& left,
+                                             const C<Tright>& right,
+                                             Args&&... args)
 {
-  ContainerType<Tout> output;
+  C<Tout> output;
   this->operator()(out(output), left, right, std::forward<Args>(args)...);
   return output;
 }
 
 template <typename Tleft, typename Tright, typename Tout>
-template <template <typename> class ContainerType,
+template <template <typename> class C,
           typename... Args>
-ContainerType<Tout>&
-  Zip<Tout(Tleft, Tright)>::operator()(Out<ContainerType<Tout>> output,
-                                       const ContainerType<Tleft>& left,
-                                       const ContainerType<Tright>& right,
-                                       Args&&... args)
+C<Tout>& Zip<Tout(Tleft, Tright)>::operator()(Out< C<Tout> > output,
+                                              const C<Tleft>& left,
+                                              const C<Tright>& right,
+                                              Args&&... args)
 {
-  static_assert(std::is_base_of<skelcl::detail::Container<Tleft>,
-                ContainerType<Tleft>>::value,
-      "First argument is no derived class of skelcl::detail::Container");
-  static_assert(std::is_base_of<skelcl::detail::Container<Tright>,
-                ContainerType<Tright>>::value,
-      "Second argument is no derived class of skelcl::detail::Container");
   ASSERT(left.size() <= right.size());
 
   prepareInput(left, right);
@@ -160,22 +151,23 @@ ContainerType<Tout>&
 }
 
 template <typename Tleft, typename Tright, typename Tout>
-void Zip<Tout(Tleft, Tright)>::prepareInput(const detail::Container<Tleft>& left,
-                                            const detail::Container<Tright>& right)
+template <template <typename> class C>
+void Zip<Tout(Tleft, Tright)>::prepareInput(const C<Tleft>& left,
+                                            const C<Tright>& right)
 {
   // set default distribution if required
-  if (   left.distribution()  == nullptr
-      && right.distribution() == nullptr ) {
-    left.setDistribution(Distribution::Block());
-    right.setDistribution(Distribution::Block());
-  } else if (left.distribution() == nullptr) {
+  if (   !left.distribution().isValid()
+      && !right.distribution().isValid() ) {
+    left.setDistribution(detail::BlockDistribution< C<Tleft> >());
+    right.setDistribution(detail::BlockDistribution< C<Tright> >());
+  } else if (!left.distribution().isValid()) {
     left.setDistribution(right.distribution());
-  } else if (right.distribution() == nullptr) {
+  } else if (!right.distribution().isValid()) {
     right.setDistribution(left.distribution());
   } else if ( left.distribution() != right.distribution() ) {
     // TODO: find a better solution
-    left.setDistribution(Distribution::Block());
-    right.setDistribution(Distribution::Block());
+    left.setDistribution(detail::BlockDistribution< C<Tleft> >());
+    right.setDistribution(detail::BlockDistribution< C<Tright> >());
   }
   // create buffers if required
   left.createDeviceBuffers();
@@ -186,10 +178,10 @@ void Zip<Tout(Tleft, Tright)>::prepareInput(const detail::Container<Tleft>& left
 }
 
 template <typename Tleft, typename Tright, typename Tout>
-void
-  Zip<Tout(Tleft, Tright)>::prepareOutput(detail::Container<Tout>& output,
-                                          const detail::Container<Tleft>& left,
-                                          const detail::Container<Tright>& right)
+template <template <typename> class C>
+void Zip<Tout(Tleft, Tright)>::prepareOutput(C<Tout>& output,
+                                             const C<Tleft>& left,
+                                             const C<Tright>& right)
 {
   if (   static_cast<void*>(&output) == static_cast<const void*>(&left)
       || static_cast<void*>(&output) == static_cast<const void*>(&right) ) {
@@ -206,17 +198,18 @@ void
 }
 
 template <typename Tleft, typename Tright, typename Tout>
-template <typename... Args>
-void Zip<Tout(Tleft, Tright)>::execute(detail::Container<Tout>& output,
-                                       const detail::Container<Tleft>& left,
-                                       const detail::Container<Tright>& right,
+template <template <typename> class C,
+          typename... Args>
+void Zip<Tout(Tleft, Tright)>::execute(C<Tout>& output,
+                                       const C<Tleft>& left,
+                                       const C<Tright>& right,
                                        Args&&... args)
 {
-  ASSERT( left.distribution()->isValid() && right.distribution()->isValid() );
-  ASSERT( *(left.distribution()) == *(right.distribution()) );
+  ASSERT( left.distribution().isValid() && right.distribution().isValid() );
+  ASSERT( left.distribution() == right.distribution() );
   ASSERT( left.size() >= right.size() && output.size() >= left.size() );
 
-  for (auto& devicePtr : left.distribution()->devices()) {
+  for (auto& devicePtr : left.distribution().devices()) {
     auto& outputBuffer= output.deviceBuffer(*devicePtr);
     auto& leftBuffer  = left.deviceBuffer(*devicePtr);
     auto& rightBuffer = right.deviceBuffer(*devicePtr);

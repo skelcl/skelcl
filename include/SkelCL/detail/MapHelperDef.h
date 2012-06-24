@@ -40,9 +40,8 @@
 #ifndef MAP_HELPER_DEF_H_
 #define MAP_HELPER_DEF_H_
 
-#include "../Distribution.h"
+#include "../Distributions.h"
 
-#include "Container.h"
 #include "Logger.h"
 
 namespace skelcl {
@@ -71,11 +70,12 @@ void MapHelper<Tout(Tin)>::prepareAndBuildProgram(const std::string& funcName)
 }
 
 template <typename Tin, typename Tout>
-void MapHelper<Tout(Tin)>::prepareInput(const detail::Container<Tin>& input)
+template <template <typename> class C>
+void MapHelper<Tout(Tin)>::prepareInput(const C<Tin>& input)
 {
   // set default distribution if required
-  if (input.distribution() == nullptr) {
-    input.setDistribution(Distribution::Block());
+  if (!input.distribution().isValid()) {
+    input.setDistribution(BlockDistribution< C<Tin> >());
   }
   // create buffers if required
   input.createDeviceBuffers();
@@ -84,8 +84,9 @@ void MapHelper<Tout(Tin)>::prepareInput(const detail::Container<Tin>& input)
 }
 
 template <typename Tin, typename Tout>
-void MapHelper<Tout(Tin)>::prepareOutput(detail::Container<Tout>& output,
-                                         const detail::Container<Tin>& input)
+template <template <typename> class C>
+void MapHelper<Tout(Tin)>::prepareOutput(C<Tout>& output,
+                                         const C<Tin>& input)
 {
   if (static_cast<void*>(&output) == static_cast<const void*>(&input)) {
     return; // already prepared in prepareInput

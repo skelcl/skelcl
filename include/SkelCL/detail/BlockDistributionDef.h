@@ -32,142 +32,140 @@
  *****************************************************************************/
  
 ///
-/// CopyDistributionDef.h
+/// \file BlockDistribution.h
 ///
-/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///	\author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef COPY_DISTRIBUTION_DEF_H_
-#define COPY_DISTRIBUTION_DEF_H_
+#ifndef BLOCK_DISTRIBUTION_DEF_H_
+#define BLOCK_DISTRIBUTION_DEF_H_
 
-#include <functional>
-
-#include "Assert.h"
-#include "DeviceList.h"
+#include "Significances.h"
 
 namespace skelcl {
 
 namespace detail {
 
 template <template <typename> class C, typename T>
-CopyDistribution< C<T> >::CopyDistribution(const DeviceList& deviceList,
-                                           std::function<T(const T&, const T&)>
-                                             combineFunc)
-  : Distribution< C<T> >(deviceList), _combineFunc(combineFunc)
+BlockDistribution< C<T> >::BlockDistribution(const DeviceList& deviceList)
+  : Distribution< C<T> >(deviceList), _significances(deviceList.size())
+{
+}
+
+template <template <typename> class C, typename T>
+BlockDistribution< C<T> >::BlockDistribution(const DeviceList& deviceList,
+                                             const Significances& significances)
+  : Distribution< C<T> >(deviceList), _significances(significances)
 {
 }
 
 template <template <typename> class C, typename T>
 template <typename U>
-CopyDistribution< C<T> >::CopyDistribution( const CopyDistribution< C<U> >& rhs)
-  : Distribution< C<T> >(rhs), _combineFunc(nullptr)
-{
-  // TODO: allow this? How handle this?
-}
-
-template <template <typename> class C, typename T>
-CopyDistribution< C<T> >::~CopyDistribution()
+BlockDistribution< C<T> >::BlockDistribution( const BlockDistribution< C<U> >& rhs)
+  : Distribution< C<T> >(rhs), _significances(rhs.getSignificances())
 {
 }
 
 template <template <typename> class C, typename T>
-bool CopyDistribution< C<T> >::isValid() const
+BlockDistribution< C<T> >::~BlockDistribution()
+{
+}
+
+template <template <typename> class C, typename T>
+bool BlockDistribution< C<T> >::isValid() const
 {
   return true;
 }
 
 template <template <typename> class C, typename T>
-void CopyDistribution< C<T> >::startUpload(C<T>& container,
-                                           Event* events) const
+void BlockDistribution< C<T> >::startUpload(C<T>& container,
+                                            Event* events) const
 {
   ASSERT(events != nullptr);
 
+  size_t offset = 0;
   for (auto& devicePtr : this->_devices) {
 
     auto& buffer = container.deviceBuffer(*devicePtr);
 
     auto event = devicePtr->enqueueWrite(buffer,
-                                         container.hostBuffer().begin());
+                                         container.hostBuffer().begin(),
+                                         offset);
+    offset += buffer.size();
     events->insert(event);
   }
 }
 
 template <template <typename> class C, typename T>
-void CopyDistribution< C<T> >::startDownload(C<T>& container,
-                                             Event* events) const
+void BlockDistribution< C<T> >::startDownload(C<T>& container,
+                                              Event* events) const
 {
   ASSERT(events != nullptr);
 
-  if (_combineFunc == nullptr) {
-    // take data from the first device
+  size_t offset = 0;
+  for (auto& devicePtr : this->_devices) {
 
-    auto& buffer = container.deviceBuffer(*(this->_devices.front()));
+    auto& buffer = container.deviceBuffer(*devicePtr);
 
-    auto event = this->_devices.front()->enqueueRead(buffer,
-                                                     container.hostBuffer().begin());
+    auto event = devicePtr->enqueueRead(buffer,
+                                        container.hostBuffer().begin(),
+                                        offset);
+    offset += buffer.size();
     events->insert(event);
+  }
+}
 
-  } else { // using combine function
-
-    // create temporary vectors
-    std::vector<std::vector<T>> vs(this->_devices.size() - 1);
-    // for every device ...
-    for (auto& devicePtr : this->_devices) {
-      auto& deviceBuffer = container.deviceBuffer(*devicePtr);
-      // ... download data ...
-      // ... the first devices write to the temporary vectors ...
-      if (devicePtr->id() < this->_devices.size() - 1) {
-        vs[devicePtr->id()].resize(deviceBuffer.size());
-        auto event = devicePtr->enqueueRead( deviceBuffer,
-                                             vs[devicePtr->id()].begin() );
-        events->insert(event);
-      } else { // ... the "last" device writes directly to the host buffer
-        auto event = devicePtr->enqueueRead( deviceBuffer,
-                                             container.hostBuffer().begin() );
-        events->insert(event);
-      }
+template <template <typename> class C, typename T>
+size_t BlockDistribution< C<T> >::sizeForDevice(const Device::id_type deviceID,
+                                                const size_t totalSize) const
+{
+  if (deviceID < this->_devices.size()-1) {
+    return static_cast<size_t>(
+      totalSize * this->_significances.getSignificance(deviceID) );
+  } else { // "last" device
+    size_t s = static_cast<size_t>(
+      totalSize * this->_significances.getSignificance(deviceID) );
+    // add rest ...
+    size_t r = totalSize;
+    for (const auto& devicePtr : this->_devices) {
+      r -= totalSize * this->_significances.getSignificance(devicePtr->id());
     }
-    events->wait(); // wait for downloads to finish
+    return (s+r);
+  }
+}
 
-    // combine all vs into hostPointer using _combineFunc
-    for (unsigned i = 0; i < vs.size(); ++i) {
-      std::transform(vs[i].begin(), vs[i].end(),
-                     static_cast<T*>(&(container.hostBuffer().front())),
-                     static_cast<T*>(&(container.hostBuffer().front())),
-                     this->_combineFunc);
+template <template <typename> class C, typename T>
+bool BlockDistribution< C<T> >::dataExchangeOnDistributionChange(
+                                   Distribution< C<T> >& newDistribution)
+{
+  auto block = dynamic_cast<BlockDistribution< C<T> >*>(&newDistribution);
+
+  if (block == nullptr) { // distributions differ => data exchange
+    return true;
+  } else { // new distribution == block distribution
+    if (   this->_devices == block->_devices // same set of devices
+        && this->_significances == block->_significances // same significances
+       ) {
+      return false; // => no data exchange
+    } else {
+      return true;  // => data exchange
     }
   }
-
-  // mark data on device as out of date !
-  container.dataOnHostModified();
 }
 
 template <template <typename> class C, typename T>
-size_t CopyDistribution< C<T> >::sizeForDevice(const Device::id_type /*id*/,
-                                               const size_t totalSize) const
+const Significances& BlockDistribution< C<T> >::getSignificances() const
 {
-  return totalSize;
+  return this->_significances;
 }
 
 template <template <typename> class C, typename T>
-bool CopyDistribution< C<T> >::dataExchangeOnDistributionChange(
-                                   Distribution< C<T> >& /*newDistribution*/)
-{
-  return true; // always do data exchange for copy distibution
-}
-
-template <template <typename> class C, typename T>
-std::function<T(const T&, const T&)> CopyDistribution< C<T> >::combineFunc() const
-{
-  return this->_combineFunc;
-}
-
-template <template <typename> class C, typename T>
-bool CopyDistribution< C<T> >::doCompare(const Distribution< C<T> >& rhs) const
+bool BlockDistribution< C<T> >::doCompare(const Distribution< C<T> >& rhs) const
 {
   bool ret = false;
-  auto const copyRhs = dynamic_cast<const CopyDistribution< C<T> >*>(&rhs);
-  if (copyRhs) {
+  // can rhs be casted into block distribution ?
+  auto const blockRhs = dynamic_cast<const BlockDistribution*>(&rhs);
+  if (blockRhs) {
     ret = true;
   }
   return ret;
@@ -177,4 +175,5 @@ bool CopyDistribution< C<T> >::doCompare(const Distribution< C<T> >& rhs) const
 
 } // namespace skelcl
 
-#endif // COPY_DISTRIBUTION_DEF_H_
+#endif // BLOCK_DISTRIBUTION_DEF _H_
+

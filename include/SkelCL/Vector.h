@@ -47,12 +47,10 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 
-#include "Distribution.h"
-
-#include "detail/Container.h"
 #include "detail/CopyDistribution.h"
 #include "detail/Device.h"
 #include "detail/DeviceBuffer.h"
+#include "detail/Distribution.h"
 
 namespace skelcl {
 
@@ -76,7 +74,7 @@ namespace detail {
 } // namespace detail
 
 template <typename T>
-class Vector : public detail::Container<T> {
+class Vector {
   typedef std::vector<T> vector_type;
   typedef std::shared_ptr<std::vector<T> > vector_shared_pointer;
 public:
@@ -115,7 +113,7 @@ public:
   ///                     new constructed vector
   ///
   Vector(const size_type size,
-         const std::shared_ptr<Distribution>& distribution,
+         const detail::Distribution< Vector<T> >& distribution,
          const value_type& value = value_type());
 
   ///
@@ -140,7 +138,7 @@ public:
   template <class InputIterator>
   Vector(InputIterator first,
          InputIterator last,
-         const std::shared_ptr<Distribution>& distribution);
+         const detail::Distribution< Vector<T> >& distribution);
 
   ///
   /// \brief Copy construction
@@ -340,7 +338,7 @@ public:
   /// \return A pointer to the current distribution of the vector, of nullptr
   ///         if no distribution is set
   ///
-  std::shared_ptr<Distribution> distribution() const;
+  detail::Distribution< Vector<T> >& distribution() const;
 
   ///
   /// \brief Changes the distribution of the vector
@@ -352,7 +350,8 @@ public:
   ///                     distribution is the new selected distribution of the
   ///                     vector
   ///
-  void setDistribution(const std::shared_ptr<Distribution>& distribution) const;
+  template <typename U>
+  void setDistribution(const detail::Distribution< Vector<U> >& distribution) const;
 
   ///
   /// \brief Create buffers on the devices involved in the current distribution
@@ -443,6 +442,8 @@ public:
   ///
   const detail::DeviceBuffer& deviceBuffer(const detail::Device& device) const;
 
+  vector_type& hostBuffer() const;
+
 private:
   ///
   /// \brief Formates information about the current instance into a string,
@@ -461,13 +462,14 @@ private:
   ///
   std::string getDebugInfo() const;
 
-  mutable std::shared_ptr<Distribution>     _distribution;
-          size_type                         _size;
-  mutable bool                              _hostBufferUpToDate;
-  mutable bool                              _deviceBuffersUpToDate;
-  mutable vector_type                       _hostBuffer;
+          size_type                                       _size;
+  mutable
+    std::unique_ptr< detail::Distribution< Vector<T> > >  _distribution;
+  mutable bool                                            _hostBufferUpToDate;
+  mutable bool                                            _deviceBuffersUpToDate;
+  mutable vector_type                                     _hostBuffer;
   // _deviceBuffers empty => buffers not created yet
-  mutable std::vector<detail::DeviceBuffer> _deviceBuffers;
+  mutable std::vector<detail::DeviceBuffer>               _deviceBuffers;
 };
 
 } // namespace skelcl

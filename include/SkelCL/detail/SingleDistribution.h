@@ -40,42 +40,46 @@
 #ifndef SINGLE_DISTRIBUTION_H_
 #define SINGLE_DISTRIBUTION_H_
 
-#include "../Distribution.h"
+#include "Distribution.h"
 
 namespace skelcl {
 
 namespace detail {
 
-class Device;
+template <typename> class SingleDistribution;
 
-class SingleDistribution : public skelcl::Distribution {
+template <template <typename> class C, typename T>
+class SingleDistribution< C<T> > : public Distribution< C<T> > {
 public:
-  SingleDistribution() = delete;
-  SingleDistribution(std::shared_ptr<Device> device);
-  SingleDistribution(const SingleDistribution&) = default;
+  SingleDistribution(std::shared_ptr<Device> device = detail::globalDeviceList.front());
+
+  template <typename U>
+  SingleDistribution( const SingleDistribution< C<U> >& rhs);
+
   ~SingleDistribution();
-  SingleDistribution& operator=(const SingleDistribution&) = default;
 
-  bool isSingle() const;
+  bool isValid() const;
 
-  void startUpload(const std::vector<detail::DeviceBuffer>& deviceBuffers,
-                   void* const hostPointer,
-                   detail::Event* events) const;
+  void startUpload(C<T>& container,
+                   Event* events) const;
 
-  void startDownload(const std::vector<detail::DeviceBuffer>& deviceBuffers,
-                     void* const hostPointer,
-                     detail::Event* events) const;
+  void startDownload(C<T>& container,
+                     Event* events) const;
 
-  size_t sizeForDevice(const detail::Device::id_type deviceID,
+  size_t sizeForDevice(const Device::id_type deviceID,
                        const size_t totalSize) const;
 
+  bool dataExchangeOnDistributionChange(Distribution< C<T> >& newDistribution);
+
 private:
-  bool doCompare(const Distribution& rhs) const;
+  bool doCompare(const Distribution< C<T> >& rhs) const;
 };
 
 } // namespace detail
 
 } // namespace skelcl
+
+#include "SingleDistributionDef.h"
 
 #endif // SINGLE_DISTRIBUTION_H_
 

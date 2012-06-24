@@ -44,7 +44,7 @@
 
 namespace skelcl {
 
-class Distribution;
+template <typename> class Distribution;
 
 namespace detail {
 
@@ -92,14 +92,14 @@ public:
   ///
   /// \return Distribution of the container
   ///
-  virtual std::shared_ptr<Distribution> distribution() const = 0;
+  virtual Distribution& distribution() const = 0;
 
   ///
   /// \brief Set the Distribution of the container
   ///
   /// \param distribution Distribution to be set
   ///
-  virtual void setDistribution(const std::shared_ptr<Distribution>& distribution) const = 0;
+  virtual void setDistribution(const Distribution& distribution) const = 0;
 
   ///
   /// \brief Create buffers on the devices depending on the distribution

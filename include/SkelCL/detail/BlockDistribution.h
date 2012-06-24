@@ -40,7 +40,7 @@
 #ifndef BLOCK_DISTRIBUTION_H_
 #define BLOCK_DISTRIBUTION_H_
 
-#include "../Distribution.h"
+#include "Distribution.h"
 
 #include "Significances.h"
 
@@ -50,33 +50,37 @@ namespace detail {
 
 class DeviceList;
 
-class BlockDistribution : public skelcl::Distribution {
+template <typename> class BlockDistribution;
+
+template <template <typename> class C, typename T>
+class BlockDistribution< C<T> > : public Distribution< C<T> > {
 public:
-  BlockDistribution() = default;
-  BlockDistribution( const DeviceList& deviceList );
+  BlockDistribution( const DeviceList& deviceList = detail::globalDeviceList );
   BlockDistribution( const DeviceList& deviceList,
                      const Significances& significances );
-  BlockDistribution(const BlockDistribution&) = default;
+
+  template <typename U>
+  BlockDistribution( const BlockDistribution< C<U> >& rhs);
+
   ~BlockDistribution();
-  BlockDistribution& operator=(const BlockDistribution&) = default;
 
-  bool isBlock() const;
+  bool isValid() const;
 
-  void startUpload(const std::vector<detail::DeviceBuffer>& deviceBuffers,
-                   void* const hostPointer,
-                   detail::Event* events) const;
+  void startUpload(C<T>& container,
+                   Event* events) const;
 
-  void startDownload(const std::vector<detail::DeviceBuffer>& deviceBuffers,
-                     void* const hostPointer,
-                     detail::Event* events) const;
+  void startDownload(C<T>& container,
+                     Event* events) const;
 
-  size_t sizeForDevice(const detail::Device::id_type deviceID,
+  size_t sizeForDevice(const Device::id_type deviceID,
                        const size_t totalSize) const;
+
+  bool dataExchangeOnDistributionChange(Distribution< C<T> >& newDistribution);
 
   const Significances& getSignificances() const;
 
 private:
-  bool doCompare(const Distribution& rhs) const;
+  bool doCompare(const Distribution< C<T> >& rhs) const;
 
   Significances _significances;
 };
@@ -84,6 +88,8 @@ private:
 } // namespace detail
 
 } // namespace skelcl
+
+#include "BlockDistributionDef.h"
 
 #endif // BLOCK_DISTRIBUTION_H_
 

@@ -60,6 +60,8 @@ public:
   ~Significances() = default;
   Significances& operator=(const Significances&) = default;
 
+  bool operator==(const Significances& rhs) const;
+
   void setSignificances(std::initializer_list<value_type> significances);
 
   value_type getSignificance(const Device::id_type device) const;

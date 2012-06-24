@@ -32,117 +32,112 @@
  *****************************************************************************/
  
 ///
-/// \file BlockDistribution.cpp
+/// SingleDistributionDef.h
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include "SkelCL/detail/BlockDistribution.h"
+#ifndef SINGLE_DISTRIBUTION_DEF_H_
+#define SINGLE_DISTRIBUTION_DEF_H_
 
-#include "SkelCL/Distribution.h"
+#include <memory>
 
-#include "SkelCL/detail/Assert.h"
-#include "SkelCL/detail/DeviceList.h"
-#include "SkelCL/detail/Significances.h"
+#include "Assert.h"
+#include "DeviceList.h"
 
 namespace skelcl {
 
 namespace detail {
 
-BlockDistribution::BlockDistribution(const DeviceList& deviceList)
-  : skelcl::Distribution(deviceList), _significances(deviceList.size())
+template <template <typename> class C, typename T>
+SingleDistribution< C<T> >::SingleDistribution(std::shared_ptr<Device> device)
+  : Distribution< C<T> >( {device} )
 {
 }
 
-BlockDistribution::BlockDistribution(const DeviceList& deviceList,
-                                     const Significances& significances)
-  : skelcl::Distribution(deviceList),
-    _significances(significances)
-{
-  ASSERT(_devices.size() == _significances.size());
-}
-
-BlockDistribution::~BlockDistribution()
+template <template <typename> class C, typename T>
+template <typename U>
+SingleDistribution< C<T> >::SingleDistribution( const SingleDistribution< C<U> >& rhs)
+  : Distribution< C<T> >( rhs )
 {
 }
 
-bool BlockDistribution::isBlock() const
+template <template <typename> class C, typename T>
+SingleDistribution< C<T> >::~SingleDistribution()
+{
+}
+
+template <template <typename> class C, typename T>
+bool SingleDistribution< C<T> >::isValid() const
 {
   return true;
 }
 
-void BlockDistribution::startUpload(
-                const std::vector<detail::DeviceBuffer>& deviceBuffers,
-                void* const hostPointer,
-                detail::Event* events) const
+template <template <typename> class C, typename T>
+void SingleDistribution< C<T> >::startUpload(C<T>& container,
+                                             Event* events) const
 {
   ASSERT(events != nullptr);
 
-  size_t offset = 0;
-  for (auto& devicePtr : _devices) {
-    auto event = devicePtr->enqueueWrite(
-                                deviceBuffers[devicePtr->id()],
-                                hostPointer,
-                                offset);
-    offset += deviceBuffers[devicePtr->id()].size();
-    events->insert(event);
-  }
+  auto& buffer = container.deviceBuffer(*(this->_devices.front()));
+
+  auto event = this->_devices.front()->enqueueWrite(buffer,
+                                                    container.hostBuffer().begin());
+
+  events->insert(event);
 }
 
-void BlockDistribution::startDownload(
-                const std::vector<detail::DeviceBuffer>& deviceBuffers,
-                void* const hostPointer,
-                detail::Event* events) const
+template <template <typename> class C, typename T>
+void SingleDistribution< C<T> >::startDownload(C<T>& container,
+                                               Event* events) const
 {
   ASSERT(events != nullptr);
 
-  size_t offset = 0;
-  for (auto& devicePtr : _devices) {
-    auto event = devicePtr->enqueueRead(
-                               deviceBuffers[devicePtr->id()],
-                               hostPointer,
-                               offset);
-    offset += deviceBuffers[devicePtr->id()].size();
-    events->insert(event);
-  }
+  auto& buffer = container.deviceBuffer(*(this->_devices.front()));
+
+  auto event = this->_devices.front()->enqueueRead(buffer,
+                                                   container.hostBuffer().begin());
+
+  events->insert(event);
 }
 
-size_t BlockDistribution::sizeForDevice(
-        const detail::Device::id_type deviceID,
-        const size_t totalSize) const
+template <template <typename> class C, typename T>
+size_t SingleDistribution< C<T> >::sizeForDevice(const Device::id_type /*id*/,
+                                                 const size_t totalSize) const
 {
-  if (deviceID < _devices.size()-1) {
-    return static_cast<size_t>(
-      totalSize * _significances.getSignificance(deviceID) );
-  } else { // "last" device
-    size_t s = static_cast<size_t>(
-      totalSize * _significances.getSignificance(deviceID) );
-    // add rest ...
-    size_t r = totalSize;
-    for (const auto& devicePtr : _devices) {
-      r -= totalSize * _significances.getSignificance(devicePtr->id());
+  return totalSize;
+}
+
+template <template <typename> class C, typename T>
+bool SingleDistribution< C<T> >::dataExchangeOnDistributionChange(
+                                   Distribution< C<T> >& newDistribution)
+{
+  auto single = dynamic_cast<SingleDistribution< C<T> >*>(&newDistribution);
+
+  if (single == nullptr) { // distributions differ => data exchange
+    return true;
+  } else { // new distribution == single distribution
+    if (this->_devices.front() == single->_devices.front()) {
+      return false; // both distributions have same device => no data exchange
+    } else {
+      return true;  // different devices => data exchange
     }
-    return (s+r);
   }
 }
 
-
-bool BlockDistribution::doCompare(const Distribution& rhs) const
+template <template <typename> class C, typename T>
+bool SingleDistribution< C<T> >::doCompare(const Distribution< C<T> >& rhs) const
 {
   bool ret = false;
-  auto const blockRhs = dynamic_cast<const BlockDistribution*>(&rhs);
-  if (blockRhs) {
+  auto const copyRhs = dynamic_cast<const SingleDistribution< C<T> >*>(&rhs);
+  if (copyRhs) {
     ret = true;
   }
   return ret;
-}
-
-const Significances& BlockDistribution::getSignificances() const
-{
-  return _significances;
 }
 
 } // namespace detail
 
 } // namespace skelcl
 
+#endif // SINGLE_DISTRIBUTION_DEF_H_

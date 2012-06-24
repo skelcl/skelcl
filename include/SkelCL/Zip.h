@@ -51,7 +51,6 @@
 namespace skelcl {
 
 template <typename> class Out;
-namespace detail { template <typename> class Container; }
 
 template<typename> class Zip;
 
@@ -130,11 +129,11 @@ public:
   ///              here as they where defined in the funcName function
   ///              declaration.
   ///
-  template <template <typename> class ContainerType,
+  template <template <typename> class C,
             typename... Args>
-  ContainerType<Tout> operator()(const ContainerType<Tleft>& left,
-                                 const ContainerType<Tright>& right,
-                                 Args&&... args);
+  C<Tout> operator()(const C<Tleft>& left,
+                     const C<Tright>& right,
+                     Args&&... args);
 
   ///
   /// \brief Function call operator. Executes the skeleton on the data provided
@@ -179,12 +178,12 @@ public:
   ///               here as they where defined in the funcName function
   ///               declaration.
   ///
-  template <template <typename> class ContainerType,
+  template <template <typename> class C,
             typename... Args>
-  ContainerType<Tout>& operator()(Out<ContainerType<Tout>> output,
-                                  const ContainerType<Tleft>& left,
-                                  const ContainerType<Tright>& right,
-                                  Args&&... args);
+  C<Tout>& operator()(Out< C<Tout> > output,
+                      const C<Tleft>& left,
+                      const C<Tright>& right,
+                      Args&&... args);
 
 private:
   ///
@@ -212,8 +211,9 @@ private:
   /// \param left  The first (left) input container to be prepared
   ///        right The second (right) input container to be prepared
   ///
-  void prepareInput(const detail::Container<Tleft>& left,
-                    const detail::Container<Tright>& right);
+  template <template <typename> class C>
+  void prepareInput(const C<Tleft>& left,
+                    const C<Tright>& right);
 
   ///
   /// \brief Prepares the output for kernel execution
@@ -226,9 +226,10 @@ private:
   ///               distribution to select for the output vector as well as
   ///               it's size
   ///
-  void prepareOutput(detail::Container<Tout>& output,
-                     const detail::Container<Tleft>& left,
-                     const detail::Container<Tright>& right);
+  template <template <typename> class C>
+  void prepareOutput(C<Tout>& output,
+                     const C<Tleft>& left,
+                     const C<Tright>& right);
 
   ///
   /// \brief Queries the actual execution of the zip skeleton's kernel
@@ -238,10 +239,11 @@ private:
   ///        right  The second (right) input container
   ///        args   Additional arguments
   ///
-  template <typename... Args>
-  void execute(detail::Container<Tout>& output,
-               const detail::Container<Tleft>& left,
-               const detail::Container<Tright>& right,
+  template <template <typename> class C,
+            typename... Args>
+  void execute(C<Tout>& output,
+               const C<Tleft>& left,
+               const C<Tright>& right,
                Args&&... args);
 
   /// Program describing the operation performed by the zip skeleton

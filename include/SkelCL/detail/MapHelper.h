@@ -48,8 +48,6 @@ namespace skelcl {
 
 namespace detail {
 
-template<typename> class Container;
-
 template<typename> class MapHelper;
 
 template<typename Tin, typename Tout>
@@ -66,10 +64,12 @@ public:
 protected:
   void prepareAndBuildProgram(const std::string& funcName);
 
-  void prepareInput(const Container<Tin>& input);
+  template <template <typename> class C>
+  void prepareInput(const C<Tin>& input);
 
-  void prepareOutput(Container<Tout>& output,
-                     const Container<Tin>& input);
+  template <template <typename> class C>
+  void prepareOutput(C<Tout>& output,
+                     const C<Tin>& input);
 
   Program _program;
 };

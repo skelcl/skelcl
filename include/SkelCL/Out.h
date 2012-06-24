@@ -42,8 +42,6 @@
 
 #include <type_traits>
 
-#include "detail/Container.h"
-
 namespace skelcl {
 
 template <typename> class Out;
@@ -64,15 +62,7 @@ template <typename> class Out;
 ///                       container
 ///
 template <template <typename> class ContainerType, typename T>
-class Out< ContainerType<T> >
-{
-  // ensure at compile time that ContainerType is a subclass of the Container
-  // class
-  static_assert(std::is_base_of< skelcl::detail::Container<T>,
-                                 ContainerType<T> >::value,
-      "Template argument of skelcl::Out is not derived from "
-      "skelcl::detail::Container");
-
+class Out< ContainerType<T> > {
 public:
   ///
   /// \brief Constructor taking the container to wrap

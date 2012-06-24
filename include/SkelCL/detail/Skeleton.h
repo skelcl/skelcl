@@ -40,10 +40,8 @@
 #ifndef SKELETON_H_
 #define SKELETON_H_
 
-#include "../Distribution.h"
+#include "../Distributions.h"
 #include "../Out.h"
-
-#include "Container.h"
 
 namespace skelcl {
 
@@ -110,13 +108,9 @@ template <typename T, template <typename> class ContainerType, typename... Args>
 void Skeleton::prepareAdditionalInput(ContainerType<T>& container,
                                       Args&&... args)
 {
-  static_assert(std::is_base_of<skelcl::detail::Container<T>,
-                               ContainerType<T>>::value,
-      "Argument has to be derived class of skelcl::detail::Container<T>");
-
   // set default distribution if required
-  if (container.distribution() == nullptr) {
-    container.setDistribution(Distribution::Copy());
+  if (!container.distribution().isValid()) {
+    container.setDistribution(CopyDistribution< ContainerType<T> >());
   }
   // create buffers if required
   container.createDeviceBuffers();

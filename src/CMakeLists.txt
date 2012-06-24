@@ -9,25 +9,21 @@ link_directories (${SKELCL_COMMON_LIB_DIR})
 # set files used to build library
 set (SKELCL_SOURCES
       Assert.cpp
-      BlockDistribution.cpp
-      CopyDistribution.cpp
       Device.cpp
       DeviceBuffer.cpp
       DeviceList.cpp
-      Distribution.cpp
       Event.cpp
       SkelCL.cpp
       Logger.cpp
       Program.cpp
       Significances.cpp
-      SingleDistribution.cpp
       Skeleton.cpp
       Source.cpp
       Util.cpp
     )
 
 set (SKELCL_HEADERS
-      ../include/SkelCL/Distribution.h
+      ../include/SkelCL/Distributions.h
       ../include/SkelCL/SkelCL.h
       ../include/SkelCL/Map.h
       ../include/SkelCL/Out.h
@@ -37,9 +33,12 @@ set (SKELCL_HEADERS
       ../include/SkelCL/Zip.h
       ../include/SkelCL/detail/Assert.h
       ../include/SkelCL/detail/BlockDistribution.h
+      ../include/SkelCL/detail/BlockDistributionDef.h
       ../include/SkelCL/detail/Container.h
       ../include/SkelCL/detail/CopyDistribution.h
       ../include/SkelCL/detail/CopyDistributionDef.h
+      ../include/SkelCL/detail/Distribution.h
+      ../include/SkelCL/detail/DistributionDef.h
       ../include/SkelCL/detail/Device.h
       ../include/SkelCL/detail/DeviceBuffer.h
       ../include/SkelCL/detail/DeviceList.h
@@ -55,6 +54,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/ReduceKernel.cl
       ../include/SkelCL/detail/Significances.h
       ../include/SkelCL/detail/SingleDistribution.h
+      ../include/SkelCL/detail/SingleDistributionDef.h
       ../include/SkelCL/detail/Skeleton.h
       ../include/SkelCL/detail/Util.h
       ../include/SkelCL/detail/VectorDef.h

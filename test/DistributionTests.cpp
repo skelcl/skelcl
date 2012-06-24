@@ -38,7 +38,8 @@
 #include <gtest/gtest.h>
 
 #include <SkelCL/SkelCL.h>
-#include <SkelCL/Distribution.h>
+#include <SkelCL/Distributions.h>
+#include <SkelCL/Vector.h>
 
 class DistributionTest : public ::testing::Test {
 protected:
@@ -52,13 +53,39 @@ protected:
   }
 };
 
+TEST_F(DistributionTest, DefaultDistribution)
+{
+  auto dist = skelcl::detail::Distribution< skelcl::Vector<int> >();
+
+  EXPECT_FALSE(dist.isValid());
+}
+
+TEST_F(DistributionTest, DefaultDistribution2)
+{
+  skelcl::Vector<int> vi;
+  auto dist = skelcl::distribution::Default(vi);
+
+  EXPECT_TRUE(dist != nullptr);
+  EXPECT_FALSE(dist->isValid());
+}
+
 TEST_F(DistributionTest, SingleDistribution)
 {
-  auto single = skelcl::Distribution::Single(0);
+  auto single = skelcl::detail::SingleDistribution< skelcl::Vector<int> >();
 
-  EXPECT_TRUE(single->isSingle());
-  EXPECT_FALSE(single->isBlock());
-  EXPECT_FALSE(single->isCopy());
+  EXPECT_TRUE(single.isValid());
+  EXPECT_EQ(1, single.devices().size());
+  EXPECT_EQ(skelcl::detail::globalDeviceList[0].get(),
+            single.device(0).get());
+}
+
+TEST_F(DistributionTest, SingleDistribution2)
+{
+  skelcl::Vector<int> vi;
+  auto single = skelcl::distribution::Single(vi);
+
+  EXPECT_TRUE(single != nullptr);
+  EXPECT_TRUE(single->isValid());
   EXPECT_EQ(1, single->devices().size());
   EXPECT_EQ(skelcl::detail::globalDeviceList[0].get(),
             single->device(0).get());
@@ -66,11 +93,26 @@ TEST_F(DistributionTest, SingleDistribution)
 
 TEST_F(DistributionTest, BlockDistribution)
 {
-  auto block = skelcl::Distribution::Block();
+  auto block = skelcl::detail::BlockDistribution< skelcl::Vector<int> >();
 
-  EXPECT_FALSE(block->isSingle());
-  EXPECT_TRUE(block->isBlock());
-  EXPECT_FALSE(block->isCopy());
+  EXPECT_TRUE(block.isValid());
+  EXPECT_EQ(skelcl::detail::globalDeviceList.size(),
+            block.devices().size());
+  int i = 0;
+  for (auto iter  = skelcl::detail::globalDeviceList.begin();
+            iter != skelcl::detail::globalDeviceList.end();
+          ++iter) {
+    EXPECT_EQ( iter->get(), block.device(i++).get() );
+  }
+}
+
+TEST_F(DistributionTest, BlockDistribution2)
+{
+  skelcl::Vector<int> vi;
+  auto block = skelcl::distribution::Block(vi);
+
+  EXPECT_TRUE(block != nullptr);
+  EXPECT_TRUE(block->isValid());
   EXPECT_EQ(skelcl::detail::globalDeviceList.size(),
             block->devices().size());
   int i = 0;
@@ -83,11 +125,26 @@ TEST_F(DistributionTest, BlockDistribution)
 
 TEST_F(DistributionTest, CopyDistribution)
 {
-  auto copy = skelcl::Distribution::Copy();
+  auto copy = skelcl::detail::CopyDistribution< skelcl::Vector<int> >();
 
-  EXPECT_FALSE(copy->isSingle());
-  EXPECT_FALSE(copy->isBlock());
-  EXPECT_TRUE(copy->isCopy());
+  EXPECT_TRUE(copy.isValid());
+  EXPECT_EQ(skelcl::detail::globalDeviceList.size(),
+            copy.devices().size());
+  int i = 0;
+  for (auto iter  = skelcl::detail::globalDeviceList.begin();
+            iter != skelcl::detail::globalDeviceList.end();
+          ++iter) {
+    EXPECT_EQ( iter->get(), copy.device(i++).get() );
+  }
+}
+
+TEST_F(DistributionTest, CopyDistribution2)
+{
+  skelcl::Vector<int> vi;
+  auto copy = skelcl::distribution::Copy(vi);
+
+  EXPECT_TRUE(copy != nullptr);
+  EXPECT_TRUE(copy->isValid());
   EXPECT_EQ(skelcl::detail::globalDeviceList.size(),
             copy->devices().size());
   int i = 0;

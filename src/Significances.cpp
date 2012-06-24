@@ -80,6 +80,11 @@ Significances::Significances(std::initializer_list<value_type> significances)
 #endif
 }
 
+bool Significances::operator==(const Significances& rhs) const
+{
+  return _values == rhs._values;
+}
+
 void Significances::setSignificances(std::initializer_list<value_type> significances)
 {
   _values.assign( significances.begin(), significances.end() );

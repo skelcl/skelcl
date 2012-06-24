@@ -49,15 +49,13 @@
 #include <utility>
 #include <vector>
 
-#include "../Distribution.h"
+#include "../Distributions.h"
 
 #include "Assert.h"
-#include "BlockDistribution.h"
-#include "Container.h"
-#include "CopyDistribution.h"
 #include "Device.h"
 #include "DeviceBuffer.h"
 #include "DeviceList.h"
+#include "Distribution.h"
 #include "Event.h"
 #include "Logger.h"
 
@@ -65,9 +63,8 @@ namespace skelcl {
 
 template <typename T>
 Vector<T>::Vector()
-  : detail::Container<T>(),
-    _distribution(),
-    _size(0),
+  : _size(0),
+    _distribution(new detail::Distribution< Vector<T> >()),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(true),
     _hostBuffer(),
@@ -78,9 +75,8 @@ Vector<T>::Vector()
 
 template <typename T>
 Vector<T>::Vector(const size_type size, const value_type& value)
-  : detail::Container<T>(),
-    _distribution(),
-    _size(size),
+  : _size(size),
+    _distribution(new detail::Distribution< Vector<T> >()),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(vector_type(size, value)),
@@ -91,11 +87,10 @@ Vector<T>::Vector(const size_type size, const value_type& value)
 
 template <typename T>
 Vector<T>::Vector(const size_type size,
-                  const std::shared_ptr<Distribution>& distribution,
+                  const detail::Distribution< Vector<T> >& distribution,
                   const value_type& value)
-  : detail::Container<T>(),
-    _distribution(distribution),
-    _size(size),
+  : _size(size),
+    _distribution(new detail::Distribution< Vector<T> >(distribution)),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(vector_type(size, value)),
@@ -108,9 +103,8 @@ Vector<T>::Vector(const size_type size,
 template <typename T>
 template <typename InputIterator>
 Vector<T>::Vector(InputIterator first, InputIterator last)
-  : detail::Container<T>(),
-    _distribution(),
-    _size(std::distance(first, last)),
+  : _size(std::distance(first, last)),
+    _distribution(new detail::Distribution< Vector<T> >()),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(first, last),
@@ -123,10 +117,9 @@ template <typename T>
 template <typename InputIterator>
 Vector<T>::Vector(InputIterator first,
                   InputIterator last,
-                  const std::shared_ptr<Distribution>& distribution)
-  : detail::Container<T>(),
-    _distribution(distribution),
-    _size(std::distance(first, last)),
+                  const detail::Distribution< Vector<T> >& distribution)
+  : _size(std::distance(first, last)),
+    _distribution(new detail::Distribution< Vector<T> >(distribution)),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(first, last),
@@ -137,9 +130,8 @@ Vector<T>::Vector(InputIterator first,
 
 template <typename T>
 Vector<T>::Vector(const Vector<T>& rhs)
-  : detail::Container<T>(rhs),
-    _distribution(rhs._distribution),
-    _size(rhs._size),
+  : _size(rhs._size),
+    _distribution(detail::cloneAndConvert<T>(rhs.distribution())),
     _hostBufferUpToDate(rhs._hostBufferUpToDate),
     _deviceBuffersUpToDate(rhs._deviceBuffersUpToDate),
     _hostBuffer(rhs._hostBuffer),
@@ -151,8 +143,8 @@ Vector<T>::Vector(const Vector<T>& rhs)
 
 template <typename T>
 Vector<T>::Vector(Vector<T>&& rhs)
-  : _distribution(std::move(rhs._distribution)),
-    _size(rhs._size),
+  : _size(rhs._size),
+    _distribution(std::move(rhs._distribution)),
     _hostBufferUpToDate(rhs._hostBufferUpToDate),
     _deviceBuffersUpToDate(rhs._deviceBuffersUpToDate),
     _hostBuffer(std::move(rhs._hostBuffer)),
@@ -169,9 +161,8 @@ template <typename T>
 Vector<T>& Vector<T>::operator=(const Vector<T>& rhs)
 {
   if (this == &rhs) return *this; // handle self assignment
-  detail::Container<T>::operator=(rhs);
-  _distribution           = rhs._distribution;
   _size                   = rhs._size;
+  _distribution           = detail::cloneAndConvert<T>(rhs._distribution);
   _hostBufferUpToDate     = rhs._hostBufferUpToDate;
   _deviceBuffersUpToDate  = rhs._deviceBuffersUpToDate;
   _hostBuffer             = rhs._hostBuffer;
@@ -184,8 +175,8 @@ Vector<T>& Vector<T>::operator=(const Vector<T>& rhs)
 template <typename T>
 Vector<T>& Vector<T>::operator=(Vector<T>&& rhs)
 {
-  _distribution           = std::move(rhs._distribution);
   _size                   = rhs._size;
+  _distribution           = std::move(rhs._distribution);
   _hostBufferUpToDate     = rhs._hostBufferUpToDate;
   _deviceBuffersUpToDate  = rhs._deviceBuffersUpToDate;
   _hostBuffer             = std::move(rhs._hostBuffer);
@@ -267,6 +258,8 @@ typename Vector<T>::size_type Vector<T>::size() const
 template <typename T>
 typename detail::Sizes Vector<T>::sizes() const
 {
+  ASSERT(_distribution != nullptr);
+
   detail::Sizes s;
   for (auto& devicePtr : _distribution->devices()) {
     s.push_back(this->_distribution->sizeForDevice(devicePtr->id(),
@@ -465,30 +458,33 @@ typename Vector<T>::allocator_type Vector<T>::get_allocator() const
 }
 
 template <typename T>
-std::shared_ptr<Distribution> Vector<T>::distribution() const
+detail::Distribution< Vector<T> >& Vector<T>::distribution() const
 {
-  return _distribution;
+  ASSERT(_distribution != nullptr);
+  return *_distribution;
 }
 
 template <typename T>
-void Vector<T>::setDistribution(const std::shared_ptr<Distribution>& distribution) const
+template <typename U>
+void Vector<T>::setDistribution(const detail::Distribution< Vector<U> >& origDistribution) const
 {
-  ASSERT(distribution != nullptr);
+  ASSERT(origDistribution.isValid());
 
-  if (_distribution != nullptr) {
-    // if distribution is Copy data exchange is necessary even
-    // if old distribution == new distribution
-    if (   *_distribution == *distribution
-        && !_distribution->isCopy()) {
-      return;
-    }
+  // convert distribution to avoid problems later ...
+  auto newDistribution = detail::cloneAndConvert<T>(origDistribution);
 
+  // how to convert ???
+  // auto newDistribution = origDistribution.clone();
+
+  if (   _distribution->isValid()
+      && _distribution->dataExchangeOnDistributionChange(*newDistribution)) {
     copyDataToHost();
     _deviceBuffers.clear(); // delete old device buffers,
                             // so new can created using the new distribution
   }
 
-  _distribution = distribution;
+  _distribution = std::move(newDistribution);
+  ASSERT(_distribution->isValid());
 
   LOG_DEBUG("Vector object (", this, ") assigned new distribution, now with ",
            getDebugInfo());
@@ -508,6 +504,7 @@ void Vector<T>::forceCreateDeviceBuffers() const
 {
   ASSERT(_size > 0);
   ASSERT(_distribution != nullptr);
+  ASSERT(_distribution->isValid());
 
   _deviceBuffers.clear();
 
@@ -530,15 +527,14 @@ detail::Event Vector<T>::startUpload() const
 {
   ASSERT(_size > 0);
   ASSERT(_distribution != nullptr);
+  ASSERT(_distribution->isValid());
   ASSERT(!_deviceBuffers.empty());
 
   detail::Event events;
 
   if (_deviceBuffersUpToDate) return events;
 
-  _distribution->startUpload(_deviceBuffers,
-                             &_hostBuffer.front(),
-                             &events);
+  _distribution->startUpload( const_cast<Vector<T>&>(*this), &events );
 
   _deviceBuffersUpToDate = true;
 
@@ -561,6 +557,7 @@ detail::Event Vector<T>::startDownload() const
 {
   ASSERT(_size > 0);
   ASSERT(_distribution != nullptr);
+  ASSERT(_distribution->isValid());
   ASSERT(!_deviceBuffers.empty());
 
   detail::Event events;
@@ -569,12 +566,7 @@ detail::Event Vector<T>::startDownload() const
 
   _hostBuffer.resize(_size); // make enough room to store data
 
-  _distribution->startDownload(_deviceBuffers,
-                               &_hostBuffer.front(),
-                               &events);
-  // TODO: think of a better wait to mark device buffers as up to date
-  //       in case of the copy distribution
-  if (_distribution->isCopy()) _deviceBuffersUpToDate = false;
+  _distribution->startDownload( const_cast<Vector<T>&>(*this), &events );
 
   _hostBufferUpToDate = true;
 
@@ -616,15 +608,23 @@ const detail::DeviceBuffer&
 }
 
 template <typename T>
+typename Vector<T>::vector_type& Vector<T>::hostBuffer() const
+{
+  return _hostBuffer;
+}
+
+template <typename T>
 std::string Vector<T>::getInfo() const
 {
   std::stringstream s;
-  s << "size: "                   << _size
+  s << "size: "                   << _size;
+#if 0
     << ", dist.: ";
        if (_distribution == nullptr)  s << "NULL";
   else if (_distribution->isSingle()) s << "single";
   else if (_distribution->isBlock())  s << "block";
   else if (_distribution->isCopy())   s << "copy";
+#endif
   return s.str();
 }
 

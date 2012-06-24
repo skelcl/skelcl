@@ -111,10 +111,10 @@ public:
   ///              here as they where defined in the funcName function
   ///              declaration.
   ///
-  template <template <typename> class ContainerType,
+  template <template <typename> class C,
             typename... Args>
-  ContainerType<Tout> operator()(const ContainerType<Tin>& input,
-                                 Args&&... args);
+  C<Tout> operator()(const C<Tin>& input,
+                     Args&&... args);
 
   ///
   /// \brief Function call operator. Executes the skeleton on the data provided
@@ -139,11 +139,11 @@ public:
   ///               here as they where defined in the funcName function
   ///               declaration.
   ///
-  template <template <typename> class ContainerType,
+  template <template <typename> class C,
             typename... Args>
-  ContainerType<Tout>& operator()(Out<ContainerType<Tout>> output,
-                                  const ContainerType<Tin>&  input,
-                                  Args&&... args);
+  C<Tout>& operator()(Out< C<Tout> > output,
+                      const C<Tin>&  input,
+                      Args&&... args);
 
 private:
   /// \brief Performs the actual execution of the map skeleton's kernel
@@ -152,9 +152,10 @@ private:
   ///        input  The input container
   ///        args   Additional arguments
   ///
-  template <typename... Args>
-  void execute(detail::Container<Tout>& output,
-               const detail::Container<Tin>& input,
+  template <template <typename> class C,
+            typename... Args>
+  void execute(C<Tout>& output,
+               const C<Tin>& input,
                Args&&... args);
 
   /// \brief Create a program object from the provided source string
@@ -219,9 +220,9 @@ public:
   ///              here as they where defined in the funcName function
   ///              declaration.
   ///
-  template <template <typename> class ContainerType,
+  template <template <typename> class C,
             typename... Args>
-  void operator()(const ContainerType<Tin>& input,
+  void operator()(const C<Tin>& input,
                   Args&&... args);
 
 private:
@@ -230,8 +231,9 @@ private:
   /// \param input  The input container
   ///        args   Additional arguments
   ///
-  template <typename... Args>
-  void execute(const detail::Container<Tin>& input,
+  template <template <typename> class C,
+            typename... Args>
+  void execute(const C<Tin>& input,
                Args&&... args);
 
   /// \brief Create a program object from the provided source string

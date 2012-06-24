@@ -149,7 +149,7 @@ public:
   ///         operation to complete
   ///
   cl::Event enqueueWrite(const  DeviceBuffer& buffer,
-                         void*  hostPointer,
+                         const void*  hostPointer,
                          size_t hostOffset = 0) const;
   ///
   /// \brief Enqueues a memory operation to copy data from the devices memory
@@ -183,7 +183,7 @@ public:
   ///         operation to complete
   ///
   cl::Event enqueueRead(const DeviceBuffer& buffer,
-                        void* const hostPointer,
+                        void* hostPointer,
                         size_t hostOffset = 0) const;
 
   ///
@@ -303,7 +303,7 @@ cl::Event Device::enqueueWrite(const DeviceBuffer& buffer,
                           RandomAccessIterator iterator,
                           size_t hostOffset) const {
   return enqueueWrite(buffer,
-                      static_cast<void*>(&(*iterator)),
+                      static_cast<const void*>(&(*iterator)),
                       hostOffset);
 }
 

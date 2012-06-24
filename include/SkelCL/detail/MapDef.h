@@ -52,12 +52,11 @@
 #include <CL/cl.h>
 #undef  __CL_ENABLE_EXCEPTIONS
 
-#include "../Distribution.h"
+#include "../Distributions.h"
 #include "../Out.h"
 #include "../Source.h"
 
 #include "Assert.h"
-#include "Container.h"
 #include "Device.h"
 #include "KernelUtil.h"
 #include "Logger.h"
@@ -76,27 +75,23 @@ Map<Tout(Tin)>::Map(const Source& source,
 }
 
 template <typename Tin, typename Tout>
-template <template <typename> class ContainerType,
+template <template <typename> class C,
           typename... Args>
-ContainerType<Tout> Map<Tout(Tin)>::operator()(const ContainerType<Tin>& input,
-                                               Args&&... args)
+C<Tout> Map<Tout(Tin)>::operator()(const C<Tin>& input,
+                                   Args&&... args)
 {
-  ContainerType<Tout> output;
+  C<Tout> output;
   this->operator()(out(output), input, std::forward<Args>(args)...);
   return output;
 }
 
 template <typename Tin, typename Tout>
-template <template <typename> class ContainerType,
+template <template <typename> class C,
           typename... Args>
-ContainerType<Tout>& Map<Tout(Tin)>::operator()(Out<ContainerType<Tout>> output,
-                                                const ContainerType<Tin>& input,
-                                                Args&&... args)
+C<Tout>& Map<Tout(Tin)>::operator()(Out< C<Tout> > output,
+                                    const C<Tin>& input,
+                                    Args&&... args)
 {
-  static_assert(std::is_base_of<skelcl::detail::Container<Tin>,
-                                ContainerType<Tin>>::value,
-      "First argument is no derived class of skelcl::detail::Container");
-
   this->prepareInput(input);
 
   prepareAdditionalInput(std::forward<Args>(args)...);
@@ -111,15 +106,16 @@ ContainerType<Tout>& Map<Tout(Tin)>::operator()(Out<ContainerType<Tout>> output,
 }
 
 template <typename Tin, typename Tout>
-template <typename... Args>
-void Map<Tout(Tin)>::execute(detail::Container<Tout>& output,
-                             const detail::Container<Tin>& input,
+template <template <typename> class C,
+          typename... Args>
+void Map<Tout(Tin)>::execute(C<Tout>& output,
+                             const C<Tin>& input,
                              Args&&... args)
 {
-  ASSERT( input.distribution()->isValid() );
+  ASSERT( input.distribution().isValid() );
   ASSERT( output.size() >= input.size() );
 
-  for (auto& devicePtr : input.distribution()->devices()) {
+  for (auto& devicePtr : input.distribution().devices()) {
     auto& outputBuffer= output.deviceBuffer(*devicePtr);
     auto& inputBuffer = input.deviceBuffer(*devicePtr);
 
@@ -196,15 +192,11 @@ Map<void(Tin)>::Map(const Source& source,
 }
 
 template <typename Tin>
-template <template <typename> class ContainerType,
+template <template <typename> class C,
           typename... Args>
-void Map<void(Tin)>::operator()(const ContainerType<Tin>& input,
+void Map<void(Tin)>::operator()(const C<Tin>& input,
                                 Args&&... args)
 {
-  static_assert(std::is_base_of<skelcl::detail::Container<Tin>,
-                                ContainerType<Tin>>::value,
-      "First argument is no derived class of skelcl::detail::Container");
-
   this->prepareInput(input);
 
   prepareAdditionalInput(std::forward<Args>(args)...);
@@ -215,11 +207,12 @@ void Map<void(Tin)>::operator()(const ContainerType<Tin>& input,
 }
 
 template <typename Tin>
-template <typename... Args>
-void Map<void(Tin)>::execute(const detail::Container<Tin>& input,
+template <template <typename> class C,
+          typename... Args>
+void Map<void(Tin)>::execute(const C<Tin>& input,
                              Args&&... args)
 {
-  for (auto& devicePtr : input.distribution()->devices()) {
+  for (auto& devicePtr : input.distribution().devices()) {
     auto& inputBuffer  = input.deviceBuffer(*devicePtr);
 
     cl_uint elements   = inputBuffer.size();

@@ -40,71 +40,45 @@
 #ifndef COPY_DISTRIBUTION_H_
 #define COPY_DISTRIBUTION_H_
 
-#include "DeviceList.h"
-
-#include "../Distribution.h"
+#include "Distribution.h"
 
 namespace skelcl {
 
 namespace detail {
 
-template <typename T>
-class CopyDistribution : public skelcl::Distribution {
+template <typename> class CopyDistribution;
+
+template <template <typename> class C, typename T>
+class CopyDistribution< C<T> > : public Distribution< C<T> > {
 public:
-  CopyDistribution() = delete;
-  CopyDistribution(const DeviceList& deviceList,
+  CopyDistribution(const DeviceList& deviceList = detail::globalDeviceList,
                    std::function<T(const T&, const T&)> combineFunc = nullptr);
-  CopyDistribution(const CopyDistribution&) = default;
+
+  template <typename U>
+  CopyDistribution( const CopyDistribution< C<U> >& rhs);
+
   ~CopyDistribution();
-  CopyDistribution& operator=(const CopyDistribution&) = default;
 
-  bool isCopy() const;
+  bool isValid() const;
 
-  void startUpload(const std::vector<detail::DeviceBuffer>& deviceBuffers,
-                   void* const hostPointer,
-                   detail::Event* events) const;
+  void startUpload(C<T>& container,
+                   Event* events) const;
 
-  void startDownload(const std::vector<detail::DeviceBuffer>& deviceBuffers,
-                     void* const hostPointer,
-                     detail::Event* events) const;
+  void startDownload(C<T>& container,
+                     Event* events) const;
 
-  size_t sizeForDevice(const detail::Device::id_type deviceID,
+  size_t sizeForDevice(const Device::id_type deviceID,
                        const size_t totalSize) const;
+
+  bool dataExchangeOnDistributionChange(Distribution< C<T> >& newDistribution);
 
   std::function<T(const T&, const T&)> combineFunc() const;
 
 protected:
-  bool doCompare(const Distribution& rhs) const;
+  bool doCompare(const Distribution< C<T> >& rhs) const;
 
 private:
   std::function<T(const T&, const T&)> _combineFunc;
-};
-
-
-template <>
-class CopyDistribution<void> : public skelcl::Distribution {
-public:
-  CopyDistribution() = delete;
-  CopyDistribution(const DeviceList& deviceList);
-  CopyDistribution(const CopyDistribution&) = default;
-  ~CopyDistribution();
-  CopyDistribution& operator=(const CopyDistribution&) = default;
-
-  bool isCopy() const;
-
-  void startUpload(const std::vector<detail::DeviceBuffer>& deviceBuffers,
-                   void* const hostPointer,
-                   detail::Event* events) const;
-
-  void startDownload(const std::vector<detail::DeviceBuffer>& deviceBuffers,
-                     void* const hostPointer,
-                     detail::Event* events) const;
-
-  size_t sizeForDevice(const detail::Device::id_type deviceID,
-                       const size_t totalSize) const;
-
-protected:
-  bool doCompare(const Distribution& rhs) const;
 };
 
 } // namespace detail

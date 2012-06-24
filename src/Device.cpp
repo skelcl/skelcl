@@ -142,7 +142,7 @@ cl::Event Device::enqueue(const cl::Kernel& kernel,
 }
 
 cl::Event Device::enqueueWrite(const  DeviceBuffer& buffer,
-                               void* const hostPointer,
+                               const void* hostPointer,
                                size_t hostOffset) const
 {
   cl::Event event;
@@ -151,8 +151,8 @@ cl::Event Device::enqueueWrite(const  DeviceBuffer& buffer,
                                      CL_FALSE,
                                      0,
                                      buffer.sizeInBytes(),
-                                     static_cast<void*const>(
-                                       static_cast<char*const>(
+                                     static_cast<const void*>(
+                                       static_cast<const char*>(
                                          hostPointer)
                                        +(hostOffset * buffer.elemSize() ) ),
                                      NULL,
@@ -164,15 +164,15 @@ cl::Event Device::enqueueWrite(const  DeviceBuffer& buffer,
   LOG_DEBUG("Enqueued write buffer for device ", _id,
             " (size: ", buffer.sizeInBytes(),
             ", clBuffer: ", buffer.clBuffer()(),
-            ", hostPointer: ", static_cast<void*const>(
-                                  static_cast<char*const>(hostPointer)
+            ", hostPointer: ", static_cast<const void*>(
+                                  static_cast<const char*>(hostPointer)
                                 + hostOffset),
             ", offset: ", hostOffset*buffer.elemSize() ,")");
   return event;
 }
 
 cl::Event Device::enqueueRead(const DeviceBuffer& buffer,
-                              void* const hostPointer,
+                              void* hostPointer,
                               size_t hostOffset) const
 {
   cl::Event event;
@@ -181,8 +181,8 @@ cl::Event Device::enqueueRead(const DeviceBuffer& buffer,
                                     CL_FALSE,
                                     0,
                                     buffer.sizeInBytes(),
-                                    static_cast<void*const>(
-                                      static_cast<char*const>(
+                                    static_cast<void*>(
+                                      static_cast<char*>(
                                         hostPointer)
                                       +(hostOffset * buffer.elemSize()) ),
                                     NULL,
