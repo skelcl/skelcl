@@ -151,6 +151,20 @@ public:
   cl::Event enqueueWrite(const  DeviceBuffer& buffer,
                          const void*  hostPointer,
                          size_t hostOffset = 0) const;
+
+  template <typename RandomAccessIterator>
+  cl::Event enqueueWrite(const DeviceBuffer& buffer,
+                         RandomAccessIterator iterator,
+                         size_t size,
+                         size_t deviceOffset,
+                         size_t hostOffset = 0) const;
+
+  cl::Event enqueueWrite(const DeviceBuffer& buffer,
+                         void* const hostPointer,
+                         size_t size,
+                         size_t deviceOffset,
+                         size_t hostOffset = 0) const;
+
   ///
   /// \brief Enqueues a memory operation to copy data from the devices memory
   ///
@@ -184,6 +198,19 @@ public:
   ///
   cl::Event enqueueRead(const DeviceBuffer& buffer,
                         void* hostPointer,
+                        size_t hostOffset = 0) const;
+
+  template <typename RandomAccessIterator>
+  cl::Event enqueueRead(const DeviceBuffer& buffer,
+                        RandomAccessIterator iterator,
+                        size_t size,
+                        size_t deviceOffset,
+                        size_t hostOffset = 0) const;
+
+  cl::Event enqueueRead(const DeviceBuffer& buffer,
+                        void* const hostPointer,
+                        size_t size,
+                        size_t deviceOffset,
                         size_t hostOffset = 0) const;
 
   ///
@@ -300,21 +327,48 @@ private:
 
 template <typename RandomAccessIterator>
 cl::Event Device::enqueueWrite(const DeviceBuffer& buffer,
-                          RandomAccessIterator iterator,
-                          size_t hostOffset) const {
+                               RandomAccessIterator iterator,
+                               size_t hostOffset) const
+{
   return enqueueWrite(buffer,
                       static_cast<const void*>(&(*iterator)),
                       hostOffset);
 }
 
 template <typename RandomAccessIterator>
+cl::Event Device::enqueueWrite(const DeviceBuffer& buffer,
+                               RandomAccessIterator iterator,
+                               size_t size,
+                               size_t deviceOffset,
+                               size_t hostOffset) const
+{
+  return enqueueWrite(buffer,
+                      static_cast<void*>(&(*iterator)),
+                      size, deviceOffset, hostOffset);
+}
+
+template <typename RandomAccessIterator>
 cl::Event Device::enqueueRead(const DeviceBuffer& buffer,
-                         RandomAccessIterator iterator,
-                         size_t hostOffset) const {
+                              RandomAccessIterator iterator,
+                              size_t hostOffset) const
+{
   return enqueueRead(buffer,
                      static_cast<void*>(&(*iterator)),
                      hostOffset);
 }
+
+template <typename RandomAccessIterator>
+cl::Event Device::enqueueRead(const DeviceBuffer& buffer,
+                              RandomAccessIterator iterator,
+                              size_t size,
+                              size_t deviceOffset,
+                              size_t hostOffset) const
+{
+  return enqueueRead(buffer,
+                     static_cast<void*>(&(*iterator)),
+                     size, deviceOffset, hostOffset);
+}
+
 #if 0
 // unclear where used and why defined as a free function, same functionality in
 // DeviceList::barrier

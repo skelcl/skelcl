@@ -98,6 +98,8 @@ public:
   template <typename U>
   Distribution& operator=(Distribution< C<U> >&& rhs);
 
+  static std::shared_ptr<Distribution> Overlap();
+
   ///
   /// \brief Comparison operator
   ///
@@ -198,8 +200,8 @@ public:
   ///
   /// \return The number of elements to be stored on the given device
   ///
-  virtual size_t sizeForDevice(const detail::Device::id_type deviceID,
-                               const size_t totalSize) const;
+  virtual size_t sizeForDevice(C<T>& container,
+                               const detail::Device::id_type id) const;
 
   virtual bool dataExchangeOnDistributionChange(Distribution& newDistribution);
 

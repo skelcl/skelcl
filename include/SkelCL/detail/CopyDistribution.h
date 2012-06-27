@@ -44,6 +44,9 @@
 
 namespace skelcl {
 
+template <typename> class Matrix;
+template <typename> class Vector;
+
 namespace detail {
 
 template <typename> class CopyDistribution;
@@ -67,8 +70,8 @@ public:
   void startDownload(C<T>& container,
                      Event* events) const;
 
-  size_t sizeForDevice(const Device::id_type deviceID,
-                       const size_t totalSize) const;
+  size_t sizeForDevice(C<T>& container,
+                       const detail::Device::id_type id) const;
 
   bool dataExchangeOnDistributionChange(Distribution< C<T> >& newDistribution);
 
@@ -80,6 +83,16 @@ protected:
 private:
   std::function<T(const T&, const T&)> _combineFunc;
 };
+
+namespace copy_distribution_helper {
+
+template <typename T>
+size_t sizeForDevice(const typename Vector<T>::size_type size);
+
+template <typename T>
+size_t sizeForDevice(const typename Matrix<T>::size_type size);
+
+} // namespace copy_distribution_helper
 
 } // namespace detail
 

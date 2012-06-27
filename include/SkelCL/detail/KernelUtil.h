@@ -46,6 +46,7 @@
 #include <CL/cl.h>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include "../Matrix.h"
 #include "../Out.h"
 #include "../Vector.h"
 
@@ -81,6 +82,20 @@ void setKernelArgs(cl::Kernel& kernel,
                    Vector<T>& vector,
                    Args&&... args);
 
+template <typename T, typename... Args>
+void setKernelArgs(cl::Kernel& kernel,
+                   const Device& device,
+                   size_t index,
+                   Out<Matrix<T>>&& matrix,
+                   Args&&... args);
+
+template <typename T, typename... Args>
+void setKernelArgs(cl::Kernel& kernel,
+                   const Device& device,
+                   size_t index,
+                   Matrix<T>& matrix,
+                   Args&&... args);
+
 template <typename... Args>
 void setKernelArgs(cl::Kernel& kernel,
                    const Device& device,
@@ -95,13 +110,11 @@ void setKernelArgs(cl::Kernel& kernel,
                    T value,
                    Args&&... args);
 
-// Definitions
+void setKernelArgs(cl::Kernel& kernel,
+                   const Device& device,
+                   size_t index);
 
-void setKernelArgs(cl::Kernel& /*kernel*/,
-                   const Device& /*device*/,
-                   size_t /*index*/)
-{
-}
+// Definitions
 
 template <typename T, typename... Args>
 void setKernelArgs(cl::Kernel& kernel,
@@ -129,6 +142,37 @@ void setKernelArgs(cl::Kernel& kernel,
     ABORT_WITH_ERROR(err);
   }
   setKernelArgs( kernel, device, ++index, std::forward<Args>(args)... );
+}
+
+template <typename T, typename... Args>
+void setKernelArgs(cl::Kernel& kernel,
+                   const Device& device,
+                   size_t index,
+                   Out<Matrix<T>>&& outMatrix,
+                   Args&&... args)
+{
+  setKernelArgs( kernel, device, index,
+                 outMatrix.container(), std::forward<Args>(args)... );
+}
+
+template <typename T, typename... Args>
+void setKernelArgs(cl::Kernel& kernel,
+                   const Device& device,
+                   size_t index,
+                   Matrix<T>& matrix,
+                   Args&&... args)
+{
+  try {
+    kernel.setArg( index, matrix.deviceBuffer(device).clBuffer() );
+  } catch (cl::Error& err) {
+    LOG_ERROR("Error while setting argument ", index,
+      " (Matrix version called)");
+    ABORT_WITH_ERROR(err);
+  }
+  // set matrix column count as next argument
+  setKernelArgs( kernel, device, ++index,
+                 (unsigned int) matrix.columnCount(),
+                 std::forward<Args>(args)... );
 }
 
 template <typename... Args>

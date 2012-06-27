@@ -70,8 +70,10 @@ template<typename Tin, typename Tout>
 Map<Tout(Tin)>::Map(const Source& source,
                     const std::string& funcName)
   : Skeleton(),
-    detail::MapHelper<Tout(Tin)>(this->createProgram(source), funcName)
+    _source(source),
+    _funcName(funcName)
 {
+  LOG_DEBUG("Create new Map object (", this, ")");
 }
 
 template <typename Tin, typename Tout>
@@ -92,13 +94,15 @@ C<Tout>& Map<Tout(Tin)>::operator()(Out< C<Tout> > output,
                                     const C<Tin>& input,
                                     Args&&... args)
 {
+  auto program = createAndBuildProgram<C>();
+
   this->prepareInput(input);
 
   prepareAdditionalInput(std::forward<Args>(args)...);
 
   this->prepareOutput(output.container(), input);
 
-  execute(output.container(), input, std::forward<Args>(args)...);
+  execute(program, output.container(), input, std::forward<Args>(args)...);
 
   updateModifiedStatus(output, std::forward<Args>(args)...);
 
@@ -108,7 +112,8 @@ C<Tout>& Map<Tout(Tin)>::operator()(Out< C<Tout> > output,
 template <typename Tin, typename Tout>
 template <template <typename> class C,
           typename... Args>
-void Map<Tout(Tin)>::execute(C<Tout>& output,
+void Map<Tout(Tin)>::execute(const detail::Program& program,
+                             C<Tout>& output,
                              const C<Tin>& input,
                              Args&&... args)
 {
@@ -125,7 +130,7 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
     cl_uint global    = detail::util::ceilToMultipleOf(elements, local);
 
     try {
-      cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
+      cl::Kernel kernel(program.kernel(*devicePtr, "SCL_MAP"));
 
       kernel.setArg(0, inputBuffer.clBuffer());
       kernel.setArg(1, outputBuffer.clBuffer());
@@ -156,12 +161,17 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
 }
 
 template <typename Tin, typename Tout>
-detail::Program Map<Tout(Tin)>::createProgram(const std::string& source) const
+template <template <typename> class C>
+detail::Program Map<Tout(Tin)>::createAndBuildProgram() const
 {
-  ASSERT_MESSAGE(!source.empty(),
+  ASSERT_MESSAGE(!_source.empty(),
     "Tried to create program with empty user source.");
+
+  // create program
+
+  std::string s(C<Tin>::deviceFunctions());
   // first: user defined source
-  std::string s(source);
+  s.append(_source);
   // second: append skeleton implementation source
   s.append(R"(
 
@@ -171,14 +181,33 @@ typedef float SCL_TYPE_1;
 __kernel void SCL_MAP(
     const __global SCL_TYPE_0*  SCL_IN,
           __global SCL_TYPE_1*  SCL_OUT,
-    const unsigned int          SCL_ELEMENTS )
+    const unsigned int          SCL_ELEMENTS)
 {
   if (get_global_id(0) < SCL_ELEMENTS) {
     SCL_OUT[get_global_id(0)] = SCL_FUNC(SCL_IN[get_global_id(0)]);
   }
 }
 )");
-  return detail::Program(s, detail::util::hash("//Map\n"+source));
+  auto program = detail::Program(s,
+                                 detail::util::hash("//Map\n"
+                                                    + C<Tin>::deviceFunctions()
+                                                    + _source) );
+
+  // modify program
+  if (!program.loadBinary()) {
+    // append parameters from user function to kernel
+    program.transferParameters(_funcName, 1, "SCL_MAP");
+    program.transferArguments(_funcName, 1, "SCL_FUNC");
+    // rename user function
+    program.renameFunction(_funcName, "SCL_FUNC");
+    // rename typedefs
+    program.adjustTypes<Tin, Tout>();
+  }
+
+  // build program
+  program.build();
+
+  return program;
 }
 
 
@@ -187,7 +216,8 @@ template<typename Tin>
 Map<void(Tin)>::Map(const Source& source,
                     const std::string& funcName)
   : Skeleton(),
-    detail::MapHelper<void(Tin)>(this->createProgram(source), funcName)
+    _source(source),
+    _funcName(funcName)
 {
 }
 
@@ -197,11 +227,14 @@ template <template <typename> class C,
 void Map<void(Tin)>::operator()(const C<Tin>& input,
                                 Args&&... args)
 {
+  // create program dependent on the type of the input
+  auto program = createAndBuildProgram<C>();
+
   this->prepareInput(input);
 
   prepareAdditionalInput(std::forward<Args>(args)...);
 
-  execute(input, std::forward<Args>(args)...);
+  execute(program, input, std::forward<Args>(args)...);
 
   updateModifiedStatus(std::forward<Args>(args)...);
 }
@@ -209,7 +242,8 @@ void Map<void(Tin)>::operator()(const C<Tin>& input,
 template <typename Tin>
 template <template <typename> class C,
           typename... Args>
-void Map<void(Tin)>::execute(const C<Tin>& input,
+void Map<void(Tin)>::execute(const detail::Program& program,
+                             const C<Tin>& input,
                              Args&&... args)
 {
   for (auto& devicePtr : input.distribution().devices()) {
@@ -221,7 +255,7 @@ void Map<void(Tin)>::execute(const C<Tin>& input,
     cl_uint global     = detail::util::ceilToMultipleOf(elements, local);
 
     try {
-      cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
+      cl::Kernel kernel(program.kernel(*devicePtr, "SCL_MAP"));
 
       kernel.setArg(0, inputBuffer.clBuffer());
       kernel.setArg(1, elements);
@@ -249,17 +283,21 @@ void Map<void(Tin)>::execute(const C<Tin>& input,
 }
 
 template <typename Tin>
-detail::Program Map<void(Tin)>::createProgram(const std::string& source) const
+template <template <typename> class C>
+detail::Program Map<void(Tin)>::createAndBuildProgram() const
 {
-  ASSERT_MESSAGE(!source.empty(),
+  ASSERT_MESSAGE(!_source.empty(),
     "Tried to create program with empty user source.");
+
+  // create program
+
+  std::string s(C<Tin>::deviceFunctions());
   // first: user defined source
-  std::string s(source);
+  s.append(_source);
   // second: append skeleton implementation source
   s.append(R"(
 
 typedef float SCL_TYPE_0;
-typedef float SCL_TYPE_1;
 
 __kernel void SCL_MAP(
     const __global SCL_TYPE_0*  SCL_IN,
@@ -270,7 +308,26 @@ __kernel void SCL_MAP(
   }
 }
 )");
-  return skelcl::detail::Program(s, skelcl::detail::util::hash("//Map\n"+source));
+  auto program = detail::Program(s,
+                                 detail::util::hash("//Map\n"
+                                                    + C<Tin>::deviceFunctions()
+                                                    + _source) );
+
+  // modify program
+  if (!program.loadBinary()) {
+    // append parameters from user function to kernel
+    program.transferParameters(_funcName, 1, "SCL_MAP");
+    program.transferArguments(_funcName, 1, "SCL_FUNC");
+    // rename user function
+    program.renameFunction(_funcName, "SCL_FUNC");
+  // rename typedefs
+    program.adjustTypes<Tin>();
+  }
+
+  // build program
+  program.build();
+
+  return program;
 }
 
 } // namespace skelcl

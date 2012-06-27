@@ -32,81 +32,109 @@
  *****************************************************************************/
  
 ///
-/// \file BlockDistribution.h
+/// \file OverlapDistribution.h
 ///
 ///	\author Michel Steuwer <michel.steuwer@uni-muenster.de>
+/// \author Matthias Buss
 ///
 
-#ifndef BLOCK_DISTRIBUTION_H_
-#define BLOCK_DISTRIBUTION_H_
+#ifndef OVERLAP_DISTRIBUTION_H_
+#define OVERLAP_DISTRIBUTION_H_
 
 #include "Distribution.h"
 
-#include "Significances.h"
+#include "../Vector.h"
+#include "../Matrix.h"
 
 namespace skelcl {
-
-template <typename> class Matrix;
-template <typename> class Vector;
 
 namespace detail {
 
 class DeviceList;
 
-template <typename> class BlockDistribution;
+template <typename> class OverlapDistribution;
 
-template <template <typename> class C, typename T>
-class BlockDistribution< C<T> > : public Distribution< C<T> > {
+// Vector version
+template <typename T>
+class OverlapDistribution< Vector<T> > : public Distribution< Vector<T> > {
 public:
-  BlockDistribution( const DeviceList& deviceList = globalDeviceList );
-  BlockDistribution( const DeviceList& deviceList,
-                     const Significances& significances );
+  OverlapDistribution( Vector<T>::size_type overlapRadius = 1,
+                       Padding padding = Padding::NEUTRAL,
+                       T neutralElement = T(),
+                       const DeviceList& deviceList = globalDeviceList );
 
   template <typename U>
-  BlockDistribution( const BlockDistribution< C<U> >& rhs);
+  OverlapDistribution( const OverlapDistribution< Vector<U> >&rhs );
 
-  ~BlockDistribution();
+  ~OverlapDistribution();
 
   bool isValid() const;
 
-  void startUpload(C<T>& container, Event* events) const;
+  void startUpload(Vector<T>& container, Event* events) const;
 
-  void startDownload(C<T>& container, Event* events) const;
+  void startDownload(Vector<T>& container, Event* events) const;
 
-  size_t sizeForDevice(C<T>& container,
+  size_t sizeForDevice(Vector<T>& container,
                        const detail::Device::id_type id) const;
 
-  bool dataExchangeOnDistributionChange(Distribution< C<T> >& newDistribution);
+  bool dataExchangeOnDistributionChange(Distribution< Vector<T> >& newDistribution);
 
-  const Significances& getSignificances() const;
+  typename Vector<T>::size_type& overlapRadius() const;
+
+  Padding& padding() const;
+
+  T& neutralElement() const;
 
 private:
-  bool doCompare(const Distribution< C<T> >& rhs) const;
+  bool doCompare(const Distribution< Vector<T> >& rhs) const;
 
-  Significances _significances;
+  Vector<T>::size_type            _overlapRadius;
+  Padding                         _padding;
+  T                               _neutralElement;
 };
 
-namespace block_distribution_helper {
-
+// Matrix version
 template <typename T>
-size_t sizeForDevice(const Device::id_type deviceID,
-                     const typename Vector<T>::size_type size,
-                     const DeviceList& devices,
-                     const Significances& significances);
+class OverlapDistribution< Matrix<T> > : public Distribution< Matrix<T> > {
+public:
+  OverlapDistribution( Matrix<T>::size_type::size_type overlapRadius = 1,
+                       Padding padding = Padding::NEUTRAL,
+                       T neutralElement = T(),
+                       const DeviceList& deviceList = globalDeviceList );
 
-template <typename T>
-size_t sizeForDevice(const Device::id_type deviceID,
-                     const typename Matrix<T>::size_type size,
-                     const DeviceList& devices,
-                     const Significances& significances);
+  template <typename U>
+  OverlapDistribution( const OverlapDistribution< Matrix<U> >&rhs );
 
-} // namespace block_distribution_helper
+  ~OverlapDistribution();
+
+  bool isValid() const;
+
+  void startUpload(Matrix<T>& container, Event* events) const;
+
+  void startDownload(Matrix<T>& container, Event* events) const;
+
+  size_t sizeForDevice(Matrix<T>& container,
+                       const detail::Device::id_type id) const;
+
+  bool dataExchangeOnDistributionChange(Distribution< Matrix<T> >& newDistribution);
+
+  typename Matrix<T>::size_type::size_type& overlapRadius() const;
+
+  Padding& padding() const;
+
+  T& neutralElement() const;
+
+private:
+  bool doCompare(const Distribution< Matrix<T> >& rhs) const;
+
+  Matrix<T>::size_type::size_type _overlapRadius;
+  Padding                         _padding;
+  T                               _neutralElement;
+};
 
 } // namespace detail
 
 } // namespace skelcl
-
-#include "BlockDistributionDef.h"
 
 #endif // BLOCK_DISTRIBUTION_H_
 

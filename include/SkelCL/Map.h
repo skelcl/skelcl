@@ -43,15 +43,13 @@
 #include <istream>
 #include <string>
 
-#include "Source.h"
-
 #include "detail/MapHelper.h"
 #include "detail/Skeleton.h"
 
 namespace skelcl {
 
+class Source;
 template <typename> class Out;
-namespace detail { template <typename> class Container; }
 namespace detail { class Program; }
 
 template<typename> class Map;
@@ -154,7 +152,8 @@ private:
   ///
   template <template <typename> class C,
             typename... Args>
-  void execute(C<Tout>& output,
+  void execute(const detail::Program& program,
+               C<Tout>& output,
                const C<Tin>& input,
                Args&&... args);
 
@@ -166,7 +165,11 @@ private:
   ///         the application developer, as well as the map skeleton's
   ///         kernel implementation
   ///
-  detail::Program createProgram(const std::string& source) const;
+  template <template <typename> class C>
+  detail::Program createAndBuildProgram() const;
+
+  std::string _source;
+  std::string _funcName;
 };
 
 ///
@@ -226,14 +229,10 @@ public:
                   Args&&... args);
 
 private:
-  /// \brief Queries the actual execution of the map skeleton's kernel
-  ///
-  /// \param input  The input container
-  ///        args   Additional arguments
-  ///
   template <template <typename> class C,
             typename... Args>
-  void execute(const C<Tin>& input,
+  void execute(const detail::Program& program,
+               const C<Tin>& input,
                Args&&... args);
 
   /// \brief Create a program object from the provided source string
@@ -244,7 +243,11 @@ private:
   ///         the application developer, as well as the map skeleton's
   ///         kernel implementation
   ///
-  detail::Program createProgram(const std::string& source) const;
+  template <template <typename> class C>
+  detail::Program createAndBuildProgram() const;
+
+  std::string _source;
+  std::string _funcName;
 };
 
 } // namespace skelcl

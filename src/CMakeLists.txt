@@ -13,10 +13,12 @@ set (SKELCL_SOURCES
       DeviceBuffer.cpp
       DeviceList.cpp
       Event.cpp
+      KernelUtil.cpp
       SkelCL.cpp
       Logger.cpp
       Program.cpp
       Significances.cpp
+      SkelCL.cpp
       Skeleton.cpp
       Source.cpp
       Util.cpp
@@ -24,10 +26,11 @@ set (SKELCL_SOURCES
 
 set (SKELCL_HEADERS
       ../include/SkelCL/Distributions.h
-      ../include/SkelCL/SkelCL.h
       ../include/SkelCL/Map.h
+      ../include/SkelCL/Matrix.h
       ../include/SkelCL/Out.h
       ../include/SkelCL/Reduce.h
+      ../include/SkelCL/SkelCL.h
       ../include/SkelCL/Source.h
       ../include/SkelCL/Vector.h
       ../include/SkelCL/Zip.h
@@ -37,11 +40,11 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/Container.h
       ../include/SkelCL/detail/CopyDistribution.h
       ../include/SkelCL/detail/CopyDistributionDef.h
-      ../include/SkelCL/detail/Distribution.h
-      ../include/SkelCL/detail/DistributionDef.h
       ../include/SkelCL/detail/Device.h
       ../include/SkelCL/detail/DeviceBuffer.h
       ../include/SkelCL/detail/DeviceList.h
+      ../include/SkelCL/detail/Distribution.h
+      ../include/SkelCL/detail/DistributionDef.h
       ../include/SkelCL/detail/Event.h
       ../include/SkelCL/detail/KernelUtil.h
       ../include/SkelCL/detail/Logger.h
@@ -49,6 +52,10 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/MapDef.h
       ../include/SkelCL/detail/MapHelper.h
       ../include/SkelCL/detail/MapHelperDef.h
+      ../include/SkelCL/detail/MatrixDef.h
+      ../include/SkelCL/detail/OverlapDistribution.h
+      ../include/SkelCL/detail/OverlapDistributionDef.h
+      ../include/SkelCL/detail/Padding.h
       ../include/SkelCL/detail/Program.h
       ../include/SkelCL/detail/ReduceDef.h
       ../include/SkelCL/detail/ReduceKernel.cl

@@ -43,31 +43,12 @@
 #include "../Distributions.h"
 
 #include "Logger.h"
+#include "Util.h"
+#include "KernelUtil.h"
 
 namespace skelcl {
 
 namespace detail {
-
-template<typename Tin, typename Tout>
-MapHelper<Tout(Tin)>::MapHelper(const Program& program,
-                                const std::string& funcName)
-  : _program(program)
-{
-  prepareAndBuildProgram(funcName);
-  LOG_DEBUG("Create new Map object (", this, ")");
-}
-
-template<typename Tin, typename Tout>
-void MapHelper<Tout(Tin)>::prepareAndBuildProgram(const std::string& funcName)
-{
-  if (!_program.loadBinary()) {
-    _program.transferParameters(funcName, 1, "SCL_MAP");
-    _program.transferArguments(funcName, 1, "SCL_FUNC");
-    _program.renameFunction(funcName, "SCL_FUNC");
-    _program.adjustTypes<Tin, Tout>();
-  }
-  _program.build();
-}
 
 template <typename Tin, typename Tout>
 template <template <typename> class C>

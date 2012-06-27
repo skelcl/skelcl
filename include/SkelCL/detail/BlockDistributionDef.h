@@ -116,22 +116,13 @@ void BlockDistribution< C<T> >::startDownload(C<T>& container,
 }
 
 template <template <typename> class C, typename T>
-size_t BlockDistribution< C<T> >::sizeForDevice(const Device::id_type deviceID,
-                                                const size_t totalSize) const
+size_t BlockDistribution< C<T> >::sizeForDevice(C<T>& container,
+                                                const detail::Device::id_type id) const
 {
-  if (deviceID < this->_devices.size()-1) {
-    return static_cast<size_t>(
-      totalSize * this->_significances.getSignificance(deviceID) );
-  } else { // "last" device
-    size_t s = static_cast<size_t>(
-      totalSize * this->_significances.getSignificance(deviceID) );
-    // add rest ...
-    size_t r = totalSize;
-    for (const auto& devicePtr : this->_devices) {
-      r -= totalSize * this->_significances.getSignificance(devicePtr->id());
-    }
-    return (s+r);
-  }
+  return block_distribution_helper::sizeForDevice<T>(id,
+                                                     container.size(),
+                                                     this->_devices,
+                                                     this->_significances);
 }
 
 template <template <typename> class C, typename T>
@@ -170,6 +161,53 @@ bool BlockDistribution< C<T> >::doCompare(const Distribution< C<T> >& rhs) const
   }
   return ret;
 }
+
+namespace block_distribution_helper {
+
+template <typename T>
+size_t sizeForDevice(const Device::id_type deviceID,
+                     const typename Vector<T>::size_type size,
+                     const DeviceList& devices,
+                     const Significances& significances)
+{
+  if (deviceID < devices.size()-1) {
+    return static_cast<size_t>(
+      size * significances.getSignificance(deviceID) );
+  } else { // "last" device
+    size_t s = static_cast<size_t>(
+      size * significances.getSignificance(deviceID) );
+    // add rest ...
+    size_t r = size;
+    for (const auto& devicePtr : devices) {
+      r -= size * significances.getSignificance(devicePtr->id());
+    }
+    return (s+r);
+  }
+}
+
+template <typename T>
+size_t sizeForDevice(const Device::id_type deviceID,
+                     const typename Matrix<T>::size_type size,
+                     const DeviceList& devices,
+                     const Significances& significances)
+{
+  if (deviceID < devices.size() - 1) {
+    auto s = static_cast<size_t>(
+               size.rowCount() * significances.getSignificance(deviceID) );
+    return s * size.columnCount();
+  } else { // "last" device
+    auto s = static_cast<size_t>(
+               size.rowCount() * significances.getSignificance(deviceID) );
+    // add rest ...
+    auto r = size.rowCount();
+    for (const auto& devicePtr : devices) {
+      r -= size.rowCount() * significances.getSignificance(devicePtr->id());
+    }
+    return (s+r) * size.columnCount();
+  }
+}
+
+} // namespace block_distribution_helper
 
 } // namespace detail
 

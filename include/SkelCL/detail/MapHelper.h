@@ -53,7 +53,7 @@ template<typename> class MapHelper;
 template<typename Tin, typename Tout>
 class MapHelper<Tout(Tin)> {
 public:
-  MapHelper<Tout(Tin)>(const Program& program, const std::string& funcName);
+  MapHelper<Tout(Tin)>() = default;
 
   MapHelper<Tout(Tin)>(const MapHelper<Tout(Tin)>&) = default;
 
@@ -62,16 +62,12 @@ public:
   ~MapHelper<Tout(Tin)>() = default;
 
 protected:
-  void prepareAndBuildProgram(const std::string& funcName);
-
   template <template <typename> class C>
   void prepareInput(const C<Tin>& input);
 
   template <template <typename> class C>
   void prepareOutput(C<Tout>& output,
                      const C<Tin>& input);
-
-  Program _program;
 };
 
 } // namespace detail

@@ -136,8 +136,8 @@ const detail::DeviceList::value_type Distribution< C<T> >::device(const size_t d
 }
 
 template <template <typename> class C, typename T>
-size_t Distribution< C<T> >::sizeForDevice(const detail::Device::id_type /*deviceID*/,
-                                           const size_t /*totalSize*/) const
+size_t Distribution< C<T> >::sizeForDevice(C<T>& /*container*/,
+                                           const detail::Device::id_type /*id*/) const
 {
   return 0;
 }

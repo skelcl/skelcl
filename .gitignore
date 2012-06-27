@@ -1,0 +1,5 @@
+*.user
+build*
+libraries/gtest
+libraries/ssedit/libraries/gtest
+libraries/ssedit/libraries/libclang

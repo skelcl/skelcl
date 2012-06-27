@@ -30,119 +30,46 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
-///
-/// \file Progam.h
+
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef PROGRAM_H_
-#define PROGRAM_H_
+#include <gtest/gtest.h>
 
-#include <string>
-#include <map>
-#include <memory>
+#include <SkelCL/Distributions.h>
+#include <SkelCL/SkelCL.h>
+#include <SkelCL/Matrix.h>
+#include <SkelCL/detail/Logger.h>
 
-#include <cxxabi.h>
+class MatrixTest : public ::testing::Test {
+protected:
+  MatrixTest() {
+    skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+    skelcl::init(1);
+  };
 
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-#undef  __CL_ENABLE_EXCEPTIONS
-
-#include <ssedit/TempSourceFile.h>
-
-#include "Device.h"
-
-namespace skelcl {
-
-namespace detail {
-
-class Program {
-public:
-  Program() = delete;
-
-  Program(const std::string& source, const std::string& hash = "");
-
-  Program(const Program&) = default;
-
-  Program(Program&&);
-
-  Program& operator=(const Program&) = default;
-
-  Program& operator=(Program&&);
-
-  ~Program() = default;
-
-  void transferParameters(const std::string& from,
-                          unsigned indexFrom,
-                          const std::string& to);
-
-  void transferArguments(const std::string& from,
-                         unsigned indexFrom,
-                         const std::string& to);
-
-  void renameFunction(const std::string& from, const std::string& to);
-
-  template<typename Head, typename ...Tail>
-  void adjustTypes();
-
-  bool loadBinary();
-
-  void build();
-
-  cl::Kernel kernel(const Device& device, const std::string& name) const;
-
-private:
-  void createProgramsFromSource();
-
-  void saveBinary();
-
-  void renameType(const int i, const std::string& name);
-
-  template<typename T>
-  std::string typeToString();
-
-  template<typename T>
-  void traverseTypes(int i);
-
-  template<typename Head, typename Second, typename ...Tail>
-  void traverseTypes(int i);
-
-  std::shared_ptr<ssedit::TempSourceFile> _sourceFile;
-  std::string                             _hash;
-  std::vector<cl::Program>                _clPrograms;
+  ~MatrixTest() {
+    skelcl::terminate();
+  };
 };
 
-// function template definitions
+TEST_F(MatrixTest, CreateEmptyMatrix) {
+  skelcl::Matrix<int> mi;
 
-template<typename Head, typename... Tail>
-void Program::adjustTypes() {
-  traverseTypes<Head, Tail...>(0);
+  EXPECT_TRUE(mi.empty());
+  EXPECT_EQ( skelcl::MatrixSize(0,0) , mi.size());
 }
 
-template <typename T>
-std::string Program::typeToString() {
-  char* cName = abi::__cxa_demangle(typeid(T).name(), NULL, NULL, NULL);
-  std::string name(cName);
-  free(cName);
-  return name;
+TEST_F(MatrixTest, CreateMatrix) {
+  skelcl::Matrix<int> mi( skelcl::MatrixSize{10,10} );
+
+  EXPECT_FALSE(mi.empty());
+  EXPECT_EQ(100, mi.size().elemCount());
+  EXPECT_EQ(0, *mi.begin());
+  for (int i = 0; i < 10; ++i) {
+    for (int j = 0; j < 10; ++j) {
+      EXPECT_EQ(0, mi({i,j}));
+    }
+  }
 }
-
-template<typename T>
-void Program::traverseTypes(int i) {
-  renameType(i, typeToString<T>());
-}
-
-template<typename Head, typename Second, typename... Tail>
-void Program::traverseTypes(int i) {
-  renameType(i, typeToString<Head>());
-  traverseTypes<Second, Tail...>(++i);
-}
-
-} // namespace detail
-
-} // namespace skelcl
-
-#endif // PROGRAM_H_
-

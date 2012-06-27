@@ -102,10 +102,10 @@ void SingleDistribution< C<T> >::startDownload(C<T>& container,
 }
 
 template <template <typename> class C, typename T>
-size_t SingleDistribution< C<T> >::sizeForDevice(const Device::id_type /*id*/,
-                                                 const size_t totalSize) const
+size_t SingleDistribution< C<T> >::sizeForDevice(C<T>& container,
+                                                 const detail::Device::id_type /*id*/) const
 {
-  return totalSize;
+  return single_distribution_helper::sizeForDevice<T>(container.size());
 }
 
 template <template <typename> class C, typename T>
@@ -135,6 +135,22 @@ bool SingleDistribution< C<T> >::doCompare(const Distribution< C<T> >& rhs) cons
   }
   return ret;
 }
+
+namespace single_distribution_helper {
+
+template <typename T>
+size_t sizeForDevice(const typename Vector<T>::size_type size)
+{
+  return size;
+}
+
+template <typename T>
+size_t sizeForDevice(const typename Matrix<T>::size_type size)
+{
+  return size.elemCount();
+}
+
+} // namespace single_distribution_helper
 
 } // namespace detail
 
