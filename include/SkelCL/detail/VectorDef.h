@@ -479,6 +479,7 @@ void Vector<T>::setDistribution(const detail::Distribution< Vector<U> >& origDis
   if (   _distribution->isValid()
       && _distribution->dataExchangeOnDistributionChange(*newDistribution)) {
     copyDataToHost();
+    _deviceBuffersUpToDate = false
     _deviceBuffers.clear(); // delete old device buffers,
                             // so new can created using the new distribution
   }
