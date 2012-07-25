@@ -609,7 +609,7 @@ const detail::DeviceBuffer&
 }
 
 template <typename T>
-typename Vector<T>::vector_type& Vector<T>::hostBuffer() const
+typename Vector<T>::host_buffer_type& Vector<T>::hostBuffer() const
 {
   return _hostBuffer;
 }

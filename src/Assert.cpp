@@ -62,6 +62,9 @@ void _ASSERT(const char* file,
   }
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+
 void _ASSERT(const char* file,
              const int   line,
              const bool  expression,
@@ -86,6 +89,8 @@ void _ASSERT(const char* file,
     abort();
   }
 }
+
+#pragma GCC diagnostic pop
 
 } // namespace detail
 

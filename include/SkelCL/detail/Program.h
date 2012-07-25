@@ -91,7 +91,7 @@ public:
 
   void build();
 
-  cl::Kernel kernel(const Device& device, const std::string& name);
+  cl::Kernel kernel(const Device& device, const std::string& name) const;
 
 private:
   void createProgramsFromSource();

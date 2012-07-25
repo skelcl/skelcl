@@ -46,6 +46,7 @@
 
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
+#undef  __CL_ENABLE_EXCEPTIONS
 
 #include "detail/CopyDistribution.h"
 #include "detail/Device.h"
@@ -62,11 +63,11 @@ namespace detail {
   public:
     void push_back(detail::DeviceBuffer::size_type size) {
       _sizes.push_back(size);
-    };
+    }
 
     cl_uint operator[](size_t index) const {
       return static_cast<cl_uint>(_sizes[index]);
-    };
+    }
   private:
     std::vector<detail::DeviceBuffer::size_type> _sizes;
   };
@@ -78,20 +79,19 @@ class Vector {
   typedef std::vector<T> vector_type;
   typedef std::shared_ptr<std::vector<T> > vector_shared_pointer;
 public:
-  typedef typename vector_type::value_type value_type;
-  typedef typename vector_type::pointer pointer;
-  typedef typename vector_type::const_pointer const_pointer;
-  typedef typename vector_type::reference reference;
-  typedef typename vector_type::const_reference const_reference;
-  typedef typename vector_type::iterator iterator;
-  typedef typename vector_type::const_iterator const_iterator;
-  typedef typename vector_type::const_reverse_iterator const_reverse_iterator;
-  typedef typename vector_type::reverse_iterator reverse_iterator;
-  typedef typename vector_type::size_type size_type;
-  typedef typename vector_type::difference_type difference_type;
-  typedef typename vector_type::allocator_type allocator_type;
-
-  typedef size_type position_type;
+  typedef std::vector<T> host_buffer_type;
+  typedef typename host_buffer_type::value_type value_type;
+  typedef typename host_buffer_type::pointer pointer;
+  typedef typename host_buffer_type::const_pointer const_pointer;
+  typedef typename host_buffer_type::reference reference;
+  typedef typename host_buffer_type::const_reference const_reference;
+  typedef typename host_buffer_type::iterator iterator;
+  typedef typename host_buffer_type::const_iterator const_iterator;
+  typedef typename host_buffer_type::const_reverse_iterator const_reverse_iterator;
+  typedef typename host_buffer_type::reverse_iterator reverse_iterator;
+  typedef typename host_buffer_type::size_type size_type;
+  typedef typename host_buffer_type::difference_type difference_type;
+  typedef typename host_buffer_type::allocator_type allocator_type;
 
   ///
   /// \brief same semantics as std::vector
@@ -442,7 +442,7 @@ public:
   ///
   const detail::DeviceBuffer& deviceBuffer(const detail::Device& device) const;
 
-  vector_type& hostBuffer() const;
+  host_buffer_type& hostBuffer() const;
 
 private:
   ///
@@ -467,7 +467,7 @@ private:
     std::unique_ptr< detail::Distribution< Vector<T> > >  _distribution;
   mutable bool                                            _hostBufferUpToDate;
   mutable bool                                            _deviceBuffersUpToDate;
-  mutable vector_type                                     _hostBuffer;
+  mutable host_buffer_type                                _hostBuffer;
   // _deviceBuffers empty => buffers not created yet
   mutable std::vector<detail::DeviceBuffer>               _deviceBuffers;
 };

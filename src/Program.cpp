@@ -246,7 +246,7 @@ void Program::build()
 }
 
 cl::Kernel Program::kernel(const Device& device,
-                           const std::string& name)
+                           const std::string& name) const
 {
   return cl::Kernel(_clPrograms[device.id()], name.c_str());
 }
