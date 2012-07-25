@@ -229,6 +229,11 @@ public:
                   Args&&... args);
 
 private:
+  /// \brief Queries the actual execution of the map skeleton's kernel
+  ///
+  /// \param input  The input container
+  ///        args   Additional arguments
+  ///
   template <template <typename> class C,
             typename... Args>
   void execute(const detail::Program& program,

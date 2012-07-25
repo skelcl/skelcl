@@ -111,7 +111,6 @@ C<Tout>& Zip<Tout(Tleft, Tright)>::operator()(Out< C<Tout> > output,
   return output.container();
 }
 
-// vector version
 template <typename Tleft, typename Tright, typename Tout>
 template <template <typename> class C,
           typename... Args>
@@ -271,3 +270,4 @@ void Zip<Tout(Tleft, Tright)>::prepareOutput(C<Tout>& output,
 } // namespace skelcl
 
 #endif // ZIP_DEF_H_
+

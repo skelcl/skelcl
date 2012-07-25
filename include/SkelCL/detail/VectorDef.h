@@ -55,6 +55,7 @@
 #include "Device.h"
 #include "DeviceBuffer.h"
 #include "DeviceList.h"
+#include "Distribution.h"
 #include "Event.h"
 #include "Logger.h"
 

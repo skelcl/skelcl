@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
+
 ///
 /// \file BlockDistribution.h
 ///
