@@ -43,14 +43,13 @@
 #include <istream>
 #include <string>
 
-#include "Source.h"
-
-#include "detail/Program.h"
 #include "detail/Skeleton.h"
 
 namespace skelcl {
 
+class Source;
 template <typename> class Out;
+namespace detail { class Program; }
 
 template<typename> class Zip;
 
@@ -187,6 +186,21 @@ public:
 
 private:
   ///
+  /// \brief Queries the actual execution of the zip skeleton's kernel
+  ///
+  /// \param output The ouput container
+  ///        left   The first (left) input container
+  ///        right  The second (right) input container
+  ///        args   Additional arguments
+  ///
+  template <template <typename> class C,
+            typename... Args>
+  void execute(const detail::Program& program,
+               C<Tout>& output,
+               const C<Tleft>& left,
+               const C<Tright>& right,
+               Args&&... args);
+  ///
   /// \brief Create a program object from the provided source string
   ///
   /// \param source The source code defined by the application developer
@@ -195,15 +209,8 @@ private:
   ///         the application developer, as well as the zip skeleton's
   ///         kernel implementation
   ///
-  detail::Program createProgram(const std::string& source) const;
-
-  ///
-  /// \brief Modifies the program to be a valid OpenCL kernel and builds it
-  ///
-  /// \param funcName The name of the 'main' function, i.e. the entry point in
-  ///                 the application developer's source code
-  ///
-  void prepareAndBuildProgram(const std::string& funcName);
+  template <template <typename> class C>
+  detail::Program createAndBuildProgram() const;
 
   ///
   /// \brief Prepares the inputs for kernel execution
@@ -231,23 +238,8 @@ private:
                      const C<Tleft>& left,
                      const C<Tright>& right);
 
-  ///
-  /// \brief Queries the actual execution of the zip skeleton's kernel
-  ///
-  /// \param output The ouput container
-  ///        left   The first (left) input container
-  ///        right  The second (right) input container
-  ///        args   Additional arguments
-  ///
-  template <template <typename> class C,
-            typename... Args>
-  void execute(C<Tout>& output,
-               const C<Tleft>& left,
-               const C<Tright>& right,
-               Args&&... args);
-
-  /// Program describing the operation performed by the zip skeleton
-  detail::Program _program;
+  std::string _source;
+  std::string _funcName;
 };
 
 // TODO: when template aliases are available:

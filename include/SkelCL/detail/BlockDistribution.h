@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
+
 ///
 /// \file BlockDistribution.h
 ///
@@ -46,6 +46,8 @@
 
 namespace skelcl {
 
+template <typename> class Vector;
+
 namespace detail {
 
 class DeviceList;
@@ -55,7 +57,7 @@ template <typename> class BlockDistribution;
 template <template <typename> class C, typename T>
 class BlockDistribution< C<T> > : public Distribution< C<T> > {
 public:
-  BlockDistribution( const DeviceList& deviceList = detail::globalDeviceList );
+  BlockDistribution( const DeviceList& deviceList = globalDeviceList );
   BlockDistribution( const DeviceList& deviceList,
                      const Significances& significances );
 
@@ -66,14 +68,12 @@ public:
 
   bool isValid() const;
 
-  void startUpload(C<T>& container,
-                   Event* events) const;
+  void startUpload(C<T>& container, Event* events) const;
 
-  void startDownload(C<T>& container,
-                     Event* events) const;
+  void startDownload(C<T>& container, Event* events) const;
 
-  size_t sizeForDevice(const Device::id_type deviceID,
-                       const size_t totalSize) const;
+  size_t sizeForDevice(C<T>& container,
+                       const detail::Device::id_type id) const;
 
   bool dataExchangeOnDistributionChange(Distribution< C<T> >& newDistribution);
 
@@ -84,6 +84,16 @@ private:
 
   Significances _significances;
 };
+
+namespace block_distribution_helper {
+
+template <typename T>
+size_t sizeForDevice(const Device::id_type deviceID,
+                     const typename Vector<T>::size_type size,
+                     const DeviceList& devices,
+                     const Significances& significances);
+
+} // namespace block_distribution_helper
 
 } // namespace detail
 

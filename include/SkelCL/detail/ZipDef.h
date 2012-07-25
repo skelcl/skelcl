@@ -69,52 +69,11 @@ namespace skelcl {
 template<typename Tleft, typename Tright, typename Tout>
 Zip<Tout(Tleft, Tright)>::Zip(const Source& source,
                               const std::string& funcName)
-  : detail::Skeleton(), _program(this->createProgram(source))
+  : detail::Skeleton(),
+    _source(source),
+    _funcName(funcName)
 {
-  prepareAndBuildProgram(funcName);
   LOG_DEBUG("Create new Zip object (", this, ")");
-}
-
-template<typename Tleft, typename Tright, typename Tout>
-detail::Program
-  Zip<Tout(Tleft, Tright)>::createProgram(const std::string& source) const
-{
-  ASSERT_MESSAGE(!source.empty(),
-    "Tried to create program with empty user source.");
-  // first: user defined source
-  std::string s(source);
-  // second: append skeleton implementation source
-  s.append(R"(
-
-typedef float SCL_TYPE_0;
-typedef float SCL_TYPE_1;
-typedef float SCL_TYPE_2;
-
-__kernel void SCL_ZIP(
-    const __global SCL_TYPE_0*  SCL_LEFT,
-    const __global SCL_TYPE_1*  SCL_RIGHT,
-          __global SCL_TYPE_2*  SCL_OUT,
-    const unsigned int          SCL_ELEMENTS ) {
-  if (get_global_id(0) < SCL_ELEMENTS) {
-    SCL_OUT[get_global_id(0)] = SCL_FUNC(SCL_LEFT[get_global_id(0)],
-                                         SCL_RIGHT[get_global_id(0)]);
-  }
-}
-)");
-  return detail::Program(s, detail::util::hash("//Zip\n"+source));
-}
-
-template<typename Tleft, typename Tright, typename Tout>
-void
-  Zip<Tout(Tleft, Tright)>::prepareAndBuildProgram(const std::string& funcName)
-{
-  if (!_program.loadBinary()) {
-    _program.transferParameters(funcName, 2, "SCL_ZIP");
-    _program.transferArguments(funcName, 2, "SCL_FUNC");
-    _program.renameFunction(funcName, "SCL_FUNC");
-    _program.adjustTypes<Tleft, Tright, Tout>();
-  }
-  _program.build();
 }
 
 template <typename Tleft, typename Tright, typename Tout>
@@ -139,15 +98,126 @@ C<Tout>& Zip<Tout(Tleft, Tright)>::operator()(Out< C<Tout> > output,
 {
   ASSERT(left.size() <= right.size());
 
+  auto program = createAndBuildProgram<C>();
+
   prepareInput(left, right);
 
   prepareOutput(output.container(), left, right);
 
-  execute(output.container(), left, right, std::forward<Args>(args)...);
+  execute(program, output.container(), left, right, std::forward<Args>(args)...);
 
   updateModifiedStatus(output, std::forward<Args>(args)...);
 
   return output.container();
+}
+
+template <typename Tleft, typename Tright, typename Tout>
+template <template <typename> class C,
+          typename... Args>
+void Zip<Tout(Tleft, Tright)>::execute(const detail::Program& program,
+                                       C<Tout>& output,
+                                       const C<Tleft>& left,
+                                       const C<Tright>& right,
+                                       Args&&... args)
+{
+  ASSERT( left.distribution().isValid() && right.distribution().isValid() );
+  ASSERT( left.distribution()           == right.distribution()           );
+  ASSERT( left.size() >= right.size()   && output.size() >= left.size()   );
+
+  for (auto& devicePtr : left.distribution().devices()) {
+    auto& outputBuffer= output.deviceBuffer(*devicePtr);
+    auto& leftBuffer  = left.deviceBuffer(*devicePtr);
+    auto& rightBuffer = right.deviceBuffer(*devicePtr);
+
+    cl_uint elements  = leftBuffer.size();
+    cl_uint local     = std::min(this->workGroupSize(),
+                                 devicePtr->maxWorkGroupSize());
+    cl_uint global    = detail::util::ceilToMultipleOf(elements, local);
+
+    try {
+      cl::Kernel kernel(program.kernel(*devicePtr, "SCL_ZIP"));
+
+      kernel.setArg(0, leftBuffer.clBuffer());
+      kernel.setArg(1, rightBuffer.clBuffer());
+      kernel.setArg(2, outputBuffer.clBuffer());
+      kernel.setArg(3, elements);
+
+      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 4,
+                                        std::forward<Args>(args)...);
+
+      // after finishing the kernel invoke this function ...
+      auto invokeAfter =  [&] () {
+                            leftBuffer.markAsNotInUse();
+                            rightBuffer.markAsNotInUse();
+                            outputBuffer.markAsNotInUse();
+                          };
+
+      devicePtr->enqueue(kernel,
+                         cl::NDRange(global), cl::NDRange(local),
+                         cl::NullRange, // offset
+                         invokeAfter);
+
+      // after successfully enqueued the kernel ...
+      leftBuffer.markAsInUse();
+      rightBuffer.markAsInUse();
+      outputBuffer.markAsInUse();
+
+    } catch (cl::Error& err) {
+      ABORT_WITH_ERROR(err);
+    }
+  }
+  LOG_INFO("Zip kernel started");
+}
+
+template<typename Tleft, typename Tright, typename Tout>
+template<template <typename> class C>
+detail::Program Zip<Tout(Tleft, Tright)>::createAndBuildProgram() const
+{
+  ASSERT_MESSAGE(!_source.empty(),
+    "Tried to create program with empty user source.");
+
+  // create program
+
+  std::string s(C<Tleft>::deviceFunctions());
+  // first: user defined source
+  s.append(_source);
+  // second: append skeleton implementation source
+  s.append(R"(
+
+typedef float SCL_TYPE_0;
+typedef float SCL_TYPE_1;
+typedef float SCL_TYPE_2;
+
+__kernel void SCL_ZIP(
+    const __global SCL_TYPE_0*  SCL_LEFT,
+    const __global SCL_TYPE_1*  SCL_RIGHT,
+          __global SCL_TYPE_2*  SCL_OUT,
+    const unsigned int          SCL_ELEMENTS ) {
+  if (get_global_id(0) < SCL_ELEMENTS) {
+    SCL_OUT[get_global_id(0)] = SCL_FUNC(SCL_LEFT[get_global_id(0)],
+                                         SCL_RIGHT[get_global_id(0)]);
+  }
+}
+)");
+  auto program = detail::Program(s,
+                                 detail::util::hash("//Zip\n"
+                                                    + C<Tleft>::deviceFunctions()
+                                                    + _source) );
+
+  // modify program
+  if (!program.loadBinary()) {
+    // append parameters from user function to kernel
+    program.transferParameters(_funcName, 2, "SCL_ZIP");
+    program.transferArguments(_funcName, 2, "SCL_FUNC");
+    // rename user function
+    program.renameFunction(_funcName, "SCL_FUNC");
+    // rename typedefs
+    program.adjustTypes<Tleft, Tright, Tout>();
+  }
+  // build program
+  program.build();
+
+  return program;
 }
 
 template <typename Tleft, typename Tright, typename Tout>
@@ -195,63 +265,6 @@ void Zip<Tout(Tleft, Tright)>::prepareOutput(C<Tout>& output,
   output.setDistribution(left.distribution());
   // create buffers if required
   output.createDeviceBuffers();
-}
-
-template <typename Tleft, typename Tright, typename Tout>
-template <template <typename> class C,
-          typename... Args>
-void Zip<Tout(Tleft, Tright)>::execute(C<Tout>& output,
-                                       const C<Tleft>& left,
-                                       const C<Tright>& right,
-                                       Args&&... args)
-{
-  ASSERT( left.distribution().isValid() && right.distribution().isValid() );
-  ASSERT( left.distribution() == right.distribution() );
-  ASSERT( left.size() >= right.size() && output.size() >= left.size() );
-
-  for (auto& devicePtr : left.distribution().devices()) {
-    auto& outputBuffer= output.deviceBuffer(*devicePtr);
-    auto& leftBuffer  = left.deviceBuffer(*devicePtr);
-    auto& rightBuffer = right.deviceBuffer(*devicePtr);
-
-    cl_uint elements  = leftBuffer.size();
-    cl_uint local     = std::min(this->workGroupSize(),
-                                 devicePtr->maxWorkGroupSize());
-    cl_uint global    = detail::util::ceilToMultipleOf(elements, local);
-
-    try {
-      cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_ZIP"));
-
-      kernel.setArg(0, leftBuffer.clBuffer());
-      kernel.setArg(1, rightBuffer.clBuffer());
-      kernel.setArg(2, outputBuffer.clBuffer());
-      kernel.setArg(3, elements);
-
-      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 4,
-                                        std::forward<Args>(args)...);
-
-      // after finishing the kernel invoke this function ...
-      auto invokeAfter =  [&] () {
-                            leftBuffer.markAsNotInUse();
-                            rightBuffer.markAsNotInUse();
-                            outputBuffer.markAsNotInUse();
-                          };
-
-      devicePtr->enqueue(kernel,
-                         cl::NDRange(global), cl::NDRange(local),
-                         cl::NullRange, // offset
-                         invokeAfter);
-
-      // after successfully enqueued the kernel ...
-      leftBuffer.markAsInUse();
-      rightBuffer.markAsInUse();
-      outputBuffer.markAsInUse();
-      
-    } catch (cl::Error& err) {
-      ABORT_WITH_ERROR(err);
-    }
-  }
-  LOG_INFO("Zip kernel started");
 }
 
 } // namespace skelcl

@@ -13,10 +13,12 @@ set (SKELCL_SOURCES
       DeviceBuffer.cpp
       DeviceList.cpp
       Event.cpp
+      KernelUtil.cpp
       SkelCL.cpp
       Logger.cpp
       Program.cpp
       Significances.cpp
+      SkelCL.cpp
       Skeleton.cpp
       Source.cpp
       Util.cpp

@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
+
 ///
 /// \file SingleDistribution.h
 ///
@@ -43,6 +43,8 @@
 #include "Distribution.h"
 
 namespace skelcl {
+
+template <typename> class Vector;
 
 namespace detail {
 
@@ -66,14 +68,21 @@ public:
   void startDownload(C<T>& container,
                      Event* events) const;
 
-  size_t sizeForDevice(const Device::id_type deviceID,
-                       const size_t totalSize) const;
+  size_t sizeForDevice(C<T>& container,
+                       const detail::Device::id_type id) const;
 
   bool dataExchangeOnDistributionChange(Distribution< C<T> >& newDistribution);
 
 private:
   bool doCompare(const Distribution< C<T> >& rhs) const;
 };
+
+namespace single_distribution_helper {
+
+template <typename T>
+size_t sizeForDevice(const typename Vector<T>::size_type size);
+
+} // namespace single_distribution_helper
 
 } // namespace detail
 

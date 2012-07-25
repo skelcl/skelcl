@@ -76,8 +76,6 @@ namespace detail {
 
 template <typename T>
 class Vector {
-  typedef std::vector<T> vector_type;
-  typedef std::shared_ptr<std::vector<T> > vector_shared_pointer;
 public:
   typedef std::vector<T> host_buffer_type;
   typedef typename host_buffer_type::value_type value_type;
@@ -99,11 +97,6 @@ public:
   Vector();
 
   ///
-  /// \brief same semantics as std::vector
-  ///
-  Vector(const size_type size, const value_type& value = value_type());
-
-  ///
   /// \brief Constructs a new vector with size elements
   ///
   /// \param size         The vector is constructed with size number of elements
@@ -113,8 +106,9 @@ public:
   ///                     new constructed vector
   ///
   Vector(const size_type size,
-         const detail::Distribution< Vector<T> >& distribution,
-         const value_type& value = value_type());
+         const value_type& value = value_type(),
+         const detail::Distribution< Vector<T> >& distribution
+                                    = detail::Distribution< Vector<T> >());
 
   ///
   /// \brief same semantics as std::vector
@@ -443,6 +437,8 @@ public:
   const detail::DeviceBuffer& deviceBuffer(const detail::Device& device) const;
 
   host_buffer_type& hostBuffer() const;
+
+  static std::string deviceFunctions();
 
 private:
   ///

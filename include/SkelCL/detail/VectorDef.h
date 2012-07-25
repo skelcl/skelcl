@@ -72,31 +72,17 @@ Vector<T>::Vector()
 {
   LOG_DEBUG("Created new Vector object (", this, ") with ", getDebugInfo());
 }
-
-template <typename T>
-Vector<T>::Vector(const size_type size, const value_type& value)
-  : _size(size),
-    _distribution(new detail::Distribution< Vector<T> >()),
-    _hostBufferUpToDate(true),
-    _deviceBuffersUpToDate(false),
-    _hostBuffer(vector_type(size, value)),
-    _deviceBuffers()
-{
-  LOG_DEBUG("Created new Vector object (", this, ") with ", getDebugInfo());
-}
-
 template <typename T>
 Vector<T>::Vector(const size_type size,
-                  const detail::Distribution< Vector<T> >& distribution,
-                  const value_type& value)
+                  const value_type& value,
+                  const detail::Distribution< Vector<T> >& distribution)
   : _size(size),
-    _distribution(new detail::Distribution< Vector<T> >(distribution)),
+    _distribution(detail::cloneAndConvert<T>(distribution)),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
-    _hostBuffer(vector_type(size, value)),
+    _hostBuffer(size, value),
     _deviceBuffers()
 {
-  ASSERT(distribution != nullptr);
   LOG_DEBUG("Created new Vector object (", this, ") with ", getDebugInfo());
 }
 
@@ -119,7 +105,7 @@ Vector<T>::Vector(InputIterator first,
                   InputIterator last,
                   const detail::Distribution< Vector<T> >& distribution)
   : _size(std::distance(first, last)),
-    _distribution(new detail::Distribution< Vector<T> >(distribution)),
+    _distribution(detail::cloneAndConvert<T>(distribution)),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(first, last),
@@ -473,9 +459,6 @@ void Vector<T>::setDistribution(const detail::Distribution< Vector<U> >& origDis
   // convert distribution to avoid problems later ...
   auto newDistribution = detail::cloneAndConvert<T>(origDistribution);
 
-  // how to convert ???
-  // auto newDistribution = origDistribution.clone();
-
   if (   _distribution->isValid()
       && _distribution->dataExchangeOnDistributionChange(*newDistribution)) {
     copyDataToHost();
@@ -516,8 +499,9 @@ void Vector<T>::forceCreateDeviceBuffers() const
         [this](std::shared_ptr<detail::Device> devicePtr) {
           return detail::DeviceBuffer(
                     devicePtr->id(),
-                    this->_distribution->sizeForDevice(devicePtr->id(),
-                                                       this->_size),
+                    this->_distribution->sizeForDevice(
+                            const_cast<Vector<T>&>(*this),
+                            devicePtr->id() ),
                     sizeof(T)
                     /*,mem flags*/ );
         } );
@@ -612,6 +596,12 @@ template <typename T>
 typename Vector<T>::host_buffer_type& Vector<T>::hostBuffer() const
 {
   return _hostBuffer;
+}
+
+template <typename T>
+std::string Vector<T>::deviceFunctions()
+{
+  return std::string();
 }
 
 template <typename T>

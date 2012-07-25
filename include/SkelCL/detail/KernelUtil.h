@@ -95,13 +95,11 @@ void setKernelArgs(cl::Kernel& kernel,
                    T value,
                    Args&&... args);
 
-// Definitions
+void setKernelArgs(cl::Kernel& kernel,
+                   const Device& device,
+                   size_t index);
 
-void setKernelArgs(cl::Kernel& /*kernel*/,
-                   const Device& /*device*/,
-                   size_t /*index*/)
-{
-}
+// Definitions
 
 template <typename T, typename... Args>
 void setKernelArgs(cl::Kernel& kernel,

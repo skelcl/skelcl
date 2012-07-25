@@ -37,11 +37,12 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef DISTRIBUTION_S_H_
-#define DISTRIBUTION_S_H_
+#ifndef DISTRIBUTIONS_H_
+#define DISTRIBUTIONS_H_
 
 // include all distributions
 
+#include "detail/Distribution.h"
 #include "detail/BlockDistribution.h"
 #include "detail/CopyDistribution.h"
 #include "detail/SingleDistribution.h"
