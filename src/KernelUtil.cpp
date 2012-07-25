@@ -32,97 +32,28 @@
  *****************************************************************************/
  
 ///
-/// \file Distributions.h
+/// \file KernelUtil.cpp
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef DISTRIBUTIONS_H_
-#define DISTRIBUTIONS_H_
-
-// include all distributions
-
-#include "detail/Distribution.h"
-#include "detail/BlockDistribution.h"
-#include "detail/CopyDistribution.h"
-#include "detail/SingleDistribution.h"
+#include "SkelCL/detail/KernelUtil.h"
 
 namespace skelcl {
 
-namespace distribution {
-
-template <template <typename> class C, typename T>
-std::unique_ptr< skelcl::detail::Distribution< C<T> > >
-    Block( const C<T>& /*c*/ )
-{
-  return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-            new skelcl::detail::BlockDistribution< C<T> >() );
-}
-
-template <template <typename> class C, typename T>
-std::unique_ptr< skelcl::detail::Distribution< C<T> > >
-    Copy( const C<T>& /*c*/ )
-{
-  return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-            new skelcl::detail::CopyDistribution< C<T> >() );
-}
-
-template <template <typename> class C, typename T>
-std::unique_ptr< skelcl::detail::Distribution< C<T> > >
-    Single( const C<T>& /*c*/ )
-{
-  return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-            new skelcl::detail::SingleDistribution< C<T> >() );
-}
-
-template <template <typename> class C, typename T>
-std::unique_ptr< skelcl::detail::Distribution< C<T> > >
-    Default( const C<T>& /*c*/ )
-{
-  return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-            new skelcl::detail::Distribution< C<T> >() );
-}
-
-} // namespace distribution
-
 namespace detail {
 
-// provide function to clone arbitrary distribution while changing the
-// template argument
+namespace kernelUtil {
 
-template <typename T, typename U, template <typename> class C>
-std::unique_ptr< Distribution< C<T> > >
-    cloneAndConvert(const Distribution< C<U> >& dist)
+void setKernelArgs(cl::Kernel& /*kernel*/,
+                   const Device& /*device*/,
+                   size_t /*index*/)
 {
-  // block distribution
-  auto block = dynamic_cast<const BlockDistribution< C<U> >*>(&dist);
-  if (block != nullptr) {
-    return std::unique_ptr< Distribution< C<T> > >(
-            new BlockDistribution< C<T> >(*block) );
-  }
-
-  // copy distribution
-  auto copy = dynamic_cast<const CopyDistribution< C<U> >*>(&dist);
-  if (copy != nullptr) {
-    return std::unique_ptr< Distribution< C<T> > >(
-            new CopyDistribution< C<T> >(*copy) );
-  }
-
-  // single distribution
-  auto single = dynamic_cast<const SingleDistribution< C<U> >*>(&dist);
-  if (single != nullptr) {
-    return std::unique_ptr< Distribution< C<T> > >(
-            new SingleDistribution< C<T> >(*single) );
-  }
-
-  // default distribution
-  return std::unique_ptr< Distribution< C<T> > >(
-            new Distribution< C<T> >(dist) );
 }
+
+} // namespace kernelUtil
 
 } // namespace detail
 
 } // namespace skelcl
-
-#endif // DISTRIBUTIONS_H_
 
