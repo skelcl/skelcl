@@ -179,7 +179,8 @@ size_t sizeForDevice(const Device::id_type deviceID,
     // add rest ...
     size_t r = size;
     for (const auto& devicePtr : devices) {
-      r -= size * significances.getSignificance(devicePtr->id());
+      r -= static_cast<size_t>(
+             size * significances.getSignificance(devicePtr->id()));
     }
     return (s+r);
   }
