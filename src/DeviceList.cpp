@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
+
 ///
 /// \file DeviceList.cpp
 ///
@@ -50,6 +50,7 @@
 
 #include "SkelCL/detail/Assert.h"
 #include "SkelCL/detail/Device.h"
+#include "SkelCL/detail/DeviceProperties.h"
 #include "SkelCL/detail/Logger.h"
 
 namespace skelcl {
@@ -73,7 +74,7 @@ bool DeviceList::operator==(const DeviceList& rhs) const
   return _devices == rhs._devices;
 }
 
-void DeviceList::init(const size_type maxNumDevices)
+void DeviceList::init(DeviceProperties properties)
 {
   ASSERT(_devices.empty()); // call only once
   try {
@@ -87,25 +88,25 @@ void DeviceList::init(const size_type maxNumDevices)
 
     // for each platform ...
     for (auto& platform : platforms) {
-      // ... get all devices ...
+      // .. get all devices ..
       std::vector<cl::Device> devices;
       platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
 
       LOG_INFO(devices.size(), " device(s) for OpenCL platform `",
-          platform.getInfo<CL_PLATFORM_NAME>(), "' found");
+               platform.getInfo<CL_PLATFORM_NAME>(), "' found");
 
       for (auto& device : devices) {
-        // ... if not max number of devices reached ...
-        if (deviceId == maxNumDevices && maxNumDevices != 0) {
-          LOG_INFO("Skip device, maximum number of devices (", maxNumDevices,
-              ") reached");
-          return; // from function
+        // ... if device not matches properties ..
+        if (!properties.matchAndTake(device)) {
+          LOG_INFO("Skip device `", device.getInfo<CL_DEVICE_NAME>(),
+                   "' not machting given criteria for device selection.");
+          continue; // skip device
         }
-        // ... create Device instance and push into _devices.
+        // ... create Device instance and push into _devices
         _devices.push_back( std::make_shared<Device>(device,
-              platform,
-              deviceId)
-            );
+                                                     platform,
+                                                     deviceId)
+                          );
         ++deviceId;
       }
     }

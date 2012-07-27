@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
+
 ///
 /// \file Device.h
 ///
@@ -65,6 +65,15 @@ class DeviceBuffer;
 class Device {
 public:
   typedef size_t id_type;
+
+  enum Type : size_t {
+    ALL         = CL_DEVICE_TYPE_ALL,
+    ANY         = CL_DEVICE_TYPE_ALL, // just an alias
+    CPU         = CL_DEVICE_TYPE_CPU,
+    GPU         = CL_DEVICE_TYPE_GPU,
+    ACCELERATOR = CL_DEVICE_TYPE_ACCELERATOR,
+    DEFAULT     = CL_DEVICE_TYPE_DEFAULT
+  };
 
   ///
   /// \brief No default constuction allowed
@@ -246,6 +255,8 @@ public:
   /// \return The globally unique identifier identifying this specific device
   ///
   id_type id() const;
+
+  bool isType(Type t) const;
 
   ///
   /// \brief Returns the name of the device as a string

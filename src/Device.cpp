@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
+
 ///
 /// \file Device.cpp
 ///
@@ -309,6 +309,11 @@ void Device::wait() const
 Device::id_type Device::id() const
 {
   return _id;
+}
+
+bool Device::isType(Type t) const
+{
+  return _device.getInfo<CL_DEVICE_TYPE>() == t;
 }
 
 std::string Device::name() const

@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
-  
+
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
@@ -46,7 +46,7 @@ class VectorTest : public ::testing::Test {
 protected:
   VectorTest() {
     skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
-    skelcl::init(1);
+    skelcl::init(skelcl::nDevices(1));
   };
 
   ~VectorTest() {
@@ -110,7 +110,7 @@ TEST_F(VectorTest, CopyWithDataOnDevice) {
   vi.dataOnDeviceModified(); // fake modification on the device
 
   skelcl::Vector<int> copy(vi);
-  
+
   for (unsigned i = 0; i < 5; ++i) {
     vi[i] = 0;
   }
@@ -143,7 +143,7 @@ TEST_F(VectorTest, Resize) {
   skelcl::Vector<int> vi;
   vi.resize(10);
   EXPECT_EQ(10, vi.size());
-  
+
   vi.push_back(5);
   EXPECT_EQ(11, vi.size());
 
@@ -184,7 +184,7 @@ TEST_F(VectorTest, CompleteInitialization) {
   for (int x = 0; x < 1024; ++x)
     for (int y = 0; y < 768; ++y)
       *(inserter++) = Position(x,y);
-  
+
   EXPECT_EQ(1024*768, positions.size());
 
   EXPECT_EQ(23,   positions[23*768+42]._x);

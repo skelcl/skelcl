@@ -37,54 +37,44 @@
 
 #include <gtest/gtest.h>
 
-#include <fstream>
-
 #include <SkelCL/SkelCL.h>
-#include <SkelCL/Vector.h>
-#include <SkelCL/Reduce.h>
-#include <SkelCL/detail/Logger.h>
+#include <SkelCL/detail/Device.h>
+#include <SkelCL/detail/DeviceProperties.h>
+#include <SkelCL/detail/DeviceList.h>
 
-class ReduceTest : public ::testing::Test {
+class DeviceSelectionTest : public ::testing::Test {
 protected:
-  ReduceTest() {
-    //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
-    skelcl::init(skelcl::nDevices(1));
+  DeviceSelectionTest() {
+    // skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
   };
 
-  ~ReduceTest() {
+  ~DeviceSelectionTest() {
     skelcl::terminate();
   };
 };
 
-TEST_F(ReduceTest, CreateReduce) {
-  skelcl::Reduce<float(float)> r("float func(float x, float y){ return x+y; }");
+using namespace skelcl;
+
+TEST_F(DeviceSelectionTest, SelectAll) {
+  skelcl::init(allDevices());
+  EXPECT_GT(skelcl::detail::globalDeviceList.size(), 0);
 }
 
-TEST_F(ReduceTest, SimpleReduce) {
-  skelcl::Reduce<float(float)> r("float func(float x, float y){ return x+y; }");
-
-  skelcl::Vector<float> input(1024);
-  for (size_t i = 0; i < input.size(); ++i) {
-    input[i] = i;
+TEST_F(DeviceSelectionTest, SelectAllGPUs) {
+  skelcl::init( allDevices().deviceType(device_type::GPU) );
+  EXPECT_GT(skelcl::detail::globalDeviceList.size(), 0);
+  for (auto& device : skelcl::detail::globalDeviceList) {
+    EXPECT_TRUE( device->isType(device_type::GPU) );
   }
-
-  skelcl::Vector<float> output = r(input);
-
-  EXPECT_LE(1, output.size());
-  EXPECT_EQ(523776, output[0]);
 }
 
-TEST_F(ReduceTest, SimpleReduce2) {
-  skelcl::Reduce<int(int)> r("int func(int x, int y){ return x+y; }");
-
-  skelcl::Vector<int> input(1587);
-  for (size_t i = 0; i < input.size(); ++i) {
-    input[i] = i;
-  }
-
-  skelcl::Vector<int> output = r(input);
-
-  EXPECT_LE(1, output.size());
-  EXPECT_EQ(1258491, output[0]);
+TEST_F(DeviceSelectionTest, SelectOne) {
+  skelcl::init(nDevices(1));
+  EXPECT_EQ(skelcl::detail::globalDeviceList.size(), 1);
 }
 
+TEST_F(DeviceSelectionTest, SelectOneGPU) {
+  skelcl::init(nDevices(1).deviceType(device_type::GPU));
+  EXPECT_EQ(skelcl::detail::globalDeviceList.size(), 1);
+  EXPECT_TRUE(skelcl::detail::globalDeviceList.front()->isType(skelcl::device_type::GPU));
+}

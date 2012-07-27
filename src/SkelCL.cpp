@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
+
 ///
 /// \file SkelCL.cpp
 ///
@@ -40,12 +40,23 @@
 #include "SkelCL/SkelCL.h"
 
 #include "SkelCL/detail/DeviceList.h"
+#include "SkelCL/detail/DeviceProperties.h"
 
 namespace skelcl {
 
-void init(unsigned int deviceCount)
+void init(detail::DeviceProperties properites)
 {
-  detail::globalDeviceList.init(deviceCount);
+  detail::globalDeviceList.init(std::move(properites));
+}
+
+detail::DeviceProperties allDevices()
+{
+  return detail::DeviceProperties::allDevices();
+}
+
+detail::DeviceProperties nDevices(size_t n)
+{
+  return detail::DeviceProperties::nDevices(n);
 }
 
 void terminate()

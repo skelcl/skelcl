@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
-  
+
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
@@ -59,7 +59,7 @@ void init(ForwardIterator begin, ForwardIterator end)
 
 int main()
 {
-  skelcl::init(1); // initialize SkelCL
+  skelcl::init(skelcl::nDevices(1)); // initialize SkelCL
 
   Zip<int(int,int)> mult("int func(int x, int y){ return x*y; }");
   Reduce<int(int)>    sum("int func(int x, int y){ return x+y; }", "0");

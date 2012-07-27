@@ -12,6 +12,7 @@ set (SKELCL_SOURCES
       Device.cpp
       DeviceBuffer.cpp
       DeviceList.cpp
+      DeviceProperties.cpp
       Event.cpp
       KernelUtil.cpp
       SkelCL.cpp
@@ -44,6 +45,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/Device.h
       ../include/SkelCL/detail/DeviceBuffer.h
       ../include/SkelCL/detail/DeviceList.h
+      ../include/SkelCL/detail/DeviceProperties.h
       ../include/SkelCL/detail/Event.h
       ../include/SkelCL/detail/KernelUtil.h
       ../include/SkelCL/detail/Logger.h
@@ -69,10 +71,10 @@ target_link_libraries (SkelCL ${SKELCL_COMMON_LIBS})
 
 # specify install
 if (OS_LINUX)
-	# specify install into directory DESTINATION/lib
+  # specify install into directory DESTINATION/lib
   install (TARGETS SkelCL
-					 LIBRARY DESTINATION lib
-					 ARCHIVE DESTINATION lib
-					)
+           LIBRARY DESTINATION lib
+           ARCHIVE DESTINATION lib
+          )
 endif (OS_LINUX)
 

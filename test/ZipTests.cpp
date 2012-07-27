@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
-  
+
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
@@ -50,7 +50,7 @@ class ZipTest : public ::testing::Test {
 protected:
   ZipTest() {
 //    skelcl::detail::Logger.setLoggingLevel(skelcl::detail::Severity::Debug);
-    skelcl::init(1);
+    skelcl::init(skelcl::nDevices(1));
   };
 
   ~ZipTest() {

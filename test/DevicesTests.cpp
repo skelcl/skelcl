@@ -37,6 +37,7 @@
 
 #include <gtest/gtest.h>
 
+#include <SkelCL/SkelCL.h>
 #include <SkelCL/detail/DeviceList.h>
 
 class DeviceListTest : public ::testing::Test {
@@ -56,14 +57,14 @@ TEST_F(DeviceListTest, Instance) {
 
 TEST_F(DeviceListTest, DeviceListInitOne) {
   skelcl::detail::DeviceList devices;
-  devices.init(1);
+  devices.init(skelcl::nDevices(1));
   EXPECT_FALSE(devices.empty());
   EXPECT_EQ(1, devices.size());
 }
 
 TEST_F(DeviceListTest, DeviceListInit) {
   skelcl::detail::DeviceList devices;
-  devices.init(); // use all available devices
+  devices.init(skelcl::allDevices());
   EXPECT_FALSE(devices.empty());
   EXPECT_LT(0, devices.size()) << "Expected at least one device";
 }

@@ -44,3 +44,7 @@ add_executable (SHA1Tests SHA1Tests.cpp)
 target_link_libraries (SHA1Tests SkelCL gtest_main ${SKELCL_COMMON_LIBS})
 add_test (SHA1Tests ${CMAKE_CURRENT_BINARY_DIR}/SHA1Tests)
 
+add_executable (DeviceSelectionTests DeviceSelectionTests.cpp)
+target_link_libraries (DeviceSelectionTests SkelCL gtest_main ${SKELCL_COMMON_LIBS})
+add_test (DeviceSelectionTests ${CMAKE_CURRENT_BINARY_DIR}/DeviceSelectionTests)
+

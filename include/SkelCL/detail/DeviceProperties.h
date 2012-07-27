@@ -32,59 +32,85 @@
  *****************************************************************************/
 
 ///
+/// \file DeviceProperties.h
+///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <gtest/gtest.h>
+#ifndef DEVICE_PROPERTIES_H_
+#define DEVICE_PROPERTIES_H_
 
-#include <fstream>
+#include <string>
 
-#include <SkelCL/SkelCL.h>
-#include <SkelCL/Vector.h>
-#include <SkelCL/Reduce.h>
-#include <SkelCL/detail/Logger.h>
+#define __CL_ENABLE_EXCEPTIONS
+#include <CL/cl.hpp>
+#undef  __CL_ENABLE_EXCEPTIONS
 
-class ReduceTest : public ::testing::Test {
-protected:
-  ReduceTest() {
-    //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
-    skelcl::init(skelcl::nDevices(1));
-  };
+#include "Device.h"
 
-  ~ReduceTest() {
-    skelcl::terminate();
-  };
+namespace skelcl {
+
+namespace detail {
+
+class DeviceProperties {
+public:
+  static DeviceProperties nDevices(size_t n);
+
+  static DeviceProperties allDevices();
+
+  virtual ~DeviceProperties();
+
+  bool match(const cl::Device& device) const;
+
+  bool matchAndTake(const cl::Device& device);
+
+  DeviceProperties& deviceType(Device::Type value);
+#if 0
+  void id(Device::id_type value);
+  void name(std::string value);
+  void vendorName(std::string value);
+  void maxClockFrequency(unsigned int value);
+  void minClockFrequency(unsigned int value);
+  void maxComputeUnits(unsigned int value);
+  void minComputeUnits(unsigned int value);
+  void maxWorkGroupSize(size_t value);
+  void minWorkGroupSize(size_t value);
+  void maxWorkGroups(size_t value);
+  void minWorkGroups(size_t value);
+  void globalMemSize(unsigned long value);
+  void localMemSize(unsigned long value);
+  void minGlobalMemSize(unsigned long value);
+  void minLocalMemSize(unsigned long value);
+#endif
+
+private:
+  DeviceProperties();
+
+  Device::Type    _deviceType;
+  bool            _takeAll;
+  size_t          _count;
+#if 0
+  Device::id_type _id;
+  std::string     _name;
+  std::string     _vendorName;
+  unsigned int    _maxClockFrequency;
+  unsigned int    _minClockFrequency;
+  unsigned int    _maxComputeUnits;
+  unsigned int    _minComputeUnits;
+  size_t          _maxWorkGroupSize;
+  size_t          _minWorkGroupSize;
+  size_t          _maxWorkGroups;
+  size_t          _minWorkGroups;
+  unsigned long   _globalMemSize;
+  unsigned long   _localMemSize;
+  unsigned long   _minGlobalMemSize;
+  unsigned long   _minLocalMemSize;
+#endif
 };
 
-TEST_F(ReduceTest, CreateReduce) {
-  skelcl::Reduce<float(float)> r("float func(float x, float y){ return x+y; }");
-}
+} // namespace detail
 
-TEST_F(ReduceTest, SimpleReduce) {
-  skelcl::Reduce<float(float)> r("float func(float x, float y){ return x+y; }");
+} // namespace skelcl
 
-  skelcl::Vector<float> input(1024);
-  for (size_t i = 0; i < input.size(); ++i) {
-    input[i] = i;
-  }
-
-  skelcl::Vector<float> output = r(input);
-
-  EXPECT_LE(1, output.size());
-  EXPECT_EQ(523776, output[0]);
-}
-
-TEST_F(ReduceTest, SimpleReduce2) {
-  skelcl::Reduce<int(int)> r("int func(int x, int y){ return x+y; }");
-
-  skelcl::Vector<int> input(1587);
-  for (size_t i = 0; i < input.size(); ++i) {
-    input[i] = i;
-  }
-
-  skelcl::Vector<int> output = r(input);
-
-  EXPECT_LE(1, output.size());
-  EXPECT_EQ(1258491, output[0]);
-}
+#endif // DEVICE_PROPERTIES_H_
 

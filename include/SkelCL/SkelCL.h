@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
+
 ///
 /// \file SkelCL.h
 ///
@@ -108,18 +108,27 @@
 #ifndef SKELCL_H_
 #define SKELCL_H_
 
+#include "SkelCL/detail/Device.h"
+#include "SkelCL/detail/DeviceProperties.h"
+
 namespace skelcl {
 
-// TODO: Allow for selecting arbitrary types and numbers of devices
+typedef detail::Device::Type device_type;
+
+detail::DeviceProperties allDevices();
+
+detail::DeviceProperties nDevices(size_t n);
+
 ///
 /// \brief Initializes the SkelCL library. This function has to be called
 ///        prior to every other function in the library.
 ///
-/// \param deviceCount Specifies the number of devices to be used by SkelCL.
-///                    The default value of 0 indicates, that all available
-///                    devices should be used.
+/// \param properties Specifies properties about the devices to use
+///                   by default all devices are selected by calling the
+///                   allDevices() function. To select a specific number
+///                   of devices call nDevices(n)
 ///
-void init(unsigned int deviceCount = 0);
+void init(detail::DeviceProperties properties = allDevices());
 
 ///
 /// \brief Frees all resources allocated internally by SkelCL.

@@ -32,59 +32,90 @@
  *****************************************************************************/
 
 ///
+/// \file DeviceProperties.cpp
+///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <gtest/gtest.h>
+#include <string>
+#include <limits>
 
-#include <fstream>
+#include "SkelCL/detail/DeviceProperties.h"
 
-#include <SkelCL/SkelCL.h>
-#include <SkelCL/Vector.h>
-#include <SkelCL/Reduce.h>
-#include <SkelCL/detail/Logger.h>
+namespace {
 
-class ReduceTest : public ::testing::Test {
-protected:
-  ReduceTest() {
-    //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
-    skelcl::init(skelcl::nDevices(1));
-  };
+} // namespace
 
-  ~ReduceTest() {
-    skelcl::terminate();
-  };
-};
+namespace skelcl {
 
-TEST_F(ReduceTest, CreateReduce) {
-  skelcl::Reduce<float(float)> r("float func(float x, float y){ return x+y; }");
+namespace detail {
+
+DeviceProperties DeviceProperties::nDevices(size_t n)
+{
+  DeviceProperties dp;
+  dp._count = n;
+  return dp;
 }
 
-TEST_F(ReduceTest, SimpleReduce) {
-  skelcl::Reduce<float(float)> r("float func(float x, float y){ return x+y; }");
+DeviceProperties DeviceProperties::allDevices()
+{
+  DeviceProperties dp;
+  dp._takeAll = true;
+  return dp;
+}
 
-  skelcl::Vector<float> input(1024);
-  for (size_t i = 0; i < input.size(); ++i) {
-    input[i] = i;
+DeviceProperties::DeviceProperties()
+  : _deviceType(Device::Type::ALL),
+    _takeAll(false),
+    _count(0)//,
+#if 0
+    _id(std::numeric_limits<Device::id_type>::max()),
+    _name(),
+    _vendorName(),
+    _maxClockFrequency(),
+    _minComputeUnits(0),
+    _maxWorkGroupSize(),
+    _minWorkGroupSize(0),
+    _maxWorkGroups(),
+    _minWorkGroups(0),
+    _globalMemSize(),
+    _localMemSize(),
+    _minGlobalMemSize(0),
+    _minLocalMemSize(0)
+#endif
+{
+}
+
+DeviceProperties::~DeviceProperties()
+{
+}
+
+bool DeviceProperties::match(const cl::Device& device) const
+{
+  if (    _deviceType != Device::Type::ALL
+      &&  _deviceType != device.getInfo<CL_DEVICE_TYPE>()) return false;
+  return true;
+}
+
+bool DeviceProperties::matchAndTake(const cl::Device& device)
+{
+  if (match(device)) {
+    if (_takeAll) return true;
+    // _takeAll == false
+    if (_count > 0) {
+      --_count; // take device out of set
+      return true;
+    }
   }
-
-  skelcl::Vector<float> output = r(input);
-
-  EXPECT_LE(1, output.size());
-  EXPECT_EQ(523776, output[0]);
+  return false;
 }
 
-TEST_F(ReduceTest, SimpleReduce2) {
-  skelcl::Reduce<int(int)> r("int func(int x, int y){ return x+y; }");
-
-  skelcl::Vector<int> input(1587);
-  for (size_t i = 0; i < input.size(); ++i) {
-    input[i] = i;
-  }
-
-  skelcl::Vector<int> output = r(input);
-
-  EXPECT_LE(1, output.size());
-  EXPECT_EQ(1258491, output[0]);
+DeviceProperties& DeviceProperties::deviceType(Device::Type value)
+{
+  _deviceType = value;
+  return *this;
 }
 
+} // namespace detail
+
+} // namespace skelcl

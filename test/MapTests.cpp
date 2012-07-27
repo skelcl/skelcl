@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
-  
+
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
@@ -50,7 +50,7 @@ class MapTest : public ::testing::Test {
 protected:
   MapTest() {
     // skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
-    skelcl::init(1);
+    skelcl::init(skelcl::nDevices(1));
   };
 
   ~MapTest() {
@@ -106,7 +106,7 @@ TEST_F(MapTest, SimpleMap) {
 
 TEST_F(MapTest, SimpleMultiDeviceMap) {
   skelcl::terminate();
-  skelcl::init(2);
+  skelcl::init(skelcl::nDevices(2));
   skelcl::Map<float(float)> m{ "float func(float f){ return -f; }" };
 
   skelcl::Vector<float> input(10);

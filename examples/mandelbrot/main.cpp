@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
-  
+
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
@@ -46,14 +46,14 @@
 #include <SkelCL/detail/Logger.h>
 
 typedef struct {
-	unsigned short x;
-	unsigned short y;
+  unsigned short x;
+  unsigned short y;
 } Position;
 
 typedef struct {
-	unsigned char r;
-	unsigned char g;
-	unsigned char b;
+  unsigned char r;
+  unsigned char g;
+  unsigned char b;
 } Pixel;
 
 #define ITERATIONS 100
@@ -127,7 +127,7 @@ void mandelbrot()
 int main()
 {
   //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
-  skelcl::init(2);
+  skelcl::init(skelcl::nDevices(2));
   mandelbrot();
   return 0;
 }

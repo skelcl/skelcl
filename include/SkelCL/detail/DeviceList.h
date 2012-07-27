@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
+
 ///
 /// \file DeviceList.h
 ///
@@ -53,6 +53,8 @@
 namespace skelcl {
 
 namespace detail {
+
+class DeviceProperties;
 
 class DeviceList {
   typedef std::shared_ptr<Device> device_ptr;
@@ -82,7 +84,7 @@ public:
 
   bool operator==(const DeviceList& rhs) const;
 
-  void init(const size_type maxNumDevices = 0);
+  void init(DeviceProperties properties);
 
   void clear();
 
