@@ -51,16 +51,8 @@ std::string createTmpFile(const std::string& content,
   std::ofstream tmpFile(tmpFileName, std::ios_base::trunc);
   { // TODO: remove when libclang is able to parse OpenCL C code
     std::string openCLFix("\
-#define __kernel\n\
-#define kernel\n\
-#define __global\n\
-#define global\n\
-#define __local\n\
-#define local\n\
-#define __constant\n\
-#define constant\n\
-#define __private\n\
-#define private\n\
+#define float4 float\n\
+#define float16 float\n\
 /*!!*/\n");
     tmpFile.write(openCLFix.c_str(), static_cast<long>(openCLFix.size()));
   }

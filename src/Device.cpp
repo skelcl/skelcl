@@ -157,6 +157,7 @@ cl::Event Device::enqueueWrite(const  DeviceBuffer& buffer,
                                        +(hostOffset * buffer.elemSize() ) ),
                                      NULL,
                                      &event);
+    _commandQueue.flush(); // always start operation right away
   } catch (cl::Error& err) {
     ABORT_WITH_ERROR(err);
   }
@@ -164,10 +165,11 @@ cl::Event Device::enqueueWrite(const  DeviceBuffer& buffer,
   LOG_DEBUG("Enqueued write buffer for device ", _id,
             " (size: ", buffer.sizeInBytes(),
             ", clBuffer: ", buffer.clBuffer()(),
+            ", deviceOffset: 0",
             ", hostPointer: ", static_cast<const void*>(
                                   static_cast<const char*>(hostPointer)
                                 + (hostOffset * buffer.elemSize()) ),
-            ", offset: ", hostOffset*buffer.elemSize() ,")");
+            ", hostOffset: ", hostOffset*buffer.elemSize() ,")");
   return event;
 }
 
@@ -189,6 +191,7 @@ cl::Event Device::enqueueWrite(const  DeviceBuffer& buffer,
                                        +(hostOffset * buffer.elemSize() ) ),
                                      NULL,
                                      &event);
+    _commandQueue.flush(); // always start operation right away
   } catch (cl::Error& err) {
     ABORT_WITH_ERROR(err);
   }
@@ -196,10 +199,11 @@ cl::Event Device::enqueueWrite(const  DeviceBuffer& buffer,
   LOG_DEBUG("Enqueued write buffer for device ", _id,
             " (size: ", size * buffer.elemSize(),
             ", clBuffer: ", buffer.clBuffer()(),
+            ", deviceOffset: ", deviceOffset*buffer.elemSize(),
             ", hostPointer: ", static_cast<void*const>(
                                   static_cast<char*const>(hostPointer)
                                 + (hostOffset * buffer.elemSize()) ),
-            ", offset: ", hostOffset*buffer.elemSize() ,")");
+            ", hostOffset: ", hostOffset*buffer.elemSize() ,")");
   return event;
 }
 
@@ -219,6 +223,7 @@ cl::Event Device::enqueueRead(const DeviceBuffer& buffer,
                                       +(hostOffset * buffer.elemSize()) ),
                                     NULL,
                                     &event);
+    _commandQueue.flush(); // always start operation right away
   } catch (cl::Error& err) {
     ABORT_WITH_ERROR(err);
   }
@@ -226,10 +231,11 @@ cl::Event Device::enqueueRead(const DeviceBuffer& buffer,
   LOG_DEBUG("Enqueued read buffer for device ", _id,
             " (size: ", buffer.sizeInBytes(),
             ", clBuffer: ", buffer.clBuffer()(),
+            ", deviceOffset: 0",
             ", hostPointer: ", static_cast<void*>(
                                   static_cast<char*const>(hostPointer)
                                 + (hostOffset * buffer.elemSize()) ),
-            ", offset: ", hostOffset * buffer.elemSize() ,")");
+            ", hostOffset: ", hostOffset * buffer.elemSize() ,")");
   return event;
 }
 
@@ -251,6 +257,7 @@ cl::Event Device::enqueueRead(const DeviceBuffer& buffer,
                                       +(hostOffset * buffer.elemSize()) ),
                                     NULL,
                                     &event);
+    _commandQueue.flush(); // always start operation right away
   } catch (cl::Error& err) {
     ABORT_WITH_ERROR(err);
   }
@@ -258,10 +265,11 @@ cl::Event Device::enqueueRead(const DeviceBuffer& buffer,
   LOG_DEBUG("Enqueued read buffer for device ", _id,
             " (size: ", size * buffer.elemSize(),
             ", clBuffer: ", buffer.clBuffer()(),
+            ", deviceOffset: ", deviceOffset * buffer.elemSize(),
             ", hostPointer: ", static_cast<void*>(
                                   static_cast<char*const>(hostPointer)
                                 + (hostOffset * buffer.elemSize()) ),
-            ", offset: ", hostOffset * buffer.elemSize() ,")");
+            ", hostOffset: ", hostOffset * buffer.elemSize() ,")");
   return event;
 }
 
@@ -281,6 +289,7 @@ cl::Event Device::enqueueCopy(const DeviceBuffer& from,
                                     from.sizeInBytes() - fromOffset,
                                     NULL,
                                     &event);
+    _commandQueue.flush(); // always start operation right away
   } catch (cl::Error& err) {
     ABORT_WITH_ERROR(err);
   }

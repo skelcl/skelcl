@@ -65,6 +65,34 @@ struct IsReferenceOfCursor {
   Cursor _cursor;
 };
 
+// adds __global modifier, if no global modifier is found
+// if a local modifier is found, it is replaced
+// after this function call the paramToken definetly
+// contains a global modifer
+void addGlobalAddressSpaceModifier(std::string* paramToken)
+{
+  // __global, global, __local and local are OpenCL keywords and can,
+  // therefore, not be used as variable names => simple searching for them
+  // should be sufficient enough (ignoring e.g. comments)
+
+  if (   paramToken->find("__global") == std::string::npos
+      && paramToken->find("global")   == std::string::npos ) {
+    // if global modifier cannot be found look for local modifier
+    auto pos      = paramToken->find("__local");
+    size_t length = 7; // length of __local
+    if (pos == std::string::npos) {
+      pos    = paramToken->find("local");
+      length = 5; // length of local
+    }
+
+    if (pos != std::string::npos) { // local modifier found => replace
+      paramToken->replace(pos, length, "__global");
+    } else { // local modifer also not found => add global modifer
+      paramToken->insert(0, "__global ");
+    }
+  }
+}
+
 } // unnamed namespace
 
 namespace ssedit {
@@ -123,10 +151,10 @@ SourceFile& SourceFile::operator=(const SourceFile& rhs)
 CXTranslationUnit SourceFile::parse(const std::string& fileName)
 {
   CXTranslationUnit tu;
-#if 0
-  const char* command_line_args = "-x cl";
+#if 1
+  const char* command_line_args[] = {"-x", "cl"};
   tu = clang_parseTranslationUnit(_index, fileName.c_str(),
-                                  &command_line_args, 1, NULL, 0,
+                                  command_line_args, 2, NULL, 0,
                                   CXTranslationUnit_None);
 #else
   tu = clang_parseTranslationUnit(_index, fileName.c_str(),
@@ -231,14 +259,8 @@ void SourceFile::commitAppendParameter(Function& func, Parameter& param)
 
   SourceRange paramRange = param.getCursor().getExtent();
 
-  // get new token from file content
-  std::string paramToken(",");
-  // TODO: remove when clang can parse OpenCL C code properly
-  // const __global type* syntax shouldn't be used!
-  // instead use __global const type* syntax
-  if (param.getType().isPointer()) {
-    paramToken.append("__global ");
-  }
+  // read new token from file
+  std::string paramToken;
   {
     std::ifstream file(getFileName());
 
@@ -250,8 +272,13 @@ void SourceFile::commitAppendParameter(Function& func, Parameter& param)
     paramToken.append( buffer.get(), paramRange.length() );
   }
 
+  if (param.getType().isPointer()) {
+    // add global address space modifier (if necessary)
+    ::addGlobalAddressSpaceModifier(&paramToken);
+  }
+
   _deltaTree.insertDelta( Delta(SourceRange(insertLoc, insertLoc),
-                                paramToken,
+                                "," + paramToken,
                                 Delta::INSERT) );
 }
 

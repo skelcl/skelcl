@@ -41,6 +41,7 @@
 
 #include "SkelCL/detail/DeviceList.h"
 #include "SkelCL/detail/DeviceProperties.h"
+#include "SkelCL/detail/Logger.h"
 
 namespace skelcl {
 
@@ -62,6 +63,7 @@ detail::DeviceProperties nDevices(size_t n)
 void terminate()
 {
   detail::globalDeviceList.clear();
+  LOG_INFO("SkelCL terminating. Releasing all devices.");
 }
 
 } // namespace skelcl

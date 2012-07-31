@@ -47,7 +47,7 @@ protected:
   FunctionInfoTest()
     : _testFileName("TestSource.cpp"),
       _input(
-R"(int foo(float f, const char& c) {
+R"(int foo(float f, const char* c) {
   return f + c;
 })") {
     std::ofstream testFile(_testFileName, std::ios_base::trunc);

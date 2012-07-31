@@ -45,9 +45,9 @@
 class ParameterInfoTest : public ::testing::Test {
 protected:
   ParameterInfoTest()
-    : _testFileName("TestSource.cpp"),
+    : _testFileName("TestSource.cl"),
       _input(
-R"(int foo(float f, const char& c, int* ip, const char carr[]) {
+R"(int foo(float f, const char c, int* ip, const char carr[]) {
   return f + c + *ip + carr[0] + carr[1];
 })") {
     std::ofstream testFile(_testFileName, std::ios_base::trunc);
@@ -86,12 +86,12 @@ TEST_F(ParameterInfoTest, ParameterTypeInfo) {
   EXPECT_FALSE(first.getType().isConstantQualified());
 
   ssedit::Parameter second(foo.getParameters()[1]);
-  EXPECT_EQ("LValueReference", second.getType().getKindSpelling());
-  EXPECT_EQ("LValueReference", second.getType().getCanonicalType().getKindSpelling()); // TODO
-  EXPECT_EQ("Char_S", second.getType().getPointeeType().getKindSpelling()); // TODO
-  EXPECT_FALSE(second.getType().isPOD());
+  EXPECT_EQ("Char_S", second.getType().getKindSpelling());
+  EXPECT_EQ("Char_S", second.getType().getCanonicalType().getKindSpelling());
+  EXPECT_EQ("Invalid", second.getType().getPointeeType().getKindSpelling());
+  EXPECT_TRUE(second.getType().isPOD());
   EXPECT_FALSE(second.getType().isPointer());
-  EXPECT_FALSE(second.getType().isConstantQualified()); // TODO
+  EXPECT_TRUE(second.getType().isConstantQualified());
 
   ssedit::Parameter third(foo.getParameters()[2]);
   EXPECT_EQ("Pointer", third.getType().getKindSpelling());
