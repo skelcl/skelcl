@@ -46,6 +46,7 @@
 
 namespace skelcl {
 
+template <typename> class Matrix;
 template <typename> class Vector;
 
 namespace detail {
@@ -90,6 +91,12 @@ namespace block_distribution_helper {
 template <typename T>
 size_t sizeForDevice(const Device::id_type deviceID,
                      const typename Vector<T>::size_type size,
+                     const DeviceList& devices,
+                     const Significances& significances);
+
+template <typename T>
+size_t sizeForDevice(const Device::id_type deviceID,
+                     const typename Matrix<T>::size_type size,
                      const DeviceList& devices,
                      const Significances& significances);
 

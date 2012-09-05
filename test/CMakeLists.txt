@@ -48,3 +48,7 @@ add_executable (DeviceSelectionTests DeviceSelectionTests.cpp)
 target_link_libraries (DeviceSelectionTests SkelCL gtest_main ${SKELCL_COMMON_LIBS})
 add_test (DeviceSelectionTests ${CMAKE_CURRENT_BINARY_DIR}/DeviceSelectionTests)
 
+add_executable (MatrixTests MatrixTests.cpp)
+target_link_libraries (MatrixTests SkelCL gtest_main ${SKELCL_COMMON_LIBS})
+add_test (MatrixTests ${CMAKE_CURRENT_BINARY_DIR}/MatrixTests)
+

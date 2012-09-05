@@ -186,6 +186,28 @@ size_t sizeForDevice(const Device::id_type deviceID,
   }
 }
 
+template <typename T>
+size_t sizeForDevice(const Device::id_type deviceID,
+                     const typename Matrix<T>::size_type size,
+                     const DeviceList& devices,
+                     const Significances& significances)
+{
+  if (deviceID < devices.size() - 1) {
+    auto s = static_cast<size_t>(
+               size.rowCount() * significances.getSignificance(deviceID) );
+    return s * size.columnCount();
+  } else { // "last" device
+    auto s = static_cast<size_t>(
+               size.rowCount() * significances.getSignificance(deviceID) );
+    // add rest ...
+    auto r = size.rowCount();
+    for (const auto& devicePtr : devices) {
+      r -= size.rowCount() * significances.getSignificance(devicePtr->id());
+    }
+    return (s+r) * size.columnCount();
+  }
+}
+
 } // namespace block_distribution_helper
 
 } // namespace detail

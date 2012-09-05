@@ -144,6 +144,12 @@ size_t sizeForDevice(const typename Vector<T>::size_type size)
   return size;
 }
 
+template <typename T>
+size_t sizeForDevice(const typename Matrix<T>::size_type size)
+{
+  return size.elemCount();
+}
+
 } // namespace single_distribution_helper
 
 } // namespace detail

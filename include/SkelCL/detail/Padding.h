@@ -32,67 +32,26 @@
  *****************************************************************************/
 
 ///
-/// \file SingleDistribution.h
+///  Padding.h
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+/// \author Matthiass Buss
 ///
 
-#ifndef SINGLE_DISTRIBUTION_H_
-#define SINGLE_DISTRIBUTION_H_
-
-#include "Distribution.h"
+#ifndef PADDING_H_
+#define PADDING_H_
 
 namespace skelcl {
 
-template <typename> class Matrix;
-template <typename> class Vector;
-
 namespace detail {
 
-template <typename> class SingleDistribution;
-
-template <template <typename> class C, typename T>
-class SingleDistribution< C<T> > : public Distribution< C<T> > {
-public:
-  SingleDistribution(std::shared_ptr<Device> device = detail::globalDeviceList.front());
-
-  template <typename U>
-  SingleDistribution( const SingleDistribution< C<U> >& rhs);
-
-  ~SingleDistribution();
-
-  bool isValid() const;
-
-  void startUpload(C<T>& container,
-                   Event* events) const;
-
-  void startDownload(C<T>& container,
-                     Event* events) const;
-
-  size_t sizeForDevice(C<T>& container,
-                       const detail::Device::id_type id) const;
-
-  bool dataExchangeOnDistributionChange(Distribution< C<T> >& newDistribution);
-
-private:
-  bool doCompare(const Distribution< C<T> >& rhs) const;
+enum class Padding {
+  NEUTRAL,
+  NEAREST
 };
-
-namespace single_distribution_helper {
-
-template <typename T>
-size_t sizeForDevice(const typename Vector<T>::size_type size);
-
-template <typename T>
-size_t sizeForDevice(const typename Matrix<T>::size_type size);
-
-} // namespace single_distribution_helper
 
 } // namespace detail
 
 } // namespace skelcl
 
-#include "SingleDistributionDef.h"
-
-#endif // SINGLE_DISTRIBUTION_H_
-
+#endif // PADDING_H_

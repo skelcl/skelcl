@@ -98,6 +98,8 @@ public:
   template <typename U>
   Distribution& operator=(Distribution< C<U> >&& rhs);
 
+  static std::shared_ptr<Distribution> Overlap();
+
   ///
   /// \brief Comparison operator
   ///

@@ -125,3 +125,32 @@ TEST_F(ZipTest, AddArgs) {
   }
 }
 
+TEST_F(ZipTest, SimpleZip2D) {
+  skelcl::Zip<float(float,float)> z(
+    "float func(float mat1,float mat2)""{ return mat1 + mat2; }");
+
+  std::vector<float> left(10);
+  for (size_t i = 0; i < left.size(); ++i) {
+    left[i] = i * 2.5f;
+  }
+  skelcl::Matrix<float> matrix_left(left, 3);
+  EXPECT_EQ(skelcl::Matrix<float>::size_type(4,3), matrix_left.size());
+
+  std::vector<float> right(10);
+  for (size_t i = 0; i < right.size(); ++i) {
+    right[i] = i * 7.5f;
+  }
+  skelcl::Matrix<float> matrix_right(right,3);
+  EXPECT_EQ(skelcl::Matrix<float>::size_type(4,3), matrix_right.size());
+
+  auto output = z(matrix_left, matrix_right);
+
+  EXPECT_EQ(matrix_left.size(), output.size());
+
+  for (size_t i = 0; i < output.rowCount(); ++i) {
+    for(size_t j = 0; j < output.columnCount(); ++j) {
+      EXPECT_EQ(matrix_left[i][j] + matrix_right[i][j], output[i][j]);
+    }
+  }
+}
+

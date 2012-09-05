@@ -32,67 +32,66 @@
  *****************************************************************************/
 
 ///
-/// \file SingleDistribution.h
-///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef SINGLE_DISTRIBUTION_H_
-#define SINGLE_DISTRIBUTION_H_
+#include <gtest/gtest.h>
 
-#include "Distribution.h"
+#include <SkelCL/Distributions.h>
+#include <SkelCL/SkelCL.h>
+#include <SkelCL/Matrix.h>
+#include <SkelCL/detail/Logger.h>
 
-namespace skelcl {
+class MatrixTest : public ::testing::Test {
+protected:
+  MatrixTest() {
+    skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+    skelcl::init(1);
+  };
 
-template <typename> class Matrix;
-template <typename> class Vector;
-
-namespace detail {
-
-template <typename> class SingleDistribution;
-
-template <template <typename> class C, typename T>
-class SingleDistribution< C<T> > : public Distribution< C<T> > {
-public:
-  SingleDistribution(std::shared_ptr<Device> device = detail::globalDeviceList.front());
-
-  template <typename U>
-  SingleDistribution( const SingleDistribution< C<U> >& rhs);
-
-  ~SingleDistribution();
-
-  bool isValid() const;
-
-  void startUpload(C<T>& container,
-                   Event* events) const;
-
-  void startDownload(C<T>& container,
-                     Event* events) const;
-
-  size_t sizeForDevice(C<T>& container,
-                       const detail::Device::id_type id) const;
-
-  bool dataExchangeOnDistributionChange(Distribution< C<T> >& newDistribution);
-
-private:
-  bool doCompare(const Distribution< C<T> >& rhs) const;
+  ~MatrixTest() {
+    skelcl::terminate();
+  };
 };
 
-namespace single_distribution_helper {
+TEST_F(MatrixTest, CreateEmptyMatrix) {
+  skelcl::Matrix<int> mi;
 
-template <typename T>
-size_t sizeForDevice(const typename Vector<T>::size_type size);
+  EXPECT_TRUE(mi.empty());
+  EXPECT_EQ( skelcl::MatrixSize(0,0) , mi.size());
+}
 
-template <typename T>
-size_t sizeForDevice(const typename Matrix<T>::size_type size);
+TEST_F(MatrixTest, CreateMatrix) {
+  skelcl::Matrix<int> mi( {10,10} );
 
-} // namespace single_distribution_helper
+  EXPECT_FALSE(mi.empty());
+  EXPECT_EQ(100, mi.size().elemCount());
+  EXPECT_EQ(0, *mi.begin());
+  for (int i = 0; i < 10; ++i) {
+    for (int j = 0; j < 10; ++j) {
+      EXPECT_EQ(0, mi({i,j}));
+    }
+  }
+}
 
-} // namespace detail
+TEST_F(MatrixTest, CreateMatrixFrom2DVector) {
+  std::vector<std::vector<int> > vec(10);
+  for (int i = 0; i < 10; ++i) {
+    vec[i].resize(10);
+    for (int j = 0; j < 10; ++j) {
+      vec[i][j] = i*j;
+    }
+  }
 
-} // namespace skelcl
+  skelcl::Matrix<int> mi = skelcl::Matrix<int>::from2DVector(vec);
 
-#include "SingleDistributionDef.h"
+  EXPECT_FALSE(mi.empty());
+  EXPECT_EQ(100, mi.size().elemCount());
+  for (int i = 0; i < 10; ++i) {
+    for (int j = 0; j < 10; ++j) {
+      EXPECT_EQ(i*j, mi[i][j]);
+    }
+  }
 
-#endif // SINGLE_DISTRIBUTION_H_
+}
 

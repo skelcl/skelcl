@@ -44,6 +44,7 @@
 
 namespace skelcl {
 
+template <typename> class Matrix;
 template <typename> class Vector;
 
 namespace detail {
@@ -87,6 +88,9 @@ namespace copy_distribution_helper {
 
 template <typename T>
 size_t sizeForDevice(const typename Vector<T>::size_type size);
+
+template <typename T>
+size_t sizeForDevice(const typename Matrix<T>::size_type size);
 
 } // namespace copy_distribution_helper
 

@@ -42,6 +42,7 @@
 #include <cstdio>
 
 #include <SkelCL/SkelCL.h>
+#include <SkelCL/Matrix.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/Map.h>
 #include <SkelCL/detail/Logger.h>
@@ -184,5 +185,92 @@ TEST_F(MapTest, TempInputVector) {
 
   for (size_t i = 0; i < output.size(); ++i) {
     EXPECT_EQ(-input[i], output[i]);
+  }
+}
+
+TEST_F(MapTest, SimpleMap2D) {
+  skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+  skelcl::Map<float(float)> m("float func(float f){ return -f; }");
+
+  std::vector<float> vec(10);
+  for (size_t i = 0; i < vec.size(); ++i) {
+    vec[i] = static_cast<float>(i);
+  }
+
+  skelcl::Matrix<float> input(vec, 3);
+  EXPECT_EQ(skelcl::Matrix<float>::size_type(4,3), input.size());
+
+  skelcl::Matrix<float> output = m(input);
+
+  EXPECT_EQ(input.size(), output.size());
+
+  for (size_t i = 0; i < output.rowCount(); ++i) {
+    for(size_t j = 0; j < output.columnCount(); ++j) {
+      EXPECT_EQ(-input({i,j}), output({i,j}));
+      EXPECT_EQ(-input[i][j], output[i][j]);
+    }
+  }
+}
+
+TEST_F(MapTest, MatrixAddArgs) {
+  skelcl::Map<float(float)> m(
+        "float func(float f, float add, float add2) { return f+add+add2; }");
+
+  std::vector<float> vec(10);
+  for (size_t i = 0; i < 10; ++i) {
+    vec[i] = static_cast<float>(i*2.5f);
+  }
+
+  skelcl::Matrix<float> input(vec,3);
+  EXPECT_EQ(skelcl::Matrix<float>::size_type(4,3), input.size());
+
+  float add  = 5.25f;
+  float add2 = 7.75f;
+
+  skelcl::Matrix<float> output = m(input, add, add2);
+
+  EXPECT_EQ(input.size(), output.size());
+
+  for (size_t i = 0; i < output.rowCount(); ++i) {
+      for (size_t j = 0; j < output.columnCount(); ++j) {
+        EXPECT_EQ(input({i,j})+add+add2, output({i,j}));
+      }
+  }
+}
+
+TEST_F(MapTest, MatrixAddArgsMatrix) {
+  skelcl::Map<float(float)> m(R"(
+float func( float f,__global float* mat, uint mat_col_count, float add2)
+{
+  return f + get(mat, 1, 1) + add2;
+}
+)");
+
+  std::vector<float> vec(10);
+  for (size_t i = 0; i < 10; ++i) {
+    vec[i] = static_cast<float>(i * 2.5f);
+  }
+
+  skelcl::Matrix<float> input(vec,3);
+  EXPECT_EQ(skelcl::Matrix<float>::size_type(4,3), input.size());
+
+  std::vector<float> vec2(10);
+  for (size_t i = 0; i < 10; ++i) {
+    vec[i] = static_cast<float>(i);
+  }
+
+  skelcl::Matrix<float> mat(vec2, 3);
+  EXPECT_EQ(skelcl::Matrix<float>::size_type(4,3), mat.size());
+
+  float add2 = 7.75f;
+
+  skelcl::Matrix<float> output = m(input, mat, add2);
+
+  EXPECT_EQ(input.size(), output.size());
+
+  for (size_t i = 0; i < output.rowCount(); ++i) {
+      for(size_t j = 0; j < output.columnCount(); ++j) {
+        EXPECT_EQ(input[i][j]+mat({1,1})+add2, output[i][j]);
+      }
   }
 }
