@@ -62,7 +62,7 @@ TEST_F(MatrixTest, CreateEmptyMatrix) {
 }
 
 TEST_F(MatrixTest, CreateMatrix) {
-  skelcl::Matrix<int> mi( skelcl::MatrixSize{10,10} );
+  skelcl::Matrix<int> mi( {10,10} );
 
   EXPECT_FALSE(mi.empty());
   EXPECT_EQ(100, mi.size().elemCount());
@@ -73,3 +73,25 @@ TEST_F(MatrixTest, CreateMatrix) {
     }
   }
 }
+
+TEST_F(MatrixTest, CreateMatrixFrom2DVector) {
+  std::vector<std::vector<int> > vec(10);
+  for (int i = 0; i < 10; ++i) {
+    vec[i].resize(10);
+    for (int j = 0; j < 10; ++j) {
+      vec[i][j] = i*j;
+    }
+  }
+
+  skelcl::Matrix<int> mi = skelcl::Matrix<int>::from2DVector(vec);
+
+  EXPECT_FALSE(mi.empty());
+  EXPECT_EQ(100, mi.size().elemCount());
+  for (int i = 0; i < 10; ++i) {
+    for (int j = 0; j < 10; ++j) {
+      EXPECT_EQ(i*j, mi[i][j]);
+    }
+  }
+
+}
+

@@ -131,10 +131,10 @@ public:
          const detail::Distribution< Matrix<T> >& distribution = detail::Distribution< Matrix<T> >());
 
   ///
-  /// \brief constructor with 2 dim std::vector as parameter
+  /// \brief static function creating a matrix from 2 dim std::vector as parameter
   ///
-  Matrix(const std::vector<std::vector<T> >& matrix,
-         const detail::Distribution< Matrix<T> >& distribution = detail::Distribution< Matrix<T> >());
+  static Matrix<T> from2DVector(const std::vector<std::vector<T> >& matrix,
+                                const detail::Distribution< Matrix<T> >& distribution = detail::Distribution< Matrix<T> >());
 
   ///
   /// \brief constructor with 2 iterators and the number of columns as parameter

@@ -211,26 +211,28 @@ Matrix<T>::Matrix(const std::vector<T>& vector,
 }
 
 template <typename T>
-Matrix<T>::Matrix(const std::vector<std::vector<T> >& matrix,
-                  const detail::Distribution< Matrix<T> >& distribution)
-  : _size( {matrix.size(), matrix[0].size()} ),
-    _distribution(detail::cloneAndConvert<T>(distribution)),
-    _hostBufferUpToDate(true),
-    _deviceBuffersUpToDate(false),
-    _hostBuffer(_size.elemCount()),
-    _deviceBuffers()
+Matrix<T>
+  Matrix<T>::from2DVector(const std::vector<std::vector<T> >& input,
+                          const detail::Distribution< Matrix<T> >& distribution)
 {
+  Matrix<T> matrix;
+  matrix._size = {input.size(), input[0].size()};
+  matrix._distribution = detail::cloneAndConvert<T>(distribution);
+  matrix._hostBufferUpToDate = true;
+  matrix._deviceBuffersUpToDate = false;
+  matrix._hostBuffer.resize(matrix._size.elemCount());
   // start at the beginning
-  auto iter = _hostBuffer.begin();
+  auto iter = matrix._hostBuffer.begin();
   // for each row ...
-  for (size_t row = 0; row < matrix.size(); ++row) {
+  for (size_t row = 0; row < input.size(); ++row) {
     // ... copy the row into the host buffer ...
-    std::copy(matrix[row].begin(), matrix[row].end(),
+    std::copy(input[row].begin(), input[row].end(),
               iter);
     // ... advance pointer in host buffer
-    std::advance(iter, _size.columnCount());
+    std::advance(iter, matrix._size.columnCount());
   }
-  LOG_DEBUG("Created new Matrix object (", this, " with ", getDebugInfo());
+  LOG_DEBUG("Created new Matrix object (", &matrix, " with ", matrix.getDebugInfo());
+  return matrix;
 }
 
 template <typename T>
