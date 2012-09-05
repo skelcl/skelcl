@@ -46,7 +46,8 @@ class MatrixTest : public ::testing::Test {
 protected:
   MatrixTest() {
     skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
-    skelcl::init(1);
+    skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+    skelcl::init(skelcl::nDevices(1));
   };
 
   ~MatrixTest() {
