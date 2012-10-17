@@ -43,7 +43,7 @@
 #include <vector>
 
 #define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.h>
+#include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
 #include "../Matrix.h"
@@ -171,7 +171,7 @@ void setKernelArgs(cl::Kernel& kernel,
   }
   // set matrix column count as next argument
   setKernelArgs( kernel, device, ++index,
-                 (unsigned int) matrix.columnCount(),
+                 static_cast<unsigned int>( matrix.columnCount() ),
                  std::forward<Args>(args)... );
 }
 

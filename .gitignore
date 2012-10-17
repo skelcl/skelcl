@@ -1,3 +1,4 @@
+*.swp
 *.user
 build*
 libraries/gtest

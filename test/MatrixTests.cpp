@@ -68,8 +68,8 @@ TEST_F(MatrixTest, CreateMatrix) {
   EXPECT_FALSE(mi.empty());
   EXPECT_EQ(100, mi.size().elemCount());
   EXPECT_EQ(0, *mi.begin());
-  for (int i = 0; i < 10; ++i) {
-    for (int j = 0; j < 10; ++j) {
+  for (size_t i = 0; i < 10; ++i) {
+    for (size_t j = 0; j < 10; ++j) {
       EXPECT_EQ(0, mi({i,j}));
     }
   }
@@ -77,9 +77,9 @@ TEST_F(MatrixTest, CreateMatrix) {
 
 TEST_F(MatrixTest, CreateMatrixFrom2DVector) {
   std::vector<std::vector<int> > vec(10);
-  for (int i = 0; i < 10; ++i) {
+  for (size_t i = 0; i < 10; ++i) {
     vec[i].resize(10);
-    for (int j = 0; j < 10; ++j) {
+    for (size_t j = 0; j < 10; ++j) {
       vec[i][j] = i*j;
     }
   }
@@ -88,8 +88,8 @@ TEST_F(MatrixTest, CreateMatrixFrom2DVector) {
 
   EXPECT_FALSE(mi.empty());
   EXPECT_EQ(100, mi.size().elemCount());
-  for (int i = 0; i < 10; ++i) {
-    for (int j = 0; j < 10; ++j) {
+  for (size_t i = 0; i < 10; ++i) {
+    for (size_t j = 0; j < 10; ++j) {
       EXPECT_EQ(i*j, mi[i][j]);
     }
   }
