@@ -102,6 +102,8 @@ C<Tout>& Zip<Tout(Tleft, Tright)>::operator()(Out< C<Tout> > output,
 
   prepareInput(left, right);
 
+  prepareAdditionalInput(std::forward<Args>(args)...);
+
   prepareOutput(output.container(), left, right);
 
   execute(program, output.container(), left, right, std::forward<Args>(args)...);
