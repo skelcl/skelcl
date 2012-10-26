@@ -248,8 +248,8 @@ typename detail::Sizes Vector<T>::sizes() const
 
   detail::Sizes s;
   for (auto& devicePtr : _distribution->devices()) {
-    s.push_back(this->_distribution->sizeForDevice(devicePtr->id(),
-                                                   _size));
+    s.push_back(this->_distribution->sizeForDevice(*this,
+                                                  devicePtr->id()));
   }
   return s;
 }

@@ -69,7 +69,7 @@ public:
   void startDownload(C<T>& container,
                      Event* events) const;
 
-  size_t sizeForDevice(C<T>& container,
+  size_t sizeForDevice(const C<T>& container,
                        const detail::Device::id_type id) const;
 
   bool dataExchangeOnDistributionChange(Distribution< C<T> >& newDistribution);

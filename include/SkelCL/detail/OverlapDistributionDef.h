@@ -315,7 +315,7 @@ void OverlapDistribution< Matrix<T> >::startDownload(Matrix<T>& matrix,
 }
 
 template <typename T>
-size_t OverlapDistribution< Matrix<T> >::sizeForDevice(Vector<T>& vector,
+size_t OverlapDistribution< Matrix<T> >::sizeForDevice(const Vector<T>& vector,
                                                        const detail::Device::id_type id) const
 {
   if (id < _devices.size() - 1) {
@@ -333,7 +333,7 @@ size_t OverlapDistribution< Matrix<T> >::sizeForDevice(Vector<T>& vector,
 }
 
 template <typename T>
-size_t OverlapDistribution< Matrix<T> >::sizeForDevice(Matrix<T>& matrix,
+size_t OverlapDistribution< Matrix<T> >::sizeForDevice(const Matrix<T>& matrix,
                                                        const detail::Device::id_type id) const
 {
   if (id < _devices.size() - 1) {

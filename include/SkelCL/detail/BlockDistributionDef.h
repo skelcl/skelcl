@@ -116,7 +116,7 @@ void BlockDistribution< C<T> >::startDownload(C<T>& container,
 }
 
 template <template <typename> class C, typename T>
-size_t BlockDistribution< C<T> >::sizeForDevice(C<T>& container,
+size_t BlockDistribution< C<T> >::sizeForDevice(const C<T>& container,
                                                 const detail::Device::id_type id) const
 {
   return block_distribution_helper::sizeForDevice<T>(id,

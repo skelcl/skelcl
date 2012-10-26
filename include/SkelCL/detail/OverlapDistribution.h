@@ -74,7 +74,7 @@ public:
 
   void startDownload(Vector<T>& container, Event* events) const;
 
-  size_t sizeForDevice(Vector<T>& container,
+  size_t sizeForDevice(const Vector<T>& container,
                        const detail::Device::id_type id) const;
 
   bool dataExchangeOnDistributionChange(Distribution< Vector<T> >& newDistribution);
@@ -113,7 +113,7 @@ public:
 
   void startDownload(Matrix<T>& container, Event* events) const;
 
-  size_t sizeForDevice(Matrix<T>& container,
+  size_t sizeForDevice(const Matrix<T>& container,
                        const detail::Device::id_type id) const;
 
   bool dataExchangeOnDistributionChange(Distribution< Matrix<T> >& newDistribution);

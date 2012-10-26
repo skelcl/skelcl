@@ -102,7 +102,7 @@ void SingleDistribution< C<T> >::startDownload(C<T>& container,
 }
 
 template <template <typename> class C, typename T>
-size_t SingleDistribution< C<T> >::sizeForDevice(C<T>& container,
+size_t SingleDistribution< C<T> >::sizeForDevice(const C<T>& container,
                                                  const detail::Device::id_type /*id*/) const
 {
   return single_distribution_helper::sizeForDevice<T>(container.size());

@@ -61,10 +61,12 @@ std::unique_ptr< skelcl::detail::Distribution< C<T> > >
 
 template <template <typename> class C, typename T>
 std::unique_ptr< skelcl::detail::Distribution< C<T> > >
-    Copy( const C<T>& /*c*/ )
+    Copy( const C<T>& /*c*/,
+          std::function<T(const T&, const T&)> combineFunc = nullptr )
 {
   return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-            new skelcl::detail::CopyDistribution< C<T> >() );
+            new skelcl::detail::CopyDistribution< C<T> >(detail::globalDeviceList,
+                                                         combineFunc) );
 }
 
 template <template <typename> class C, typename T>
