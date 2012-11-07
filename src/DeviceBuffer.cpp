@@ -106,11 +106,11 @@ DeviceBuffer::DeviceBuffer(const DeviceBuffer& rhs)
 }
 
 DeviceBuffer::DeviceBuffer(DeviceBuffer&& rhs)
-  : _device(rhs._device),
-    _size(rhs._size),
-    _elemSize(rhs._elemSize),
-    _flags(rhs._flags),
-    _buffer(rhs._buffer), // only wrapper object (pointer) is copied
+  : _device(std::move(rhs._device)),
+    _size(std::move(rhs._size)),
+    _elemSize(std::move(rhs._elemSize)),
+    _flags(std::move(rhs._flags)),
+    _buffer(std::move(rhs._buffer)), // only wrapper object (pointer) is copied
     _refCount(0), _isNotInUse(), _mutex()
 {
   std::unique_lock<std::mutex> lock(_mutex); // lock for copy refCount
@@ -142,11 +142,11 @@ DeviceBuffer& DeviceBuffer::operator=(const DeviceBuffer& rhs)
 DeviceBuffer& DeviceBuffer::operator=(DeviceBuffer&& rhs)
 {
   if (this == &rhs) return *this;
-  _device   = rhs._device;
-  _size     = rhs._size;
-  _elemSize = rhs._elemSize;
-  _flags    = rhs._flags;
-  _buffer   = rhs._buffer; // copy only wrapper object (pointer)
+  _device   = std::move(rhs._device);
+  _size     = std::move(rhs._size);
+  _elemSize = std::move(rhs._elemSize);
+  _flags    = std::move(rhs._flags);
+  _buffer   = std::move(rhs._buffer); // copy only wrapper object (pointer)
   
   std::unique_lock<std::mutex> lock(_mutex); // lock for copy refCount
   std::atomic_store(&_refCount, std::atomic_load(&(rhs._refCount)));
@@ -166,7 +166,14 @@ DeviceBuffer::~DeviceBuffer()
     LOG_DEBUG("DeviceBuffer object (", this, ") is in use and can not be destroyed yet");
     _isNotInUse.wait(lock);
   }
-  LOG_DEBUG("DeviceBuffer object (", this, ") with ", getInfo(), " destroyed");
+
+  LOG_DEBUG("DeviceBuffer object (", this, ") destroyed");
+  if (_buffer() != nullptr) {
+    auto refCount = _buffer.getInfo<CL_MEM_REFERENCE_COUNT>();
+    if (refCount > 1) {
+      LOG_DEBUG("OpenCL Buffer object remains alive (Ref count ", refCount, ")");
+    }
+  }
 }
 
 std::shared_ptr<Device> DeviceBuffer::devicePtr() const

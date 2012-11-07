@@ -173,7 +173,8 @@ skelcl::Vector<float> execute(const skelcl::Vector<float>& input)
 }
 
 TEST_F(MapTest, TempInputVector) {
-  auto size = 1024 * 100;
+  //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+  auto size = 1024 * 1000;
   skelcl::Vector<float> output;
   skelcl::Vector<float> input(size);
   for (size_t i = 0; i < input.size(); ++i) {
@@ -186,10 +187,10 @@ TEST_F(MapTest, TempInputVector) {
   for (size_t i = 0; i < output.size(); ++i) {
     EXPECT_EQ(-input[i], output[i]);
   }
+  //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Warning);
 }
 
 TEST_F(MapTest, SimpleMap2D) {
-  skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
   skelcl::Map<float(float)> m("float func(float f){ return -f; }");
 
   std::vector<float> vec(10);
@@ -213,6 +214,7 @@ TEST_F(MapTest, SimpleMap2D) {
 }
 
 TEST_F(MapTest, MatrixAddArgs) {
+  //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
   skelcl::Map<float(float)> m(
         "float func(float f, float add, float add2) { return f+add+add2; }");
 
@@ -239,6 +241,7 @@ TEST_F(MapTest, MatrixAddArgs) {
 }
 
 TEST_F(MapTest, MatrixAddArgsMatrix) {
+  skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
   skelcl::Map<float(float)> m(R"(
 float func( float f,__global float* mat, uint mat_col_count, float add2)
 {

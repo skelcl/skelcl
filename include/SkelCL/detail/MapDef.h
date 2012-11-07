@@ -53,8 +53,11 @@
 #undef  __CL_ENABLE_EXCEPTIONS
 
 #include "../Distributions.h"
+#include "../Index.h"
 #include "../Out.h"
+#include "../Matrix.h"
 #include "../Source.h"
+#include "../Vector.h"
 
 #include "Assert.h"
 #include "Device.h"
@@ -70,8 +73,7 @@ template<typename Tin, typename Tout>
 Map<Tout(Tin)>::Map(const Source& source,
                     const std::string& funcName)
   : Skeleton(),
-    _source(source),
-    _funcName(funcName)
+    detail::MapHelper<Tout(Tin)>(createAndBuildProgram(source, funcName))
 {
   LOG_DEBUG("Create new Map object (", this, ")");
 }
@@ -80,7 +82,7 @@ template <typename Tin, typename Tout>
 template <template <typename> class C,
           typename... Args>
 C<Tout> Map<Tout(Tin)>::operator()(const C<Tin>& input,
-                                   Args&&... args)
+                                   Args&&... args) const
 {
   C<Tout> output;
   this->operator()(out(output), input, std::forward<Args>(args)...);
@@ -92,17 +94,15 @@ template <template <typename> class C,
           typename... Args>
 C<Tout>& Map<Tout(Tin)>::operator()(Out< C<Tout> > output,
                                     const C<Tin>& input,
-                                    Args&&... args)
+                                    Args&&... args) const
 {
-  auto program = createAndBuildProgram<C>();
-
   this->prepareInput(input);
 
   prepareAdditionalInput(std::forward<Args>(args)...);
 
   this->prepareOutput(output.container(), input);
 
-  execute(program, output.container(), input, std::forward<Args>(args)...);
+  execute(output.container(), input, std::forward<Args>(args)...);
 
   updateModifiedStatus(output, std::forward<Args>(args)...);
 
@@ -112,10 +112,9 @@ C<Tout>& Map<Tout(Tin)>::operator()(Out< C<Tout> > output,
 template <typename Tin, typename Tout>
 template <template <typename> class C,
           typename... Args>
-void Map<Tout(Tin)>::execute(const detail::Program& program,
-                             C<Tout>& output,
+void Map<Tout(Tin)>::execute(C<Tout>& output,
                              const C<Tin>& input,
-                             Args&&... args)
+                             Args&&... args) const
 {
   ASSERT( input.distribution().isValid() );
   ASSERT( output.size() >= input.size() );
@@ -130,7 +129,7 @@ void Map<Tout(Tin)>::execute(const detail::Program& program,
     cl_uint global    = detail::util::ceilToMultipleOf(elements, local);
 
     try {
-      cl::Kernel kernel(program.kernel(*devicePtr, "SCL_MAP"));
+      cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
 
       kernel.setArg(0, inputBuffer.clBuffer());
       kernel.setArg(1, outputBuffer.clBuffer());
@@ -139,20 +138,20 @@ void Map<Tout(Tin)>::execute(const detail::Program& program,
       detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 3,
                                         std::forward<Args>(args)...);
 
+      auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
+                                                     inputBuffer.clBuffer(),
+                                                     outputBuffer.clBuffer(),
+                                                     std::forward<Args>(args)...);
+
       // after finishing the kernel invoke this function ...
-      auto invokeAfter =  [&] () {
-                            inputBuffer.markAsNotInUse();
-                            outputBuffer.markAsNotInUse();
-                          };
+      auto invokeAfter =  [=] () {
+                                    (void)keepAlive;
+                                 };
 
       devicePtr->enqueue(kernel,
                          cl::NDRange(global), cl::NDRange(local),
                          cl::NullRange, // offset
                          invokeAfter);
-
-      // after successfully enqueued the kernel ...
-      inputBuffer.markAsInUse();
-      outputBuffer.markAsInUse();
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
     }
@@ -161,18 +160,21 @@ void Map<Tout(Tin)>::execute(const detail::Program& program,
 }
 
 template <typename Tin, typename Tout>
-template <template <typename> class C>
-detail::Program Map<Tout(Tin)>::createAndBuildProgram() const
+detail::Program Map<Tout(Tin)>::createAndBuildProgram(const std::string& source,
+                                                      const std::string& funcName) const
 {
-  ASSERT_MESSAGE(!_source.empty(),
+  ASSERT_MESSAGE(!source.empty(),
     "Tried to create program with empty user source.");
 
   // create program
-
-  std::string s(C<Tin>::deviceFunctions());
-  // first: user defined source
-  s.append(_source);
-  // second: append skeleton implementation source
+  // first: device specific functions
+  std::string deviceFunctions;
+  deviceFunctions.append(Vector<Tin>::deviceFunctions());
+  deviceFunctions.append(Matrix<Tin>::deviceFunctions());
+  std::string s(deviceFunctions);
+  // second: user defined source
+  s.append(source);
+  // last: append skeleton implementation source
   s.append(R"(
 
 typedef float SCL_TYPE_0;
@@ -190,16 +192,16 @@ __kernel void SCL_MAP(
 )");
   auto program = detail::Program(s,
                                  detail::util::hash("//Map\n"
-                                                    + C<Tin>::deviceFunctions()
-                                                    + _source) );
+                                                    + deviceFunctions
+                                                    + source) );
 
   // modify program
   if (!program.loadBinary()) {
     // append parameters from user function to kernel
-    program.transferParameters(_funcName, 1, "SCL_MAP");
-    program.transferArguments(_funcName, 1, "SCL_FUNC");
+    program.transferParameters(funcName, 1, "SCL_MAP");
+    program.transferArguments(funcName, 1, "SCL_FUNC");
     // rename user function
-    program.renameFunction(_funcName, "SCL_FUNC");
+    program.renameFunction(funcName, "SCL_FUNC");
     // rename typedefs
     program.adjustTypes<Tin, Tout>();
   }
@@ -211,13 +213,13 @@ __kernel void SCL_MAP(
 }
 
 
+
 // ## Map<Tin, void> ################################################
 template<typename Tin>
 Map<void(Tin)>::Map(const Source& source,
                     const std::string& funcName)
   : Skeleton(),
-    _source(source),
-    _funcName(funcName)
+    detail::MapHelper<void(Tin)>(createAndBuildProgram(source, funcName))
 {
 }
 
@@ -225,16 +227,13 @@ template <typename Tin>
 template <template <typename> class C,
           typename... Args>
 void Map<void(Tin)>::operator()(const C<Tin>& input,
-                                Args&&... args)
+                                Args&&... args) const
 {
-  // create program dependent on the type of the input
-  auto program = createAndBuildProgram<C>();
-
   this->prepareInput(input);
 
   prepareAdditionalInput(std::forward<Args>(args)...);
 
-  execute(program, input, std::forward<Args>(args)...);
+  execute(input, std::forward<Args>(args)...);
 
   updateModifiedStatus(std::forward<Args>(args)...);
 }
@@ -242,9 +241,8 @@ void Map<void(Tin)>::operator()(const C<Tin>& input,
 template <typename Tin>
 template <template <typename> class C,
           typename... Args>
-void Map<void(Tin)>::execute(const detail::Program& program,
-                             const C<Tin>& input,
-                             Args&&... args)
+void Map<void(Tin)>::execute(const C<Tin>& input,
+                             Args&&... args) const
 {
   for (auto& devicePtr : input.distribution().devices()) {
     auto& inputBuffer  = input.deviceBuffer(*devicePtr);
@@ -255,7 +253,7 @@ void Map<void(Tin)>::execute(const detail::Program& program,
     cl_uint global     = detail::util::ceilToMultipleOf(elements, local);
 
     try {
-      cl::Kernel kernel(program.kernel(*devicePtr, "SCL_MAP"));
+      cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
 
       kernel.setArg(0, inputBuffer.clBuffer());
       kernel.setArg(1, elements);
@@ -263,18 +261,19 @@ void Map<void(Tin)>::execute(const detail::Program& program,
       detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 2,
                                         std::forward<Args>(args)...);
 
-      // after finishing the kernel invoke this function ...
-      auto invokeAfter =  [&] () {
-                            inputBuffer.markAsNotInUse();
-                          };
+      auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
+                                                     inputBuffer.clBuffer(),
+                                                     std::forward<Args>(args)...);
+
+      // after finishing the kernel invoke this function and release keepAlive
+      auto invokeAfter =  [=] () {
+                                    (void)keepAlive;
+                                 };
 
       devicePtr->enqueue(kernel,
                          cl::NDRange(global), cl::NDRange(local),
                          cl::NullRange, // offset
                          invokeAfter);
-
-      // after successfully enqueued the kernel ...
-      inputBuffer.markAsInUse();
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
     }
@@ -283,18 +282,21 @@ void Map<void(Tin)>::execute(const detail::Program& program,
 }
 
 template <typename Tin>
-template <template <typename> class C>
-detail::Program Map<void(Tin)>::createAndBuildProgram() const
+detail::Program Map<void(Tin)>::createAndBuildProgram(const std::string& source,
+                                                      const std::string& funcName) const
 {
-  ASSERT_MESSAGE(!_source.empty(),
+  ASSERT_MESSAGE(!source.empty(),
     "Tried to create program with empty user source.");
 
   // create program
-
-  std::string s(C<Tin>::deviceFunctions());
-  // first: user defined source
-  s.append(_source);
-  // second: append skeleton implementation source
+  // first: device specific functions
+  std::string deviceFunctions;
+  deviceFunctions.append(Vector<Tin>::deviceFunctions());
+  deviceFunctions.append(Matrix<Tin>::deviceFunctions());
+  std::string s(deviceFunctions);
+  // second: user defined source
+  s.append(source);
+  // last: append skeleton implementation source
   s.append(R"(
 
 typedef float SCL_TYPE_0;
@@ -310,18 +312,280 @@ __kernel void SCL_MAP(
 )");
   auto program = detail::Program(s,
                                  detail::util::hash("//Map\n"
-                                                    + C<Tin>::deviceFunctions()
-                                                    + _source) );
+                                                    + deviceFunctions
+                                                    + source) );
 
   // modify program
   if (!program.loadBinary()) {
     // append parameters from user function to kernel
-    program.transferParameters(_funcName, 1, "SCL_MAP");
-    program.transferArguments(_funcName, 1, "SCL_FUNC");
+    program.transferParameters(funcName, 1, "SCL_MAP");
+    program.transferArguments(funcName, 1, "SCL_FUNC");
     // rename user function
-    program.renameFunction(_funcName, "SCL_FUNC");
+    program.renameFunction(funcName, "SCL_FUNC");
   // rename typedefs
     program.adjustTypes<Tin>();
+  }
+
+  // build program
+  program.build();
+
+  return program;
+}
+
+// ## Map<Index, Tout> ################################################
+template <typename Tout>
+Map<Tout(Index)>::Map(const Source& source,
+                      const std::string& funcName)
+  : Skeleton(),
+    detail::MapHelper<Tout(Index)>(createAndBuildProgram(source, funcName))
+{
+}
+
+template <typename Tout>
+template <template <typename> class C,
+          typename... Args>
+C<Tout> Map<Tout(Index)>::operator()(const C<Index>& input,
+                                     Args&&... args) const
+{
+  C<Tout> output;
+  this->operator()(out(output), input, std::forward<Args>(args)...);
+  return output;
+}
+
+template <typename Tout>
+template <template <typename> class C,
+          typename... Args>
+C<Tout>& Map<Tout(Index)>::operator()(Out< C<Tout> > output,
+                                      const C<Index>& input,
+                                      Args&&... args) const
+{
+  // set default distribution if required
+  if (!input.distribution().isValid()) {
+    input.setDistribution(detail::BlockDistribution< C<Index> >());
+  }
+  // no need to fully prepare index container
+
+  prepareAdditionalInput(std::forward<Args>(args)...);
+
+  this->prepareOutput(output.container(), input);
+
+  execute(output.container(), input, std::forward<Args>(args)...);
+
+  updateModifiedStatus(output, std::forward<Args>(args)...);
+
+  return output.container();
+}
+
+template <typename Tout>
+template <template <typename> class C,
+          typename... Args>
+void Map<Tout(Index)>::execute(C<Tout>& output,
+                               const C<Index>& input,
+                               Args&&... args) const
+{
+  ASSERT( output.size() >= input.size() );
+
+  auto sizes = input.sizes();
+  size_t i = 0;
+  cl_uint offset = 0;
+  for (auto& devicePtr : input.distribution().devices()) {
+    auto& outputBuffer = output.deviceBuffer(*devicePtr);
+
+    cl_uint local      = std::min(this->workGroupSize(),
+                                  devicePtr->maxWorkGroupSize());
+    cl_uint global     = detail::util::ceilToMultipleOf(sizes[i], local);
+
+    try {
+      cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
+
+      kernel.setArg(0, outputBuffer.clBuffer());
+      kernel.setArg(1, offset);
+
+      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 2,
+                                        std::forward<Args>(args)...);
+
+      std::vector<cl::Buffer> keepAlive;
+      keepAlive.push_back(outputBuffer.clBuffer());
+      detail::kernelUtil::keepAlive(keepAlive, *devicePtr, std::forward<Args>(args)...);
+
+      // after finishing the kernel invoke this function ...
+      auto invokeAfter =  [=] () {
+                                    (void)keepAlive;
+                                 };
+
+      devicePtr->enqueue(kernel,
+                         cl::NDRange(global), cl::NDRange(local),
+                         cl::NullRange,
+                         invokeAfter);
+    } catch (cl::Error& err) {
+      ABORT_WITH_ERROR(err);
+    }
+    offset += sizes[i];
+    ++i;
+  }
+  LOG_INFO("Map kernel started");
+}
+
+template <typename Tout>
+detail::Program Map<Tout(Index)>::createAndBuildProgram(const std::string& source,
+                                                        const std::string& funcName) const
+{
+  ASSERT_MESSAGE(!source.empty(),
+    "Tried to create program with empty user source.");
+
+  // create program
+  // first: device specific functions
+  std::string deviceFunctions;
+  deviceFunctions.append(Vector<Index>::deviceFunctions());
+  deviceFunctions.append(Matrix<Index>::deviceFunctions());
+  std::string s(deviceFunctions);
+  s.append(R"(
+typedef size_t Index;
+
+)");
+  // second: user defined source
+  s.append(source);
+  // last: append skeleton implementation source
+  s.append(R"(
+
+typedef float SCL_TYPE_0;
+
+__kernel void SCL_MAP(
+          __global SCL_TYPE_0*  SCL_OUT,
+    const unsigned int          SCL_OFFSET)
+{
+  SCL_OUT[get_global_id(0)] = SCL_FUNC(get_global_id(0)+SCL_OFFSET);
+}
+)");
+  auto program = detail::Program(s,
+                                 detail::util::hash("//Map\n"
+                                                    + deviceFunctions
+                                                    + source) );
+
+  // modify program
+  if (!program.loadBinary()) {
+    // append parameters from user function to kernel
+    program.transferParameters(funcName, 1, "SCL_MAP");
+    program.transferArguments(funcName, 1, "SCL_FUNC");
+    // rename user function
+    program.renameFunction(funcName, "SCL_FUNC");
+    // rename typedefs
+    program.adjustTypes<Tout>();
+  }
+
+  // build program
+  program.build();
+
+  return program;
+}
+
+// ## Map<Index, void> ################################################
+Map<void(Index)>::Map(const Source& source,
+                      const std::string& funcName)
+  : Skeleton(),
+    detail::MapHelper<void(Index)>(createAndBuildProgram(source, funcName))
+{
+}
+
+template <template <typename> class C,
+          typename... Args>
+void Map<void(Index)>::operator()(const C<Index>& input,
+                                  Args&&... args) const
+{
+  // set default distribution if required
+  if (!input.distribution().isValid()) {
+    input.setDistribution(detail::BlockDistribution< C<Index> >());
+  }
+  // no need to fully prepare index container
+
+  prepareAdditionalInput(std::forward<Args>(args)...);
+
+  execute(input, std::forward<Args>(args)...);
+
+  updateModifiedStatus(std::forward<Args>(args)...);
+}
+
+template <template <typename> class C,
+          typename... Args>
+void Map<void(Index)>::execute(const C<Index>& input,
+                               Args&&... args) const
+{
+  auto sizes = input.sizes();
+  size_t i = 0;
+  cl_uint offset = 0;
+  for (auto& devicePtr : input.distribution().devices()) {
+
+    cl_uint local      = std::min(this->workGroupSize(),
+                                  devicePtr->maxWorkGroupSize());
+    cl_uint global     = detail::util::ceilToMultipleOf(sizes[i], local);
+
+    try {
+      cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
+
+      kernel.setArg(0, offset);
+
+      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 1,
+                                        std::forward<Args>(args)...);
+
+      auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
+                                                     std::forward<Args>(args)...);
+
+      // after finishing the kernel invoke this function ...
+      auto invokeAfter =  [=] () {
+                                    (void)keepAlive;
+                                 };
+
+      devicePtr->enqueue(kernel,
+                         cl::NDRange(global), cl::NDRange(local),
+                         cl::NullRange,
+                         invokeAfter);
+    } catch (cl::Error& err) {
+      ABORT_WITH_ERROR(err);
+    }
+    offset += sizes[i];
+    ++i;
+  }
+  LOG_INFO("Map kernel started");
+}
+
+detail::Program Map<void(Index)>::createAndBuildProgram(const std::string& source,
+                                                        const std::string& funcName) const
+{
+  ASSERT_MESSAGE(!source.empty(),
+    "Tried to create program with empty user source.");
+
+  // create program
+  // first: device specific functions
+  std::string deviceFunctions;
+  deviceFunctions.append(Vector<Index>::deviceFunctions());
+  deviceFunctions.append(Matrix<Index>::deviceFunctions());
+  std::string s(deviceFunctions);
+  s.append(R"(
+typedef size_t Index;
+
+)");
+  // second: user defined source
+  s.append(source);
+  // last: append skeleton implementation source
+  s.append(R"(
+
+__kernel void SCL_MAP(const unsigned int SCL_OFFSET)
+{
+  SCL_FUNC(get_global_id(0)+SCL_OFFSET);
+}
+)");
+  auto program = detail::Program(s,
+                                 detail::util::hash("//Map\n"
+                                                    + deviceFunctions
+                                                    + source) );
+
+  // modify program
+  if (!program.loadBinary()) {
+    // append parameters from user function to kernel
+    program.transferParameters(funcName, 1, "SCL_MAP");
+    program.transferArguments(funcName, 1, "SCL_FUNC");
+    // rename user function
+    program.renameFunction(funcName, "SCL_FUNC");
   }
 
   // build program

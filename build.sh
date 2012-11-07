@@ -1,10 +1,28 @@
 #!/bin/bash
 
-# get and extract libclang (Step 2 from the INSTALL file)
-wget http://llvm.org/releases/3.1/clang+llvm-3.1-x86_64-linux-ubuntu_12.04.tar.gz
-tar xzf clang+llvm-3.1-x86_64-linux-ubuntu_12.04.tar.gz
-mv clang+llvm-3.1-x86_64-linux-ubuntu_12.04 libraries/ssedit/libraries/libclang
-rm clang+llvm-3.1-x86_64-linux-ubuntu_12.04.tar.gz
+platform='unknown'
+unamestr=`uname -s`
+if [[ "$unamestr" == 'Darwin' ]]; then
+  platform='osx'
+elif [[ "$unamestr" == 'Linux' ]]; then
+  platform= 'ubuntu' #assume ubuntu as linux
+fi
+
+if [[ $platform == 'ubuntu' ]]; then
+  # get and extract libclang (Step 2 from the INSTALL file)
+  wget http://llvm.org/releases/3.1/clang+llvm-3.1-x86_64-linux-ubuntu_12.04.tar.gz
+  tar xzf clang+llvm-3.1-x86_64-linux-ubuntu_12.04.tar.gz
+  mv clang+llvm-3.1-x86_64-linux-ubuntu_12.04 libraries/ssedit/libraries/libclang
+  rm clang+llvm-3.1-x86_64-linux-ubuntu_12.04.tar.gz
+fi
+
+if [[ $platform == 'osx']]; then
+  # get and extract libclang (Step 2 from the INSTALL file)
+  wget http://llvm.org/releases/3.1/clang+llvm-3.1-x86_64-apple-darwin11.tar.gz 
+  tar xzf clang+llvm-3.1-x86_64-apple-darwin11.tar.gz
+  mv clang+llvm-3.1-x86_64-apple-darwin11 libraries/ssedit/libraries/libclang
+  rm clang+llvm-3.1-x86_64-apple-darwin11.tar.gz
+fi
 
 # get and extract gtest (Step 3)
 wget http://googletest.googlecode.com/files/gtest-1.6.0.zip

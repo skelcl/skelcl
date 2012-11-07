@@ -30,103 +30,66 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
-///
-/// \file Logger.h
+
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef LOGGER_H_
-#define LOGGER_H_
+#include <gtest/gtest.h>
 
-#include <ostream>
+#include <SkelCL/Distributions.h>
+#include <SkelCL/SkelCL.h>
+#include <SkelCL/IndexMatrix.h>
+#include <SkelCL/Map.h>
+#include <SkelCL/detail/Logger.h>
 
-#define __CL_ENABLE_EXCEPTIONS
-#ifdef __APPLE__
-#  include "../../CL/cl.hpp"
-#else
-#  include <CL/cl.hpp>
-#endif
-#undef  __CL_ENABLE_EXCEPTIONS
-
-namespace skelcl {
-
-namespace detail {
-
-class Logger {
-public:
-  struct Severity {
-    enum Type {
-      Error = 0,
-      Warning,
-      Info,
-      Debug
-    };
+class IndexMatrixTest : public ::testing::Test {
+protected:
+  IndexMatrixTest() {
+    skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+    skelcl::init(skelcl::nDevices(1));
   };
 
-  Logger();
-
-  Logger(std::ostream& output, Severity::Type severity);
-
-  void setOutput(std::ostream& output);
-
-  void setLoggingLevel(Severity::Type severity);
-
-  template <typename... Args>
-  void log(Severity::Type severity, const char* file, int line,
-           Args&&... args);
-
-private:
-  void logArgs(std::ostream& output);
-
-  template <typename... Args>
-  void logArgs(std::ostream& output, const cl::Error& err, Args&&... args);
-
-  template <typename T, typename... Args>
-  void logArgs(std::ostream& output, T value, Args&&... args);
-
-  Severity::Type  _severity;
-  std::ostream*   _output;
+  ~IndexMatrixTest() {
+    skelcl::terminate();
+  };
 };
 
-#define LOG(severity, ...)\
-  skelcl::detail::defaultLogger.log(severity, __FILE__, __LINE__,\
-                                    __VA_ARGS__)
+TEST_F(IndexMatrixTest, CreateIndexMatrix) {
+  skelcl::Matrix<skelcl::IndexPoint> mi({256, 32});
 
-#define LOG_ERROR(...)\
-  LOG(skelcl::detail::Logger::Severity::Error, __VA_ARGS__)
+  EXPECT_EQ(256*32, mi.size().elemCount());
+  EXPECT_EQ(skelcl::IndexPoint(0,0), mi.front());
+  EXPECT_EQ(skelcl::IndexPoint(255,31), mi.back());
+}
 
-#define ABORT_WITH_ERROR(err)\
-  LOG_ERROR(err); abort()
+#if 0
+TEST_F(IndexMatrixTest, SimpleVoidMap) {
+  skelcl::IndexVector index(1024);
+  skelcl::Map<void(skelcl::Index)> m("void func(Index i, __global int* out) { out[i] = i; }");
+  EXPECT_EQ(1024, index.size());
 
-#ifdef NDEBUG
+  skelcl::Vector<int> v(1024);
 
-#define LOG_WARNING(...) (void(0))
-#define LOG_INFO(...)    (void(0))
-#define LOG_DEBUG(...)   (void(0))
+  m(index, skelcl::out(v));
 
-#else  // DEBUG
+  EXPECT_EQ(index.size(), v.size());
+  for (size_t i = 0; i < v.size(); ++i) {
+    EXPECT_EQ(i, v[i]);
+  }
+}
 
-#define LOG_WARNING(...)\
-  LOG(skelcl::detail::Logger::Severity::Warning, __VA_ARGS__)
+TEST_F(IndexMatrixTest, SimpleMap) {
+  skelcl::IndexVector index(1023);
+  skelcl::Map<int(skelcl::Index)> m("int func(Index i) { return i; }");
+  EXPECT_EQ(1023, index.size());
 
-#define LOG_INFO(...)\
-  LOG(skelcl::detail::Logger::Severity::Info, __VA_ARGS__)
+  auto v = m(index);
 
-#define LOG_DEBUG(...)\
-  LOG(skelcl::detail::Logger::Severity::Debug, __VA_ARGS__)
-
-#endif // NDEBUG
-
-// Default logger connected per default to std::clog
-extern Logger defaultLogger;
-
-} // namespace detail
-
-} // namespace skelcl
-
-#include "LoggerDef.h"
-
-#endif // LOGGER_H_
+  EXPECT_EQ(index.size(), v.size());
+  for (size_t i = 0; i < v.size(); ++i) {
+    EXPECT_EQ(i, v[i]);
+  }
+}
+#endif
 

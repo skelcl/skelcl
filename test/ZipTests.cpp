@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
-
+  
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
@@ -122,6 +122,31 @@ TEST_F(ZipTest, AddArgs) {
   EXPECT_EQ(10, output.size());
   for (size_t i = 0; i < output.size(); ++i) {
     EXPECT_EQ( (left[i]*right[i])+add+add2, output[i]);
+  }
+}
+
+TEST_F(ZipTest, LeftID) {
+  skelcl::Zip<float(float, float)> z("float func(float x, float y) { return x; }");
+
+  skelcl::Vector<float> left(10);
+  left.setDistribution(skelcl::distribution::Block(left));
+  for (size_t i = 0; i < left.size(); ++i) {
+    left[i] = i * 2.5f;
+  }
+  EXPECT_EQ(10, left.size());
+
+  skelcl::Vector<float> right(10);
+  right.setDistribution(skelcl::distribution::Block(right));
+  for (size_t i = 0; i < right.size(); ++i) {
+    right[i] = i * 4.5f;
+  }
+  EXPECT_EQ(10, right.size());
+
+  z(skelcl::out(left), left, right);
+
+  EXPECT_EQ(10, left.size());
+  for (size_t i = 0; i < left.size(); ++i) {
+    EXPECT_EQ( i * 2.5f, left[i]);
   }
 }
 

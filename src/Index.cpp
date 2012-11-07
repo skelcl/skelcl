@@ -32,101 +32,98 @@
  *****************************************************************************/
  
 ///
-/// \file Logger.h
+/// \file Index.cpp
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef LOGGER_H_
-#define LOGGER_H_
-
-#include <ostream>
-
-#define __CL_ENABLE_EXCEPTIONS
-#ifdef __APPLE__
-#  include "../../CL/cl.hpp"
-#else
-#  include <CL/cl.hpp>
-#endif
-#undef  __CL_ENABLE_EXCEPTIONS
+#include "SkelCL/Index.h"
 
 namespace skelcl {
 
-namespace detail {
+Index::Index()
+  : _index(0)
+{
+}
 
-class Logger {
-public:
-  struct Severity {
-    enum Type {
-      Error = 0,
-      Warning,
-      Info,
-      Debug
-    };
-  };
+Index::Index(const index_type index)
+  : _index(index)
+{
+}
 
-  Logger();
+bool Index::operator==(const Index& rhs) const
+{
+  return _index == rhs._index;
+}
 
-  Logger(std::ostream& output, Severity::Type severity);
+bool Index::operator!=(const Index& rhs) const
+{
+  return _index != rhs._index;
+}
 
-  void setOutput(std::ostream& output);
+Index::operator index_type() const
+{
+  return _index;
+}
 
-  void setLoggingLevel(Severity::Type severity);
+Index::index_type Index::get() const
+{
+  return _index;
+}
 
-  template <typename... Args>
-  void log(Severity::Type severity, const char* file, int line,
-           Args&&... args);
+IndexPoint::IndexPoint(const indexPoint_type& indexPoint)
+  : _indexPoint(indexPoint)
+{
+}
 
-private:
-  void logArgs(std::ostream& output);
+IndexPoint::IndexPoint(const Index& x, const Index& y)
+  : _indexPoint(std::make_pair(x,y))
+{
+}
 
-  template <typename... Args>
-  void logArgs(std::ostream& output, const cl::Error& err, Args&&... args);
+IndexPoint::IndexPoint(IndexPoint&& rhs)
+  : _indexPoint(std::make_pair(std::move(rhs._indexPoint.first),
+                               std::move(rhs._indexPoint.second)))
+{
+}
 
-  template <typename T, typename... Args>
-  void logArgs(std::ostream& output, T value, Args&&... args);
+IndexPoint& IndexPoint::operator=(IndexPoint&& rhs)
+{
+  if (this == &rhs) return *this; // handle self move assignment
+  _indexPoint.first   = std::move(rhs._indexPoint.first);
+  _indexPoint.second  = std::move(rhs._indexPoint.second);
+  return *this;
+}
 
-  Severity::Type  _severity;
-  std::ostream*   _output;
-};
+bool IndexPoint::operator==(const IndexPoint& rhs) const
+{
+  return _indexPoint == rhs._indexPoint;
+}
 
-#define LOG(severity, ...)\
-  skelcl::detail::defaultLogger.log(severity, __FILE__, __LINE__,\
-                                    __VA_ARGS__)
+bool IndexPoint::operator!=(const IndexPoint& rhs) const
+{
+  return !(this->operator==(rhs));
+}
 
-#define LOG_ERROR(...)\
-  LOG(skelcl::detail::Logger::Severity::Error, __VA_ARGS__)
+IndexPoint::operator indexPoint_type() const
+{
+  return _indexPoint;
+}
 
-#define ABORT_WITH_ERROR(err)\
-  LOG_ERROR(err); abort()
+IndexPoint::indexPoint_type IndexPoint::get() const
+{
+  return _indexPoint;
+}
 
-#ifdef NDEBUG
+const Index& IndexPoint::rowID() const
+{
+  return _indexPoint.first;
+}
 
-#define LOG_WARNING(...) (void(0))
-#define LOG_INFO(...)    (void(0))
-#define LOG_DEBUG(...)   (void(0))
-
-#else  // DEBUG
-
-#define LOG_WARNING(...)\
-  LOG(skelcl::detail::Logger::Severity::Warning, __VA_ARGS__)
-
-#define LOG_INFO(...)\
-  LOG(skelcl::detail::Logger::Severity::Info, __VA_ARGS__)
-
-#define LOG_DEBUG(...)\
-  LOG(skelcl::detail::Logger::Severity::Debug, __VA_ARGS__)
-
-#endif // NDEBUG
-
-// Default logger connected per default to std::clog
-extern Logger defaultLogger;
-
-} // namespace detail
+const Index& IndexPoint::columnID() const
+{
+  return _indexPoint.second;
+}
 
 } // namespace skelcl
-
-#include "LoggerDef.h"
-
-#endif // LOGGER_H_
 

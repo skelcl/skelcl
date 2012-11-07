@@ -51,8 +51,14 @@ namespace skelcl {
 namespace detail {
 
 template <typename Tin, typename Tout>
+MapHelper<Tout(Tin)>::MapHelper(detail::Program&& program)
+  : _program(std::move(program))
+{
+}
+
+template <typename Tin, typename Tout>
 template <template <typename> class C>
-void MapHelper<Tout(Tin)>::prepareInput(const C<Tin>& input)
+void MapHelper<Tout(Tin)>::prepareInput(const C<Tin>& input) const
 {
   // set default distribution if required
   if (!input.distribution().isValid()) {
@@ -67,7 +73,7 @@ void MapHelper<Tout(Tin)>::prepareInput(const C<Tin>& input)
 template <typename Tin, typename Tout>
 template <template <typename> class C>
 void MapHelper<Tout(Tin)>::prepareOutput(C<Tout>& output,
-                                         const C<Tin>& input)
+                                         const C<Tin>& input) const
 {
   if (static_cast<void*>(&output) == static_cast<const void*>(&input)) {
     return; // already prepared in prepareInput

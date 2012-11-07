@@ -32,101 +32,28 @@
  *****************************************************************************/
  
 ///
-/// \file Logger.h
+/// \file Local.cpp
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef LOGGER_H_
-#define LOGGER_H_
-
-#include <ostream>
-
-#define __CL_ENABLE_EXCEPTIONS
-#ifdef __APPLE__
-#  include "../../CL/cl.hpp"
-#else
-#  include <CL/cl.hpp>
-#endif
-#undef  __CL_ENABLE_EXCEPTIONS
+#include "SkelCL/Local.h"
 
 namespace skelcl {
 
-namespace detail {
+Local::Local(size_t sizeInBytes)
+  : _sizeInBytes(sizeInBytes)
+{
+}
 
-class Logger {
-public:
-  struct Severity {
-    enum Type {
-      Error = 0,
-      Warning,
-      Info,
-      Debug
-    };
-  };
+size_t Local::getSizeInBytes() const
+{
+  return _sizeInBytes;
+}
 
-  Logger();
-
-  Logger(std::ostream& output, Severity::Type severity);
-
-  void setOutput(std::ostream& output);
-
-  void setLoggingLevel(Severity::Type severity);
-
-  template <typename... Args>
-  void log(Severity::Type severity, const char* file, int line,
-           Args&&... args);
-
-private:
-  void logArgs(std::ostream& output);
-
-  template <typename... Args>
-  void logArgs(std::ostream& output, const cl::Error& err, Args&&... args);
-
-  template <typename T, typename... Args>
-  void logArgs(std::ostream& output, T value, Args&&... args);
-
-  Severity::Type  _severity;
-  std::ostream*   _output;
-};
-
-#define LOG(severity, ...)\
-  skelcl::detail::defaultLogger.log(severity, __FILE__, __LINE__,\
-                                    __VA_ARGS__)
-
-#define LOG_ERROR(...)\
-  LOG(skelcl::detail::Logger::Severity::Error, __VA_ARGS__)
-
-#define ABORT_WITH_ERROR(err)\
-  LOG_ERROR(err); abort()
-
-#ifdef NDEBUG
-
-#define LOG_WARNING(...) (void(0))
-#define LOG_INFO(...)    (void(0))
-#define LOG_DEBUG(...)   (void(0))
-
-#else  // DEBUG
-
-#define LOG_WARNING(...)\
-  LOG(skelcl::detail::Logger::Severity::Warning, __VA_ARGS__)
-
-#define LOG_INFO(...)\
-  LOG(skelcl::detail::Logger::Severity::Info, __VA_ARGS__)
-
-#define LOG_DEBUG(...)\
-  LOG(skelcl::detail::Logger::Severity::Debug, __VA_ARGS__)
-
-#endif // NDEBUG
-
-// Default logger connected per default to std::clog
-extern Logger defaultLogger;
-
-} // namespace detail
+Local local(size_t sizeInBytes)
+{
+  return Local(sizeInBytes);
+}
 
 } // namespace skelcl
-
-#include "LoggerDef.h"
-
-#endif // LOGGER_H_
-

@@ -42,6 +42,7 @@
 #define MATRIX_DEF_H_
 
 #include <algorithm>
+#include <complex>
 #include <ios>
 #include <iterator>
 #include <memory>
@@ -277,10 +278,10 @@ Matrix<T>::Matrix(InputIterator first, InputIterator last,
 
 template <typename T>
 Matrix<T>::Matrix(Matrix<T>&& rhs)
-  : _size(rhs._size),
+  : _size(std::move(rhs._size)),
     _distribution(std::move(rhs._distribution)),
-    _hostBufferUpToDate(rhs._hostBufferUpToDate),
-    _deviceBuffersUpToDate(rhs._deviceBuffersUpToDate),
+    _hostBufferUpToDate(std::move(rhs._hostBufferUpToDate)),
+    _deviceBuffersUpToDate(std::move(rhs._deviceBuffersUpToDate)),
     _hostBuffer(std::move(rhs._hostBuffer)),
     _deviceBuffers(std::move(rhs._deviceBuffers))
 {
@@ -293,10 +294,10 @@ Matrix<T>::Matrix(Matrix<T>&& rhs)
 template <typename T>
 Matrix<T>& Matrix<T>::operator=(Matrix<T>&& rhs)
 {
-  _size                   = rhs._size;
+  _size                   = std::move(rhs._size);
   _distribution           = std::move(rhs._distribution);
-  _hostBufferUpToDate     = rhs._hostBufferUpToDate;
-  _deviceBuffersUpToDate  = rhs._deviceBuffersUpToDate;
+  _hostBufferUpToDate     = std::move(rhs._hostBufferUpToDate);
+  _deviceBuffersUpToDate  = std::move(rhs._deviceBuffersUpToDate);
   _hostBuffer             = std::move(rhs._hostBuffer);
   _deviceBuffers          = std::move(rhs._deviceBuffers);
 
@@ -718,13 +719,30 @@ template <typename U>
 void Matrix<T>::setDistribution(const detail::Distribution< Matrix<U> >& origDistribution) const
 {
   ASSERT(origDistribution.isValid());
+  // convert and set distribution
+  this->setDistribution(detail::cloneAndConvert<T>(origDistribution));
+}
 
-  // convert distribution to avoid problems later ...
-  auto newDistribution = detail::cloneAndConvert<T>(origDistribution);
+template <typename T>
+template <typename U>
+void Matrix<T>::setDistribution(const std::unique_ptr<detail::Distribution< Matrix<U> > >& origDistribution) const
+{
+  ASSERT(origDistribution != nullptr);
+  ASSERT(origDistribution.isValid());
+  // convert and set distribution
+  this->setDistribution(detail::cloneAndConvert<T>(origDistribution));
+}
+
+template <typename T>
+void Matrix<T>::setDistribution(std::unique_ptr<detail::Distribution< Matrix<T> > >&& newDistribution) const
+{
+  ASSERT(newDistribution != nullptr);
+  ASSERT(newDistribution->isValid());
 
   if (   _distribution->isValid()
-         && _distribution->dataExchangeOnDistributionChange(*newDistribution)) {
+      && _distribution->dataExchangeOnDistributionChange(*newDistribution)) {
     copyDataToHost();
+    _deviceBuffersUpToDate = false;
     _deviceBuffers.clear(); // delete old device buffers,
                             // so new can created using the new distribution
   }
@@ -735,6 +753,7 @@ void Matrix<T>::setDistribution(const detail::Distribution< Matrix<U> >& origDis
   LOG_DEBUG("Matrix object (", this, ") assigned new distribution, now with ",
            getDebugInfo());
 }
+
 
 template <typename T>
 void Matrix<T>::createDeviceBuffers() const

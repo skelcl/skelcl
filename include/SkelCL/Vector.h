@@ -328,7 +328,8 @@ public:
   allocator_type get_allocator() const;
 
   ///
-  /// \brief Returns a pointer to the current distribution of the vector.  ///
+  /// \brief Returns a pointer to the current distribution of the vector.
+  ///
   /// \return A pointer to the current distribution of the vector, of nullptr
   ///         if no distribution is set
   ///
@@ -346,6 +347,11 @@ public:
   ///
   template <typename U>
   void setDistribution(const detail::Distribution< Vector<U> >& distribution) const;
+
+  template <typename U>
+  void setDistribution(const std::unique_ptr<detail::Distribution< Vector<U> > >& newDistribution) const;
+
+  void setDistribution(std::unique_ptr<detail::Distribution< Vector<T> > >&& newDistribution) const;
 
   ///
   /// \brief Create buffers on the devices involved in the current distribution

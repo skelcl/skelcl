@@ -72,6 +72,7 @@ Vector<T>::Vector()
 {
   LOG_DEBUG("Created new Vector object (", this, ") with ", getDebugInfo());
 }
+
 template <typename T>
 Vector<T>::Vector(const size_type size,
                   const value_type& value,
@@ -129,10 +130,10 @@ Vector<T>::Vector(const Vector<T>& rhs)
 
 template <typename T>
 Vector<T>::Vector(Vector<T>&& rhs)
-  : _size(rhs._size),
+  : _size(std::move(rhs._size)),
     _distribution(std::move(rhs._distribution)),
-    _hostBufferUpToDate(rhs._hostBufferUpToDate),
-    _deviceBuffersUpToDate(rhs._deviceBuffersUpToDate),
+    _hostBufferUpToDate(std::move(rhs._hostBufferUpToDate)),
+    _deviceBuffersUpToDate(std::move(rhs._deviceBuffersUpToDate)),
     _hostBuffer(std::move(rhs._hostBuffer)),
     _deviceBuffers(std::move(rhs._deviceBuffers))
 {
@@ -161,10 +162,10 @@ Vector<T>& Vector<T>::operator=(const Vector<T>& rhs)
 template <typename T>
 Vector<T>& Vector<T>::operator=(Vector<T>&& rhs)
 {
-  _size                   = rhs._size;
+  _size                   = std::move(rhs._size);
   _distribution           = std::move(rhs._distribution);
-  _hostBufferUpToDate     = rhs._hostBufferUpToDate;
-  _deviceBuffersUpToDate  = rhs._deviceBuffersUpToDate;
+  _hostBufferUpToDate     = std::move(rhs._hostBufferUpToDate);
+  _deviceBuffersUpToDate  = std::move(rhs._deviceBuffersUpToDate);
   _hostBuffer             = std::move(rhs._hostBuffer);
   _deviceBuffers          = std::move(rhs._deviceBuffers);
   rhs._size = 0;
@@ -455,9 +456,25 @@ template <typename U>
 void Vector<T>::setDistribution(const detail::Distribution< Vector<U> >& origDistribution) const
 {
   ASSERT(origDistribution.isValid());
+  // convert and set distribution
+  this->setDistribution(detail::cloneAndConvert<T>(origDistribution));
+}
 
-  // convert distribution to avoid problems later ...
-  auto newDistribution = detail::cloneAndConvert<T>(origDistribution);
+template <typename T>
+template <typename U>
+void Vector<T>::setDistribution(const std::unique_ptr<detail::Distribution< Vector<U> > >& origDistribution) const
+{
+  ASSERT(origDistribution != nullptr);
+  ASSERT(origDistribution->isValid());
+  // convert and set distribution
+  this->setDistribution(detail::cloneAndConvert<T>(*origDistribution));
+}
+
+template <typename T>
+void Vector<T>::setDistribution(std::unique_ptr<detail::Distribution< Vector<T> > >&& newDistribution) const
+{
+  ASSERT(newDistribution != nullptr);
+  ASSERT(newDistribution->isValid());
 
   if (   _distribution->isValid()
       && _distribution->dataExchangeOnDistributionChange(*newDistribution)) {

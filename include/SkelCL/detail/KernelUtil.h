@@ -40,12 +40,13 @@
 #ifndef KERNEL_UTIL_H_
 #define KERNEL_UTIL_H_
 
-#include <vector>
+#include <array>
 
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include "../Local.h"
 #include "../Matrix.h"
 #include "../Out.h"
 #include "../Vector.h"
@@ -107,7 +108,14 @@ template <typename T, typename... Args>
 void setKernelArgs(cl::Kernel& kernel,
                    const Device& device,
                    size_t index,
-                   T value,
+                   Local&& local,
+                   Args&&... args);
+
+template <typename T, typename... Args>
+void setKernelArgs(cl::Kernel& kernel,
+                   const Device& device,
+                   size_t index,
+                   T&& value,
                    Args&&... args);
 
 void setKernelArgs(cl::Kernel& kernel,
@@ -196,7 +204,24 @@ template <typename T, typename... Args>
 void setKernelArgs(cl::Kernel& kernel,
                    const Device& device,
                    size_t index,
-                   T value,
+                   Local&& local,
+                   Args&&... args)
+{
+  try {
+    kernel.setArg( index, cl::__local(local.getSizeInBytes()) );
+  } catch (cl::Error& err) {
+    LOG_ERROR("Error while setting argument ", index,
+        " (Local version called)");
+    ABORT_WITH_ERROR(err);
+  }
+  setKernelArgs( kernel, device, ++index, std::forward<Args>(args)... );
+}
+
+template <typename T, typename... Args>
+void setKernelArgs(cl::Kernel& kernel,
+                   const Device& device,
+                   size_t index,
+                   T&& value,
                    Args&&... args)
 {
   try {
@@ -208,6 +233,120 @@ void setKernelArgs(cl::Kernel& kernel,
   }
   setKernelArgs( kernel, device, ++index, std::forward<Args>(args)... );
 }
+
+
+template <typename... Args>
+std::array<cl::Buffer, sizeof...(Args)> keepAlive(const Device& device,
+                                                  Args&&... args);
+
+// Declarations
+template <typename Iterator, typename... Args>
+void keepAlive(Iterator iter,
+               const Device& device,
+               Args&&... args);
+
+template <typename Iterator, typename T, typename... Args>
+void keepAlive(Iterator iter,
+               const Device& device,
+               Out<Vector<T>>&& vector,
+               Args&&... args);
+
+template <typename Iterator, typename T, typename... Args>
+void keepAlive(Iterator iter,
+               const Device& device,
+               Vector<T>& vector,
+               Args&&... args);
+
+template <typename Iterator, typename T, typename... Args>
+void keepAlive(Iterator iter,
+               const Device& device,
+               Out<Matrix<T>>&& vector,
+               Args&&... args);
+
+template <typename Iterator, typename T, typename... Args>
+void keepAlive(Iterator iter,
+               const Device& device,
+               Matrix<T>& vector,
+               Args&&... args);
+
+template <typename Iterator, typename T, typename... Args>
+void keepAlive(Iterator iter,
+               const Device& device,
+               T&& vector,
+               Args&&... args);
+
+template <typename Iterator>
+void keepAlive(Iterator iter, const Device& device);
+
+// Definitions
+template <typename... Args>
+std::array<cl::Buffer, sizeof...(Args)> keepAlive(const Device& device,
+                                                  Args&&... args)
+{
+  std::array<cl::Buffer, sizeof...(Args)> a;
+  keepAlive( a.begin(), device, std::forward<Args>(args)... );
+  return a;
+}
+
+template <typename Iterator, typename T, typename... Args>
+void keepAlive(Iterator iter,
+               const Device& device,
+               Out<Vector<T>>&& vector,
+               Args&&... args)
+{
+  *iter = vector.container().deviceBuffer(device).clBuffer();
+  ++iter;
+  keepAlive( iter, device, std::forward<Args>(args)... );
+}
+
+template <typename Iterator, typename T, typename... Args>
+void keepAlive(Iterator iter,
+               const Device& device,
+               Vector<T>& vector,
+               Args&&... args)
+{
+  *iter = vector.deviceBuffer(device).clBuffer();
+  ++iter;
+  keepAlive( iter, device, std::forward<Args>(args)... );
+}
+
+template <typename Iterator, typename T, typename... Args>
+void keepAlive(Iterator iter,
+               const Device& device,
+               Out<Matrix<T>>&& matrix,
+               Args&&... args)
+{
+  *iter = matrix.container().deviceBuffer(device).clBuffer();
+  ++iter;
+  keepAlive( iter, device, std::forward<Args>(args)... );
+}
+
+template <typename Iterator, typename T, typename... Args>
+void keepAlive(Iterator iter,
+               const Device& device,
+               Matrix<T>& matrix,
+               Args&&... args)
+{
+  *iter = matrix.deviceBuffer(device).clBuffer();
+  ++iter;
+  keepAlive( iter, device, std::forward<Args>(args)... );
+}
+
+template <typename Iterator, typename T, typename... Args>
+void keepAlive(Iterator iter,
+               const Device& device,
+               T&& /* value */,
+               Args&&... args)
+{
+  // just skip
+  keepAlive( iter, device, std::forward<Args>(args)... );
+}
+
+template <typename Iterator>
+void keepAlive(Iterator /*iter*/,
+               const Device& /*device*/)
+{
+}                  
 
 } // namespace kernelUtil
 

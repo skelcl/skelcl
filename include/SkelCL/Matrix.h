@@ -248,6 +248,11 @@ public:
   template <typename U>
   void setDistribution(const detail::Distribution< Matrix<U> >& distribution) const;
 
+  template <typename U>
+  void setDistribution(const std::unique_ptr<detail::Distribution< Matrix<U> > >& newDistribution) const;
+
+  void setDistribution(std::unique_ptr<detail::Distribution< Matrix<T> > >&& newDistribution) const;
+
   void createDeviceBuffers() const;
 
   void forceCreateDeviceBuffers() const;

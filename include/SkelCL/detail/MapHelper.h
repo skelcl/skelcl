@@ -53,7 +53,9 @@ template<typename> class MapHelper;
 template<typename Tin, typename Tout>
 class MapHelper<Tout(Tin)> {
 public:
-  MapHelper<Tout(Tin)>() = default;
+  MapHelper<Tout(Tin)>() = delete;
+
+  MapHelper<Tout(Tin)>(detail::Program&& program);
 
   MapHelper<Tout(Tin)>(const MapHelper<Tout(Tin)>&) = default;
 
@@ -63,11 +65,13 @@ public:
 
 protected:
   template <template <typename> class C>
-  void prepareInput(const C<Tin>& input);
+  void prepareInput(const C<Tin>& input) const;
 
   template <template <typename> class C>
   void prepareOutput(C<Tout>& output,
-                     const C<Tin>& input);
+                     const C<Tin>& input) const;
+
+  const detail::Program _program;
 };
 
 } // namespace detail

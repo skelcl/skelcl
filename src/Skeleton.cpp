@@ -67,7 +67,7 @@ Skeleton::~Skeleton()
 {
 }
 
-size_t Skeleton::workGroupSize()
+size_t Skeleton::workGroupSize() const
 {
   return _workGroupSize;
 }
@@ -75,6 +75,14 @@ size_t Skeleton::workGroupSize()
 void Skeleton::setWorkGroupSize(size_t size)
 {
   _workGroupSize = size;
+}
+
+void Skeleton::prepareAdditionalInput() const
+{
+}
+
+void Skeleton::updateModifiedStatus() const
+{
 }
 
 } // namespace detail
