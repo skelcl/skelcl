@@ -40,10 +40,7 @@
 #ifndef DEVICE_BUFFER_H_
 #define DEVICE_BUFFER_H_
 
-#include <atomic>
-#include <condition_variable>
 #include <memory>
-#include <mutex>
 #include <string>
 
 #define __CL_ENABLE_EXCEPTIONS
@@ -89,10 +86,6 @@ public:
 
   bool isValid() const;
 
-  void markAsInUse() const;
-
-  void markAsNotInUse() const;
-
 private:
   std::string getInfo() const;
 
@@ -101,9 +94,6 @@ private:
   size_type                       _elemSize;
   cl_mem_flags                    _flags; // TODO: Needed?
   cl::Buffer                      _buffer;
-  mutable std::atomic<int>        _refCount;
-  mutable std::condition_variable _isNotInUse;
-  mutable std::mutex              _mutex;
 };
 
 } // namespace detail

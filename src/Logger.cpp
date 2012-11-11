@@ -37,6 +37,7 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
+#include <chrono>
 #include <ostream>
 
 #include "SkelCL/detail/Logger.h"
@@ -48,7 +49,12 @@ namespace detail {
 Logger defaultLogger;
 
 Logger::Logger()
-  : _severity(Severity::Warning), _output(&std::clog)
+#ifdef NDEBUG
+  : _severity(Severity::Info)  // set default level to Info in release
+#else
+  : _severity(Severity::Debug) // ... and Debug in debug builds
+#endif
+  , _output(&std::clog)
 {
 }
 
@@ -74,27 +80,29 @@ void Logger::logArgs(std::ostream& output)
 
 namespace logger_impl {
 
-std::ostream& getTimeOfDay(std::ostream& stream)
+std::ostream& printTimePoint(std::ostream& stream)
 {
-  struct timeval time;
-  gettimeofday(&time, NULL);
+  auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
+  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
 
-  char prevFill = stream.fill('0');
+  char prevFill = stream.fill('0'); // save fill char
   stream << std::right
-         << std::setw(4) << (time.tv_sec % 10000 ) << "."
-         << std::setw(3) << (time.tv_usec / 1000);
+         // extract just the 3 last digits of the seconds
+         << std::setw(3) << (ms / 1000) % 1000 << "."
+         // extract just the milliseconds
+         << std::setw(3) << ms % 1000          << "s";
   stream.fill(prevFill); // reset fill char
-
   return stream;
 }
 
 std::string severityToString(Logger::Severity::Type severity)
 {
   switch (severity) {
-    case Logger::Severity::Error   : return "ERROR";
-    case Logger::Severity::Warning : return "WARN";
-    case Logger::Severity::Info    : return "INFO";
-    case Logger::Severity::Debug   : return "DEBUG";
+    case Logger::Severity::Error      : return "ERROR";
+    case Logger::Severity::Warning    : return " WARN";
+    case Logger::Severity::Info       : return " INFO";
+    case Logger::Severity::Debug      : return "DEBUG";
+    case Logger::Severity::DebugInfo  : return "DINFO";
   }
   ASSERT_MESSAGE(false, "This statement should never be reached");
   return "";
@@ -225,7 +233,7 @@ std::string formatHeader(Logger::Severity::Type severity,
          << std::setw( 4) << std::setfill(' ') << std::left
          << line << " "
 #ifndef NPROFILING
-         << getTimeOfDay << " "
+         << printTimePoint << " "
 #endif
          << std::setw( 5) << std::left
          << severityToString(severity)

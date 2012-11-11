@@ -67,12 +67,12 @@ Matrix<IndexPoint>::Matrix(const size_type size,
   : _maxIndex{size.rowCount()-1, size.columnCount()-1},
     _distribution(detail::cloneAndConvert<IndexPoint>(distribution))
 {
-  LOG_DEBUG("Created new IndexMatrix object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new IndexMatrix object (", this, ") with ", getDebugInfo());
 }
 
 Matrix<IndexPoint>::~Matrix()
 {
-  LOG_DEBUG("IndexMatrix object (", this, ") with ", getDebugInfo(), " destroyed");
+  LOG_DEBUG_INFO("IndexMatrix object (", this, ") with ", getDebugInfo(), " destroyed");
 }
 
 //  template <>
@@ -156,8 +156,8 @@ void Matrix<IndexPoint>::setDistribution(std::unique_ptr<detail::Distribution< M
 
   ASSERT(_distribution->isValid());
 
-  LOG_DEBUG("IndexMatrix object (", this, ") assigned new distribution, now with ",
-           getDebugInfo());
+  LOG_DEBUG_INFO("IndexMatrix object (", this, ") assigned new distribution, now with ",
+                  getDebugInfo());
 }
 
 std::string Matrix<IndexPoint>::deviceFunctions()

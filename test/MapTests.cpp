@@ -50,7 +50,7 @@
 class MapTest : public ::testing::Test {
 protected:
   MapTest() {
-    // skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+    //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::DebugInfo);
     skelcl::init(skelcl::nDevices(1));
   };
 

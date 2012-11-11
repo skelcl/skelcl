@@ -62,12 +62,6 @@ namespace detail {
 
 namespace logger_impl {
 
-std::ostream& getTimeOfDay(std::ostream& stream);
-
-std::string severityToString(Logger::Severity::Type severity);
-
-std::string getFileName(const char* file);
-
 std::string getErrorString(cl_int err);
 
 std::string formatHeader(Logger::Severity::Type severity,

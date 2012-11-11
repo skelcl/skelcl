@@ -235,10 +235,6 @@ void setKernelArgs(cl::Kernel& kernel,
 }
 
 
-template <typename... Args>
-std::array<cl::Buffer, sizeof...(Args)> keepAlive(const Device& device,
-                                                  Args&&... args);
-
 // Declarations
 template <typename Iterator, typename... Args>
 void keepAlive(Iterator iter,

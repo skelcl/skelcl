@@ -66,20 +66,20 @@ Vector<Index>::Vector(const value_type size,
   : _maxIndex(size-1),
     _distribution(detail::cloneAndConvert<Index>(distribution))
 {
-  LOG_DEBUG("Created new IndexVector object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new IndexVector object (", this, ") with ", getDebugInfo());
 }
 
 Vector<Index>::Vector(const Vector<Index>& rhs)
   : _maxIndex(rhs._maxIndex),
     _distribution(detail::cloneAndConvert<Index>(rhs.distribution()))
 {
-  LOG_DEBUG("Created new IndexVector object (", this, ") by copying (", &rhs,
-            ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new IndexVector object (", this, ") by copying (", &rhs,
+                 ") with ", getDebugInfo());
 }
 
 Vector<Index>::~Vector()
 {
-  LOG_DEBUG("IndexVector object (", this, ") with ", getDebugInfo(), " destroyed");
+  LOG_DEBUG_INFO("IndexVector object (", this, ") with ", getDebugInfo(), " destroyed");
 }
 
 //  template <>
@@ -161,8 +161,8 @@ void Vector<Index>::setDistribution(std::unique_ptr<detail::Distribution< Vector
   _distribution = std::move(newDistribution);
   ASSERT(_distribution->isValid());
 
-  LOG_DEBUG("IndexVector object (", this, ") assigned new distribution, now with ",
-           getDebugInfo());
+  LOG_DEBUG_INFO("IndexVector object (", this, ") assigned new distribution, now with ",
+                 getDebugInfo());
 }
 
 std::string Vector<Index>::deviceFunctions()

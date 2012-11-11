@@ -73,7 +73,7 @@ Zip<Tout(Tleft, Tright)>::Zip(const Source& source,
     _source(source),
     _funcName(funcName)
 {
-  LOG_DEBUG("Create new Zip object (", this, ")");
+  LOG_DEBUG_INFO("Create new Zip object (", this, ")");
 }
 
 template <typename Tleft, typename Tright, typename Tout>
@@ -147,28 +147,27 @@ void Zip<Tout(Tleft, Tright)>::execute(const detail::Program& program,
       detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 4,
                                         std::forward<Args>(args)...);
 
+      auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
+                                                     leftBuffer.clBuffer(),
+                                                     rightBuffer.clBuffer(),
+                                                     outputBuffer.clBuffer(),
+                                                     std::forward<Args>(args)...);
+
       // after finishing the kernel invoke this function ...
-      auto invokeAfter =  [&] () {
-                            leftBuffer.markAsNotInUse();
-                            rightBuffer.markAsNotInUse();
-                            outputBuffer.markAsNotInUse();
-                          };
+      auto invokeAfter = [=] () {
+                                  (void)keepAlive;
+                                };
 
       devicePtr->enqueue(kernel,
                          cl::NDRange(global), cl::NDRange(local),
                          cl::NullRange, // offset
                          invokeAfter);
 
-      // after successfully enqueued the kernel ...
-      leftBuffer.markAsInUse();
-      rightBuffer.markAsInUse();
-      outputBuffer.markAsInUse();
-
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
     }
   }
-  LOG_INFO("Zip kernel started");
+  LOG_DEBUG_INFO("Zip kernel started");
 }
 
 template<typename Tleft, typename Tright, typename Tout>

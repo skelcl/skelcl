@@ -48,10 +48,10 @@
 #else  // DEBUG
 
 #define ASSERT(e)\
-  skelcl::detail::_ASSERT(__FILE__, __LINE__, e, #e)
+  skelcl::detail::ASSERT_IMPL(__FILE__, __LINE__, e, #e)
 
 #define ASSERT_MESSAGE(e, ...)\
-  skelcl::detail::_ASSERT(__FILE__, __LINE__, e, #e, __VA_ARGS__)
+  skelcl::detail::ASSERT_IMPL(__FILE__, __LINE__, e, #e, __VA_ARGS__)
 
 #endif // NDEBUG
 
@@ -75,10 +75,10 @@ namespace detail {
 ///        expressionString The expression as a string to be printed as part of
 ///                         the error message
 ///
-void _ASSERT(const char* file,
-             const int   line,
-             const bool  expression,
-             const char* expressionString);
+void ASSERT_IMPL(const char* file,
+                 const int   line,
+                 const bool  expression,
+                 const char* expressionString);
 
 ///
 /// \brief If expression evaluates to false an error message is printed and the
@@ -99,11 +99,11 @@ void _ASSERT(const char* file,
 ///        formatString A formated String to be printed as part of the error
 ///                     message. The String is evaluated by vsnprintf.
 ///
-void _ASSERT(const char* file,
-             const int   line,
-             const bool  expression,
-             const char* expressionString,
-             const char* formatString, ...);
+void ASSERT_IMPL(const char* file,
+                 const int   line,
+                 const bool  expression,
+                 const char* expressionString,
+                 const char* formatString, ...);
 
 } // namespace detail
 

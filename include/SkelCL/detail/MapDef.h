@@ -75,7 +75,7 @@ Map<Tout(Tin)>::Map(const Source& source,
   : Skeleton(),
     detail::MapHelper<Tout(Tin)>(createAndBuildProgram(source, funcName))
 {
-  LOG_DEBUG("Create new Map object (", this, ")");
+  LOG_DEBUG_INFO("Create new Map object (", this, ")");
 }
 
 template <typename Tin, typename Tout>
@@ -156,7 +156,7 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
       ABORT_WITH_ERROR(err);
     }
   }
-  LOG_INFO("Map kernel started");
+  LOG_DEBUG_INFO("Map kernel started");
 }
 
 template <typename Tin, typename Tout>
@@ -278,7 +278,7 @@ void Map<void(Tin)>::execute(const C<Tin>& input,
       ABORT_WITH_ERROR(err);
     }
   }
-  LOG_INFO("Map kernel started");
+  LOG_DEBUG_INFO("Map kernel started");
 }
 
 template <typename Tin>
@@ -423,7 +423,7 @@ void Map<Tout(Index)>::execute(C<Tout>& output,
     offset += sizes[i];
     ++i;
   }
-  LOG_INFO("Map kernel started");
+  LOG_DEBUG_INFO("Map kernel started");
 }
 
 template <typename Tout>
@@ -545,7 +545,7 @@ void Map<void(Index)>::execute(const C<Index>& input,
     offset += sizes[i];
     ++i;
   }
-  LOG_INFO("Map kernel started");
+  LOG_DEBUG_INFO("Map kernel started");
 }
 
 detail::Program Map<void(Index)>::createAndBuildProgram(const std::string& source,
