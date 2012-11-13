@@ -46,6 +46,7 @@
 #include <ios>
 #include <iterator>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <sstream>
 #include <utility>
