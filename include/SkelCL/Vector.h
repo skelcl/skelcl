@@ -40,6 +40,7 @@
 #ifndef VECTOR_H_
 #define VECTOR_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -464,14 +465,14 @@ private:
   ///
   std::string getDebugInfo() const;
 
-          size_type                                       _size;
+          size_type                                               _size;
   mutable
-    std::unique_ptr< detail::Distribution< Vector<T> > >  _distribution;
-  mutable bool                                            _hostBufferUpToDate;
-  mutable bool                                            _deviceBuffersUpToDate;
-  mutable host_buffer_type                                _hostBuffer;
+    std::unique_ptr< detail::Distribution< Vector<T> > >          _distribution;
+  mutable bool                                                    _hostBufferUpToDate;
+  mutable bool                                                    _deviceBuffersUpToDate;
+  mutable host_buffer_type                                        _hostBuffer;
   // _deviceBuffers empty => buffers not created yet
-  mutable std::vector<detail::DeviceBuffer>               _deviceBuffers;
+  mutable std::map<detail::Device::id_type, detail::DeviceBuffer> _deviceBuffers;
 };
 
 } // namespace skelcl

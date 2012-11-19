@@ -56,7 +56,7 @@ namespace {
 
 using namespace skelcl::detail;
 
-cl::Buffer createCLBuffer(const std::shared_ptr<Device> devicePtr,
+cl::Buffer createCLBuffer(const std::shared_ptr<Device>& devicePtr,
                           const size_t size,
                           const size_t elemSize,
                           cl_mem_flags flags) {
@@ -75,11 +75,11 @@ namespace skelcl {
 
 namespace detail {
 
-DeviceBuffer::DeviceBuffer(const size_t deviceId,
+DeviceBuffer::DeviceBuffer(const std::shared_ptr<Device>& devicePtr,
                            const size_t size,
                            const size_t elemSize,
                            cl_mem_flags flags)
-  : _device(globalDeviceList[deviceId]),
+  : _device(devicePtr),
     _size(size),
     _elemSize(elemSize),
     _flags(flags),

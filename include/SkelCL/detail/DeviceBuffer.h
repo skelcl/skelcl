@@ -59,7 +59,7 @@ public:
 
   DeviceBuffer() = default;
 
-  DeviceBuffer(const size_t deviceId,
+  DeviceBuffer(const std::shared_ptr<Device>& devicePtr,
                const size_t size,
                const size_t elemSize,
                cl_mem_flags flags = CL_MEM_READ_WRITE);

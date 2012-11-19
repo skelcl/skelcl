@@ -53,6 +53,7 @@ template <template <typename> class C, typename T>
 SingleDistribution< C<T> >::SingleDistribution(std::shared_ptr<Device> device)
   : Distribution< C<T> >( {device} )
 {
+  ASSERT(this->_devices.size() == 1);
 }
 
 template <template <typename> class C, typename T>
@@ -78,6 +79,7 @@ void SingleDistribution< C<T> >::startUpload(C<T>& container,
                                              Event* events) const
 {
   ASSERT(events != nullptr);
+  ASSERT(this->_devices.size() == 1);
 
   auto& buffer = container.deviceBuffer(*(this->_devices.front()));
 
@@ -92,6 +94,7 @@ void SingleDistribution< C<T> >::startDownload(C<T>& container,
                                                Event* events) const
 {
   ASSERT(events != nullptr);
+  ASSERT(this->_devices.size() == 1);
 
   auto& buffer = container.deviceBuffer(*(this->_devices.front()));
 
@@ -103,7 +106,7 @@ void SingleDistribution< C<T> >::startDownload(C<T>& container,
 
 template <template <typename> class C, typename T>
 size_t SingleDistribution< C<T> >::sizeForDevice(const C<T>& container,
-                                                 const detail::Device::id_type /*id*/) const
+                                                 const std::shared_ptr<detail::Device>& /*devicePtr*/) const
 {
   return single_distribution_helper::sizeForDevice<T>(container.size());
 }

@@ -97,8 +97,7 @@ typename detail::Sizes Matrix<IndexPoint>::sizes() const
 
   detail::Sizes s;
   for (auto& devicePtr : _distribution->devices()) {
-    s.push_back(this->_distribution->sizeForDevice(*this,
-                                                  devicePtr->id()));
+    s.push_back(this->_distribution->sizeForDevice(*this, devicePtr));
   }
   return s;
 }

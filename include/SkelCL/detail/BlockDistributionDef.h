@@ -117,9 +117,9 @@ void BlockDistribution< C<T> >::startDownload(C<T>& container,
 
 template <template <typename> class C, typename T>
 size_t BlockDistribution< C<T> >::sizeForDevice(const C<T>& container,
-                                                const detail::Device::id_type id) const
+                                                const std::shared_ptr<detail::Device>& devicePtr) const
 {
-  return block_distribution_helper::sizeForDevice<T>(id,
+  return block_distribution_helper::sizeForDevice<T>(devicePtr,
                                                      container.size(),
                                                      this->_devices,
                                                      this->_significances);
@@ -165,11 +165,12 @@ bool BlockDistribution< C<T> >::doCompare(const Distribution< C<T> >& rhs) const
 namespace block_distribution_helper {
 
 template <typename T>
-size_t sizeForDevice(const Device::id_type deviceID,
+size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
                      const typename Vector<T>::size_type size,
                      const DeviceList& devices,
                      const Significances& significances)
 {
+  auto deviceID = devicePtr->id();
   if (deviceID < devices.size()-1) {
     return static_cast<size_t>(
       size * significances.getSignificance(deviceID) );
@@ -187,11 +188,12 @@ size_t sizeForDevice(const Device::id_type deviceID,
 }
 
 template <typename T>
-size_t sizeForDevice(const Device::id_type deviceID,
+size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
                      const typename Matrix<T>::size_type size,
                      const DeviceList& devices,
                      const Significances& significances)
 {
+  auto deviceID = devicePtr->id();
   if (deviceID < devices.size() - 1) {
     auto s = static_cast<size_t>(
                size.rowCount() * significances.getSignificance(deviceID) );

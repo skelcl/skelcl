@@ -41,6 +41,7 @@
 #ifndef MATRIX_H_
 #define MATRIX_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -279,14 +280,14 @@ private:
   std::string getInfo() const;
   std::string getDebugInfo() const;
 
-          MatrixSize                                      _size;
+          MatrixSize                                              _size;
   mutable
-    std::unique_ptr< detail::Distribution< Matrix<T> > >  _distribution;
-  mutable bool                                            _hostBufferUpToDate;
-  mutable bool                                            _deviceBuffersUpToDate;
-  mutable host_buffer_type                                _hostBuffer;
+    std::unique_ptr< detail::Distribution< Matrix<T> > >          _distribution;
+  mutable bool                                                    _hostBufferUpToDate;
+  mutable bool                                                    _deviceBuffersUpToDate;
+  mutable host_buffer_type                                        _hostBuffer;
     // _deviceBuffers empty => buffers not created
-  mutable std::vector<detail::DeviceBuffer>               _deviceBuffers;
+  mutable std::map<detail::Device::id_type, detail::DeviceBuffer> _deviceBuffers;
 };
 
 } // namespace skelcl

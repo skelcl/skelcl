@@ -49,6 +49,8 @@
 
 namespace skelcl {
 
+namespace detail { class Device; }
+
 namespace distribution {
 
 // to prevent template argument deduction (i.e. template arguments have to be specified manually)
@@ -98,10 +100,25 @@ std::unique_ptr< skelcl::detail::Distribution< C<T> > >
 }
 
 template <template <typename> class C, typename T>
+std::unique_ptr< skelcl::detail::Distribution< C<T> > >
+    Single( const C<T>& /*c*/, const std::shared_ptr<skelcl::detail::Device>& device )
+{
+  return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
+        new skelcl::detail::SingleDistribution< C<T> >(device) );
+}
+
+template <template <typename> class C, typename T>
 void setSingle( const C<T>& c )
 {
   c.setDistribution( std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
         new skelcl::detail::SingleDistribution< C<T> >() ) );
+}
+
+template <template <typename> class C, typename T>
+void setSingle( const C<T>& c, const std::shared_ptr<skelcl::detail::Device>& device )
+{
+  c.setDistribution( std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
+        new skelcl::detail::SingleDistribution< C<T> >(device) ) );
 }
 
 } // namespace distribution

@@ -509,18 +509,20 @@ void Vector<T>::forceCreateDeviceBuffers() const
 
   _deviceBuffers.clear();
 
-  _deviceBuffers.resize(_distribution->devices().size());
   std::transform( _distribution->devices().begin(),
                   _distribution->devices().end(),
-                  _deviceBuffers.begin(),
+                  std::inserter(_deviceBuffers, _deviceBuffers.end()),
         [this](std::shared_ptr<detail::Device> devicePtr) {
-          return detail::DeviceBuffer(
+          return std::make_pair(
                     devicePtr->id(),
-                    this->_distribution->sizeForDevice(
-                            const_cast<Vector<T>&>(*this),
-                            devicePtr->id() ),
-                    sizeof(T)
-                    /*,mem flags*/ );
+                    detail::DeviceBuffer(
+                      devicePtr,
+                      this->_distribution->sizeForDevice(
+                              const_cast<Vector<T>&>(*this),
+                              devicePtr ),
+                      sizeof(T)
+                      /*,mem flags*/ )
+                 );
         } );
 }
 

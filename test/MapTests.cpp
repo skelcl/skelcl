@@ -241,7 +241,7 @@ TEST_F(MapTest, MatrixAddArgs) {
 }
 
 TEST_F(MapTest, MatrixAddArgsMatrix) {
-  skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+  //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
   skelcl::Map<float(float)> m(R"(
 float func( float f,__global float* mat, uint mat_col_count, float add2)
 {
@@ -277,3 +277,27 @@ float func( float f,__global float* mat, uint mat_col_count, float add2)
       }
   }
 }
+
+TEST_F(MapTest, MapWithSingleDistribution0) {
+  skelcl::terminate();
+  skelcl::init();
+
+  skelcl::Map<int(int)> map{"int func(int i) { return -i; }"};
+  skelcl::Vector<int> input(10);
+  skelcl::distribution::setSingle(input);
+
+  skelcl::Vector<int> output = map(input);
+}
+
+TEST_F(MapTest, MapWithSingleDistribution1) {
+  skelcl::terminate();
+  skelcl::init();
+
+  skelcl::Map<int(int)> map{"int func(int i) { return -i; }"};
+  skelcl::Vector<int> input(10);
+  auto dev = ++(skelcl::detail::globalDeviceList.begin());
+  skelcl::distribution::setSingle(input, *dev);
+
+  skelcl::Vector<int> output = map(input);
+}
+

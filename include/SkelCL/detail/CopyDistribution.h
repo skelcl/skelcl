@@ -71,7 +71,7 @@ public:
                      Event* events) const;
 
   size_t sizeForDevice(const C<T>& container,
-                       const detail::Device::id_type id) const;
+                       const std::shared_ptr<detail::Device>& devicePtr) const;
 
   bool dataExchangeOnDistributionChange(Distribution< C<T> >& newDistribution);
 
