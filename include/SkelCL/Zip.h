@@ -184,6 +184,10 @@ public:
                       const C<Tright>& right,
                       Args&&... args);
 
+  const std::string source() const {
+      return _source;
+  }
+
 private:
   ///
   /// \brief Queries the actual execution of the zip skeleton's kernel

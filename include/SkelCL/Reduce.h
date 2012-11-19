@@ -143,6 +143,10 @@ public:
                         const Vector<T>& input,
                         Args&&... args);
 
+  const std::string source() const {
+      return _userSource;
+  }
+
 private:
   ///
   /// \brief This struct describes one level of the reduce algorithm

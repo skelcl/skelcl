@@ -72,8 +72,8 @@ namespace skelcl {
 template<typename Tleft, typename Tright, typename Tout>
 AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip)
     : detail::Skeleton(),
-      _srcReduce(reduce._source),
-      _srcZip(zip._source)
+      _srcReduce(reduce.source()),
+      _srcZip(zip.source())
 {
     LOG_DEBUG("Create new AllPairs object (", this, ")");
 }
@@ -100,7 +100,7 @@ Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > outp
 {
     ASSERT( left.columnCount() == right.rowCount() );
 
-    auto program = createAndBuildProgram<Matrix>();
+    auto program = createAndBuildProgram();
 
     prepareInputInput(left, right);
 
@@ -172,9 +172,9 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
 template<typename Tleft, typename Tright, typename Tout>
 detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
 {
-    ASSERT_MESSAGE( !_srcReduce.isEmpty(),
+    ASSERT_MESSAGE( !_srcReduce.empty(),
                     "Tried to create program with empty user reduce source." );
-    ASSERT_MESSAGE( !_srcZip.isEmpty(),
+    ASSERT_MESSAGE( !_srcZip.empty(),
                     "Tried to create program with empty user zip source." );
 
     // create program
@@ -187,7 +187,9 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     s.append(_srcZip);
 
     // allpairs skeleton source
-    s.append( #include "AllPairsKernel.cl" );
+    s.append(
+      #include "AllPairsKernel.cl"
+    );
 
     auto program = detail::Program(s, detail::util::hash("//AllPairs\n"
                                                          + Matrix<Tleft>::deviceFunctions()
@@ -213,7 +215,7 @@ void AllPairs<Tout(Tleft, Tright)>::prepareInput(const Matrix<Tleft>& left,
 
 // Ausgabe vorbereiten
 template<typename Tleft, typename Tright, typename Tout>
-void llPairs<Tout(Tleft, Tright)>::prepareOutput(Matrix<Tout>& output,
+void AllPairs<Tout(Tleft, Tright)>::prepareOutput(Matrix<Tout>& output,
                                                  const Matrix<Tleft>& left,
                                                  const Matrix<Tright>& right)
 {

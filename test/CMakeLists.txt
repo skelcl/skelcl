@@ -52,3 +52,7 @@ add_executable (MatrixTests MatrixTests.cpp)
 target_link_libraries (MatrixTests SkelCL gtest_main ${SKELCL_COMMON_LIBS})
 add_test (MatrixTests ${CMAKE_CURRENT_BINARY_DIR}/MatrixTests)
 
+add_executable (AllPairsTests AllPairsTests.cpp)
+target_link_libraries (AllPairsTests SkelCL gtest_main ${SKELCL_COMMON_LIBS})
+add_test (AllPairsTests ${CMAKE_CURRENT_BINARY_DIR}/AllPairsTests)
+
