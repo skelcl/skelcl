@@ -26,6 +26,7 @@ set (SKELCL_SOURCES
     )
 
 set (SKELCL_HEADERS
+      ../include/SkelCL/AllPairs.h
       ../include/SkelCL/Distributions.h
       ../include/SkelCL/SkelCL.h
       ../include/SkelCL/Map.h
@@ -35,6 +36,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/Source.h
       ../include/SkelCL/Vector.h
       ../include/SkelCL/Zip.h
+      ../include/SkelCL/detail/AllPairsDef.h
       ../include/SkelCL/detail/Assert.h
       ../include/SkelCL/detail/BlockDistribution.h
       ../include/SkelCL/detail/BlockDistributionDef.h
