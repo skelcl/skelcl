@@ -73,7 +73,9 @@ template<typename Tleft, typename Tright, typename Tout>
 AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip)
     : detail::Skeleton(),
       _srcReduce(reduce.source()),
-      _srcZip(zip.source())
+      _srcZip(zip.source()),
+      _funcReduce(reduce.func()),
+      _funcZip(zip.func())
 {
     LOG_DEBUG("Create new AllPairs object (", this, ")");
 }
@@ -131,9 +133,9 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
         auto& rightBuffer  = right.deviceBuffer(*devicePtr);
 
         cl_uint elements[2]   = {output.rowCount(), output.columnCount()};
-        cl_uint local[2]      = {16, 32}; // richtig rum?
-        cl_uint global[2]     = {detail::util::ceilToMultipleOf(elements[0], local[0]), // durch SUBTILES teilen
-                                 detail::util::ceilToMultipleOf(elements[1], local[1])};
+        cl_uint local[2]      = {32, 8};
+        cl_uint global[2]     = {detail::util::ceilToMultipleOf(elements[0], local[0]),
+                                 detail::util::ceilToMultipleOf(elements[1], local[1])/4}; // durch SUBTILES teilen
 
         try {
             cl::Kernel kernel(program.kernel(*devicePtr, "SCL_ALLPAIRS"));
@@ -177,11 +179,14 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     ASSERT_MESSAGE( !_srcZip.empty(),
                     "Tried to create program with empty user zip source." );
 
+    // 1 _srcReduce: ersetze func durch USR_REDUCE
+    // 2 _srcZip   : ersetze func durch USR_ZIP
+
     // create program
-    std::string s(Matrix<Tleft>::deviceFunctions()); // left?
+    std::string s(Matrix<Tleft>::deviceFunctions());
 
     // reduce user source
-    s.append(_srcReduce); // umbennnen
+    s.append(_srcReduce);
 
     // zip user source
     s.append(_srcZip);
@@ -194,13 +199,23 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     auto program = detail::Program(s, detail::util::hash("//AllPairs\n"
                                                          + Matrix<Tleft>::deviceFunctions()
                                                          + _srcReduce
-                                                         + _srcZip));
+                                                         + _srcZip)); // durch ersetzten ersetzen?
     // modify program
     if (!program.loadBinary()) {
-        // TODO
+        //program.transferParameters(_funcReduce, 2, "SCL_ALLPAIRS"); //problem: reduce parameter a und zip parameter a
+        //program.transferArguments(_funcReduce, 2, "SCL_ALLPAIRS");
+        //program.transferParameters(_funcZip, 2, "SCL_ALLPAIRS");
+        //program.transferArguments(_funcZip, 2, "SCL_ALLPAIRS");
+
+        // rename user functions
+        program.renameFunction(_funcReduce, "USR_REDUCE"); // duerfen vorher nicht beide func heissen!
+        program.renameFunction(_funcZip, "USR_ZIP");
+
+        program.adjustTypes<Tleft, Tright, Tout>();
     }
 
     program.build();
+    LOG_DEBUG("program built.");
 
     return program;
 }

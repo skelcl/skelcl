@@ -188,6 +188,10 @@ public:
       return _source;
   }
 
+  const std::string func() const {
+      return _funcName;
+  }
+
 private:
   ///
   /// \brief Queries the actual execution of the zip skeleton's kernel

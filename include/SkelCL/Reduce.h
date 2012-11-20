@@ -147,6 +147,10 @@ public:
       return _userSource;
   }
 
+  const std::string func() const {
+      return _userFunc;
+  }
+
 private:
   ///
   /// \brief This struct describes one level of the reduce algorithm

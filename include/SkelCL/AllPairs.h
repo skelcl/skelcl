@@ -100,7 +100,9 @@ class AllPairs<Tout(Tleft, Tright)> : public detail::Skeleton {
                        const Matrix<Tright>& right);
 
     std::string _srcReduce;
+    std::string _funcReduce;
     std::string _srcZip;
+    std::string _funcZip;
 };
 
 } // namespace skelcl
