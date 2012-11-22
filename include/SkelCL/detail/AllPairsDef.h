@@ -102,7 +102,7 @@ Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > outp
 {
     ASSERT( left.columnCount() == right.rowCount() );
 
-    auto program = createAndBuildProgram();
+    detail::Program program = createAndBuildProgram();
 
     prepareInput(left, right);
 
@@ -133,7 +133,7 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
         auto& rightBuffer  = right.deviceBuffer(*devicePtr);
 
         cl_uint elements[2]   = {output.rowCount(), output.columnCount()};
-        cl_uint local[2]      = {32, 8};
+        cl_uint local[2]      = {32, 8}; // C, R
         cl_uint global[2]     = {detail::util::ceilToMultipleOf(elements[0], local[0]),
                                  detail::util::ceilToMultipleOf(elements[1], local[1])/4}; // durch SUBTILES teilen
 
@@ -183,7 +183,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     // 2 _srcZip   : ersetze func durch USR_ZIP
 
     // create program
-    std::string s(Matrix<Tleft>::deviceFunctions());
+    std::string s(Matrix<Tout>::deviceFunctions());
 
     // reduce user source
     s.append(_srcReduce);
@@ -197,9 +197,9 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     );
 
     auto program = detail::Program(s, detail::util::hash("//AllPairs\n"
-                                                         + Matrix<Tleft>::deviceFunctions()
+                                                         + Matrix<Tout>::deviceFunctions()
                                                          + _srcReduce
-                                                         + _srcZip)); // durch ersetzten ersetzen?
+                                                         + _srcZip));
     // modify program
     if (!program.loadBinary()) {
         //program.transferParameters(_funcReduce, 2, "SCL_ALLPAIRS"); //problem: reduce parameter a und zip parameter a
@@ -215,18 +215,17 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     }
 
     program.build();
-    LOG_DEBUG("program built.");
 
     return program;
 }
 
-// Einagbe vorbereiten
+// Eingabe vorbereiten
 template<typename Tleft, typename Tright, typename Tout>
 void AllPairs<Tout(Tleft, Tright)>::prepareInput(const Matrix<Tleft>& left,
                                                  const Matrix<Tright>& right)
 {
     // set distributions
-    left.setDistribution(detail::BlockDistribution< Matrix<Tleft> >()); // some lines from matrix
+    left.setDistribution(detail::BlockDistribution< Matrix<Tleft> >()); // some rows of matrix
     right.setDistribution(detail::CopyDistribution< Matrix<Tright> >()); // whole matrix
 
     // create buffers if required
@@ -244,14 +243,14 @@ void AllPairs<Tout(Tleft, Tright)>::prepareOutput(Matrix<Tout>& output,
                                                   const Matrix<Tleft>& left,
                                                   const Matrix<Tright>& right)
 {
-    // resize
-    if (output.rowCount() < left.rowCount() || output.columnCount() < right.columnCount())
-        output.resize(MatrixSize(left.rowCount(), right.columnCount()));
+    // set size
+    if (output.rowCount() != left.rowCount() || output.columnCount() != right.columnCount())
+        output.resize(typename Matrix<Tout>::size_type(left.rowCount(), right.columnCount()));
 
     // set distribution
     output.setDistribution(detail::BlockDistribution< Matrix<Tout> >()); // ? left.distri?
 
-    //create buffers if reqired
+    //create buffers if required
     output.createDeviceBuffers();
 }
 

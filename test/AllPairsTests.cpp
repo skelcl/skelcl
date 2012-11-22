@@ -37,8 +37,6 @@
 
 #include <gtest/gtest.h>
 
-#include <fstream>
-
 #include <cstdio>
 #include <vector>
 
@@ -52,7 +50,7 @@
 class AllPairsTest : public ::testing::Test {
 protected:
     AllPairsTest() {
-        //    skelcl::detail::Logger.setLoggingLevel(skelcl::detail::Severity::Debug);
+        skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
         skelcl::init(skelcl::nDevices(1));
     }
 
@@ -61,7 +59,7 @@ protected:
     }
 };
 
-TEST_F(AllPairsTest, CreateZipWithZipAndReduce) {
+TEST_F(AllPairsTest, CreateAllPairsWithZipAndReduce) {
     skelcl::Zip<float(float, float)> zip("float func(float x, float y){ return x*y; }");
     skelcl::Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
     skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
@@ -74,7 +72,7 @@ TEST_F(AllPairsTest, SimpleAllPairs) {
 
     std::vector<float> tmpleft(4096);
     for (size_t i = 0; i < tmpleft.size(); ++i)
-      tmpleft[i] = (float)i;
+      tmpleft[i] = 1;//((float)i)/100;
     EXPECT_EQ(4096, tmpleft.size());
 
     std::vector<float> tmpright(tmpleft);
@@ -88,5 +86,17 @@ TEST_F(AllPairsTest, SimpleAllPairs) {
     EXPECT_EQ(64, right.rowCount());
     EXPECT_EQ(64, right.columnCount());
 
-    auto output = allpairs(left, right);
+    skelcl::Matrix<float> output = allpairs(left, right);
+    EXPECT_EQ(64, output.rowCount());
+    EXPECT_EQ(64, output.columnCount());
+
+    for (size_t i = 0; i < output.rowCount(); ++i) {
+        for (size_t j = 0; j < output.columnCount(); ++j) {
+            float tmp = 0;
+            for (size_t k = 0; k < left.columnCount(); ++k) {
+                tmp += left[i][k] * right[k][j];
+            }
+            EXPECT_EQ(tmp, output[i][j]);
+        }
+    }
 }
