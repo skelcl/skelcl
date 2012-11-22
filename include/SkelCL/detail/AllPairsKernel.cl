@@ -48,13 +48,13 @@ typedef float SCL_TYPE_2;
 #define SUBTILES 4
 #define DS 32
 
-__kernel void SCL_ALLPAIRS(const __global SCL_TYPE0* M,
-                           const __global SCL_TYPE1* N,
-                                 __global SCL_TYPE2* P,
+__kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
+                           const __global SCL_TYPE_1* N,
+                                 __global SCL_TYPE_2* P,
                            const unsigned int height,
                            const unsigned int width) {
-    __local SCL_TYPE0 Ml[R][DS];
-    __local SCL_TYPE1 Nl[DS][C];
+    __local SCL_TYPE_0 Ml[R][DS];
+    __local SCL_TYPE_1 Nl[DS][C];
 
     const uint   col = get_global_id(0);
     const uint l_col = get_local_id(0);
@@ -70,7 +70,7 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE0* M,
             Nl[(i - ii) * R + l_row][l_col] = N[(i * R + l_row) * width + col]; 
 
         for (int s = 0; s < SUBTILES; ++s) { 
-            SCL_TYPE2 rslt = P[(row + s * R) * width + col];
+            SCL_TYPE_2 rslt = P[(row + s * R) * width + col];
 
             uint jj = segment * DS / C; 
             for (int j = jj; j * C < (segment + 1) * DS; ++j) 
@@ -78,13 +78,13 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE0* M,
 
             barrier(CLK_LOCAL_MEM_FENCE); 
 
-            SCL_TYPE2 tmp;
+            SCL_TYPE_2 tmp;
             for (int k = 0; k < DS; ++k) {
                 tmp = USR_ZIP(Ml[l_row][k], Nl[k][l_col]);
                 rslt = USR_REDUCE(tmp, rslt);
             }
 
-            P[(row + s * R) * width + col] = sum; 
+            P[(row + s * R) * width + col] = rslt;
 
             barrier(CLK_GLOBAL_MEM_FENCE);	
 

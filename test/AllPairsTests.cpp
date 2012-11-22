@@ -40,6 +40,7 @@
 #include <fstream>
 
 #include <cstdio>
+#include <vector>
 
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
@@ -64,4 +65,28 @@ TEST_F(AllPairsTest, CreateZipWithZipAndReduce) {
     skelcl::Zip<float(float, float)> zip("float func(float x, float y){ return x*y; }");
     skelcl::Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
     skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
+}
+
+TEST_F(AllPairsTest, SimpleAllPairs) {
+    skelcl::Zip<float(float, float)> zip("float USR_ZIP(float x, float y){ return x*y; }");
+    skelcl::Reduce<float(float)> reduce("float USR_REDUCE(float x, float y){ return x+y; }");
+    skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
+
+    std::vector<float> tmpleft(4096);
+    for (size_t i = 0; i < tmpleft.size(); ++i)
+      tmpleft[i] = (float)i;
+    EXPECT_EQ(4096, tmpleft.size());
+
+    std::vector<float> tmpright(tmpleft);
+    EXPECT_EQ(4096, tmpright.size());
+
+    skelcl::Matrix<float> left(tmpleft, 64);
+    EXPECT_EQ(64, left.rowCount());
+    EXPECT_EQ(64, left.columnCount());
+
+    skelcl::Matrix<float> right(tmpright, 64);
+    EXPECT_EQ(64, right.rowCount());
+    EXPECT_EQ(64, right.columnCount());
+
+    auto output = allpairs(left, right);
 }

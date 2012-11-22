@@ -148,7 +148,7 @@ public:
   }
 
   const std::string func() const {
-      return _userFunc;
+      return _funcName;
   }
 
 private:

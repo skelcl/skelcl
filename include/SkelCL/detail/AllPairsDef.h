@@ -104,7 +104,7 @@ Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > outp
 
     auto program = createAndBuildProgram();
 
-    prepareInputInput(left, right);
+    prepareInput(left, right);
 
     prepareOutput(output.container(), left, right);
 
@@ -125,7 +125,7 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
                                             Args&&... args)
 {
     ASSERT( left.distribution().isValid() && right.distribution().isValid() );
-    ASSERT( output.columnCount() == left.rowCount() && output.rowCount() == right.columnCount() );
+    ASSERT( output.rowCount() == left.rowCount() && output.columnCount() == right.columnCount() );
 
     for (auto& devicePtr : left.distribution().devices()) { // ab hier neu
         auto& outputBuffer = output.deviceBuffer(*devicePtr);
@@ -208,8 +208,8 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
         //program.transferArguments(_funcZip, 2, "SCL_ALLPAIRS");
 
         // rename user functions
-        program.renameFunction(_funcReduce, "USR_REDUCE"); // duerfen vorher nicht beide func heissen!
-        program.renameFunction(_funcZip, "USR_ZIP");
+        //program.renameFunction(_funcReduce, "USR_REDUCE"); // duerfen vorher nicht beide func heissen!
+        //program.renameFunction(_funcZip, "USR_ZIP");
 
         program.adjustTypes<Tleft, Tright, Tout>();
     }
@@ -225,16 +225,34 @@ template<typename Tleft, typename Tright, typename Tout>
 void AllPairs<Tout(Tleft, Tright)>::prepareInput(const Matrix<Tleft>& left,
                                                  const Matrix<Tright>& right)
 {
-    //TODO verteilungen einstellen, buffer erzeugen, daten uploaden
+    // set distributions
+    left.setDistribution(detail::BlockDistribution< Matrix<Tleft> >()); // some lines from matrix
+    right.setDistribution(detail::CopyDistribution< Matrix<Tright> >()); // whole matrix
+
+    // create buffers if required
+    left.createDeviceBuffers();
+    right.createDeviceBuffers();
+
+    // copy data to devices
+    left.startUpload();
+    right.startUpload();
 }
 
 // Ausgabe vorbereiten
 template<typename Tleft, typename Tright, typename Tout>
 void AllPairs<Tout(Tleft, Tright)>::prepareOutput(Matrix<Tout>& output,
-                                                 const Matrix<Tleft>& left,
-                                                 const Matrix<Tright>& right)
+                                                  const Matrix<Tleft>& left,
+                                                  const Matrix<Tright>& right)
 {
-    //TODO groesse bestimmen, verteilung angeben, buffer erzeugen
+    // resize
+    if (output.rowCount() < left.rowCount() || output.columnCount() < right.columnCount())
+        output.resize(MatrixSize(left.rowCount(), right.columnCount()));
+
+    // set distribution
+    output.setDistribution(detail::BlockDistribution< Matrix<Tout> >()); // ? left.distri?
+
+    //create buffers if reqired
+    output.createDeviceBuffers();
 }
 
 } // namespace skelcl
