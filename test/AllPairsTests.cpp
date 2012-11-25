@@ -50,7 +50,7 @@
 class AllPairsTest : public ::testing::Test {
 protected:
     AllPairsTest() {
-        skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+        //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
         skelcl::init(skelcl::nDevices(1));
     }
 
@@ -59,11 +59,11 @@ protected:
     }
 };
 
-TEST_F(AllPairsTest, CreateAllPairsWithZipAndReduce) {
+/*TEST_F(AllPairsTest, CreateAllPairsWithZipAndReduce) {
     skelcl::Zip<float(float, float)> zip("float func(float x, float y){ return x*y; }");
     skelcl::Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
     skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
-}
+}*/
 
 TEST_F(AllPairsTest, SimpleAllPairs) {
     skelcl::Zip<float(float, float)> zip("float USR_ZIP(float x, float y){ return x*y; }");
@@ -90,13 +90,19 @@ TEST_F(AllPairsTest, SimpleAllPairs) {
     EXPECT_EQ(64, output.rowCount());
     EXPECT_EQ(64, output.columnCount());
 
+    int errorCount = 0;
     for (size_t i = 0; i < output.rowCount(); ++i) {
         for (size_t j = 0; j < output.columnCount(); ++j) {
             float tmp = 0;
             for (size_t k = 0; k < left.columnCount(); ++k) {
                 tmp += left[i][k] * right[k][j];
             }
+            if (tmp != output[i][j]) {
+                //std::cout << "\\fill[color=red!30] ("<< j << "," << 63-i << ") rectangle (" << j+1 << "," << 64-i << ");" << std::endl;
+                ++errorCount;
+            }
             EXPECT_EQ(tmp, output[i][j]);
         }
     }
+    std::cout << "Error Count: " << errorCount << std::endl;
 }

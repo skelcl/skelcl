@@ -201,7 +201,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
                                                          + _srcReduce
                                                          + _srcZip));
     // modify program
-    if (!program.loadBinary()) {
+    //if (!program.loadBinary()) {
         //program.transferParameters(_funcReduce, 2, "SCL_ALLPAIRS"); //problem: reduce parameter a und zip parameter a
         //program.transferArguments(_funcReduce, 2, "SCL_ALLPAIRS");
         //program.transferParameters(_funcZip, 2, "SCL_ALLPAIRS");
@@ -212,7 +212,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
         //program.renameFunction(_funcZip, "USR_ZIP");
 
         program.adjustTypes<Tleft, Tright, Tout>();
-    }
+    //}
 
     program.build();
 
@@ -225,7 +225,7 @@ void AllPairs<Tout(Tleft, Tright)>::prepareInput(const Matrix<Tleft>& left,
                                                  const Matrix<Tright>& right)
 {
     // set distributions
-    left.setDistribution(detail::BlockDistribution< Matrix<Tleft> >()); // some rows of matrix
+    left.setDistribution(detail::CopyDistribution< Matrix<Tleft> >()); // some rows of matrix
     right.setDistribution(detail::CopyDistribution< Matrix<Tright> >()); // whole matrix
 
     // create buffers if required
@@ -248,7 +248,7 @@ void AllPairs<Tout(Tleft, Tright)>::prepareOutput(Matrix<Tout>& output,
         output.resize(typename Matrix<Tout>::size_type(left.rowCount(), right.columnCount()));
 
     // set distribution
-    output.setDistribution(detail::BlockDistribution< Matrix<Tout> >()); // ? left.distri?
+    output.setDistribution(detail::CopyDistribution< Matrix<Tout> >()); // ? left.distri?
 
     //create buffers if required
     output.createDeviceBuffers();
