@@ -4,4 +4,6 @@ build*
 libraries/gtest
 libraries/ssedit/libraries/gtest
 libraries/ssedit/libraries/libclang
-
+xcuserdata
+!xcshareddata
+!xcschemes
