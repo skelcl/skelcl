@@ -148,20 +148,21 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
 
             detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 5, std::forward<Args>(args)...);
 
-            auto invokeAfter = [&] ()  {
-                                 leftBuffer.markAsNotInUse();
-                                 rightBuffer.markAsNotInUse();
-                                 outputBuffer.markAsNotInUse();
-                               };
+
+            auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
+                                                           leftBuffer.clBuffer(),
+                                                           rightBuffer.clBuffer(),
+                                                           outputBuffer.clBuffer(),
+                                                           std::forward<Args>(args)...);
+
+            // after finishing the kernel invoke this function ...
+            auto invokeAfter =  [=] () {
+                                          (void)keepAlive;
+                                       };
 
             devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]), cl::NDRange(local[0], local[1]),
                                cl::NullRange, // offset
                                invokeAfter);
-
-            // after successfully enqueued the kernel
-            leftBuffer.markAsInUse();
-            rightBuffer.markAsInUse();
-            outputBuffer.markAsInUse();
 
         } catch (cl::Error& err) {
             ABORT_WITH_ERROR(err);
