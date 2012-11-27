@@ -48,6 +48,7 @@
 
 namespace skelcl {
 
+class Index;
 class Source;
 template <typename> class Out;
 namespace detail { class Program; }
@@ -112,7 +113,7 @@ public:
   template <template <typename> class C,
             typename... Args>
   C<Tout> operator()(const C<Tin>& input,
-                     Args&&... args);
+                     Args&&... args) const;
 
   ///
   /// \brief Function call operator. Executes the skeleton on the data provided
@@ -141,7 +142,7 @@ public:
             typename... Args>
   C<Tout>& operator()(Out< C<Tout> > output,
                       const C<Tin>&  input,
-                      Args&&... args);
+                      Args&&... args) const;
 
 private:
   /// \brief Performs the actual execution of the map skeleton's kernel
@@ -152,24 +153,12 @@ private:
   ///
   template <template <typename> class C,
             typename... Args>
-  void execute(const detail::Program& program,
-               C<Tout>& output,
+  void execute(C<Tout>& output,
                const C<Tin>& input,
-               Args&&... args);
+               Args&&... args) const;
 
-  /// \brief Create a program object from the provided source string
-  ///
-  /// \param source The source code defined by the application developer
-  ///
-  /// \return A program object customized with the source code defined by
-  ///         the application developer, as well as the map skeleton's
-  ///         kernel implementation
-  ///
-  template <template <typename> class C>
-  detail::Program createAndBuildProgram() const;
-
-  std::string _source;
-  std::string _funcName;
+  detail::Program createAndBuildProgram(const std::string& source,
+                                        const std::string& funcName) const;
 };
 
 ///
@@ -226,7 +215,7 @@ public:
   template <template <typename> class C,
             typename... Args>
   void operator()(const C<Tin>& input,
-                  Args&&... args);
+                  Args&&... args) const;
 
 private:
   /// \brief Queries the actual execution of the map skeleton's kernel
@@ -236,9 +225,8 @@ private:
   ///
   template <template <typename> class C,
             typename... Args>
-  void execute(const detail::Program& program,
-               const C<Tin>& input,
-               Args&&... args);
+  void execute(const C<Tin>& input,
+               Args&&... args) const;
 
   /// \brief Create a program object from the provided source string
   ///
@@ -248,11 +236,165 @@ private:
   ///         the application developer, as well as the map skeleton's
   ///         kernel implementation
   ///
-  template <template <typename> class C>
-  detail::Program createAndBuildProgram() const;
+  detail::Program createAndBuildProgram(const std::string& source,
+                                        const std::string& funcName) const;
+};
 
-  std::string _source;
-  std::string _funcName;
+///
+/// \class Map
+///
+/// \brief An instance of the Map skeleton describes a calculation which can
+///        be performed on a device.
+///
+/// On creation the Map skeleton is customized with source code for a function.
+/// The Map skeleton can than be called by passing a container.
+/// The function is executed ones for every item of the container.
+/// More formally: When x is a container of length n with items x[0] .. x[n-1],
+/// f is the provided function, the Map skeleton executes as follows:
+/// f(x[i]) for every i in 0 .. n-1.
+///
+/// This is a version taking no template arguments ...
+///
+template<typename Tout>
+class Map<Tout(Index)> : public detail::Skeleton,
+                         private detail::MapHelper<Tout(Index)> {
+public:
+  ///
+  /// \brief Constructor taking the source code used to customize the Map
+  ///        skeleton.
+  ///
+  /// \param source   Source code used to customize the skeleton
+  ///
+  ///        funcName Name of the 'main' function (the staring point)
+  ///                 of the given source code
+  ///
+  Map<Tout(Index)>(const Source& source,
+                   const std::string& funcName = std::string("func"));
+
+  ///
+  /// \brief Function call operator. Executes the skeleton on the data provided
+  ///        as arguments input and args.
+  ///
+  /// \param input The input data for the skeleton managed inside a container.
+  ///              The actual Type of this argument must be a subtype of the
+  ///              Container class.
+  ///              If no distribution is set for this container as default the
+  ///              Block distribution is selected.
+  ///
+  ///        args  Additional arguments which are passed to the function
+  ///              named by funcName and defined in the source code at created.
+  ///              The individual arguments must be passed in the same order
+  ///              here as they where defined in the funcName function
+  ///              declaration.
+  ///
+  template <template <typename> class C,
+            typename... Args>
+  C<Tout> operator()(const C<Index>& input,
+                     Args&&... args) const;
+
+  template <template <typename> class C,
+            typename... Args>
+  C<Tout>& operator()(Out< C<Tout> > output,
+                      const C<Index>& input,
+                      Args&&... args) const;
+
+private:
+  /// \brief Queries the actual execution of the map skeleton's kernel
+  ///
+  /// \param input  The input container
+  ///        args   Additional arguments
+  ///
+  template <template <typename> class C,
+            typename... Args>
+  void execute(C<Tout>& output,
+               const C<Index>& input,
+               Args&&... args) const;
+
+  /// \brief Create a program object from the provided source string
+  ///
+  /// \param source The source code defined by the application developer
+  ///
+  /// \return A program object customized with the source code defined by
+  ///         the application developer, as well as the map skeleton's
+  ///         kernel implementation
+  ///
+  detail::Program createAndBuildProgram(const std::string& source,
+                                        const std::string& funcName) const;
+};
+
+///
+/// \class Map
+///
+/// \brief An instance of the Map skeleton describes a calculation which can
+///        be performed on a device.
+///
+/// On creation the Map skeleton is customized with source code for a function.
+/// The Map skeleton can than be called by passing a container.
+/// The function is executed ones for every item of the container.
+/// More formally: When x is a container of length n with items x[0] .. x[n-1],
+/// f is the provided function, the Map skeleton executes as follows:
+/// f(x[i]) for every i in 0 .. n-1.
+///
+/// This is a version taking no template arguments ...
+///
+template<>
+class Map<void(Index)> : public detail::Skeleton,
+                         private detail::MapHelper<void(Index)> {
+public:
+  ///
+  /// \brief Constructor taking the source code used to customize the Map
+  ///        skeleton.
+  ///
+  /// \param source   Source code used to customize the skeleton
+  ///
+  ///        funcName Name of the 'main' function (the staring point)
+  ///                 of the given source code
+  ///
+  Map<void(Index)>(const Source& source,
+                   const std::string& funcName = std::string("func"));
+
+  ///
+  /// \brief Function call operator. Executes the skeleton on the data provided
+  ///        as arguments input and args.
+  ///
+  /// \param input The input data for the skeleton managed inside a container.
+  ///              The actual Type of this argument must be a subtype of the
+  ///              Container class.
+  ///              If no distribution is set for this container as default the
+  ///              Block distribution is selected.
+  ///
+  ///        args  Additional arguments which are passed to the function
+  ///              named by funcName and defined in the source code at created.
+  ///              The individual arguments must be passed in the same order
+  ///              here as they where defined in the funcName function
+  ///              declaration.
+  ///
+  template <template <typename> class C,
+            typename... Args>
+  void operator()(const C<Index>& input,
+                  Args&&... args) const;
+
+private:
+  /// \brief Queries the actual execution of the map skeleton's kernel
+  ///
+  /// \param input  The input container
+  ///        args   Additional arguments
+  ///
+  template <template <typename> class C,
+            typename... Args>
+  void execute(const C<Index>& input,
+               Args&&... args) const;
+
+  /// \brief Create a program object from the provided source string
+  ///
+  /// \param source The source code defined by the application developer
+  ///
+  /// \return A program object customized with the source code defined by
+  ///         the application developer, as well as the map skeleton's
+  ///         kernel implementation
+  ///
+  detail::Program createAndBuildProgram(const std::string& source,
+                                        const std::string& funcName) const;
 };
 
 } // namespace skelcl

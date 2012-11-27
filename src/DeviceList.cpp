@@ -129,7 +129,7 @@ void DeviceList::barrier() const
   } catch (cl::Error& err) {
     ABORT_WITH_ERROR(err);
   }
-  LOG_INFO("Finished waiting for ", _devices.size(), " devices");
+  LOG_DEBUG_INFO("Finished waiting for ", _devices.size(), " devices");
 }
 
 DeviceList::const_iterator DeviceList::begin() const

@@ -6,14 +6,22 @@ endif (${WIN32})
 
 # set compiler and options
 if (${UNIX})
-  # assume these flags are valid for any unix compiler (they are at least for g++ and clang++)
-  set (CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra"
-		  CACHE STRING "Flags used by the compiler during all build types.")
+  if (${APPLE})
+    set (CMAKE_CXX_COMPILER "clang++" CACHE STRING "CXX Compiler.")
+    set (CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++ -DGTEST_USE_OWN_TR1_TUPLE=1 -Wall -Wextra"
+      CACHE STRING "Flags used by the compiler during all build types.")
+  else (${APPLE})
+    set (CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra"
+      CACHE STRING "Flags used by the compiler during all build types.")
+  endif (${APPLE})
 
   # more restructive flags for compiling the SkelCL code. These flags are added in addition to the above
   set (SKELCL_CXX_FLAGS "-Weffc++ -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Werror -pedantic-errors -Wfatal-errors"
       CACHE STRING "More strict flags used to compile the SSE sources.")
 endif (${UNIX})
+
+# include custom cmake modules (e.g. FindOpenCL.cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules)
 
 # project name
 project (SkelCL)
@@ -30,19 +38,16 @@ option (BUILD_TESTS
         "Build all tests automatically with the library." ON)
 
 # opencl dirs
-set (OPENCL_INCLUDE_DIR /usr/include CACHE STRING
-     "OpenCL include directory.")
-set (OPENCL_LIB_DIR /usr/lib CACHE STRING
-     "OpenCL library directory.")
+find_package (OpenCL)
 
 # skelcl common dirs and libraries
 set (SKELCL_COMMON_INCLUDE_DIR
-      "${OPENCL_INCLUDE_DIR}"
+      "${PROJECT_SOURCE_DIR}/include"
       "${PROJECT_SOURCE_DIR}/libraries/ssedit/include"
       "${SSEDIT_COMMON_INCLUDE_DIR}" CACHE INTERNAL
      "Common include directories used by SkelCL.")
 set (SKELCL_COMMON_LIBS
-      OpenCL
+      ${OPENCL_LIBRARIES}
       crypto
       ssedit
       "${SSEDIT_COMMON_LIBS}" CACHE INTERNAL

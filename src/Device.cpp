@@ -107,8 +107,8 @@ Device::Device(const cl::Device& device,
     ABORT_WITH_ERROR(err);
   }
 
-  LOG_INFO("Device `", name(),
-           "' with id: ", _id, " created");
+  LOG_INFO("Using device `", name(),
+           "' with id: ", _id);
 }
 
 cl::Event Device::enqueue(const cl::Kernel& kernel,
@@ -135,9 +135,9 @@ cl::Event Device::enqueue(const cl::Kernel& kernel,
     event.setCallback(CL_COMPLETE, ::invokeCallback, userData);
   }
 
-  LOG_DEBUG("Kernel for device ", _id, " enqueued with global range: ",
-            ::printNDRange(global), ", local: ", ::printNDRange(local),
-            ", offset: ", ::printNDRange(offset));
+  LOG_DEBUG_INFO("Kernel for device ", _id, " enqueued with global range: ",
+                 ::printNDRange(global), ", local: ", ::printNDRange(local),
+                 ", offset: ", ::printNDRange(offset));
   return event;
 }
 
@@ -162,14 +162,14 @@ cl::Event Device::enqueueWrite(const  DeviceBuffer& buffer,
     ABORT_WITH_ERROR(err);
   }
 
-  LOG_DEBUG("Enqueued write buffer for device ", _id,
-            " (size: ", buffer.sizeInBytes(),
-            ", clBuffer: ", buffer.clBuffer()(),
-            ", deviceOffset: 0",
-            ", hostPointer: ", static_cast<const void*>(
-                                  static_cast<const char*>(hostPointer)
-                                + (hostOffset * buffer.elemSize()) ),
-            ", hostOffset: ", hostOffset*buffer.elemSize() ,")");
+  LOG_DEBUG_INFO("Enqueued write buffer for device ", _id,
+                 " (size: ", buffer.sizeInBytes(),
+                 ", clBuffer: ", buffer.clBuffer()(),
+                 ", deviceOffset: 0",
+                 ", hostPointer: ", static_cast<const void*>(
+                                       static_cast<const char*>(hostPointer)
+                                     + (hostOffset * buffer.elemSize()) ),
+                 ", hostOffset: ", hostOffset*buffer.elemSize() ,")");
   return event;
 }
 
@@ -196,14 +196,14 @@ cl::Event Device::enqueueWrite(const  DeviceBuffer& buffer,
     ABORT_WITH_ERROR(err);
   }
 
-  LOG_DEBUG("Enqueued write buffer for device ", _id,
-            " (size: ", size * buffer.elemSize(),
-            ", clBuffer: ", buffer.clBuffer()(),
-            ", deviceOffset: ", deviceOffset*buffer.elemSize(),
-            ", hostPointer: ", static_cast<void*const>(
-                                  static_cast<char*const>(hostPointer)
-                                + (hostOffset * buffer.elemSize()) ),
-            ", hostOffset: ", hostOffset*buffer.elemSize() ,")");
+  LOG_DEBUG_INFO("Enqueued write buffer for device ", _id,
+                 " (size: ", size * buffer.elemSize(),
+                 ", clBuffer: ", buffer.clBuffer()(),
+                 ", deviceOffset: ", deviceOffset*buffer.elemSize(),
+                 ", hostPointer: ", static_cast<void*const>(
+                                       static_cast<char*const>(hostPointer)
+                                     + (hostOffset * buffer.elemSize()) ),
+                 ", hostOffset: ", hostOffset*buffer.elemSize() ,")");
   return event;
 }
 
@@ -228,14 +228,14 @@ cl::Event Device::enqueueRead(const DeviceBuffer& buffer,
     ABORT_WITH_ERROR(err);
   }
 
-  LOG_DEBUG("Enqueued read buffer for device ", _id,
-            " (size: ", buffer.sizeInBytes(),
-            ", clBuffer: ", buffer.clBuffer()(),
-            ", deviceOffset: 0",
-            ", hostPointer: ", static_cast<void*>(
-                                  static_cast<char*const>(hostPointer)
-                                + (hostOffset * buffer.elemSize()) ),
-            ", hostOffset: ", hostOffset * buffer.elemSize() ,")");
+  LOG_DEBUG_INFO("Enqueued read buffer for device ", _id,
+                 " (size: ", buffer.sizeInBytes(),
+                 ", clBuffer: ", buffer.clBuffer()(),
+                 ", deviceOffset: 0",
+                 ", hostPointer: ", static_cast<void*>(
+                                       static_cast<char*const>(hostPointer)
+                                     + (hostOffset * buffer.elemSize()) ),
+                 ", hostOffset: ", hostOffset * buffer.elemSize() ,")");
   return event;
 }
 
@@ -262,14 +262,14 @@ cl::Event Device::enqueueRead(const DeviceBuffer& buffer,
     ABORT_WITH_ERROR(err);
   }
 
-  LOG_DEBUG("Enqueued read buffer for device ", _id,
-            " (size: ", size * buffer.elemSize(),
-            ", clBuffer: ", buffer.clBuffer()(),
-            ", deviceOffset: ", deviceOffset * buffer.elemSize(),
-            ", hostPointer: ", static_cast<void*>(
-                                  static_cast<char*const>(hostPointer)
-                                + (hostOffset * buffer.elemSize()) ),
-            ", hostOffset: ", hostOffset * buffer.elemSize() ,")");
+  LOG_DEBUG_INFO("Enqueued read buffer for device ", _id,
+                 " (size: ", size * buffer.elemSize(),
+                 ", clBuffer: ", buffer.clBuffer()(),
+                 ", deviceOffset: ", deviceOffset * buffer.elemSize(),
+                 ", hostPointer: ", static_cast<void*>(
+                                       static_cast<char*const>(hostPointer)
+                                     + (hostOffset * buffer.elemSize()) ),
+                 ", hostOffset: ", hostOffset * buffer.elemSize() ,")");
   return event;
 }
 
@@ -294,25 +294,25 @@ cl::Event Device::enqueueCopy(const DeviceBuffer& from,
     ABORT_WITH_ERROR(err);
   }
 
-  LOG_DEBUG("Enqueued copy buffer for device ", _id,
-            " (from: ", from.clBuffer()(),
-            ", to: ", to.clBuffer()(),
-            ", size: ", from.sizeInBytes() - fromOffset,
-            ", fromOffset: ", fromOffset,
-            ", toOffset: ", toOffset, ")");
+  LOG_DEBUG_INFO("Enqueued copy buffer for device ", _id,
+                 " (from: ", from.clBuffer()(),
+                 ", to: ", to.clBuffer()(),
+                 ", size: ", from.sizeInBytes() - fromOffset,
+                 ", fromOffset: ", fromOffset,
+                 ", toOffset: ", toOffset, ")");
 
   return event;
 }
 
 void Device::wait() const
 {
-  LOG_DEBUG("Start waiting for device with id: ", _id);
+  LOG_DEBUG_INFO("Start waiting for device with id: ", _id);
   try {
     _commandQueue.finish();
   } catch (cl::Error& err) {
     ABORT_WITH_ERROR(err);
   }
-  LOG_DEBUG("Finished waiting for device with id: ", _id);
+  LOG_DEBUG_INFO("Finished waiting for device with id: ", _id);
 }
 
 Device::id_type Device::id() const

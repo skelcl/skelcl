@@ -63,7 +63,7 @@ detail::DeviceProperties nDevices(size_t n)
 void terminate()
 {
   detail::globalDeviceList.clear();
-  LOG_INFO("SkelCL terminating. Releasing all devices.");
+  LOG_INFO("SkelCL terminating. Freeing all resources.");
 }
 
 } // namespace skelcl

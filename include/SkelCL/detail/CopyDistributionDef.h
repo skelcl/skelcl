@@ -144,7 +144,7 @@ void CopyDistribution< C<T> >::startDownload(C<T>& container,
 
 template <template <typename> class C, typename T>
 size_t CopyDistribution< C<T> >::sizeForDevice(const C<T>& container,
-                                               const detail::Device::id_type /*id*/) const
+                                               const std::shared_ptr<detail::Device>& /*d*/) const
 {
   return copy_distribution_helper::sizeForDevice<T>(container.size());
 }

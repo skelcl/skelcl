@@ -61,7 +61,8 @@ public:
       Error = 0,
       Warning,
       Info,
-      Debug
+      Debug,
+      DebugInfo
     };
   };
 
@@ -81,7 +82,7 @@ private:
   void logArgs(std::ostream& output);
 
   template <typename... Args>
-  void logArgs(std::ostream& output, cl::Error& err, Args&&... args);
+  void logArgs(std::ostream& output, const cl::Error& err, Args&&... args);
 
   template <typename T, typename... Args>
   void logArgs(std::ostream& output, T value, Args&&... args);
@@ -102,9 +103,10 @@ private:
 
 #ifdef NDEBUG
 
-#define LOG_WARNING(...) (void(0))
-#define LOG_INFO(...)    (void(0))
-#define LOG_DEBUG(...)   (void(0))
+#define LOG_WARNING(...)    (void(0))
+#define LOG_INFO(...)       (void(0))
+#define LOG_DEBUG(...)      (void(0))
+#define LOG_DEBUG_INFO(...) (void(0))
 
 #else  // DEBUG
 
@@ -116,6 +118,9 @@ private:
 
 #define LOG_DEBUG(...)\
   LOG(skelcl::detail::Logger::Severity::Debug, __VA_ARGS__)
+
+#define LOG_DEBUG_INFO(...)\
+  LOG(skelcl::detail::Logger::Severity::DebugInfo, __VA_ARGS__)
 
 #endif // NDEBUG
 

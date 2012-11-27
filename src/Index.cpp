@@ -32,73 +32,98 @@
  *****************************************************************************/
  
 ///
-/// \file DeviceBuffer.h
+/// \file Index.cpp
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef DEVICE_BUFFER_H_
-#define DEVICE_BUFFER_H_
-
-#include <memory>
-#include <string>
-
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-#undef  __CL_ENABLE_EXCEPTIONS
-
-#include "Device.h"
+#include "SkelCL/Index.h"
 
 namespace skelcl {
 
-namespace detail {
+Index::Index()
+  : _index(0)
+{
+}
 
-class DeviceBuffer {
-public:
-  typedef size_t size_type;
+Index::Index(const index_type index)
+  : _index(index)
+{
+}
 
-  DeviceBuffer() = default;
+bool Index::operator==(const Index& rhs) const
+{
+  return _index == rhs._index;
+}
 
-  DeviceBuffer(const std::shared_ptr<Device>& devicePtr,
-               const size_t size,
-               const size_t elemSize,
-               cl_mem_flags flags = CL_MEM_READ_WRITE);
+bool Index::operator!=(const Index& rhs) const
+{
+  return _index != rhs._index;
+}
 
-  DeviceBuffer(const DeviceBuffer& rhs);
+Index::operator index_type() const
+{
+  return _index;
+}
 
-  DeviceBuffer(DeviceBuffer&& rhs);
+Index::index_type Index::get() const
+{
+  return _index;
+}
 
-  DeviceBuffer& operator=(const DeviceBuffer&);
+IndexPoint::IndexPoint(const indexPoint_type& indexPoint)
+  : _indexPoint(indexPoint)
+{
+}
 
-  DeviceBuffer& operator=(DeviceBuffer&& rhs);
+IndexPoint::IndexPoint(const Index& x, const Index& y)
+  : _indexPoint(std::make_pair(x,y))
+{
+}
 
-  ~DeviceBuffer();
+IndexPoint::IndexPoint(IndexPoint&& rhs)
+  : _indexPoint(std::make_pair(std::move(rhs._indexPoint.first),
+                               std::move(rhs._indexPoint.second)))
+{
+}
 
-  std::shared_ptr<Device> devicePtr() const;
+IndexPoint& IndexPoint::operator=(IndexPoint&& rhs)
+{
+  if (this == &rhs) return *this; // handle self move assignment
+  _indexPoint.first   = std::move(rhs._indexPoint.first);
+  _indexPoint.second  = std::move(rhs._indexPoint.second);
+  return *this;
+}
 
-  size_type size() const;
+bool IndexPoint::operator==(const IndexPoint& rhs) const
+{
+  return _indexPoint == rhs._indexPoint;
+}
 
-  size_type elemSize() const;
+bool IndexPoint::operator!=(const IndexPoint& rhs) const
+{
+  return !(this->operator==(rhs));
+}
 
-  size_type sizeInBytes() const;
+IndexPoint::operator indexPoint_type() const
+{
+  return _indexPoint;
+}
 
-  const cl::Buffer& clBuffer() const;
+IndexPoint::indexPoint_type IndexPoint::get() const
+{
+  return _indexPoint;
+}
 
-  bool isValid() const;
+const Index& IndexPoint::rowID() const
+{
+  return _indexPoint.first;
+}
 
-private:
-  std::string getInfo() const;
-
-  std::shared_ptr<Device>         _device;
-  size_type                       _size;
-  size_type                       _elemSize;
-  cl_mem_flags                    _flags; // TODO: Needed?
-  cl::Buffer                      _buffer;
-};
-
-} // namespace detail
+const Index& IndexPoint::columnID() const
+{
+  return _indexPoint.second;
+}
 
 } // namespace skelcl
-
-#endif // DEVICE_BUFFER_H_
 

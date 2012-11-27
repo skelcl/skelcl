@@ -32,73 +32,30 @@
  *****************************************************************************/
  
 ///
-/// \file DeviceBuffer.h
+/// \file Local.h
 ///
-/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///	\author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef DEVICE_BUFFER_H_
-#define DEVICE_BUFFER_H_
+#ifndef LOCAL_H_
+#define LOCAL_H_
 
-#include <memory>
-#include <string>
-
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-#undef  __CL_ENABLE_EXCEPTIONS
-
-#include "Device.h"
+#include <cstring>
 
 namespace skelcl {
 
-namespace detail {
-
-class DeviceBuffer {
+class Local {
 public:
-  typedef size_t size_type;
+  Local(size_t sizeInBytes);
 
-  DeviceBuffer() = default;
-
-  DeviceBuffer(const std::shared_ptr<Device>& devicePtr,
-               const size_t size,
-               const size_t elemSize,
-               cl_mem_flags flags = CL_MEM_READ_WRITE);
-
-  DeviceBuffer(const DeviceBuffer& rhs);
-
-  DeviceBuffer(DeviceBuffer&& rhs);
-
-  DeviceBuffer& operator=(const DeviceBuffer&);
-
-  DeviceBuffer& operator=(DeviceBuffer&& rhs);
-
-  ~DeviceBuffer();
-
-  std::shared_ptr<Device> devicePtr() const;
-
-  size_type size() const;
-
-  size_type elemSize() const;
-
-  size_type sizeInBytes() const;
-
-  const cl::Buffer& clBuffer() const;
-
-  bool isValid() const;
+  size_t getSizeInBytes() const;
 
 private:
-  std::string getInfo() const;
-
-  std::shared_ptr<Device>         _device;
-  size_type                       _size;
-  size_type                       _elemSize;
-  cl_mem_flags                    _flags; // TODO: Needed?
-  cl::Buffer                      _buffer;
+  size_t _sizeInBytes;
 };
 
-} // namespace detail
+Local local(size_t sizeInBytes);
 
 } // namespace skelcl
 
-#endif // DEVICE_BUFFER_H_
-
+#endif // LOCAL_H_

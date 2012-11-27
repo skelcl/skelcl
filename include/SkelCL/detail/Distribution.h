@@ -201,7 +201,7 @@ public:
   /// \return The number of elements to be stored on the given device
   ///
   virtual size_t sizeForDevice(const C<T>& container,
-                               const detail::Device::id_type id) const;
+                               const std::shared_ptr<detail::Device>& devicePtr) const;
 
   virtual bool dataExchangeOnDistributionChange(Distribution& newDistribution);
 

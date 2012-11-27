@@ -49,7 +49,15 @@
 
 namespace skelcl {
 
+namespace detail { class Device; }
+
 namespace distribution {
+
+// to prevent template argument deduction (i.e. template arguments have to be specified manually)
+template <typename T>
+struct identity {
+  typedef T type;
+};
 
 template <template <typename> class C, typename T>
 std::unique_ptr< skelcl::detail::Distribution< C<T> > >
@@ -60,13 +68,27 @@ std::unique_ptr< skelcl::detail::Distribution< C<T> > >
 }
 
 template <template <typename> class C, typename T>
+void setBlock( const C<T>& c)
+{
+  c.setDistribution( std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
+        new skelcl::detail::BlockDistribution< C<T> >() ) );
+}
+
+template <template <typename> class C, typename T>
 std::unique_ptr< skelcl::detail::Distribution< C<T> > >
-    Copy( const C<T>& /*c*/,
-          std::function<T(const T&, const T&)> combineFunc = nullptr )
+    Copy( const C<T>& /*c*/, typename identity<std::function<T(const T&, const T&)> >::type combineFunc = nullptr )
 {
   return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-            new skelcl::detail::CopyDistribution< C<T> >(detail::globalDeviceList,
-                                                         combineFunc) );
+        new skelcl::detail::CopyDistribution< C<T> >(
+                                    detail::globalDeviceList, combineFunc ) );
+}
+
+template <template <typename> class C, typename T>
+void setCopy( const C<T>& c, std::function<T(const T&, const T&)> combineFunc = nullptr)
+{
+  c.setDistribution( std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
+        new skelcl::detail::CopyDistribution< C<T> >(
+          detail::globalDeviceList, combineFunc ) ) );
 }
 
 template <template <typename> class C, typename T>
@@ -74,15 +96,29 @@ std::unique_ptr< skelcl::detail::Distribution< C<T> > >
     Single( const C<T>& /*c*/ )
 {
   return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-            new skelcl::detail::SingleDistribution< C<T> >() );
+        new skelcl::detail::SingleDistribution< C<T> >() );
 }
 
 template <template <typename> class C, typename T>
 std::unique_ptr< skelcl::detail::Distribution< C<T> > >
-    Default( const C<T>& /*c*/ )
+    Single( const C<T>& /*c*/, const std::shared_ptr<skelcl::detail::Device>& device )
 {
   return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-            new skelcl::detail::Distribution< C<T> >() );
+        new skelcl::detail::SingleDistribution< C<T> >(device) );
+}
+
+template <template <typename> class C, typename T>
+void setSingle( const C<T>& c )
+{
+  c.setDistribution( std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
+        new skelcl::detail::SingleDistribution< C<T> >() ) );
+}
+
+template <template <typename> class C, typename T>
+void setSingle( const C<T>& c, const std::shared_ptr<skelcl::detail::Device>& device )
+{
+  c.setDistribution( std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
+        new skelcl::detail::SingleDistribution< C<T> >(device) ) );
 }
 
 } // namespace distribution

@@ -44,7 +44,11 @@
 
 #include <cmath>
 #include <cstdlib>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <openssl/sha.h>
+#pragma GCC diagnostic pop
 
 #include "SkelCL/detail/Util.h"
 
@@ -68,15 +72,18 @@ std::string hash(const std::string& string)
 {
   unsigned char raw[20];
   char* c_str = const_cast<char*>(string.c_str());
-    SHA1(reinterpret_cast<unsigned char*>(c_str), string.length(), raw);
-	std::ostringstream buffer;
-	for (int i = 0; i < 20; ++i) {
-		buffer << std::hex
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+  SHA1(reinterpret_cast<unsigned char*>(c_str), string.length(), raw);
+#pragma GCC diagnostic pop
+  std::ostringstream buffer;
+  for (int i = 0; i < 20; ++i) {
+    buffer << std::hex
            << std::setw(2)
            << std::setfill('0')
            << static_cast<int>( raw[i] );
-	}
-	return buffer.str();
+  }
+  return buffer.str();
 }
 
 int devideAndRoundUp(int i, int j)

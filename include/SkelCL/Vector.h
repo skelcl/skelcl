@@ -40,6 +40,7 @@
 #ifndef VECTOR_H_
 #define VECTOR_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -328,7 +329,8 @@ public:
   allocator_type get_allocator() const;
 
   ///
-  /// \brief Returns a pointer to the current distribution of the vector.  ///
+  /// \brief Returns a pointer to the current distribution of the vector.
+  ///
   /// \return A pointer to the current distribution of the vector, of nullptr
   ///         if no distribution is set
   ///
@@ -346,6 +348,11 @@ public:
   ///
   template <typename U>
   void setDistribution(const detail::Distribution< Vector<U> >& distribution) const;
+
+  template <typename U>
+  void setDistribution(const std::unique_ptr<detail::Distribution< Vector<U> > >& newDistribution) const;
+
+  void setDistribution(std::unique_ptr<detail::Distribution< Vector<T> > >&& newDistribution) const;
 
   ///
   /// \brief Create buffers on the devices involved in the current distribution
@@ -458,14 +465,14 @@ private:
   ///
   std::string getDebugInfo() const;
 
-          size_type                                       _size;
+          size_type                                               _size;
   mutable
-    std::unique_ptr< detail::Distribution< Vector<T> > >  _distribution;
-  mutable bool                                            _hostBufferUpToDate;
-  mutable bool                                            _deviceBuffersUpToDate;
-  mutable host_buffer_type                                _hostBuffer;
+    std::unique_ptr< detail::Distribution< Vector<T> > >          _distribution;
+  mutable bool                                                    _hostBufferUpToDate;
+  mutable bool                                                    _deviceBuffersUpToDate;
+  mutable host_buffer_type                                        _hostBuffer;
   // _deviceBuffers empty => buffers not created yet
-  mutable std::vector<detail::DeviceBuffer>               _deviceBuffers;
+  mutable std::map<detail::Device::id_type, detail::DeviceBuffer> _deviceBuffers;
 };
 
 } // namespace skelcl

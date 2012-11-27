@@ -1,0 +1,25 @@
+# astyle config file for the SkelCL project
+
+# bracket style
+style=stroustrup
+add-brackets
+add-one-line-brackets
+
+# indentation
+indent=spaces=2
+
+# padding around operators
+pad-oper
+
+# single space after if, for, while
+pad-header
+
+# convert tabs into space characters
+convert-tabs
+
+# alignment of pointers
+align-pointer=type
+
+# alignment of references
+#align-reference=type
+

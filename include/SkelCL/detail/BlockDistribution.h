@@ -74,7 +74,7 @@ public:
   void startDownload(C<T>& container, Event* events) const;
 
   size_t sizeForDevice(const C<T>& container,
-                       const detail::Device::id_type id) const;
+                       const std::shared_ptr<detail::Device>& devicePtr) const;
 
   bool dataExchangeOnDistributionChange(Distribution< C<T> >& newDistribution);
 
@@ -89,13 +89,13 @@ private:
 namespace block_distribution_helper {
 
 template <typename T>
-size_t sizeForDevice(const Device::id_type deviceID,
+size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
                      const typename Vector<T>::size_type size,
                      const DeviceList& devices,
                      const Significances& significances);
 
 template <typename T>
-size_t sizeForDevice(const Device::id_type deviceID,
+size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
                      const typename Matrix<T>::size_type size,
                      const DeviceList& devices,
                      const Significances& significances);

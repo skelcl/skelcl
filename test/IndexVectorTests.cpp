@@ -30,75 +30,64 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
-///
-/// \file DeviceBuffer.h
+
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef DEVICE_BUFFER_H_
-#define DEVICE_BUFFER_H_
+#include <gtest/gtest.h>
 
-#include <memory>
-#include <string>
+#include <SkelCL/Distributions.h>
+#include <SkelCL/SkelCL.h>
+#include <SkelCL/IndexVector.h>
+#include <SkelCL/Map.h>
+#include <SkelCL/detail/Logger.h>
 
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-#undef  __CL_ENABLE_EXCEPTIONS
+class IndexVectorTest : public ::testing::Test {
+protected:
+  IndexVectorTest() {
+    skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+    skelcl::init(skelcl::nDevices(1));
+  };
 
-#include "Device.h"
-
-namespace skelcl {
-
-namespace detail {
-
-class DeviceBuffer {
-public:
-  typedef size_t size_type;
-
-  DeviceBuffer() = default;
-
-  DeviceBuffer(const std::shared_ptr<Device>& devicePtr,
-               const size_t size,
-               const size_t elemSize,
-               cl_mem_flags flags = CL_MEM_READ_WRITE);
-
-  DeviceBuffer(const DeviceBuffer& rhs);
-
-  DeviceBuffer(DeviceBuffer&& rhs);
-
-  DeviceBuffer& operator=(const DeviceBuffer&);
-
-  DeviceBuffer& operator=(DeviceBuffer&& rhs);
-
-  ~DeviceBuffer();
-
-  std::shared_ptr<Device> devicePtr() const;
-
-  size_type size() const;
-
-  size_type elemSize() const;
-
-  size_type sizeInBytes() const;
-
-  const cl::Buffer& clBuffer() const;
-
-  bool isValid() const;
-
-private:
-  std::string getInfo() const;
-
-  std::shared_ptr<Device>         _device;
-  size_type                       _size;
-  size_type                       _elemSize;
-  cl_mem_flags                    _flags; // TODO: Needed?
-  cl::Buffer                      _buffer;
+  ~IndexVectorTest() {
+    skelcl::terminate();
+  };
 };
 
-} // namespace detail
+TEST_F(IndexVectorTest, CreateIndexVector) {
+  skelcl::Vector<skelcl::Index> vi(1024);
 
-} // namespace skelcl
+  EXPECT_EQ(1024, vi.size());
+  EXPECT_EQ(0, vi.front());
+  EXPECT_EQ(1023, vi.back());
+}
 
-#endif // DEVICE_BUFFER_H_
+TEST_F(IndexVectorTest, SimpleVoidMap) {
+  skelcl::IndexVector index(1024);
+  skelcl::Map<void(skelcl::Index)> m("void func(Index i, __global int* out) { out[i] = i; }");
+  EXPECT_EQ(1024, index.size());
+
+  skelcl::Vector<int> v(1024);
+
+  m(index, skelcl::out(v));
+
+  EXPECT_EQ(index.size(), v.size());
+  for (size_t i = 0; i < v.size(); ++i) {
+    EXPECT_EQ(i, v[i]);
+  }
+}
+
+TEST_F(IndexVectorTest, SimpleMap) {
+  skelcl::IndexVector index(1023);
+  skelcl::Map<int(skelcl::Index)> m("int func(Index i) { return i; }");
+  EXPECT_EQ(1023, index.size());
+
+  auto v = m(index);
+
+  EXPECT_EQ(index.size(), v.size());
+  for (size_t i = 0; i < v.size(); ++i) {
+    EXPECT_EQ(i, v[i]);
+  }
+}
 

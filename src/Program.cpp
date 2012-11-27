@@ -88,8 +88,8 @@ Program::Program(const std::string& source, const std::string& hash)
     _hash(hash),
     _clPrograms()
 {
-  LOG_DEBUG("Program instance created with source:\n", source,
-            "\nUsing temporary file: .SkelCLSource.c\n");
+  LOG_DEBUG_INFO("Program instance created with source:\n", source,
+                 "\nUsing temporary file: .SkelCLSource.c\n");
 }
 
 Program::Program(Program&& rhs)
@@ -201,8 +201,8 @@ bool Program::loadBinary()
     _clPrograms.push_back( cl::Program( devicePtr->clContext(),
                                         devices, binaries ) );
 
-    LOG_DEBUG("Load binary for device ", devicePtr->id(),
-              " from file ", binaryFilename(_hash, devicePtr));
+    LOG_DEBUG_INFO("Load binary for device ", devicePtr->id(),
+                   " from file ", binaryFilename(_hash, devicePtr));
   }
   ASSERT(_clPrograms.size() == globalDeviceList.size());
   return true;
@@ -270,8 +270,8 @@ void Program::createProgramsFromSource()
                                                  source.length()));
     _clPrograms.push_back( cl::Program(devicePtr->clContext(), sources) );
 
-    LOG_DEBUG("Create cl::Program for device", devicePtr->id(),
-              "with source:\n",  source, "\n");
+    LOG_DEBUG_INFO("Create cl::Program for device", devicePtr->id(),
+                   "with source:\n",  source, "\n");
   }
 #endif
   // read content into a string
@@ -288,7 +288,7 @@ void Program::createProgramsFromSource()
         return cl::Program(devicePtr->clContext(), sources);
       });
 
-  LOG_DEBUG("Create cl::Program with source:\n", source, "\n");
+  LOG_DEBUG_INFO("Create cl::Program with source:\n", source, "\n");
 }
 
 void Program::saveBinary()
@@ -315,8 +315,8 @@ void Program::saveBinary()
                             | std::ios_base::trunc
                             | std::ios_base::binary);
       outfile.write(binary.front(), static_cast<long>(size.front()));
-      LOG_DEBUG("Saved binary for device ", devicePtr->id(),
-                " to file ", binaryFilename(_hash, devicePtr));
+      LOG_DEBUG_INFO("Saved binary for device ", devicePtr->id(),
+                     " to file ", binaryFilename(_hash, devicePtr));
     } catch (cl::Error err) {
       ABORT_WITH_ERROR(err);
     }

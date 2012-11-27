@@ -42,9 +42,11 @@
 #define MATRIX_DEF_H_
 
 #include <algorithm>
+#include <complex>
 #include <ios>
 #include <iterator>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <sstream>
 #include <utility>
@@ -157,7 +159,7 @@ Matrix<T>::Matrix()
     _hostBuffer(),
     _deviceBuffers()
 {
-  LOG_DEBUG("Created new Matrix object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ", getDebugInfo());
 }
 
 template <typename T>
@@ -171,7 +173,7 @@ Matrix<T>::Matrix(const size_type size,
     _hostBuffer( _size.elemCount(), value ),
     _deviceBuffers()
 {
-  LOG_DEBUG("Created new Matrix object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ", getDebugInfo());
 }
 
 template <typename T>
@@ -192,7 +194,7 @@ Matrix<T>::Matrix(const std::vector<T>& vector,
     _size = { rowCount + 1, columnCount };
     _hostBuffer.resize(_size.elemCount());
   }
-  LOG_DEBUG("Created new Matrix object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ", getDebugInfo());
 }
 
 template <typename T>
@@ -207,7 +209,7 @@ Matrix<T>::Matrix(const std::vector<T>& vector,
     _deviceBuffers()
 {
   _hostBuffer.resize(size.elemCount());
-  LOG_DEBUG("Created new Matrix object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ", getDebugInfo());
 }
 
 template <typename T>
@@ -231,7 +233,7 @@ Matrix<T>
     // ... advance pointer in host buffer
     std::advance(iter, matrix._size.columnCount());
   }
-  LOG_DEBUG("Created new Matrix object (", &matrix, " with ", matrix.getDebugInfo());
+  LOG_DEBUG_INFO("Created new Matrix object (", &matrix, " with ", matrix.getDebugInfo());
   return matrix;
 }
 
@@ -256,7 +258,7 @@ Matrix<T>::Matrix(InputIterator first, InputIterator last,
   }
   _hostBuffer.assign(first, last);
   _hostBuffer.resize(_size.elemCount());
-  LOG_DEBUG("Created new Matrix object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ", getDebugInfo());
 }
 
 template <typename T>
@@ -272,46 +274,46 @@ Matrix<T>::Matrix(InputIterator first, InputIterator last,
     _deviceBuffers()
 {
   _hostBuffer.resize(size.elemCount());
-  LOG_DEBUG("Created new Matrix object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ", getDebugInfo());
 }
 
 template <typename T>
 Matrix<T>::Matrix(Matrix<T>&& rhs)
-  : _size(rhs._size),
+  : _size(std::move(rhs._size)),
     _distribution(std::move(rhs._distribution)),
-    _hostBufferUpToDate(rhs._hostBufferUpToDate),
-    _deviceBuffersUpToDate(rhs._deviceBuffersUpToDate),
+    _hostBufferUpToDate(std::move(rhs._hostBufferUpToDate)),
+    _deviceBuffersUpToDate(std::move(rhs._deviceBuffersUpToDate)),
     _hostBuffer(std::move(rhs._hostBuffer)),
     _deviceBuffers(std::move(rhs._deviceBuffers))
 {
   _size = {0, 0};
   _hostBuffer.clear();
 
-  LOG_DEBUG("Created new Matrix object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ", getDebugInfo());
 }
 
 template <typename T>
 Matrix<T>& Matrix<T>::operator=(Matrix<T>&& rhs)
 {
-  _size                   = rhs._size;
+  _size                   = std::move(rhs._size);
   _distribution           = std::move(rhs._distribution);
-  _hostBufferUpToDate     = rhs._hostBufferUpToDate;
-  _deviceBuffersUpToDate  = rhs._deviceBuffersUpToDate;
+  _hostBufferUpToDate     = std::move(rhs._hostBufferUpToDate);
+  _deviceBuffersUpToDate  = std::move(rhs._deviceBuffersUpToDate);
   _hostBuffer             = std::move(rhs._hostBuffer);
   _deviceBuffers          = std::move(rhs._deviceBuffers);
 
   rhs._size = 0;
   rhs._hostBufferUpToDate = false;
   rhs._deviceBuffersUpToDate = false;
-  LOG_DEBUG("Move assignment to Matrix object (", this, ") from (",
-    &rhs,") now with ", getDebugInfo());
+  LOG_DEBUG_INFO("Move assignment to Matrix object (", this, ") from (",
+                  &rhs,") now with ", getDebugInfo());
   return *this;
 }
 
 template <typename T>
 Matrix<T>::~Matrix()
 {
-  LOG_DEBUG("Matrix object (", this, ") with ", getDebugInfo(), " destroyed");
+  LOG_DEBUG_INFO("Matrix object (", this, ") with ", getDebugInfo(), " destroyed");
 }
 
 template <typename T>
@@ -448,7 +450,7 @@ void Matrix<T>::resize(const size_type& size, T c)
   // set size last, to avoid problems, when moving the "old" data around
   _size = size;
 
-  LOG_DEBUG("Matrix object (", this, ") resized, now with ", getDebugInfo());
+  LOG_DEBUG_INFO("Matrix object (", this, ") resized, now with ", getDebugInfo());
 }
 
 template <typename T>
@@ -718,13 +720,30 @@ template <typename U>
 void Matrix<T>::setDistribution(const detail::Distribution< Matrix<U> >& origDistribution) const
 {
   ASSERT(origDistribution.isValid());
+  // convert and set distribution
+  this->setDistribution(detail::cloneAndConvert<T>(origDistribution));
+}
 
-  // convert distribution to avoid problems later ...
-  auto newDistribution = detail::cloneAndConvert<T>(origDistribution);
+template <typename T>
+template <typename U>
+void Matrix<T>::setDistribution(const std::unique_ptr<detail::Distribution< Matrix<U> > >& origDistribution) const
+{
+  ASSERT(origDistribution != nullptr);
+  ASSERT(origDistribution.isValid());
+  // convert and set distribution
+  this->setDistribution(detail::cloneAndConvert<T>(origDistribution));
+}
+
+template <typename T>
+void Matrix<T>::setDistribution(std::unique_ptr<detail::Distribution< Matrix<T> > >&& newDistribution) const
+{
+  ASSERT(newDistribution != nullptr);
+  ASSERT(newDistribution->isValid());
 
   if (   _distribution->isValid()
-         && _distribution->dataExchangeOnDistributionChange(*newDistribution)) {
+      && _distribution->dataExchangeOnDistributionChange(*newDistribution)) {
     copyDataToHost();
+    _deviceBuffersUpToDate = false;
     _deviceBuffers.clear(); // delete old device buffers,
                             // so new can created using the new distribution
   }
@@ -732,9 +751,10 @@ void Matrix<T>::setDistribution(const detail::Distribution< Matrix<U> >& origDis
   _distribution = std::move(newDistribution);
   ASSERT(_distribution->isValid());
 
-  LOG_DEBUG("Matrix object (", this, ") assigned new distribution, now with ",
-           getDebugInfo());
+  LOG_DEBUG_INFO("Matrix object (", this, ") assigned new distribution, now with ",
+                 getDebugInfo());
 }
+
 
 template <typename T>
 void Matrix<T>::createDeviceBuffers() const
@@ -753,18 +773,20 @@ void Matrix<T>::forceCreateDeviceBuffers() const
 
   _deviceBuffers.clear();
 
-  _deviceBuffers.resize(_distribution->devices().size());
   std::transform( _distribution->devices().begin(),
                   _distribution->devices().end(),
-                  _deviceBuffers.begin(),
+                  std::inserter(_deviceBuffers, _deviceBuffers.begin()),
         [this](std::shared_ptr<detail::Device> devicePtr) {
-                  return detail::DeviceBuffer(
+                  return std::make_pair(
                             devicePtr->id(),
-                            this->_distribution->sizeForDevice(
-                                    const_cast<Matrix<T>&>(*this),
-                                    devicePtr->id() ),
-                            sizeof(T)
-                            /*,mem flags*/ );
+                            detail::DeviceBuffer(
+                              devicePtr,
+                              this->_distribution->sizeForDevice(
+                                      const_cast<Matrix<T>&>(*this),
+                                      devicePtr ),
+                              sizeof(T)
+                              /*,mem flags*/ )
+                         );
         } );
 }
 
@@ -784,8 +806,8 @@ detail::Event Matrix<T>::startUpload() const
 
   _deviceBuffersUpToDate = true;
 
-  LOG_DEBUG("Started data upload to ", _distribution->devices().size(),
-           " devices (", getInfo(), ")");
+  LOG_DEBUG_INFO("Started data upload to ", _distribution->devices().size(),
+                 " devices (", getInfo(), ")");
 
   return events;
 }
@@ -816,8 +838,8 @@ detail::Event Matrix<T>::startDownload() const
 
   _hostBufferUpToDate = true;
 
-  LOG_DEBUG("Started data download from ", _distribution->devices().size(),
-           " devices (", getInfo() ,")");
+  LOG_DEBUG_INFO("Started data download from ", _distribution->devices().size(),
+                 " devices (", getInfo() ,")");
 
   return events;
 }
@@ -835,7 +857,7 @@ void Matrix<T>::dataOnDeviceModified() const
 {
   _hostBufferUpToDate     = false;
   _deviceBuffersUpToDate  = true;
-  LOG_DEBUG("Data on devices marked as modified");
+  LOG_DEBUG_INFO("Data on devices marked as modified");
 }
 
 template <typename T>
@@ -843,7 +865,7 @@ void Matrix<T>::dataOnHostModified() const
 {
   _hostBufferUpToDate     = true;
   _deviceBuffersUpToDate  = false;
-  LOG_DEBUG("Data on host marked as modified");
+  LOG_DEBUG_INFO("Data on host marked as modified");
 }
 
 template <typename T>

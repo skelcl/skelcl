@@ -49,10 +49,10 @@ namespace skelcl {
 
 namespace detail {
 
-void _ASSERT(const char* file,
-             const int   line,
-             const bool  expression,
-             const char* expressionString)
+void ASSERT_IMPL(const char* file,
+                 const int   line,
+                 const bool  expression,
+                 const char* expressionString)
 {
   if (!expression) {
     defaultLogger.log(Logger::Severity::Error, file, line,
@@ -65,11 +65,11 @@ void _ASSERT(const char* file,
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 
-void _ASSERT(const char* file,
-             const int   line,
-             const bool  expression,
-             const char* expressionString,
-             const char* formatString, ...)
+void ASSERT_IMPL(const char* file,
+                 const int   line,
+                 const bool  expression,
+                 const char* expressionString,
+                 const char* formatString, ...)
 {
   if (!expression) {
     va_list args;

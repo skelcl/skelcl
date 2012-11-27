@@ -62,12 +62,6 @@ namespace detail {
 
 namespace logger_impl {
 
-std::ostream& getTimeOfDay(std::ostream& stream);
-
-std::string severityToString(Logger::Severity::Type severity);
-
-std::string getFileName(const char* file);
-
 std::string getErrorString(cl_int err);
 
 std::string formatHeader(Logger::Severity::Type severity,
@@ -88,18 +82,18 @@ void Logger::log(Severity::Type severity,
 }
 
 template <typename... Args>
-void Logger::logArgs(std::ostream& output, cl::Error& err, Args&&... args)
+void Logger::logArgs(std::ostream& output, const cl::Error& err, Args&&... args)
 {
   output << "OpenCL error: " << logger_impl::getErrorString(err.err())
          << " " << err.what();
-  logArgs(output, args...);
+  logArgs(output, std::forward<Args>(args)...);
 }
 
 template <typename T, typename... Args>
 void Logger::logArgs(std::ostream& output, T value, Args&&... args)
 {
   output << value;
-  logArgs(output, args...);
+  logArgs(output, std::forward<Args>(args)...);
 }
 
 } // namespace detail

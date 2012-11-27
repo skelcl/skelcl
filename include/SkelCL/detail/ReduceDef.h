@@ -112,14 +112,14 @@ Vector<T>& Reduce<T(T)>::operator()(Out< Vector<T> > output,
   // ... determine if and how the first reduction step is performed ...
   auto firstLevel  = determineFirstLevelParameters(device, input, output.container());
   if (firstLevel) {
-    LOG_DEBUG("firstLevel.workGroupSize: ",    firstLevel->workGroupSize,
-              ", firstLevel.workGroupCount: ", firstLevel->workGroupCount);
+    LOG_DEBUG_INFO("firstLevel.workGroupSize: ",    firstLevel->workGroupSize,
+                   ", firstLevel.workGroupCount: ", firstLevel->workGroupCount);
   }
 
   // ... determine how the second (and final) reduction step is performed ...
   auto secondLevel = determineSecondLevelParameters(device, input, output.container(), firstLevel);
-  LOG_DEBUG("secondLevel.workGroupSize: ",    secondLevel->workGroupSize,
-            ", secondLevel.workGroupCount: ", secondLevel->workGroupCount);
+  LOG_DEBUG_INFO("secondLevel.workGroupSize: ",    secondLevel->workGroupSize,
+                 ", secondLevel.workGroupCount: ", secondLevel->workGroupCount);
 
   // ... prepare output ...
   if (firstLevel) {
@@ -208,20 +208,20 @@ void Reduce<T(T)>::execute(const detail::Device& device,
     detail::kernelUtil::setKernelArgs(kernel, device, 4,
                                       std::forward<Args>(args)...);
 
+    auto keepAlive = detail::kernelUtil::keepAlive(device,
+                                                   inputBuffer.clBuffer(),
+                                                   outputBuffer.clBuffer(),
+                                                   std::forward<Args>(args)...);
+
     // after finishing the kernel invoke this function ...
-    auto invokeAfter =  [&] () {
-                          inputBuffer.markAsNotInUse();
-                          outputBuffer.markAsNotInUse();
-                        };
+    auto invokeAfter =  [=] () {
+                                  (void)keepAlive;
+                               };
 
     device.enqueue(kernel,
                    cl::NDRange(global), cl::NDRange(local),
                    cl::NullRange, // offset
                    invokeAfter);
-
-    // after successfully enqueued the kernel ...
-    inputBuffer.markAsInUse();
-    outputBuffer.markAsInUse();
   } catch (cl::Error& err) {
     ABORT_WITH_ERROR(err);
   }

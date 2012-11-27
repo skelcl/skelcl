@@ -70,8 +70,9 @@ Vector<T>::Vector()
     _hostBuffer(),
     _deviceBuffers()
 {
-  LOG_DEBUG("Created new Vector object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Vector object (", this, ") with ", getDebugInfo());
 }
+
 template <typename T>
 Vector<T>::Vector(const size_type size,
                   const value_type& value,
@@ -83,7 +84,7 @@ Vector<T>::Vector(const size_type size,
     _hostBuffer(size, value),
     _deviceBuffers()
 {
-  LOG_DEBUG("Created new Vector object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Vector object (", this, ") with ", getDebugInfo());
 }
 
 template <typename T>
@@ -96,7 +97,7 @@ Vector<T>::Vector(InputIterator first, InputIterator last)
     _hostBuffer(first, last),
     _deviceBuffers()
 {
-  LOG_DEBUG("Created new Vector object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Vector object (", this, ") with ", getDebugInfo());
 }
 
 template <typename T>
@@ -111,7 +112,7 @@ Vector<T>::Vector(InputIterator first,
     _hostBuffer(first, last),
     _deviceBuffers()
 {
-  LOG_DEBUG("Created new Vector object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Vector object (", this, ") with ", getDebugInfo());
 }
 
 template <typename T>
@@ -123,24 +124,24 @@ Vector<T>::Vector(const Vector<T>& rhs)
     _hostBuffer(rhs._hostBuffer),
     _deviceBuffers(rhs._deviceBuffers)
 {
-  LOG_DEBUG("Created new Vector object (", this, ") by copying (", &rhs,
-            ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Vector object (", this, ") by copying (", &rhs,
+                 ") with ", getDebugInfo());
 }
 
 template <typename T>
 Vector<T>::Vector(Vector<T>&& rhs)
-  : _size(rhs._size),
+  : _size(std::move(rhs._size)),
     _distribution(std::move(rhs._distribution)),
-    _hostBufferUpToDate(rhs._hostBufferUpToDate),
-    _deviceBuffersUpToDate(rhs._deviceBuffersUpToDate),
+    _hostBufferUpToDate(std::move(rhs._hostBufferUpToDate)),
+    _deviceBuffersUpToDate(std::move(rhs._deviceBuffersUpToDate)),
     _hostBuffer(std::move(rhs._hostBuffer)),
     _deviceBuffers(std::move(rhs._deviceBuffers))
 {
   rhs._size = 0;
   rhs._hostBufferUpToDate = false;
   rhs._deviceBuffersUpToDate = false;
-  LOG_DEBUG("Created new Vector object (", this, ") by moving from (",
-    &rhs,") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Vector object (", this, ") by moving from (",
+                 &rhs,") with ", getDebugInfo());
 }
 
 template <typename T>
@@ -153,32 +154,32 @@ Vector<T>& Vector<T>::operator=(const Vector<T>& rhs)
   _deviceBuffersUpToDate  = rhs._deviceBuffersUpToDate;
   _hostBuffer             = rhs._hostBuffer;
   _deviceBuffers          = rhs._deviceBuffers;
-  LOG_DEBUG("Assignment to Vector object (", this, ") now with ",
-    getDebugInfo());
+  LOG_DEBUG_INFO("Assignment to Vector object (", this, ") now with ",
+                 getDebugInfo());
   return *this;
 }
 
 template <typename T>
 Vector<T>& Vector<T>::operator=(Vector<T>&& rhs)
 {
-  _size                   = rhs._size;
+  _size                   = std::move(rhs._size);
   _distribution           = std::move(rhs._distribution);
-  _hostBufferUpToDate     = rhs._hostBufferUpToDate;
-  _deviceBuffersUpToDate  = rhs._deviceBuffersUpToDate;
+  _hostBufferUpToDate     = std::move(rhs._hostBufferUpToDate);
+  _deviceBuffersUpToDate  = std::move(rhs._deviceBuffersUpToDate);
   _hostBuffer             = std::move(rhs._hostBuffer);
   _deviceBuffers          = std::move(rhs._deviceBuffers);
   rhs._size = 0;
   rhs._hostBufferUpToDate = false;
   rhs._deviceBuffersUpToDate = false;
-  LOG_DEBUG("Move assignment to Vector object (", this, ") from (",
-    &rhs,") now with ", getDebugInfo());
+  LOG_DEBUG_INFO("Move assignment to Vector object (", this, ") from (",
+                 &rhs,") now with ", getDebugInfo());
   return *this;
 }
 
 template <typename T>
 Vector<T>::~Vector()
 {
-  LOG_DEBUG("Vector object (", this, ") with ", getDebugInfo(), " destroyed");
+  LOG_DEBUG_INFO("Vector object (", this, ") with ", getDebugInfo(), " destroyed");
 }
 
 template <typename T>
@@ -270,7 +271,7 @@ void Vector<T>::resize( Vector<T>::size_type sz, T c )
     _deviceBuffersUpToDate = false;
     _deviceBuffers.clear();
   }
-  LOG_DEBUG("Vector object (", this, ") resized, now with ", getDebugInfo());
+  LOG_DEBUG_INFO("Vector object (", this, ") resized, now with ", getDebugInfo());
 }
 
 template <typename T>
@@ -455,9 +456,25 @@ template <typename U>
 void Vector<T>::setDistribution(const detail::Distribution< Vector<U> >& origDistribution) const
 {
   ASSERT(origDistribution.isValid());
+  // convert and set distribution
+  this->setDistribution(detail::cloneAndConvert<T>(origDistribution));
+}
 
-  // convert distribution to avoid problems later ...
-  auto newDistribution = detail::cloneAndConvert<T>(origDistribution);
+template <typename T>
+template <typename U>
+void Vector<T>::setDistribution(const std::unique_ptr<detail::Distribution< Vector<U> > >& origDistribution) const
+{
+  ASSERT(origDistribution != nullptr);
+  ASSERT(origDistribution->isValid());
+  // convert and set distribution
+  this->setDistribution(detail::cloneAndConvert<T>(*origDistribution));
+}
+
+template <typename T>
+void Vector<T>::setDistribution(std::unique_ptr<detail::Distribution< Vector<T> > >&& newDistribution) const
+{
+  ASSERT(newDistribution != nullptr);
+  ASSERT(newDistribution->isValid());
 
   if (   _distribution->isValid()
       && _distribution->dataExchangeOnDistributionChange(*newDistribution)) {
@@ -470,8 +487,8 @@ void Vector<T>::setDistribution(const detail::Distribution< Vector<U> >& origDis
   _distribution = std::move(newDistribution);
   ASSERT(_distribution->isValid());
 
-  LOG_DEBUG("Vector object (", this, ") assigned new distribution, now with ",
-           getDebugInfo());
+  LOG_DEBUG_INFO("Vector object (", this, ") assigned new distribution, now with ",
+                 getDebugInfo());
 }
 
 template <typename T>
@@ -492,18 +509,20 @@ void Vector<T>::forceCreateDeviceBuffers() const
 
   _deviceBuffers.clear();
 
-  _deviceBuffers.resize(_distribution->devices().size());
   std::transform( _distribution->devices().begin(),
                   _distribution->devices().end(),
-                  _deviceBuffers.begin(),
+                  std::inserter(_deviceBuffers, _deviceBuffers.end()),
         [this](std::shared_ptr<detail::Device> devicePtr) {
-          return detail::DeviceBuffer(
+          return std::make_pair(
                     devicePtr->id(),
-                    this->_distribution->sizeForDevice(
-                            const_cast<Vector<T>&>(*this),
-                            devicePtr->id() ),
-                    sizeof(T)
-                    /*,mem flags*/ );
+                    detail::DeviceBuffer(
+                      devicePtr,
+                      this->_distribution->sizeForDevice(
+                              const_cast<Vector<T>&>(*this),
+                              devicePtr ),
+                      sizeof(T)
+                      /*,mem flags*/ )
+                 );
         } );
 }
 
@@ -523,7 +542,7 @@ detail::Event Vector<T>::startUpload() const
 
   _deviceBuffersUpToDate = true;
 
-  LOG_INFO("Started data upload to ", _distribution->devices().size(),
+  LOG_DEBUG_INFO("Started data upload to ", _distribution->devices().size(),
            " devices (", getInfo(), ")");
 
   return events;
@@ -555,8 +574,8 @@ detail::Event Vector<T>::startDownload() const
 
   _hostBufferUpToDate = true;
 
-  LOG_INFO("Started data download from ", _distribution->devices().size(),
-           " devices (", getInfo() ,")");
+  LOG_DEBUG_INFO("Started data download from ", _distribution->devices().size(),
+                 " devices (", getInfo() ,")");
 
   return events;
 }
@@ -574,7 +593,7 @@ void Vector<T>::dataOnDeviceModified() const
 {
   _hostBufferUpToDate     = false;
   _deviceBuffersUpToDate  = true;
-  LOG_INFO("Data on devices marked as modified");
+  LOG_DEBUG_INFO("Data on devices marked as modified");
 }
 
 template <typename T>
@@ -582,7 +601,7 @@ void Vector<T>::dataOnHostModified() const
 {
   _hostBufferUpToDate     = true;
   _deviceBuffersUpToDate  = false;
-  LOG_INFO("Data on host marked as modified");
+  LOG_DEBUG_INFO("Data on host marked as modified");
 }
 
 template <typename T>
