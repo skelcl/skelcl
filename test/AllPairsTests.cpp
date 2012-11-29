@@ -59,12 +59,14 @@ protected:
     }
 };
 
-/*TEST_F(AllPairsTest, CreateAllPairsWithZipAndReduce) {
+// Tests Constructor
+TEST_F(AllPairsTest, CreateAllPairsWithZipAndReduce) {
     skelcl::Zip<float(float, float)> zip("float func(float x, float y){ return x*y; }");
     skelcl::Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
     skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
-}*/
+}
 
+// Tests kernel with matrixmultiplication of two 64x64 matrices
 TEST_F(AllPairsTest, SimpleAllPairs) {
     skelcl::Zip<float(float, float)> zip("float USR_ZIP(float x, float y){ return x*y; }");
     skelcl::Reduce<float(float)> reduce("float USR_REDUCE(float x, float y){ return x+y; }");
@@ -72,7 +74,7 @@ TEST_F(AllPairsTest, SimpleAllPairs) {
 
     std::vector<float> tmpleft(4096);
     for (size_t i = 0; i < tmpleft.size(); ++i)
-      tmpleft[i] = 1;//((float)i)/100;
+      tmpleft[i] = i;
     EXPECT_EQ(4096, tmpleft.size());
 
     std::vector<float> tmpright(tmpleft);
@@ -90,6 +92,80 @@ TEST_F(AllPairsTest, SimpleAllPairs) {
     EXPECT_EQ(64, output.rowCount());
     EXPECT_EQ(64, output.columnCount());
 
+    for (size_t i = 0; i < output.rowCount(); ++i) {
+        for (size_t j = 0; j < output.columnCount(); ++j) {
+            float tmp = 0;
+            for (size_t k = 0; k < left.columnCount(); ++k) {
+                tmp += left[i][k] * right[k][j];
+            }
+            EXPECT_EQ(tmp, output[i][j]);
+        }
+    }
+}
+
+// Tests kernel with matrixmultiplication with one 32x128 matrix and one 128x32 matrix
+TEST_F(AllPairsTest, NotSoSimpleAllPairs) {
+    skelcl::Zip<float(float, float)> zip("float USR_ZIP(float x, float y){ return x*y; }");
+    skelcl::Reduce<float(float)> reduce("float USR_REDUCE(float x, float y){ return x+y; }");
+    skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
+
+    std::vector<float> tmpleft(4096);
+    for (size_t i = 0; i < tmpleft.size(); ++i)
+      tmpleft[i] = i;
+    EXPECT_EQ(4096, tmpleft.size());
+
+    std::vector<float> tmpright(tmpleft);
+    EXPECT_EQ(4096, tmpright.size());
+
+    skelcl::Matrix<float> left(tmpleft, 128);
+    EXPECT_EQ(32, left.rowCount());
+    EXPECT_EQ(128, left.columnCount());
+
+    skelcl::Matrix<float> right(tmpright, 32);
+    EXPECT_EQ(128, right.rowCount());
+    EXPECT_EQ(32, right.columnCount());
+
+    skelcl::Matrix<float> output = allpairs(left, right);
+    EXPECT_EQ(32, output.rowCount());
+    EXPECT_EQ(32, output.columnCount());
+
+    for (size_t i = 0; i < output.rowCount(); ++i) {
+        for (size_t j = 0; j < output.columnCount(); ++j) {
+            float tmp = 0;
+            for (size_t k = 0; k < left.columnCount(); ++k) {
+                tmp += left[i][k] * right[k][j];
+            }
+            EXPECT_EQ(tmp, output[i][j]);
+        }
+    }
+}
+
+// Tests kernel with matrixmultiplication
+TEST_F(AllPairsTest, PotentialOutOfBoundsAllPairs) {
+    skelcl::Zip<float(float, float)> zip("float USR_ZIP(float x, float y){ return x*y; }");
+    skelcl::Reduce<float(float)> reduce("float USR_REDUCE(float x, float y){ return x+y; }");
+    skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
+
+    std::vector<float> tmpleft(400);
+    for (size_t i = 0; i < tmpleft.size(); ++i)
+      tmpleft[i] = i;
+    EXPECT_EQ(400, tmpleft.size());
+
+    std::vector<float> tmpright(tmpleft);
+    EXPECT_EQ(400, tmpright.size());
+
+    skelcl::Matrix<float> left(tmpleft, 20);
+    EXPECT_EQ(20, left.rowCount());
+    EXPECT_EQ(20, left.columnCount());
+
+    skelcl::Matrix<float> right(tmpright, 20);
+    EXPECT_EQ(20, right.rowCount());
+    EXPECT_EQ(20, right.columnCount());
+
+    skelcl::Matrix<float> output = allpairs(left, right);
+    EXPECT_EQ(20, output.rowCount());
+    EXPECT_EQ(20, output.columnCount());
+
     int errorCount = 0;
     for (size_t i = 0; i < output.rowCount(); ++i) {
         for (size_t j = 0; j < output.columnCount(); ++j) {
@@ -98,11 +174,11 @@ TEST_F(AllPairsTest, SimpleAllPairs) {
                 tmp += left[i][k] * right[k][j];
             }
             if (tmp != output[i][j]) {
-                //std::cout << "\\fill[color=red!30] ("<< j << "," << 63-i << ") rectangle (" << j+1 << "," << 64-i << ");" << std::endl;
                 ++errorCount;
+                //std::cout << "\\fill[color=red!30] (" << (40-i) <<"," << j << ") rectangle (" << (41-i) <<"," << j+1 <<");" << std::endl;
             }
             EXPECT_EQ(tmp, output[i][j]);
         }
     }
-    std::cout << "Error Count: " << errorCount << std::endl;
+    //std::cout << "Error Count: " << errorCount << std::endl;
 }

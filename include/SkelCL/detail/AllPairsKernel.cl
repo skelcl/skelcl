@@ -51,6 +51,7 @@ typedef float SCL_TYPE_2;
 __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
                            const __global SCL_TYPE_1* N,
                                  __global SCL_TYPE_2* P,
+                           const unsigned int dimension,
                            const unsigned int height,
                            const unsigned int width) {
     __local SCL_TYPE_0 Ml[R][DS];
@@ -63,31 +64,41 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
 
     uint segment = 0;
 
-    while (segment * DS < width) { 
+    for (int m = 0; m < SUBTILES; ++m)
+        if ((row + m * R < height) && (col < width))
+            P[(row + m * R) * width + col] = 0;
 
-        uint ii = segment * DS / R; 
-        for (int i = ii; i * R < (segment + 1) * DS; ++i) 
-            Nl[(i - ii) * R + l_row][l_col] = N[(i * R + l_row) * width + col]; 
+    while (segment * DS < dimension) {
+
+        uint ii = segment * DS / R;
+        uint roffset = segment * DS - ii * R;
+        uint end = (dimension < (segment + 1) * DS) ? dimension : (segment + 1) * DS;
+        for (int i = ii; i * R < end; ++i)
+            if ((i * R + l_row < end) && (col < width))
+                Nl[(i - ii) * R + l_row - roffset][l_col] = N[(i * R + l_row) * width + col]; 
 
         for (int s = 0; s < SUBTILES; ++s) { 
-            SCL_TYPE_2 rslt = P[(row + s * R) * width + col];
+            SCL_TYPE_2 result = P[(row + s * R) * width + col];
 
             uint jj = segment * DS / C; 
-            for (int j = jj; j * C < (segment + 1) * DS; ++j) 
-                Ml[l_row][(j - jj) * C + l_col] = M[(row + s * R) * width + (j * C + l_col)]; 
+            uint coffset = segment * DS - jj * C;
+            for (int j = jj; j * C < end; ++j)
+                if ((j * C + l_col < end) && (row < height))
+                    Ml[l_row][(j - jj) * C + l_col - coffset] = M[(row + s * R) * dimension + (j * C + l_col)]; 
 
             barrier(CLK_LOCAL_MEM_FENCE); 
 
             SCL_TYPE_2 tmp;
-            for (int k = 0; k < DS; ++k) {
+            uint endk = (dimension < (segment + 1) * DS) ? dimension % DS : DS;
+            for (int k = 0; k < endk; ++k) {
                 tmp = USR_ZIP(Ml[l_row][k], Nl[k][l_col]);
-                rslt = USR_REDUCE(tmp, rslt);
+                result = USR_REDUCE(result, tmp);
             }
 
-            P[(row + s * R) * width + col] = rslt;
+            if ((row + s * R < height) && (col < width))
+                P[(row + s * R) * width + col] = result;
 
             barrier(CLK_GLOBAL_MEM_FENCE);	
-
         } 
         ++segment; 
     } 

@@ -135,7 +135,8 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
         cl_uint elements[2]   = {output.rowCount(), output.columnCount()};
         cl_uint local[2]      = {32, 8}; // C, R
         cl_uint global[2]     = {detail::util::ceilToMultipleOf(elements[0], local[0]),
-                                 detail::util::ceilToMultipleOf(elements[1], local[1])/4}; // durch SUBTILES teilen
+                                 detail::util::ceilToMultipleOf(elements[1], local[1]*4)/4}; // durch SUBTILES teilen
+        cl_uint dimension     = {left.columnCount()};
 
         try {
             cl::Kernel kernel(program.kernel(*devicePtr, "SCL_ALLPAIRS"));
@@ -143,12 +144,17 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
             kernel.setArg(0, leftBuffer.clBuffer());
             kernel.setArg(1, rightBuffer.clBuffer());
             kernel.setArg(2, outputBuffer.clBuffer());
-            kernel.setArg(3, elements[0]); // height
-            kernel.setArg(4, elements[1]); // width
+            kernel.setArg(3, dimension);   // dimension
+            kernel.setArg(4, elements[0]); // height
+            kernel.setArg(5, elements[1]); // width
 
-            detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 5, std::forward<Args>(args)...);
+            LOG_INFO("dim: ", dimension, " height: ", elements[0], " width: ",elements[1]);
+            LOG_INFO("local: ", local[0],",", local[1], " global: ", global[0],",",global[1]);
+
+            detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 6, std::forward<Args>(args)...);
 
 
+            // keep buffers and arguments alive / mark them as in use
             auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
                                                            leftBuffer.clBuffer(),
                                                            rightBuffer.clBuffer(),
@@ -226,7 +232,7 @@ void AllPairs<Tout(Tleft, Tright)>::prepareInput(const Matrix<Tleft>& left,
                                                  const Matrix<Tright>& right)
 {
     // set distributions
-    left.setDistribution(detail::CopyDistribution< Matrix<Tleft> >()); // some rows of matrix
+    left.setDistribution(detail::BlockDistribution< Matrix<Tleft> >()); // some rows of matrix
     right.setDistribution(detail::CopyDistribution< Matrix<Tright> >()); // whole matrix
 
     // create buffers if required
@@ -249,7 +255,7 @@ void AllPairs<Tout(Tleft, Tright)>::prepareOutput(Matrix<Tout>& output,
         output.resize(typename Matrix<Tout>::size_type(left.rowCount(), right.columnCount()));
 
     // set distribution
-    output.setDistribution(detail::CopyDistribution< Matrix<Tout> >()); // ? left.distri?
+    output.setDistribution(detail::BlockDistribution< Matrix<Tout> >());
 
     //create buffers if required
     output.createDeviceBuffers();
