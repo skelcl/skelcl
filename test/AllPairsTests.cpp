@@ -68,8 +68,8 @@ TEST_F(AllPairsTest, CreateAllPairsWithZipAndReduce) {
 
 // Tests kernel with matrixmultiplication of two 64x64 matrices
 TEST_F(AllPairsTest, SimpleAllPairs) {
-    skelcl::Zip<float(float, float)> zip("float USR_ZIP(float x, float y){ return x*y; }");
-    skelcl::Reduce<float(float)> reduce("float USR_REDUCE(float x, float y){ return x+y; }");
+    skelcl::Zip<float(float, float)> zip("float func(float x, float y){ return x*y; }");
+    skelcl::Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
     skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
 
     std::vector<float> tmpleft(4096);
@@ -105,8 +105,8 @@ TEST_F(AllPairsTest, SimpleAllPairs) {
 
 // Tests kernel with matrixmultiplication with one 32x128 matrix and one 128x32 matrix
 TEST_F(AllPairsTest, NotSoSimpleAllPairs) {
-    skelcl::Zip<float(float, float)> zip("float USR_ZIP(float x, float y){ return x*y; }");
-    skelcl::Reduce<float(float)> reduce("float USR_REDUCE(float x, float y){ return x+y; }");
+    skelcl::Zip<float(float, float)> zip("float func(float x, float y){ return x*y; }");
+    skelcl::Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
     skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
 
     std::vector<float> tmpleft(4096);
@@ -142,8 +142,8 @@ TEST_F(AllPairsTest, NotSoSimpleAllPairs) {
 
 // Tests kernel with matrixmultiplication
 TEST_F(AllPairsTest, PotentialOutOfBoundsAllPairs) {
-    skelcl::Zip<float(float, float)> zip("float USR_ZIP(float x, float y){ return x*y; }");
-    skelcl::Reduce<float(float)> reduce("float USR_REDUCE(float x, float y){ return x+y; }");
+    skelcl::Zip<float(float, float)> zip("float func(float x, float y){ return x*y; }");
+    skelcl::Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
     skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
 
     // M * N = D
@@ -185,12 +185,12 @@ TEST_F(AllPairsTest, PotentialOutOfBoundsAllPairs) {
             for (size_t k = 0; k < left.columnCount(); ++k) {
                 tmp += left[i][k] * right[k][j];
             }
-            if (tmp != output[i][j]) {
+            /*if (tmp != output[i][j]) {
                 ++errorCount;
                 //std::cout << "\\fill[color=red!30] (" << j <<"," << height-i-1 << ") rectangle (" << j+1 <<"," << height-i <<");" << std::endl;
-            }
+            }*/
             EXPECT_EQ(tmp, output[i][j]);
         }
     }
-    std::cout << "Error Count: " << errorCount << std::endl;
+    //std::cout << "Error Count: " << errorCount << std::endl;
 }

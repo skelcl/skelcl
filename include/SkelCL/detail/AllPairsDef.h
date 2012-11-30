@@ -52,6 +52,9 @@
 #include <CL/cl.h>
 #undef __CL_ENABLE_EXCEPTIONS
 
+#include <ssedit/TempSourceFile.h>
+#include <ssedit/Function.h>
+
 #include "../Distributions.h"
 #include "../Matrix.h"
 #include "../Reduce.h"
@@ -134,10 +137,10 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
         auto& leftBuffer   = left.deviceBuffer(*devicePtr);
         auto& rightBuffer  = right.deviceBuffer(*devicePtr);
 
-        cl_uint elements[2]   = {output.rowCount(), output.columnCount()}; //{output.columnCount(), output.rowCount()};
+        cl_uint elements[2]   = {output.rowCount(), output.columnCount()};
         cl_uint local[2]      = {32, 8}; // C, R
         cl_uint global[2]     = {detail::util::ceilToMultipleOf(elements[1], local[0]),
-                                 detail::util::ceilToMultipleOf(elements[0], local[1]*4)/4}; // durch SUBTILES teilen
+                                 detail::util::ceilToMultipleOf(elements[0], local[1]*4)/4}; // 4 SUBTILES
         cl_uint dimension     = {left.columnCount()};
 
         try {
@@ -188,17 +191,36 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     ASSERT_MESSAGE( !_srcZip.empty(),
                     "Tried to create program with empty user zip source." );
 
-    // 1 _srcReduce: ersetze func durch USR_REDUCE
-    // 2 _srcZip   : ersetze func durch USR_ZIP
+    // _srcReduce: replace func by USR_REDUCE
+    ssedit::TempSourceFile reduceTemp(_srcReduce);
+
+    auto func = reduceTemp.findFunction(_funcReduce); ASSERT(func.isValid());
+    reduceTemp.commitRename(func, "USR_REDUCE");
+    reduceTemp.writeCommittedChanges();
+
+    std::ifstream rFile(reduceTemp.getFileName());
+    std::string rSource( (std::istreambuf_iterator<char>(rFile)),
+                         std::istreambuf_iterator<char>() );
+
+    // _srcZip   : replace func by USR_ZIP
+    ssedit::TempSourceFile zipTemp(_srcZip);
+
+    func = zipTemp.findFunction(_funcReduce); ASSERT(func.isValid());
+    zipTemp.commitRename(func, "USR_ZIP");
+    zipTemp.writeCommittedChanges();
+
+    std::ifstream zFile(zipTemp.getFileName());
+    std::string zSource( (std::istreambuf_iterator<char>(zFile)),
+                         std::istreambuf_iterator<char>() );
 
     // create program
     std::string s(Matrix<Tout>::deviceFunctions());
 
     // reduce user source
-    s.append(_srcReduce);
+    s.append(rSource);
 
     // zip user source
-    s.append(_srcZip);
+    s.append(zSource);
 
     // allpairs skeleton source
     s.append(
@@ -215,10 +237,6 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
         //program.transferArguments(_funcReduce, 2, "SCL_ALLPAIRS");
         //program.transferParameters(_funcZip, 2, "SCL_ALLPAIRS");
         //program.transferArguments(_funcZip, 2, "SCL_ALLPAIRS");
-
-        // rename user functions
-        //program.renameFunction(_funcReduce, "USR_REDUCE"); // duerfen vorher nicht beide func heissen!
-        //program.renameFunction(_funcZip, "USR_ZIP");
 
         program.adjustTypes<Tleft, Tright, Tout>();
     //}
