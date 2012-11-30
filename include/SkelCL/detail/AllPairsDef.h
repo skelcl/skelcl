@@ -100,7 +100,9 @@ Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > outp
                                                         const Matrix<Tright>& right,
                                                         Args&&... args)
 {
+    ASSERT( (left.rowCount() > 0) && (right.columnCount() > 0) );
     ASSERT( left.columnCount() == right.rowCount() );
+    ASSERT( left.columnCount() > 0 );
 
     detail::Program program = createAndBuildProgram();
 
@@ -132,10 +134,10 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
         auto& leftBuffer   = left.deviceBuffer(*devicePtr);
         auto& rightBuffer  = right.deviceBuffer(*devicePtr);
 
-        cl_uint elements[2]   = {output.rowCount(), output.columnCount()};
+        cl_uint elements[2]   = {output.rowCount(), output.columnCount()}; //{output.columnCount(), output.rowCount()};
         cl_uint local[2]      = {32, 8}; // C, R
-        cl_uint global[2]     = {detail::util::ceilToMultipleOf(elements[0], local[0]),
-                                 detail::util::ceilToMultipleOf(elements[1], local[1]*4)/4}; // durch SUBTILES teilen
+        cl_uint global[2]     = {detail::util::ceilToMultipleOf(elements[1], local[0]),
+                                 detail::util::ceilToMultipleOf(elements[0], local[1]*4)/4}; // durch SUBTILES teilen
         cl_uint dimension     = {left.columnCount()};
 
         try {
@@ -148,8 +150,8 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
             kernel.setArg(4, elements[0]); // height
             kernel.setArg(5, elements[1]); // width
 
-            LOG_INFO("dim: ", dimension, " height: ", elements[0], " width: ",elements[1]);
-            LOG_INFO("local: ", local[0],",", local[1], " global: ", global[0],",",global[1]);
+            LOG_DEBUG("dim: ", dimension, " height: ", elements[0], " width: ",elements[1]);
+            LOG_DEBUG("local: ", local[0],",", local[1], " global: ", global[0],",",global[1]);
 
             detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 6, std::forward<Args>(args)...);
 

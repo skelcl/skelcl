@@ -77,13 +77,13 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
             if ((i * R + l_row < end) && (col < width))
                 Nl[(i - ii) * R + l_row - roffset][l_col] = N[(i * R + l_row) * width + col]; 
 
-        for (int s = 0; s < SUBTILES; ++s) { 
+        for (int s = 0; s < SUBTILES; ++s) {
             SCL_TYPE_2 result = P[(row + s * R) * width + col];
 
             uint jj = segment * DS / C; 
             uint coffset = segment * DS - jj * C;
             for (int j = jj; j * C < end; ++j)
-                if ((j * C + l_col < end) && (row < height))
+                if ((j * C + l_col < end) && (row + s * R < height))
                     Ml[l_row][(j - jj) * C + l_col - coffset] = M[(row + s * R) * dimension + (j * C + l_col)]; 
 
             barrier(CLK_LOCAL_MEM_FENCE); 
@@ -98,9 +98,9 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
             if ((row + s * R < height) && (col < width))
                 P[(row + s * R) * width + col] = result;
 
-            barrier(CLK_GLOBAL_MEM_FENCE);	
+            barrier(CLK_GLOBAL_MEM_FENCE);
         } 
         ++segment; 
-    } 
+    }
 }
 )"

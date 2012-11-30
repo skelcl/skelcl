@@ -146,25 +146,37 @@ TEST_F(AllPairsTest, PotentialOutOfBoundsAllPairs) {
     skelcl::Reduce<float(float)> reduce("float USR_REDUCE(float x, float y){ return x+y; }");
     skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
 
-    std::vector<float> tmpleft(400);
+    // M * N = D
+    //----------------
+    // M: height x dim
+    // N: dim x width
+    // D: height x width
+    const unsigned int height = 100;
+    const unsigned int dim = 1;
+    const unsigned int width = 1000;
+    //----------------
+
+    std::vector<float> tmpleft(height*dim);
     for (size_t i = 0; i < tmpleft.size(); ++i)
-      tmpleft[i] = i;
-    EXPECT_EQ(400, tmpleft.size());
+      tmpleft[i] = 1;
+    EXPECT_EQ(height*dim, tmpleft.size());
 
-    std::vector<float> tmpright(tmpleft);
-    EXPECT_EQ(400, tmpright.size());
+    std::vector<float> tmpright(dim*width);
+    for (size_t i = 0; i < tmpright.size(); ++i)
+      tmpright[i] = 1;
+    EXPECT_EQ(dim*width, tmpright.size());
 
-    skelcl::Matrix<float> left(tmpleft, 20);
-    EXPECT_EQ(20, left.rowCount());
-    EXPECT_EQ(20, left.columnCount());
+    skelcl::Matrix<float> left(tmpleft, dim);
+    EXPECT_EQ(height, left.rowCount());
+    EXPECT_EQ(dim, left.columnCount());
 
-    skelcl::Matrix<float> right(tmpright, 20);
-    EXPECT_EQ(20, right.rowCount());
-    EXPECT_EQ(20, right.columnCount());
+    skelcl::Matrix<float> right(tmpright, width);
+    EXPECT_EQ(dim, right.rowCount());
+    EXPECT_EQ(width, right.columnCount());
 
     skelcl::Matrix<float> output = allpairs(left, right);
-    EXPECT_EQ(20, output.rowCount());
-    EXPECT_EQ(20, output.columnCount());
+    EXPECT_EQ(height, output.rowCount());
+    EXPECT_EQ(width, output.columnCount());
 
     int errorCount = 0;
     for (size_t i = 0; i < output.rowCount(); ++i) {
@@ -175,10 +187,10 @@ TEST_F(AllPairsTest, PotentialOutOfBoundsAllPairs) {
             }
             if (tmp != output[i][j]) {
                 ++errorCount;
-                //std::cout << "\\fill[color=red!30] (" << (40-i) <<"," << j << ") rectangle (" << (41-i) <<"," << j+1 <<");" << std::endl;
+                //std::cout << "\\fill[color=red!30] (" << j <<"," << height-i-1 << ") rectangle (" << j+1 <<"," << height-i <<");" << std::endl;
             }
             EXPECT_EQ(tmp, output[i][j]);
         }
     }
-    //std::cout << "Error Count: " << errorCount << std::endl;
+    std::cout << "Error Count: " << errorCount << std::endl;
 }
