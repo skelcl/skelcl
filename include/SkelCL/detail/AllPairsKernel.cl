@@ -46,7 +46,7 @@ typedef float SCL_TYPE_2;
 #define R 8
 #define C 32
 #define SUBTILES 4
-#define DS 32
+#define DS 50
 
 __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
                            const __global SCL_TYPE_1* N,
@@ -74,7 +74,7 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
         uint roffset = segment * DS - ii * R;
         uint end = (dimension < (segment + 1) * DS) ? dimension : (segment + 1) * DS;
         for (int i = ii; i * R < end; ++i)
-            if ((i * R + l_row < end) && (col < width))
+            if (((i - ii) * R + l_row >= roffset) && (i * R + l_row < end) && (col < width))
                 Nl[(i - ii) * R + l_row - roffset][l_col] = N[(i * R + l_row) * width + col]; 
 
         for (int s = 0; s < SUBTILES; ++s) {
@@ -82,9 +82,10 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
 
             uint jj = segment * DS / C; 
             uint coffset = segment * DS - jj * C;
+
             for (int j = jj; j * C < end; ++j)
-                if ((j * C + l_col < end) && (row + s * R < height))
-                    Ml[l_row][(j - jj) * C + l_col - coffset] = M[(row + s * R) * dimension + (j * C + l_col)]; 
+                if (((j - jj) * C + l_col >= coffset) && (j * C + l_col < end) && (row + s * R < height))
+                    Ml[l_row][(j - jj) * C + l_col - coffset] = M[(row + s * R) * dimension + (j * C + l_col)];
 
             barrier(CLK_LOCAL_MEM_FENCE); 
 

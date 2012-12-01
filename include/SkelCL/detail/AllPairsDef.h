@@ -202,7 +202,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     std::string rSource( (std::istreambuf_iterator<char>(rFile)),
                          std::istreambuf_iterator<char>() );
 
-    // _srcZip   : replace func by USR_ZIP
+    // _srcZip: replace func by USR_ZIP
     ssedit::TempSourceFile zipTemp(_srcZip);
 
     func = zipTemp.findFunction(_funcReduce); ASSERT(func.isValid());
@@ -219,6 +219,8 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     // reduce user source
     s.append(rSource);
 
+    s.append("\n");
+
     // zip user source
     s.append(zSource);
 
@@ -227,18 +229,23 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
       #include "AllPairsKernel.cl"
     );
 
+    //LOG_DEBUG(s);
+
     auto program = detail::Program(s, detail::util::hash("//AllPairs\n"
                                                          + Matrix<Tout>::deviceFunctions()
-                                                         + _srcReduce
-                                                         + _srcZip));
+                                                         + rSource
+                                                         + zSource));
     // modify program
     //if (!program.loadBinary()) {
-        //program.transferParameters(_funcReduce, 2, "SCL_ALLPAIRS"); //problem: reduce parameter a und zip parameter a
-        //program.transferArguments(_funcReduce, 2, "SCL_ALLPAIRS");
-        //program.transferParameters(_funcZip, 2, "SCL_ALLPAIRS");
-        //program.transferArguments(_funcZip, 2, "SCL_ALLPAIRS");
+    //program.transferParameters("USR_REDUCE", 2, "SCL_ALLPAIRS"); // problem: reduce parameter a und zip parameter a
+    //program.transferArguments("USR_REDUCE", 2, "SCL_ALLPAIRS"); // index?
+    //program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS");
+    //program.transferArguments("TMP_ZIP", 2, "USR_ZIP");
 
-        program.adjustTypes<Tleft, Tright, Tout>();
+    //program.renameFunction("TMP_REDUCE", "USR_REDUCE");
+    //program.renameFunction("TMP_ZIP", "USR_ZIP");
+
+    program.adjustTypes<Tleft, Tright, Tout>();
     //}
 
     program.build();

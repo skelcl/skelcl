@@ -152,18 +152,18 @@ TEST_F(AllPairsTest, PotentialOutOfBoundsAllPairs) {
     // N: dim x width
     // D: height x width
     const unsigned int height = 100;
-    const unsigned int dim = 1;
-    const unsigned int width = 1000;
+    const unsigned int dim = 2;
+    const unsigned int width = 100;
     //----------------
 
     std::vector<float> tmpleft(height*dim);
     for (size_t i = 0; i < tmpleft.size(); ++i)
-      tmpleft[i] = 1;
+      tmpleft[i] = 2;
     EXPECT_EQ(height*dim, tmpleft.size());
 
     std::vector<float> tmpright(dim*width);
     for (size_t i = 0; i < tmpright.size(); ++i)
-      tmpright[i] = 1;
+      tmpright[i] = 2;
     EXPECT_EQ(dim*width, tmpright.size());
 
     skelcl::Matrix<float> left(tmpleft, dim);
