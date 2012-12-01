@@ -117,6 +117,17 @@ cl::Event Device::enqueue(const cl::Kernel& kernel,
                           const cl::NDRange& offset,
                           const std::function<void()> callback) const
 {
+  ASSERT(global.dimensions() == local.dimensions());
+  ONLY_IN_DEBUG(
+  auto globalSizeIsDivisiableByLocalSize = [&] () -> bool {
+    bool isDivisiable = true;
+    for (size_t i = 0; i < global.dimensions(); ++i) {
+      if (global[i] % local[i] != 0) { isDivisiable = false; break; }
+    }
+    return isDivisiable;
+  });
+  ASSERT(globalSizeIsDivisiableByLocalSize());
+  
   cl::Event event;
   try {
     _commandQueue.enqueueNDRangeKernel(kernel, offset, global, local,

@@ -86,36 +86,36 @@ std::string hash(const std::string& string)
   return buffer.str();
 }
 
-int devideAndRoundUp(int i, int j)
+size_t devideAndRoundUp(size_t i, size_t j)
 {
-  int r = i / j;
+  size_t r = i / j;
   if (i % j != 0) {
     r++;
   }
   return r;
 }
 
-int devideAndAlign(int i, int j, int a)
+size_t devideAndAlign(size_t i, size_t j, size_t a)
 {
-  int x = i / j;
+  size_t x = i / j;
   if (i % j != 0)
     ++x;
-  int r = x % a;
+  size_t r = x % a;
   if (r != 0)
     x = x + (a - r);
   return x;
 }
 
-int ceilToMultipleOf(int i, int j)
+size_t ceilToMultipleOf(size_t i, size_t j)
 {
-  int r = i % j;
+  size_t r = i % j;
   if (r == 0)
    return i;
   else
    return i + (j - r);
 }
 
-bool isPowerOfTwo(int n)
+bool isPowerOfTwo(size_t n)
 {
   return ((n & (n - 1)) == 0);
 }

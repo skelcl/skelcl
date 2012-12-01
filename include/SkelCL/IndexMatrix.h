@@ -40,6 +40,8 @@
 #ifndef INDEX_MATRIX_H_
 #define INDEX_MATRIX_H_
 
+#include <vector>
+
 #include "Index.h"
 #include "Matrix.h"
 #include "Vector.h"

@@ -44,6 +44,7 @@
 
 #define ASSERT(e) (void(0))
 #define ASSERT_MESSAGE(e, ...) (void(0))
+#define ONLY_IN_DEBUG(e) (void(0))
 
 #else  // DEBUG
 
@@ -52,6 +53,8 @@
 
 #define ASSERT_MESSAGE(e, ...)\
   skelcl::detail::ASSERT_IMPL(__FILE__, __LINE__, e, #e, __VA_ARGS__)
+
+#define ONLY_IN_DEBUG(e) e
 
 #endif // NDEBUG
 

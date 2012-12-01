@@ -48,6 +48,8 @@
 #include <type_traits>
 #include <utility>
 
+#include <cmath>
+
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.h>
 #undef  __CL_ENABLE_EXCEPTIONS
@@ -342,26 +344,24 @@ Map<Tout(Index)>::Map(const Source& source,
 }
 
 template <typename Tout>
-template <template <typename> class C,
-          typename... Args>
-C<Tout> Map<Tout(Index)>::operator()(const C<Index>& input,
-                                     Args&&... args) const
+template <typename... Args>
+Vector<Tout> Map<Tout(Index)>::operator()(const Vector<Index>& input,
+                                          Args&&... args) const
 {
-  C<Tout> output;
+  Vector<Tout> output;
   this->operator()(out(output), input, std::forward<Args>(args)...);
   return output;
 }
 
 template <typename Tout>
-template <template <typename> class C,
-          typename... Args>
-C<Tout>& Map<Tout(Index)>::operator()(Out< C<Tout> > output,
-                                      const C<Index>& input,
-                                      Args&&... args) const
+template <typename... Args>
+Vector<Tout>& Map<Tout(Index)>::operator()(Out< Vector<Tout> > output,
+                                           const Vector<Index>& input,
+                                           Args&&... args) const
 {
   // set default distribution if required
   if (!input.distribution().isValid()) {
-    input.setDistribution(detail::BlockDistribution< C<Index> >());
+    input.setDistribution(detail::BlockDistribution< Vector<Index> >());
   }
   // no need to fully prepare index container
 
@@ -377,10 +377,9 @@ C<Tout>& Map<Tout(Index)>::operator()(Out< C<Tout> > output,
 }
 
 template <typename Tout>
-template <template <typename> class C,
-          typename... Args>
-void Map<Tout(Index)>::execute(C<Tout>& output,
-                               const C<Index>& input,
+template <typename... Args>
+void Map<Tout(Index)>::execute(Vector<Tout>& output,
+                               const Vector<Index>& input,
                                Args&&... args) const
 {
   ASSERT( output.size() >= input.size() );
@@ -437,7 +436,6 @@ detail::Program Map<Tout(Index)>::createAndBuildProgram(const std::string& sourc
   // first: device specific functions
   std::string deviceFunctions;
   deviceFunctions.append(Vector<Index>::deviceFunctions());
-  deviceFunctions.append(Matrix<Index>::deviceFunctions());
   std::string s(deviceFunctions);
   s.append(R"(
 typedef size_t Index;
@@ -487,16 +485,15 @@ Map<void(Index)>::Map(const Source& source,
 {
 }
 
-template <template <typename> class C,
-          typename... Args>
-void Map<void(Index)>::operator()(const C<Index>& input,
+template <typename... Args>
+void Map<void(Index)>::operator()(const Vector<Index>& input,
                                   Args&&... args) const
 {
   // set default distribution if required
   if (!input.distribution().isValid()) {
-    input.setDistribution(detail::BlockDistribution< C<Index> >());
+    input.setDistribution(detail::BlockDistribution< Vector<Index> >());
   }
-  // no need to fully prepare index container
+  // no need to further prepare index container
 
   prepareAdditionalInput(std::forward<Args>(args)...);
 
@@ -505,9 +502,8 @@ void Map<void(Index)>::operator()(const C<Index>& input,
   updateModifiedStatus(std::forward<Args>(args)...);
 }
 
-template <template <typename> class C,
-          typename... Args>
-void Map<void(Index)>::execute(const C<Index>& input,
+template <typename... Args>
+void Map<void(Index)>::execute(const Vector<Index>& input,
                                Args&&... args) const
 {
   auto sizes = input.sizes();
@@ -531,9 +527,7 @@ void Map<void(Index)>::execute(const C<Index>& input,
                                                      std::forward<Args>(args)...);
 
       // after finishing the kernel invoke this function ...
-      auto invokeAfter =  [=] () {
-                                    (void)keepAlive;
-                                 };
+      auto invokeAfter =  [=] () { (void)keepAlive; };
 
       devicePtr->enqueue(kernel,
                          cl::NDRange(global), cl::NDRange(local),
@@ -594,6 +588,286 @@ __kernel void SCL_MAP(const unsigned int SCL_OFFSET)
   return program;
 }
 
+// ## Map<IndexPoint, Tout> ################################################
+template <typename Tout>
+Map<Tout(IndexPoint)>::Map(const Source& source,
+                           const std::string& funcName)
+: Skeleton(),
+  detail::MapHelper<Tout(IndexPoint)>(createAndBuildProgram(source, funcName))
+{
+}
+
+template <typename Tout>
+template <typename... Args>
+Matrix<Tout> Map<Tout(IndexPoint)>::operator()(const Matrix<IndexPoint>& input,
+                                               Args&&... args) const
+{
+  Matrix<Tout> output;
+  this->operator()(out(output), input, std::forward<Args>(args)...);
+  return output;
+}
+
+template <typename Tout>
+template <typename... Args>
+Matrix<Tout>& Map<Tout(IndexPoint)>::operator()(Out< Matrix<Tout> > output,
+                                                const Matrix<IndexPoint>& input,
+                                                Args&&... args) const
+{
+  // set default distribution if required
+  if (!input.distribution().isValid()) {
+    input.setDistribution(detail::BlockDistribution< Matrix<Index> >());
+  }
+  // no need to further prepare index matrix
+  
+  prepareAdditionalInput(std::forward<Args>(args)...);
+  
+  this->prepareOutput(output.container(), input);
+  
+  execute(output.container(), input, std::forward<Args>(args)...);
+  
+  updateModifiedStatus(output, std::forward<Args>(args)...);
+  
+  return output.container();
+}
+
+template <typename Tout>
+template <typename... Args>
+void Map<Tout(IndexPoint)>::execute(Matrix<Tout>& output,
+                                    const Matrix<IndexPoint>& input,
+                                    Args&&... args) const
+{
+  ASSERT( output.size() >= input.size() );
+  
+  size_t i = 0;
+  cl_uint rowOffset = 0;
+  for (auto& devicePtr : input.distribution().devices()) {
+    auto& outputBuffer = output.deviceBuffer(*devicePtr);
+    
+    auto elements = input.distribution().sizeForDevice(input, devicePtr);
+    auto colCount = input.size().columnCount();
+    auto rowCount = elements / colCount;
+    
+    size_t wgSize      = detail::util::floorPow2( sqrt(this->workGroupSize()) );
+    cl_uint local      = std::min(wgSize,
+                                  devicePtr->maxWorkGroupSize());
+    cl_uint colGlobal  = detail::util::ceilToMultipleOf(colCount, local);
+    cl_uint rowGlobal  = detail::util::ceilToMultipleOf(rowCount, local);
+    
+    try {
+      cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
+      
+      kernel.setArg(0, outputBuffer.clBuffer());
+      kernel.setArg(1, rowOffset);
+      kernel.setArg(2, colCount);
+      
+      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 3,
+                                        std::forward<Args>(args)...);
+      
+      auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
+                                                     outputBuffer.clBuffer(),
+                                                     std::forward<Args>(args)...);
+      
+      // after finishing the kernel invoke this function ...
+      auto invokeAfter =  [=] () { (void)keepAlive; };
+      
+      devicePtr->enqueue(kernel,
+                         cl::NDRange(rowGlobal, colGlobal),
+                         cl::NDRange(local, local),
+                         cl::NullRange,
+                         invokeAfter);
+    } catch (cl::Error& err) {
+      ABORT_WITH_ERROR(err);
+    }
+    rowOffset += rowCount;
+    ++i;
+  }
+  LOG_DEBUG_INFO("Map kernel started");
+}
+
+template <typename Tout>
+detail::Program Map<Tout(IndexPoint)>::createAndBuildProgram(const std::string& source,
+                                                             const std::string& funcName) const
+{
+  ASSERT_MESSAGE(!source.empty(),
+                 "Tried to create program with empty user source.");
+  
+  // create program
+  // first: device specific functions
+  std::string deviceFunctions;
+  deviceFunctions.append(Matrix<IndexPoint>::deviceFunctions());
+  std::string s(deviceFunctions);
+  s.append(R"(
+typedef struct {
+  size_t x;
+  size_t y;
+} IndexPoint;
+           
+           )");
+  // second: user defined source
+  s.append(source);
+  // last: append skeleton implementation source
+  s.append(R"(
+           
+           typedef float SCL_TYPE_0;
+           
+           __kernel void SCL_MAP(__global SCL_TYPE_0*  SCL_OUT,
+                                 const unsigned int          SCL_ROW_OFFSET,
+                                 const unsigned int          SCL_COL_COUNT)
+  {
+    // dim 1 is the columns, dim 0 the rows
+    IndexPoint p;
+    p.x = get_global_id(1);
+    p.y = get_global_id(0) + SCL_ROW_OFFSET;
+    SCL_OUT[ get_global_id(0) * SCL_COL_COUNT + get_global_id(1) ] = SCL_FUNC(p);
+  }
+           )");
+  auto program = detail::Program(s,
+                                 detail::util::hash("//Map\n"
+                                                    + deviceFunctions
+                                                    + source) );
+  
+  // modify program
+  if (!program.loadBinary()) {
+    // append parameters from user function to kernel
+    program.transferParameters(funcName, 1, "SCL_MAP");
+    program.transferArguments(funcName, 1, "SCL_FUNC");
+    // rename user function
+    program.renameFunction(funcName, "SCL_FUNC");
+    // rename typedefs
+    program.adjustTypes<Tout>();
+  }
+  
+  // build program
+  program.build();
+  
+  return program;
+}
+
+// ## Map<IndexPoint, void> ################################################
+Map<void(IndexPoint)>::Map(const Source& source,
+                           const std::string& funcName)
+: Skeleton(),
+  detail::MapHelper<void(IndexPoint)>(createAndBuildProgram(source, funcName))
+{
+}
+
+template <typename... Args>
+void Map<void(IndexPoint)>::operator()(const Matrix<IndexPoint>& input,
+                                       Args&&... args) const
+{
+  // set default distribution if required
+  if (!input.distribution().isValid()) {
+    input.setDistribution(detail::BlockDistribution< Matrix<IndexPoint> >());
+  }
+  // no need to further prepare index container
+  
+  prepareAdditionalInput(std::forward<Args>(args)...);
+  
+  execute(input, std::forward<Args>(args)...);
+  
+  updateModifiedStatus(std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+void Map<void(IndexPoint)>::execute(const Matrix<IndexPoint>& input,
+                                    Args&&... args) const
+{
+  size_t i = 0;
+  cl_uint rowOffset = 0;
+  for (auto& devicePtr : input.distribution().devices()) {
+    auto elements = input.distribution().sizeForDevice(input, devicePtr);
+    auto colCount = input.size().columnCount();
+    auto rowCount = elements / colCount;
+    
+    size_t wgSize      =  detail::util::floorPow2( sqrt(this->workGroupSize()) );
+    cl_uint local      = std::min(wgSize,
+                                  devicePtr->maxWorkGroupSize());
+    
+    cl_uint colGlobal  = detail::util::ceilToMultipleOf(colCount, local);
+    cl_uint rowGlobal  = detail::util::ceilToMultipleOf(rowCount, local);
+    
+    try {
+      cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
+      
+      kernel.setArg(0, rowOffset);
+      
+      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 1,
+                                        std::forward<Args>(args)...);
+      
+      auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
+                                                     std::forward<Args>(args)...);
+      
+      // after finishing the kernel invoke this function ...
+      auto invokeAfter =  [=] () {
+        (void)keepAlive;
+      };
+      
+      devicePtr->enqueue(kernel,
+                         cl::NDRange(rowGlobal, colGlobal),
+                         cl::NDRange(local, local),
+                         cl::NullRange,
+                         invokeAfter);
+    } catch (cl::Error& err) {
+      ABORT_WITH_ERROR(err);
+    }
+    rowOffset += rowCount;
+    ++i;
+  }
+  LOG_DEBUG_INFO("Map kernel started");
+}
+
+detail::Program Map<void(IndexPoint)>::createAndBuildProgram(const std::string& source,
+                                                             const std::string& funcName) const
+{
+  ASSERT_MESSAGE(!source.empty(),
+                 "Tried to create program with empty user source.");
+  
+  // create program
+  // first: device specific functions
+  std::string deviceFunctions;
+  deviceFunctions.append(Matrix<IndexPoint>::deviceFunctions());
+  std::string s(deviceFunctions);
+  s.append(R"(
+typedef struct {
+  size_t x;
+  size_t y;
+} IndexPoint;
+           
+           )");
+  // second: user defined source
+  s.append(source);
+  // last: append skeleton implementation source
+  s.append(R"(
+           
+           __kernel void SCL_MAP(const unsigned int SCL_ROW_OFFSET)
+  {
+    // dim 1 is the columns, dim 0 the rows
+    IndexPoint p;
+    p.x = get_global_id(1);
+    p.y = get_global_id(0) + SCL_ROW_OFFSET;
+    SCL_FUNC(p);
+  }
+           )");
+  auto program = detail::Program(s,
+                                 detail::util::hash("//Map\n"
+                                                    + deviceFunctions
+                                                    + source) );
+  
+  // modify program
+  if (!program.loadBinary()) {
+    // append parameters from user function to kernel
+    program.transferParameters(funcName, 1, "SCL_MAP");
+    program.transferArguments(funcName, 1, "SCL_FUNC");
+    // rename user function
+    program.renameFunction(funcName, "SCL_FUNC");
+  }
+  
+  // build program
+  program.build();
+  
+  return program;
+}
+  
 } // namespace skelcl
 
 #endif // MAP_DEF_H_

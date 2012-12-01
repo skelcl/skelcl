@@ -119,8 +119,18 @@ const Index& IndexPoint::rowID() const
 {
   return _indexPoint.first;
 }
+  
+const Index& IndexPoint::y() const
+{
+  return _indexPoint.first;
+}
 
 const Index& IndexPoint::columnID() const
+{
+  return _indexPoint.second;
+}
+  
+const Index& IndexPoint::x() const
 {
   return _indexPoint.second;
 }

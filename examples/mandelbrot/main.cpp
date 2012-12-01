@@ -41,14 +41,9 @@
 #include <iterator>
 
 #include <SkelCL/SkelCL.h>
-#include <SkelCL/Vector.h>
+#include <SkelCL/IndexMatrix.h>
 #include <SkelCL/Map.h>
 #include <SkelCL/detail/Logger.h>
-
-typedef struct {
-  unsigned short x;
-  unsigned short y;
-} Position;
 
 typedef struct {
   unsigned char r;
@@ -72,18 +67,6 @@ typedef struct {
 
 using namespace skelcl;
 
-template <typename Iterator>
-void initPositions(Iterator iter)
-{
-  for (int y = 0; y < HEIGHT; ++y) {
-    for (int x = 0; x < WIDTH; ++x) {
-      iter->x = x;
-      iter->y = y;
-      ++iter;
-    }
-  }
-}
-
 std::ostream& operator<< (std::ostream& out, Pixel p)
 {
   out << p.r << p.g << p.b;
@@ -102,11 +85,9 @@ void writePPM (Iterator first, Iterator last, const std::string& filename)
 
 void mandelbrot()
 {
-  Vector<Position> input(WIDTH * HEIGHT);
+  IndexMatrix positions({HEIGHT, WIDTH});
 
-  initPositions(input.begin());
-
-  Map<Pixel(Position)> m(std::ifstream("mandelbrot.cl"));
+  Map<Pixel(IndexPoint)> m(std::ifstream("mandelbrot.cl"));
 
   float startX = CENTER_X - ((float) WIDTH / (ZOOM * 2));
   float endX = CENTER_X + ((float) WIDTH / (ZOOM * 2));
@@ -117,9 +98,7 @@ void mandelbrot()
   float dx = (endX - startX) / WIDTH;
   float dy = (endY - startY) / HEIGHT;
 
-  Vector<Pixel> output(input.size());
-  //m(skelcl::out(output), input, startX, startY, dx, dy);
-  output = m(input, startX, startY, dx, dy);
+  Matrix<Pixel> output = m(positions, startX, startY, dx, dy);
 
   writePPM(output.begin(), output.end(), "mandelbrot.ppm");
 }
