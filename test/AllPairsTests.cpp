@@ -67,7 +67,7 @@ TEST_F(AllPairsTest, CreateAllPairsWithZipAndReduce) {
 }
 
 // Tests kernel with matrixmultiplication of two 64x64 matrices
-TEST_F(AllPairsTest, SimpleAllPairs) {
+TEST_F(AllPairsTest, SquareMatrices64x64AllPairs) {
     skelcl::Zip<float(float, float)> zip("float func(float x, float y){ return x*y; }");
     skelcl::Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
     skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
@@ -104,7 +104,7 @@ TEST_F(AllPairsTest, SimpleAllPairs) {
 }
 
 // Tests kernel with matrixmultiplication with one 32x128 matrix and one 128x32 matrix
-TEST_F(AllPairsTest, NotSoSimpleAllPairs) {
+TEST_F(AllPairsTest, NoSquareMatrices32x128SimpleAllPairs) {
     skelcl::Zip<float(float, float)> zip("float func(float x, float y){ return x*y; }");
     skelcl::Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
     skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
@@ -140,8 +140,8 @@ TEST_F(AllPairsTest, NotSoSimpleAllPairs) {
     }
 }
 
-// Tests kernel with matrixmultiplication
-TEST_F(AllPairsTest, PotentialOutOfBoundsAllPairs) {
+// Tests kernel with matrixmultiplication with two arbitrary matrices
+TEST_F(AllPairsTest, ArbitraryMatricesAllPairs) {
     skelcl::Zip<float(float, float)> zip("float func(float x, float y){ return x*y; }");
     skelcl::Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
     skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
@@ -153,17 +153,17 @@ TEST_F(AllPairsTest, PotentialOutOfBoundsAllPairs) {
     // D: height x width
     const unsigned int height = 100;
     const unsigned int dim = 2;
-    const unsigned int width = 100;
+    const unsigned int width = 60;
     //----------------
 
     std::vector<float> tmpleft(height*dim);
     for (size_t i = 0; i < tmpleft.size(); ++i)
-      tmpleft[i] = 2;
+      tmpleft[i] = i % 100;
     EXPECT_EQ(height*dim, tmpleft.size());
 
     std::vector<float> tmpright(dim*width);
     for (size_t i = 0; i < tmpright.size(); ++i)
-      tmpright[i] = 2;
+      tmpright[i] = i % 101;
     EXPECT_EQ(dim*width, tmpright.size());
 
     skelcl::Matrix<float> left(tmpleft, dim);
@@ -178,19 +178,13 @@ TEST_F(AllPairsTest, PotentialOutOfBoundsAllPairs) {
     EXPECT_EQ(height, output.rowCount());
     EXPECT_EQ(width, output.columnCount());
 
-    int errorCount = 0;
     for (size_t i = 0; i < output.rowCount(); ++i) {
         for (size_t j = 0; j < output.columnCount(); ++j) {
             float tmp = 0;
             for (size_t k = 0; k < left.columnCount(); ++k) {
                 tmp += left[i][k] * right[k][j];
             }
-            /*if (tmp != output[i][j]) {
-                ++errorCount;
-                //std::cout << "\\fill[color=red!30] (" << j <<"," << height-i-1 << ") rectangle (" << j+1 <<"," << height-i <<");" << std::endl;
-            }*/
             EXPECT_EQ(tmp, output[i][j]);
         }
     }
-    //std::cout << "Error Count: " << errorCount << std::endl;
 }
