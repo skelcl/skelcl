@@ -644,8 +644,8 @@ void Map<Tout(IndexPoint)>::execute(Matrix<Tout>& output,
     auto& outputBuffer = output.deviceBuffer(*devicePtr);
     
     auto elements = input.distribution().sizeForDevice(input, devicePtr);
-    auto colCount = input.size().columnCount();
-    auto rowCount = elements / colCount;
+    cl_uint colCount = input.size().columnCount();
+    cl_uint rowCount = elements / colCount;
     
     size_t wgSize      = detail::util::floorPow2( sqrt(this->workGroupSize()) );
     cl_uint local      = std::min(wgSize,
