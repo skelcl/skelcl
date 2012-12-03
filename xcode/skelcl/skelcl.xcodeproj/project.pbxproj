@@ -175,6 +175,8 @@
 		9EA658931663AEBA00904417 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
 		9EA658941663AEC800904417 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
 		D01C2705166D2F6400D28BCE /* MatrixSize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D01C2704166D2F6400D28BCE /* MatrixSize.cpp */; };
+		D06DFA18166D48CD0007FA44 /* DeviceID.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D06DFA17166D48CD0007FA44 /* DeviceID.cpp */; };
+		D06DFA1A166D48D60007FA44 /* PlatformID.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D06DFA19166D48D60007FA44 /* PlatformID.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -637,6 +639,8 @@
 		9EA658881663AE9800904417 /* dot_product */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = dot_product; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EA658951663AF9C00904417 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		D01C2704166D2F6400D28BCE /* MatrixSize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MatrixSize.cpp; sourceTree = "<group>"; };
+		D06DFA17166D48CD0007FA44 /* DeviceID.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeviceID.cpp; sourceTree = "<group>"; };
+		D06DFA19166D48D60007FA44 /* PlatformID.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PlatformID.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -979,6 +983,7 @@
 				9EA658951663AF9C00904417 /* CMakeLists.txt */,
 				9EA657BA1663AADB00904417 /* Device.cpp */,
 				9EA657BB1663AADB00904417 /* DeviceBuffer.cpp */,
+				D06DFA17166D48CD0007FA44 /* DeviceID.cpp */,
 				9EA657BC1663AADB00904417 /* DeviceList.cpp */,
 				9EA657BD1663AADB00904417 /* DeviceProperties.cpp */,
 				9EA657BE1663AADB00904417 /* Event.cpp */,
@@ -987,6 +992,7 @@
 				9EA657C11663AADB00904417 /* Local.cpp */,
 				9EA657C21663AADB00904417 /* Logger.cpp */,
 				D01C2704166D2F6400D28BCE /* MatrixSize.cpp */,
+				D06DFA19166D48D60007FA44 /* PlatformID.cpp */,
 				9EA657C31663AADB00904417 /* Program.cpp */,
 				9EA657C41663AADB00904417 /* Significances.cpp */,
 				9EA657C51663AADB00904417 /* SkelCL.cpp */,
@@ -1758,6 +1764,8 @@
 				9EA6580E1663AADB00904417 /* Source.cpp in Sources */,
 				9EA6580F1663AADB00904417 /* Util.cpp in Sources */,
 				D01C2705166D2F6400D28BCE /* MatrixSize.cpp in Sources */,
+				D06DFA18166D48CD0007FA44 /* DeviceID.cpp in Sources */,
+				D06DFA1A166D48D60007FA44 /* PlatformID.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
