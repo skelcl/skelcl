@@ -110,6 +110,8 @@
 
 #include "SkelCL/detail/Device.h"
 #include "SkelCL/detail/DeviceProperties.h"
+#include "SkelCL/detail/PlatformID.h"
+#include "SkelCL/detail/DeviceID.h"
 
 namespace skelcl {
 
@@ -118,6 +120,10 @@ typedef detail::Device::Type device_type;
 detail::DeviceProperties allDevices();
 
 detail::DeviceProperties nDevices(size_t n);
+
+detail::PlatformID platform(size_t pID);
+
+detail::DeviceID device(size_t dID);
 
 ///
 /// \brief Initializes the SkelCL library. This function has to be called
@@ -129,6 +135,8 @@ detail::DeviceProperties nDevices(size_t n);
 ///                   of devices call nDevices(n)
 ///
 void init(detail::DeviceProperties properties = allDevices());
+
+void init(detail::PlatformID pID, detail::DeviceID dID);
 
 ///
 /// \brief Frees all resources allocated internally by SkelCL.
