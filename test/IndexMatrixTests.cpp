@@ -63,33 +63,40 @@ TEST_F(IndexMatrixTest, CreateIndexMatrix) {
   EXPECT_EQ(skelcl::IndexPoint(255,31), mi.back());
 }
 
-#if 0
 TEST_F(IndexMatrixTest, SimpleVoidMap) {
-  skelcl::IndexVector index(1024);
-  skelcl::Map<void(skelcl::Index)> m("void func(Index i, __global int* out) { out[i] = i; }");
-  EXPECT_EQ(1024, index.size());
+  skelcl::IndexMatrix index({128, 32});
+  skelcl::Map<void(skelcl::IndexPoint)> map(R"(
+#define set(matrix, x, y, value) matrix[(int)(y * matrix##_col_count + x)] = value
 
-  skelcl::Vector<int> v(1024);
+void func(IndexPoint ip, __global int* out, uint out_col_count) { set(out, ip.x, ip.y, ip.y+ip.x); }
+)");
+  EXPECT_EQ(128*32, index.size().elemCount());
 
-  m(index, skelcl::out(v));
+  skelcl::Matrix<int> m({128, 32});
 
-  EXPECT_EQ(index.size(), v.size());
-  for (size_t i = 0; i < v.size(); ++i) {
-    EXPECT_EQ(i, v[i]);
+  map(index, skelcl::out(m));
+
+  for (size_t y = 0; y < m.size().rowCount(); ++y) {
+    for (size_t x = 0; x < m.size().columnCount(); ++x) {
+      EXPECT_EQ(y+x, m[y][x]);
+    }
   }
 }
 
 TEST_F(IndexMatrixTest, SimpleMap) {
-  skelcl::IndexVector index(1023);
-  skelcl::Map<int(skelcl::Index)> m("int func(Index i) { return i; }");
-  EXPECT_EQ(1023, index.size());
+  skelcl::Map<int(skelcl::IndexPoint)> m("int func(IndexPoint i) { return i.y+i.x; }");
+  
+  skelcl::IndexMatrix index({32, 128});
+  EXPECT_EQ(32*128, index.size().elemCount());
 
-  auto v = m(index);
+  skelcl::Matrix<int> out = m(index);
+  
+  EXPECT_EQ(out.size().rowCount(), index.size().rowCount());
+  EXPECT_EQ(out.size().columnCount(), index.size().columnCount());
 
-  EXPECT_EQ(index.size(), v.size());
-  for (size_t i = 0; i < v.size(); ++i) {
-    EXPECT_EQ(i, v[i]);
+  for (size_t y = 0; y < out.size().rowCount(); ++y) {
+    for (size_t x = 0; x < out.size().columnCount(); ++x) {
+      EXPECT_EQ(y+x, out[y][x]);
+    }
   }
 }
-#endif
-
