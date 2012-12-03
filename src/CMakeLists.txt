@@ -18,6 +18,7 @@ set (SKELCL_SOURCES
       KernelUtil.cpp
       Local.cpp
       Logger.cpp
+      MatrixSize.cpp
       Program.cpp
       Significances.cpp
       SkelCL.cpp

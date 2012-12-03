@@ -310,7 +310,7 @@
 		9EA656F1166398D500904417 /* TempSourceFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TempSourceFile.cpp; sourceTree = "<group>"; };
 		9EA656F2166398D500904417 /* Type.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Type.cpp; sourceTree = "<group>"; };
 		9EA656F3166398D500904417 /* Typedef.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Typedef.cpp; sourceTree = "<group>"; };
-		9EA6570E1663997B00904417 /* libclang.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libclang.dylib; path = ../../../Libraries/llvm/lib/libclang.dylib; sourceTree = "<group>"; };
+		9EA6570E1663997B00904417 /* libclang.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libclang.dylib; path = ../../libraries/ssedit/libraries/libclang/lib/libclang.dylib; sourceTree = "<group>"; };
 		9EA65712166399B200904417 /* printAST.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = printAST.cpp; sourceTree = "<group>"; };
 		9EA65717166399DB00904417 /* printAST */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = printAST; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EA6572616639B0700904417 /* CursorTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CursorTests.cpp; sourceTree = "<group>"; };
@@ -323,7 +323,7 @@
 		9EA6572D16639B0700904417 /* TypedefInfoTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TypedefInfoTests.cpp; sourceTree = "<group>"; };
 		9EA6572E16639B0700904417 /* TypeTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TypeTests.cpp; sourceTree = "<group>"; };
 		9EA6572F16639B0700904417 /* utilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = utilities.h; sourceTree = "<group>"; };
-		9EA6573416639B9900904417 /* CursorTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CursorTests; sourceTree = BUILT_PRODUCTS_DIR; };
+		9EA6573416639B9900904417 /* CursorTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = CursorTests; path = "ssedit - CursorTests"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EA657591663A02C00904417 /* EntityTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = EntityTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EA657641663AA6F00904417 /* libgtest_main.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgtest_main.a; path = ../gtest/build/libgtest_main.a; sourceTree = "<group>"; };
 		9EA657651663AA6F00904417 /* libgtest.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgtest.a; path = ../gtest/build/libgtest.a; sourceTree = "<group>"; };
@@ -1285,6 +1285,7 @@
 					../../libraries/ssedit/libraries/gtest/include,
 					../../libraries/ssedit/include,
 				);
+				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../../libraries/ssedit/libraries/libclang/lib\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -1314,6 +1315,7 @@
 					../../libraries/ssedit/libraries/gtest/include,
 					../../libraries/ssedit/include,
 				);
+				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../../libraries/ssedit/libraries/libclang/lib\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx;
 			};
@@ -1323,10 +1325,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../../Libraries/llvm/lib\"",
-				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -1335,10 +1333,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../../Libraries/llvm/lib\"",
-				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -1346,10 +1340,6 @@
 		9EA6571F166399DB00904417 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../../Libraries/llvm/lib\"",
-				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -1357,10 +1347,6 @@
 		9EA65720166399DB00904417 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../../Libraries/llvm/lib\"",
-				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
