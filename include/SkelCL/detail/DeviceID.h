@@ -31,57 +31,30 @@
  *                                                                           *
  *****************************************************************************/
 
-///
-/// \file SkelCL.cpp
-///
-/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
-///
+#ifndef DEVICE_ID_H
+#define DEVICE_ID_H
 
-#include "SkelCL/SkelCL.h"
-
-#include "SkelCL/detail/DeviceList.h"
-#include "SkelCL/detail/DeviceProperties.h"
-#include "SkelCL/detail/PlatformID.h"
-#include "SkelCL/detail/DeviceID.h"
-#include "SkelCL/detail/Logger.h"
+#include <cstring>
 
 namespace skelcl {
 
-void init(detail::DeviceProperties properites)
-{
-  detail::globalDeviceList.init(std::move(properites));
-}
+namespace detail {
 
-void init(detail::PlatformID pID, detail::DeviceID dID)
-{
-  detail::globalDeviceList.init(pID, dID);
-}
+class DeviceID {
+public:
+  typedef size_t id_type;
 
-detail::DeviceProperties allDevices()
-{
-  return detail::DeviceProperties::allDevices();
-}
+  explicit DeviceID(id_type pid);
 
-detail::DeviceProperties nDevices(size_t n)
-{
-  return detail::DeviceProperties::nDevices(n);
-}
+  id_type id() const;
 
-detail::PlatformID platform(size_t pID)
-{
-  return detail::PlatformID(pID);
-}
+private:
+  const id_type _id;
+};
 
-detail::DeviceID device(size_t dID)
-{
-  return detail::DeviceID(dID);
-}
-
-void terminate()
-{
-  detail::globalDeviceList.clear();
-  LOG_INFO("SkelCL terminating. Freeing all resources.");
-}
+} // namespace detail
 
 } // namespace skelcl
+
+#endif // DEVICE_ID_H
 

@@ -38,6 +38,7 @@
 ///
 
 #include <algorithm>
+#include <stdexcept>
 #include <functional>
 #include <string>
 #include <vector>
@@ -50,7 +51,9 @@
 
 #include "SkelCL/detail/Assert.h"
 #include "SkelCL/detail/Device.h"
+#include "SkelCL/detail/DeviceID.h"
 #include "SkelCL/detail/DeviceProperties.h"
+#include "SkelCL/detail/PlatformID.h"
 #include "SkelCL/detail/Logger.h"
 
 namespace skelcl {
@@ -112,6 +115,40 @@ void DeviceList::init(DeviceProperties properties)
     }
   } catch (cl::Error& err) {
     ABORT_WITH_ERROR(err);
+  }
+  LOG_INFO("Using ", _devices.size(), " OpenCL device(s) in total");
+}
+
+void DeviceList::init(PlatformID pID, DeviceID dID)
+{
+  ASSERT(_devices.empty()); // call only once
+  try {
+    std::vector<cl::Platform> platforms;
+    cl::Platform::get(&platforms);
+    if (platforms.size() <= pID.id()) {
+      throw std::invalid_argument("Given PlatformID is invalid");
+    }
+
+    auto& platform = platforms[pID.id()];
+    
+    std::vector<cl::Device> devices;
+    platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+    if (devices.size() <= dID.id()) {
+      throw std::invalid_argument("Given DeviceID is invalid");
+    }
+
+    auto& device = devices[dID.id()];
+
+    _devices.push_back( std::make_shared<Device>(device,
+                                                 platform,
+                                                 0)
+                      );
+
+  } catch (cl::Error& err) {
+    ABORT_WITH_ERROR(err);
+  } catch (std::invalid_argument& ia) {
+    LOG_ERROR("Invalid arguments provided: ", ia.what());
+    abort();
   }
   LOG_INFO("Using ", _devices.size(), " OpenCL device(s) in total");
 }
