@@ -50,7 +50,7 @@
 class AllPairsTest : public ::testing::Test {
 protected:
     AllPairsTest() {
-        //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+        skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::DebugInfo);
         skelcl::init(skelcl::nDevices(1));
     }
 
@@ -188,3 +188,39 @@ TEST_F(AllPairsTest, ArbitraryMatricesAllPairs) {
         }
     }
 }
+
+/*TEST_F(AllPairsTest, TransferArgErrorAllPairs) {
+    skelcl::Zip<float(float, float)> zip("float func(float x, float y, float a){ return x*y+a; }");
+    skelcl::Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
+    skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
+
+    std::vector<float> tmpleft(4096);
+    for (size_t i = 0; i < tmpleft.size(); ++i)
+      tmpleft[i] = i;
+    EXPECT_EQ(4096, tmpleft.size());
+
+    std::vector<float> tmpright(tmpleft);
+    EXPECT_EQ(4096, tmpright.size());
+
+    skelcl::Matrix<float> left(tmpleft, 64);
+    EXPECT_EQ(64, left.rowCount());
+    EXPECT_EQ(64, left.columnCount());
+
+    skelcl::Matrix<float> right(tmpright, 64);
+    EXPECT_EQ(64, right.rowCount());
+    EXPECT_EQ(64, right.columnCount());
+
+    skelcl::Matrix<float> output = allpairs(left, right, 5.0);
+    EXPECT_EQ(64, output.rowCount());
+    EXPECT_EQ(64, output.columnCount());
+
+    for (size_t i = 0; i < output.rowCount(); ++i) {
+        for (size_t j = 0; j < output.columnCount(); ++j) {
+            float tmp = 0;
+            for (size_t k = 0; k < left.columnCount(); ++k) {
+                tmp += left[i][k] * right[k][j];
+            }
+            EXPECT_EQ(tmp, output[i][j]);
+        }
+    }
+}*/

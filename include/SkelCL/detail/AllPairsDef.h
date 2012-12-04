@@ -206,7 +206,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     ssedit::TempSourceFile zipTemp(_srcZip);
 
     func = zipTemp.findFunction(_funcReduce); ASSERT(func.isValid());
-    zipTemp.commitRename(func, "USR_ZIP");
+    zipTemp.commitRename(func, "TMP_ZIP");
     zipTemp.writeCommittedChanges();
 
     std::ifstream zFile(zipTemp.getFileName());
@@ -229,7 +229,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
       #include "AllPairsKernel.cl"
     );
 
-    //LOG_DEBUG(s);
+    LOG_DEBUG(s);
 
     auto program = detail::Program(s, detail::util::hash("//AllPairs\n"
                                                          + Matrix<Tout>::deviceFunctions()
@@ -239,11 +239,11 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     //if (!program.loadBinary()) {
     //program.transferParameters("USR_REDUCE", 2, "SCL_ALLPAIRS"); // problem: reduce parameter a und zip parameter a
     //program.transferArguments("USR_REDUCE", 2, "SCL_ALLPAIRS"); // index?
-    //program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS");
-    //program.transferArguments("TMP_ZIP", 2, "USR_ZIP");
+    program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS");
+    program.transferArguments("TMP_ZIP", 2, "USR_ZIP");
 
     //program.renameFunction("TMP_REDUCE", "USR_REDUCE");
-    //program.renameFunction("TMP_ZIP", "USR_ZIP");
+    program.renameFunction("TMP_ZIP", "USR_ZIP");
 
     program.adjustTypes<Tleft, Tright, Tout>();
     //}
