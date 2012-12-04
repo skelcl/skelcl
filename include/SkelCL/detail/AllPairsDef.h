@@ -235,7 +235,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
       #include "AllPairsKernel.cl"
     );
 
-    LOG_DEBUG(s);
+    //LOG_DEBUG(s);
 
     auto program = detail::Program(s, detail::util::hash("//AllPairs\n"
                                                          + Matrix<Tout>::deviceFunctions()
