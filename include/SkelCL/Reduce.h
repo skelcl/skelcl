@@ -151,6 +151,10 @@ public:
       return _funcName;
   }
 
+  const std::string id() const {
+      return _id;
+  }
+
 private:
   ///
   /// \brief This struct describes one level of the reduce algorithm

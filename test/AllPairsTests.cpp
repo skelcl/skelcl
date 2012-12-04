@@ -50,7 +50,7 @@
 class AllPairsTest : public ::testing::Test {
 protected:
     AllPairsTest() {
-        skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::DebugInfo);
+        //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::DebugInfo);
         skelcl::init(skelcl::nDevices(1));
     }
 

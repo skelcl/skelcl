@@ -103,6 +103,7 @@ class AllPairs<Tout(Tleft, Tright)> : public detail::Skeleton {
     std::string _srcZip;
     std::string _funcReduce;
     std::string _funcZip;
+    std::string _idReduce;
 };
 
 } // namespace skelcl

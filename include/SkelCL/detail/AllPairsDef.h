@@ -78,7 +78,8 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const 
       _srcReduce(reduce.source()),
       _srcZip(zip.source()),
       _funcReduce(reduce.func()),
-      _funcZip(zip.func())
+      _funcZip(zip.func()),
+      _idReduce(reduce.id())
 {
     LOG_DEBUG("Create new AllPairs object (", this, ")");
 }
@@ -216,6 +217,11 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     // create program
     std::string s(Matrix<Tout>::deviceFunctions());
 
+    // identity
+    s.append("#define SCL_IDENTITY ").append(_idReduce);
+
+    s.append("\n");
+
     // reduce user source
     s.append(rSource);
 
@@ -233,6 +239,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
 
     auto program = detail::Program(s, detail::util::hash("//AllPairs\n"
                                                          + Matrix<Tout>::deviceFunctions()
+                                                         + _idReduce
                                                          + rSource
                                                          + zSource));
     // modify program

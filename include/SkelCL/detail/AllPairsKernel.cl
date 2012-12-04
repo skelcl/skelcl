@@ -66,7 +66,7 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
 
     for (int m = 0; m < SUBTILES; ++m)
         if ((row + m * R < height) && (col < width))
-            P[(row + m * R) * width + col] = 0;
+            P[(row + m * R) * width + col] = SCL_IDENTITY;
 
     while (segment * DS < dimension) {
 
