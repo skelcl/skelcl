@@ -885,7 +885,8 @@ template <typename T>
 std::string Matrix<T>::deviceFunctions()
 {
   return R"(
-#define get(matrix, x, y) matrix[(int)(x * matrix##_col_count + y)]
+#define get(matrix, x, y) matrix[(int)(y * matrix##_col_count + x)]
+#define set(matrix, x, y, value) matrix[(int)(y * matrix##_col_count + x)] = value
 )";
 }
 

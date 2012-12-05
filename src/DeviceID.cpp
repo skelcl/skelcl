@@ -32,110 +32,28 @@
  *****************************************************************************/
  
 ///
-/// \file Util.cpp
+/// DeviceID.cpp
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <iomanip>
-#include <ios>
-#include <sstream>
-#include <string>
-
-#include <cmath>
-#include <cstdlib>
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include <openssl/sha.h>
-#pragma GCC diagnostic pop
-
-#include "SkelCL/detail/Util.h"
+#include "SkelCL/detail/DeviceID.h"
 
 namespace skelcl {
 
 namespace detail {
 
-namespace util {
-
-std::string envVarValue(const std::string& envVar)
+DeviceID::DeviceID(DeviceID::id_type pid)
+  : _id(pid)
 {
-  char* envValue = std::getenv(envVar.c_str());
-  if (envValue != NULL) {
-    return envValue;
-  } else {
-    return "";
-  }
 }
 
-std::string hash(const std::string& string)
+DeviceID::id_type DeviceID::id() const
 {
-  unsigned char raw[20];
-  char* c_str = const_cast<char*>(string.c_str());
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  SHA1(reinterpret_cast<unsigned char*>(c_str), string.length(), raw);
-#pragma GCC diagnostic pop
-  std::ostringstream buffer;
-  for (int i = 0; i < 20; ++i) {
-    buffer << std::hex
-           << std::setw(2)
-           << std::setfill('0')
-           << static_cast<int>( raw[i] );
-  }
-  return buffer.str();
+  return _id;
 }
-
-size_t devideAndRoundUp(size_t i, size_t j)
-{
-  size_t r = i / j;
-  if (i % j != 0) {
-    r++;
-  }
-  return r;
-}
-
-size_t devideAndAlign(size_t i, size_t j, size_t a)
-{
-  size_t x = i / j;
-  if (i % j != 0)
-    ++x;
-  size_t r = x % a;
-  if (r != 0)
-    x = x + (a - r);
-  return x;
-}
-
-size_t ceilToMultipleOf(size_t i, size_t j)
-{
-  size_t r = i % j;
-  if (r == 0)
-   return i;
-  else
-   return i + (j - r);
-}
-
-bool isPowerOfTwo(size_t n)
-{
-  return ((n & (n - 1)) == 0);
-}
-
-int floorPow2(int n)
-{
-  int exp;
-  frexp(static_cast<float>(n), &exp);
-  return 1 << (exp - 1);
-}
-
-int ceilPow2(int n)
-{
-  int exp;
-  frexp(static_cast<float>(n), &exp);
-  return 1 << exp;
-}
-
-} // namespace util
 
 } // namespace detail
 
 } // namespace skelcl
+

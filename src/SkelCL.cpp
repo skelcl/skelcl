@@ -41,6 +41,8 @@
 
 #include "SkelCL/detail/DeviceList.h"
 #include "SkelCL/detail/DeviceProperties.h"
+#include "SkelCL/detail/PlatformID.h"
+#include "SkelCL/detail/DeviceID.h"
 #include "SkelCL/detail/Logger.h"
 
 namespace skelcl {
@@ -48,6 +50,11 @@ namespace skelcl {
 void init(detail::DeviceProperties properites)
 {
   detail::globalDeviceList.init(std::move(properites));
+}
+
+void init(detail::PlatformID pID, detail::DeviceID dID)
+{
+  detail::globalDeviceList.init(pID, dID);
 }
 
 detail::DeviceProperties allDevices()
@@ -58,6 +65,16 @@ detail::DeviceProperties allDevices()
 detail::DeviceProperties nDevices(size_t n)
 {
   return detail::DeviceProperties::nDevices(n);
+}
+
+detail::PlatformID platform(size_t pID)
+{
+  return detail::PlatformID(pID);
+}
+
+detail::DeviceID device(size_t dID)
+{
+  return detail::DeviceID(dID);
 }
 
 void terminate()
