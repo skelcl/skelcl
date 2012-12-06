@@ -189,7 +189,7 @@ TEST_F(AllPairsTest, ArbitraryMatricesAllPairs) {
     }
 }
 
-/*TEST_F(AllPairsTest, TransferArgErrorAllPairs) {
+TEST_F(AllPairsTest, TransferArgErrorAllPairs) {
     skelcl::Zip<float(float, float)> zip("float func(float x, float y, float a){ return x*y+a; }");
     skelcl::Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
     skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
@@ -223,4 +223,4 @@ TEST_F(AllPairsTest, ArbitraryMatricesAllPairs) {
             EXPECT_EQ(tmp, output[i][j]);
         }
     }
-}*/
+}

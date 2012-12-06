@@ -177,6 +177,28 @@
 		D01C2705166D2F6400D28BCE /* MatrixSize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D01C2704166D2F6400D28BCE /* MatrixSize.cpp */; };
 		D06DFA18166D48CD0007FA44 /* DeviceID.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D06DFA17166D48CD0007FA44 /* DeviceID.cpp */; };
 		D06DFA1A166D48D60007FA44 /* PlatformID.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D06DFA19166D48D60007FA44 /* PlatformID.cpp */; };
+		D0F3C9DE16712702002EB507 /* AllPairs.h in Headers */ = {isa = PBXBuildFile; fileRef = D0F3C9DD16712702002EB507 /* AllPairs.h */; };
+		D0F3C9E11671271D002EB507 /* AllPairsDef.h in Headers */ = {isa = PBXBuildFile; fileRef = D0F3C9DF1671271D002EB507 /* AllPairsDef.h */; };
+		D0F3C9E416712736002EB507 /* DeviceID.h in Headers */ = {isa = PBXBuildFile; fileRef = D0F3C9E316712736002EB507 /* DeviceID.h */; };
+		D0F3C9E61671274D002EB507 /* PlatformID.h in Headers */ = {isa = PBXBuildFile; fileRef = D0F3C9E51671274D002EB507 /* PlatformID.h */; };
+		D0F3C9EF16712896002EB507 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658721663AD8D00904417 /* libgtest_main.a */; };
+		D0F3C9F016712896002EB507 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658731663AD8D00904417 /* libgtest.a */; };
+		D0F3C9F116712896002EB507 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
+		D0F3C9F216712896002EB507 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
+		D0F3C9F316712896002EB507 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
+		D0F3C9FA167128B6002EB507 /* AllPairsTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0F3C9E7167127A3002EB507 /* AllPairsTests.cpp */; };
+		D0F3C9FB167128F5002EB507 /* AllPairsTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0F3C9E7167127A3002EB507 /* AllPairsTests.cpp */; };
+		D0F3C9FC167128F5002EB507 /* DeviceSelectionTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA658521663ACEC00904417 /* DeviceSelectionTests.cpp */; };
+		D0F3C9FD167128F5002EB507 /* DevicesTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA658531663ACEC00904417 /* DevicesTests.cpp */; };
+		D0F3C9FE167128F5002EB507 /* DeviceTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA658541663ACEC00904417 /* DeviceTests.cpp */; };
+		D0F3C9FF167128F5002EB507 /* IndexMatrixTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA658561663ACEC00904417 /* IndexMatrixTests.cpp */; };
+		D0F3CA00167128F5002EB507 /* IndexVectorTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA658571663ACEC00904417 /* IndexVectorTests.cpp */; };
+		D0F3CA01167128F5002EB507 /* MapTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA658581663ACEC00904417 /* MapTests.cpp */; };
+		D0F3CA02167128F5002EB507 /* MatrixTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA658591663ACEC00904417 /* MatrixTests.cpp */; };
+		D0F3CA03167128F5002EB507 /* ProgramTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA6585A1663ACEC00904417 /* ProgramTests.cpp */; };
+		D0F3CA04167128F5002EB507 /* ReduceTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA6585B1663ACEC00904417 /* ReduceTests.cpp */; };
+		D0F3CA05167128F5002EB507 /* SHA1Tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA6585C1663ACEC00904417 /* SHA1Tests.cpp */; };
+		D0F3CA06167128F5002EB507 /* VectorTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA6585D1663ACEC00904417 /* VectorTests.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -362,6 +384,13 @@
 			remoteGlobalIDString = 9EA6575C1663A0DB00904417;
 			remoteInfo = gtest;
 		};
+		D0F3C9EB16712896002EB507 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9EA658121663AB8800904417 /* ssedit.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 9EA6575C1663A0DB00904417;
+			remoteInfo = gtest;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -518,6 +547,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
+		D0F3C9F416712896002EB507 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -641,6 +679,13 @@
 		D01C2704166D2F6400D28BCE /* MatrixSize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MatrixSize.cpp; sourceTree = "<group>"; };
 		D06DFA17166D48CD0007FA44 /* DeviceID.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeviceID.cpp; sourceTree = "<group>"; };
 		D06DFA19166D48D60007FA44 /* PlatformID.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PlatformID.cpp; sourceTree = "<group>"; };
+		D0F3C9DD16712702002EB507 /* AllPairs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllPairs.h; sourceTree = "<group>"; };
+		D0F3C9DF1671271D002EB507 /* AllPairsDef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllPairsDef.h; sourceTree = "<group>"; };
+		D0F3C9E01671271D002EB507 /* AllPairsKernel.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = AllPairsKernel.cl; sourceTree = "<group>"; };
+		D0F3C9E316712736002EB507 /* DeviceID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeviceID.h; sourceTree = "<group>"; };
+		D0F3C9E51671274D002EB507 /* PlatformID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlatformID.h; sourceTree = "<group>"; };
+		D0F3C9E7167127A3002EB507 /* AllPairsTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllPairsTests.cpp; sourceTree = "<group>"; };
+		D0F3C9F816712896002EB507 /* skelcl - AllPairsTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "skelcl - AllPairsTests"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -849,6 +894,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D0F3C9EE16712896002EB507 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D0F3C9EF16712896002EB507 /* libgtest_main.a in Frameworks */,
+				D0F3C9F016712896002EB507 /* libgtest.a in Frameworks */,
+				D0F3C9F116712896002EB507 /* libssedit.dylib in Frameworks */,
+				D0F3C9F216712896002EB507 /* libskelcl.dylib in Frameworks */,
+				D0F3C9F316712896002EB507 /* OpenCL.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -885,6 +942,7 @@
 				9E0A911D1664B5B600ACD2B4 /* skelcl - ZipTests */,
 				9E0A91461664B7C300ACD2B4 /* mandelbrot */,
 				9E0A91521664B7C700ACD2B4 /* saxpy */,
+				D0F3C9F816712896002EB507 /* skelcl - AllPairsTests */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -917,6 +975,7 @@
 			isa = PBXGroup;
 			children = (
 				9EA657861663AADB00904417 /* detail */,
+				D0F3C9DD16712702002EB507 /* AllPairs.h */,
 				9EA657AA1663AADB00904417 /* Distributions.h */,
 				9EA657AB1663AADB00904417 /* Index.h */,
 				9EA657AC1663AADB00904417 /* IndexMatrix.h */,
@@ -937,6 +996,8 @@
 		9EA657861663AADB00904417 /* detail */ = {
 			isa = PBXGroup;
 			children = (
+				D0F3C9DF1671271D002EB507 /* AllPairsDef.h */,
+				D0F3C9E01671271D002EB507 /* AllPairsKernel.cl */,
 				9EA657871663AADB00904417 /* Assert.h */,
 				9EA657881663AADB00904417 /* BlockDistribution.h */,
 				9EA657891663AADB00904417 /* BlockDistributionDef.h */,
@@ -945,6 +1006,7 @@
 				9EA6578C1663AADB00904417 /* CopyDistributionDef.h */,
 				9EA6578D1663AADB00904417 /* Device.h */,
 				9EA6578E1663AADB00904417 /* DeviceBuffer.h */,
+				D0F3C9E316712736002EB507 /* DeviceID.h */,
 				9EA6578F1663AADB00904417 /* DeviceList.h */,
 				9EA657901663AADB00904417 /* DeviceProperties.h */,
 				9EA657911663AADB00904417 /* Distribution.h */,
@@ -962,6 +1024,7 @@
 				9EA6579D1663AADB00904417 /* OverlapDistribution.h */,
 				9EA6579E1663AADB00904417 /* OverlapDistributionDef.h */,
 				9EA6579F1663AADB00904417 /* Padding.h */,
+				D0F3C9E51671274D002EB507 /* PlatformID.h */,
 				9EA657A01663AADB00904417 /* Program.h */,
 				9EA657A11663AADB00904417 /* ReduceDef.h */,
 				9EA657A21663AADB00904417 /* ReduceKernel.cl */,
@@ -1038,6 +1101,7 @@
 		9EA658501663ACEC00904417 /* test */ = {
 			isa = PBXGroup;
 			children = (
+				D0F3C9E7167127A3002EB507 /* AllPairsTests.cpp */,
 				9E0A90521663C58000ACD2B4 /* CMakeLists.txt */,
 				9EA658521663ACEC00904417 /* DeviceSelectionTests.cpp */,
 				9EA658531663ACEC00904417 /* DevicesTests.cpp */,
@@ -1158,6 +1222,10 @@
 				9EA657FD1663AADB00904417 /* Source.h in Headers */,
 				9EA657FE1663AADB00904417 /* Vector.h in Headers */,
 				9EA657FF1663AADB00904417 /* Zip.h in Headers */,
+				D0F3C9DE16712702002EB507 /* AllPairs.h in Headers */,
+				D0F3C9E11671271D002EB507 /* AllPairsDef.h in Headers */,
+				D0F3C9E416712736002EB507 /* DeviceID.h in Headers */,
+				D0F3C9E61671274D002EB507 /* PlatformID.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1484,6 +1552,24 @@
 			productReference = 9EA658881663AE9800904417 /* dot_product */;
 			productType = "com.apple.product-type.tool";
 		};
+		D0F3C9E916712896002EB507 /* skelcl - AllPairsTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D0F3C9F516712896002EB507 /* Build configuration list for PBXNativeTarget "skelcl - AllPairsTests" */;
+			buildPhases = (
+				D0F3C9EC16712896002EB507 /* Sources */,
+				D0F3C9EE16712896002EB507 /* Frameworks */,
+				D0F3C9F416712896002EB507 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D0F3C9EA16712896002EB507 /* PBXTargetDependency */,
+			);
+			name = "skelcl - AllPairsTests";
+			productName = DeviceSelectionTests;
+			productReference = D0F3C9F816712896002EB507 /* skelcl - AllPairsTests */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -1516,6 +1602,7 @@
 				9E0A913C1664B7C300ACD2B4 /* mandelbrot */,
 				9E0A91481664B7C700ACD2B4 /* saxpy */,
 				9E0A90341663C27900ACD2B4 /* skelcl - All Tests */,
+				D0F3C9E916712896002EB507 /* skelcl - AllPairsTests */,
 				9EA658631663AD5E00904417 /* skelcl - DeviceSelectionTests */,
 				9E0A90531664B58000ACD2B4 /* skelcl - DevicesTests */,
 				9E0A90641664B58400ACD2B4 /* skelcl - DeviceTests */,
@@ -1626,7 +1713,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D0F3C9FB167128F5002EB507 /* AllPairsTests.cpp in Sources */,
+				D0F3C9FC167128F5002EB507 /* DeviceSelectionTests.cpp in Sources */,
+				D0F3C9FD167128F5002EB507 /* DevicesTests.cpp in Sources */,
+				D0F3C9FE167128F5002EB507 /* DeviceTests.cpp in Sources */,
 				9E0A915C1664BA0D00ACD2B4 /* DistributionTests.cpp in Sources */,
+				D0F3C9FF167128F5002EB507 /* IndexMatrixTests.cpp in Sources */,
+				D0F3CA00167128F5002EB507 /* IndexVectorTests.cpp in Sources */,
+				D0F3CA01167128F5002EB507 /* MapTests.cpp in Sources */,
+				D0F3CA02167128F5002EB507 /* MatrixTests.cpp in Sources */,
+				D0F3CA03167128F5002EB507 /* ProgramTests.cpp in Sources */,
+				D0F3CA04167128F5002EB507 /* ReduceTests.cpp in Sources */,
+				D0F3CA05167128F5002EB507 /* SHA1Tests.cpp in Sources */,
+				D0F3CA06167128F5002EB507 /* VectorTests.cpp in Sources */,
 				9E0A915B1664B9E500ACD2B4 /* ZipTests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1785,6 +1884,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D0F3C9EC16712896002EB507 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D0F3C9FA167128B6002EB507 /* AllPairsTests.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -1857,6 +1964,11 @@
 			isa = PBXTargetDependency;
 			name = gtest;
 			targetProxy = 9EA6586E1663AD6900904417 /* PBXContainerItemProxy */;
+		};
+		D0F3C9EA16712896002EB507 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = gtest;
+			targetProxy = D0F3C9EB16712896002EB507 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2304,6 +2416,28 @@
 			};
 			name = Release;
 		};
+		D0F3C9F616712896002EB507 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../gtest/build\"",
+				);
+				PRODUCT_NAME = "skelcl - AllPairsTests";
+			};
+			name = Debug;
+		};
+		D0F3C9F716712896002EB507 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../gtest/build\"",
+				);
+				PRODUCT_NAME = "skelcl - AllPairsTests";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2474,6 +2608,15 @@
 			buildConfigurations = (
 				9EA658901663AE9800904417 /* Debug */,
 				9EA658911663AE9800904417 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D0F3C9F516712896002EB507 /* Build configuration list for PBXNativeTarget "skelcl - AllPairsTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D0F3C9F616712896002EB507 /* Debug */,
+				D0F3C9F716712896002EB507 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
