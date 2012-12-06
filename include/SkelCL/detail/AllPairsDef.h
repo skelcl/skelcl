@@ -144,6 +144,9 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
                                  detail::util::ceilToMultipleOf(elements[0], local[1]*4)/4}; // 4 SUBTILES
         cl_uint dimension     = {left.columnCount()};
 
+        LOG_DEBUG("dim: ", dimension, " height: ", elements[0], " width: ",elements[1]);
+        LOG_DEBUG("local: ", local[0],",", local[1], " global: ", global[0],",",global[1]);
+
         try {
             cl::Kernel kernel(program.kernel(*devicePtr, "SCL_ALLPAIRS"));
 
@@ -153,9 +156,6 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
             kernel.setArg(3, dimension);   // dimension
             kernel.setArg(4, elements[0]); // height
             kernel.setArg(5, elements[1]); // width
-
-            LOG_DEBUG("dim: ", dimension, " height: ", elements[0], " width: ",elements[1]);
-            LOG_DEBUG("local: ", local[0],",", local[1], " global: ", global[0],",",global[1]);
 
             detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 6,
                                               std::forward<Args>(args)...);

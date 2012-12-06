@@ -133,10 +133,12 @@ TEST_F(AllPairsTest, TransferArgErrorAllPairs) {
 
     std::vector<float> tmpleft(4096);
     for (size_t i = 0; i < tmpleft.size(); ++i)
-      tmpleft[i] = i;
+      tmpleft[i] = i % 100;
     EXPECT_EQ(4096, tmpleft.size());
 
-    std::vector<float> tmpright(tmpleft);
+    std::vector<float> tmpright(4096);
+    for (size_t i = 0; i < tmpright.size(); ++i)
+      tmpright[i] = i % 101;
     EXPECT_EQ(4096, tmpright.size());
 
     skelcl::Matrix<float> left(tmpleft, 64);
@@ -147,7 +149,8 @@ TEST_F(AllPairsTest, TransferArgErrorAllPairs) {
     EXPECT_EQ(64, right.rowCount());
     EXPECT_EQ(64, right.columnCount());
 
-    skelcl::Matrix<float> output = allpairs(left, right, 5.0, 6.0);
+    float a = 5.0; float b = 6.0;
+    skelcl::Matrix<float> output = allpairs(left, right, b, a); // 5.0 -> fehler
     EXPECT_EQ(64, output.rowCount());
     EXPECT_EQ(64, output.columnCount());
 
@@ -155,9 +158,9 @@ TEST_F(AllPairsTest, TransferArgErrorAllPairs) {
         for (size_t j = 0; j < output.columnCount(); ++j) {
             float tmp = 0;
             for (size_t k = 0; k < left.columnCount(); ++k) {
-                tmp += left[i][k] * right[k][j];
+                tmp += (left[i][k] * right[k][j] + a) + b ; // kein a, b -> fehler
             }
-            //EXPECT_EQ(tmp, output[i][j]);
+            EXPECT_EQ(tmp, output[i][j]);
         }
     }
 }
