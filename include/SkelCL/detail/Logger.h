@@ -40,6 +40,7 @@
 #ifndef LOGGER_H_
 #define LOGGER_H_
 
+#include <chrono>
 #include <ostream>
 
 #define __CL_ENABLE_EXCEPTIONS
@@ -78,6 +79,8 @@ public:
   void log(Severity::Type severity, const char* file, int line,
            Args&&... args);
 
+  const std::chrono::high_resolution_clock::time_point& startTimePoint() const;
+
 private:
   void logArgs(std::ostream& output);
 
@@ -87,8 +90,9 @@ private:
   template <typename T, typename... Args>
   void logArgs(std::ostream& output, T value, Args&&... args);
 
-  Severity::Type  _severity;
-  std::ostream*   _output;
+  std::chrono::high_resolution_clock::time_point  _startTime;
+  Severity::Type                                  _severity;
+  std::ostream*                                   _output;
 };
 
 #define LOG(severity, ...)\

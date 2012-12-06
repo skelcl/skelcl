@@ -78,3 +78,10 @@ TEST_F(DeviceSelectionTest, SelectOneGPU) {
   ASSERT_EQ(skelcl::detail::globalDeviceList.size(), 1);
   EXPECT_TRUE(skelcl::detail::globalDeviceList.front()->isType(skelcl::device_type::GPU));
 }
+
+TEST_F(DeviceSelectionTest, SelectFirstDeviceOfFirstPlatform)
+{
+  skelcl::init(skelcl::platform(0), skelcl::device(0));
+  ASSERT_EQ(skelcl::detail::globalDeviceList.size(), 1);
+}
+

@@ -54,7 +54,9 @@ namespace skelcl {
 
 namespace detail {
 
+class DeviceID;
 class DeviceProperties;
+class PlatformID;
 
 class DeviceList {
   typedef std::shared_ptr<Device> device_ptr;
@@ -85,6 +87,8 @@ public:
   bool operator==(const DeviceList& rhs) const;
 
   void init(DeviceProperties properties);
+
+  void init(PlatformID pID, DeviceID dID);
 
   void clear();
 

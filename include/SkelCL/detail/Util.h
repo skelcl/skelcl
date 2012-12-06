@@ -57,13 +57,13 @@ std::string envVarValue(const std::string& envVar);
 
 std::string hash(const std::string& text);
 
-int devideAndRoundUp(int i, int j);
+size_t devideAndRoundUp(size_t i, size_t j);
 
-int devideAndAlign(int i, int j, int a);
+size_t devideAndAlign(size_t i, size_t j, size_t a);
 
-int ceilToMultipleOf(int i, int j);
+size_t ceilToMultipleOf(size_t i, size_t j);
 
-bool isPowerOfTwo(int n);
+bool isPowerOfTwo(size_t n);
 
 int floorPow2(int n);
 

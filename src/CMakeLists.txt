@@ -11,6 +11,7 @@ set (SKELCL_SOURCES
       Assert.cpp
       Device.cpp
       DeviceBuffer.cpp
+      DeviceID.cpp
       DeviceList.cpp
       DeviceProperties.cpp
       Event.cpp
@@ -18,6 +19,8 @@ set (SKELCL_SOURCES
       KernelUtil.cpp
       Local.cpp
       Logger.cpp
+      MatrixSize.cpp
+      PlatformID.cpp
       Program.cpp
       Significances.cpp
       SkelCL.cpp
@@ -50,6 +53,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/DistributionDef.h
       ../include/SkelCL/detail/Device.h
       ../include/SkelCL/detail/DeviceBuffer.h
+      ../include/SkelCL/detail/DeviceID.h
       ../include/SkelCL/detail/DeviceList.h
       ../include/SkelCL/detail/DeviceProperties.h
       ../include/SkelCL/detail/Event.h
@@ -64,6 +68,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/OverlapDistribution.h
       ../include/SkelCL/detail/OverlapDistributionDef.h
       ../include/SkelCL/detail/Padding.h
+      ../include/SkelCL/detail/PlatformID.h
       ../include/SkelCL/detail/Program.h
       ../include/SkelCL/detail/ReduceDef.h
       ../include/SkelCL/detail/ReduceKernel.cl

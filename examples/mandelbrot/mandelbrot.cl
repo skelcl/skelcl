@@ -36,11 +36,6 @@
 ///
 
 typedef struct {
-  unsigned short x;
-  unsigned short y;
-} Position;
-
-typedef struct {
   unsigned char r;
   unsigned char g;
   unsigned char b;
@@ -60,7 +55,8 @@ typedef struct {
 #define ZOOM 27615
 
 
-int iterate(float x, float y) {
+int iterate(float x, float y)
+{
   int n = 0;
   float r = 0.0f, s = 0.0f;
   float rNext = 0.0f;
@@ -74,9 +70,10 @@ int iterate(float x, float y) {
   return n;
 }
 
-Pixel func(Position position,
+Pixel func(IndexPoint position,
            float startX, float startY,
-           float dx, float dy) {
+           float dx, float dy)
+{
   float x = startX + position.x * dx;
   float y = startY + position.y * dy;
 

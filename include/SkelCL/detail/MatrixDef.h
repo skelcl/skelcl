@@ -63,92 +63,6 @@
 
 namespace skelcl {
 
-// MatrixSize
-
-MatrixSize::MatrixSize(size_type rowCount, size_type columnCount)
-  : _rowCount(rowCount), _columnCount(columnCount)
-{
-}
-
-MatrixSize::size_type MatrixSize::elemCount() const
-{
-  return (_rowCount *_columnCount);
-}
-
-MatrixSize::size_type MatrixSize::rowCount() const
-{
-  return _rowCount;
-}
-
-MatrixSize::size_type MatrixSize::columnCount() const
-{
-  return _columnCount;
-}
-
-bool MatrixSize::operator==(const MatrixSize& rhs) const
-{
-  return (   (_rowCount    == rhs._rowCount)
-          && (_columnCount == rhs._columnCount) );
-}
-
-bool MatrixSize::operator!=(const MatrixSize& rhs) const
-{
-  return !this->operator==(rhs);
-}
-
-bool MatrixSize::operator>(const MatrixSize& rhs) const
-{
-  if (_columnCount == rhs._columnCount) {
-    if (_rowCount > rhs._rowCount)
-      return true;
-  } else if (_columnCount > rhs._columnCount) {
-    if (_rowCount >= rhs._rowCount)
-      return true;
-  }
-
-  return false;
-}
-
-bool MatrixSize::operator<(const MatrixSize& rhs) const
-{
-  if (_columnCount == rhs._columnCount) {
-    if (_rowCount < rhs._rowCount)
-      return true;
-  } else if (_columnCount < rhs._columnCount) {
-    if (_rowCount <= rhs._rowCount)
-      return true;
-  }
-
-  return false;
-}
-
-bool MatrixSize::operator>=(const MatrixSize& rhs) const
-{
-  if (_columnCount == rhs._columnCount) {
-    if (_rowCount >= rhs._rowCount)
-      return true;
-  } else if (_columnCount > rhs._columnCount) {
-    if (_rowCount >= rhs._rowCount)
-      return true;
-  }
-
-  return false;
-}
-
-bool MatrixSize::operator<=(const MatrixSize& rhs) const
-{
-  if (_columnCount == rhs._columnCount) {
-    if (_rowCount <= rhs._rowCount)
-      return true;
-  } else if (_columnCount < rhs._columnCount) {
-    if (_rowCount <= rhs._rowCount)
-      return true;
-  }
-
-  return false;
-}
-
-// Matrix
 
 template <typename T>
 Matrix<T>::Matrix()
@@ -885,7 +799,8 @@ template <typename T>
 std::string Matrix<T>::deviceFunctions()
 {
   return R"(
-#define get(matrix, x, y) matrix[(int)(x * matrix##_col_count + y)]
+#define get(matrix, x, y) matrix[(int)(y * matrix##_col_count + x)]
+#define set(matrix, x, y, value) matrix[(int)(y * matrix##_col_count + x)] = value
 )";
 }
 

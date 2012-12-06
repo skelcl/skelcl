@@ -30,112 +30,31 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
-///
-/// \file Util.cpp
-///
-/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
-///
 
-#include <iomanip>
-#include <ios>
-#include <sstream>
-#include <string>
+#ifndef PLATFORM_ID_H_
+#define PLATFORM_ID_H_
 
-#include <cmath>
-#include <cstdlib>
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include <openssl/sha.h>
-#pragma GCC diagnostic pop
-
-#include "SkelCL/detail/Util.h"
+#include <cstring>
 
 namespace skelcl {
 
 namespace detail {
 
-namespace util {
+class PlatformID {
+public:
+  typedef size_t id_type;
 
-std::string envVarValue(const std::string& envVar)
-{
-  char* envValue = std::getenv(envVar.c_str());
-  if (envValue != NULL) {
-    return envValue;
-  } else {
-    return "";
-  }
-}
+  explicit PlatformID(id_type pid);
 
-std::string hash(const std::string& string)
-{
-  unsigned char raw[20];
-  char* c_str = const_cast<char*>(string.c_str());
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  SHA1(reinterpret_cast<unsigned char*>(c_str), string.length(), raw);
-#pragma GCC diagnostic pop
-  std::ostringstream buffer;
-  for (int i = 0; i < 20; ++i) {
-    buffer << std::hex
-           << std::setw(2)
-           << std::setfill('0')
-           << static_cast<int>( raw[i] );
-  }
-  return buffer.str();
-}
+  id_type id() const;
 
-size_t devideAndRoundUp(size_t i, size_t j)
-{
-  size_t r = i / j;
-  if (i % j != 0) {
-    r++;
-  }
-  return r;
-}
-
-size_t devideAndAlign(size_t i, size_t j, size_t a)
-{
-  size_t x = i / j;
-  if (i % j != 0)
-    ++x;
-  size_t r = x % a;
-  if (r != 0)
-    x = x + (a - r);
-  return x;
-}
-
-size_t ceilToMultipleOf(size_t i, size_t j)
-{
-  size_t r = i % j;
-  if (r == 0)
-   return i;
-  else
-   return i + (j - r);
-}
-
-bool isPowerOfTwo(size_t n)
-{
-  return ((n & (n - 1)) == 0);
-}
-
-int floorPow2(int n)
-{
-  int exp;
-  frexp(static_cast<float>(n), &exp);
-  return 1 << (exp - 1);
-}
-
-int ceilPow2(int n)
-{
-  int exp;
-  frexp(static_cast<float>(n), &exp);
-  return 1 << exp;
-}
-
-} // namespace util
+private:
+  const id_type _id;
+};
 
 } // namespace detail
 
 } // namespace skelcl
+
+#endif // PLATFORM_ID_H_
+

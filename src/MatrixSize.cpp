@@ -30,112 +30,100 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
+
 ///
-/// \file Util.cpp
+/// \file SkelCL.cpp
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <iomanip>
-#include <ios>
-#include <sstream>
-#include <string>
-
-#include <cmath>
-#include <cstdlib>
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include <openssl/sha.h>
-#pragma GCC diagnostic pop
-
-#include "SkelCL/detail/Util.h"
+#include "SkelCL/Matrix.h"
 
 namespace skelcl {
 
-namespace detail {
+// MatrixSize
 
-namespace util {
-
-std::string envVarValue(const std::string& envVar)
+MatrixSize::MatrixSize(size_type rowCount, size_type columnCount)
+: _rowCount(rowCount), _columnCount(columnCount)
 {
-  char* envValue = std::getenv(envVar.c_str());
-  if (envValue != NULL) {
-    return envValue;
-  } else {
-    return "";
+}
+
+MatrixSize::size_type MatrixSize::elemCount() const
+{
+  return (_rowCount *_columnCount);
+}
+
+MatrixSize::size_type MatrixSize::rowCount() const
+{
+  return _rowCount;
+}
+
+MatrixSize::size_type MatrixSize::columnCount() const
+{
+  return _columnCount;
+}
+
+bool MatrixSize::operator==(const MatrixSize& rhs) const
+{
+  return (   (_rowCount    == rhs._rowCount)
+          && (_columnCount == rhs._columnCount) );
+}
+
+bool MatrixSize::operator!=(const MatrixSize& rhs) const
+{
+  return !this->operator==(rhs);
+}
+
+bool MatrixSize::operator>(const MatrixSize& rhs) const
+{
+  if (_columnCount == rhs._columnCount) {
+    if (_rowCount > rhs._rowCount)
+      return true;
+  } else if (_columnCount > rhs._columnCount) {
+    if (_rowCount >= rhs._rowCount)
+      return true;
   }
+  
+  return false;
 }
 
-std::string hash(const std::string& string)
+bool MatrixSize::operator<(const MatrixSize& rhs) const
 {
-  unsigned char raw[20];
-  char* c_str = const_cast<char*>(string.c_str());
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  SHA1(reinterpret_cast<unsigned char*>(c_str), string.length(), raw);
-#pragma GCC diagnostic pop
-  std::ostringstream buffer;
-  for (int i = 0; i < 20; ++i) {
-    buffer << std::hex
-           << std::setw(2)
-           << std::setfill('0')
-           << static_cast<int>( raw[i] );
+  if (_columnCount == rhs._columnCount) {
+    if (_rowCount < rhs._rowCount)
+      return true;
+  } else if (_columnCount < rhs._columnCount) {
+    if (_rowCount <= rhs._rowCount)
+      return true;
   }
-  return buffer.str();
+  
+  return false;
 }
 
-size_t devideAndRoundUp(size_t i, size_t j)
+bool MatrixSize::operator>=(const MatrixSize& rhs) const
 {
-  size_t r = i / j;
-  if (i % j != 0) {
-    r++;
+  if (_columnCount == rhs._columnCount) {
+    if (_rowCount >= rhs._rowCount)
+      return true;
+  } else if (_columnCount > rhs._columnCount) {
+    if (_rowCount >= rhs._rowCount)
+      return true;
   }
-  return r;
+  
+  return false;
 }
 
-size_t devideAndAlign(size_t i, size_t j, size_t a)
+bool MatrixSize::operator<=(const MatrixSize& rhs) const
 {
-  size_t x = i / j;
-  if (i % j != 0)
-    ++x;
-  size_t r = x % a;
-  if (r != 0)
-    x = x + (a - r);
-  return x;
+  if (_columnCount == rhs._columnCount) {
+    if (_rowCount <= rhs._rowCount)
+      return true;
+  } else if (_columnCount < rhs._columnCount) {
+    if (_rowCount <= rhs._rowCount)
+      return true;
+  }
+  
+  return false;
 }
-
-size_t ceilToMultipleOf(size_t i, size_t j)
-{
-  size_t r = i % j;
-  if (r == 0)
-   return i;
-  else
-   return i + (j - r);
-}
-
-bool isPowerOfTwo(size_t n)
-{
-  return ((n & (n - 1)) == 0);
-}
-
-int floorPow2(int n)
-{
-  int exp;
-  frexp(static_cast<float>(n), &exp);
-  return 1 << (exp - 1);
-}
-
-int ceilPow2(int n)
-{
-  int exp;
-  frexp(static_cast<float>(n), &exp);
-  return 1 << exp;
-}
-
-} // namespace util
-
-} // namespace detail
 
 } // namespace skelcl

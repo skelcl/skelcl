@@ -64,7 +64,8 @@ namespace logger_impl {
 
 std::string getErrorString(cl_int err);
 
-std::string formatHeader(Logger::Severity::Type severity,
+std::string formatHeader(const Logger& logger,
+                         Logger::Severity::Type severity,
                          const char*    file,
                          const int      line);
 
@@ -76,7 +77,7 @@ void Logger::log(Severity::Type severity,
                  Args&&... args)
 {
   if (severity <= _severity) {
-    *_output << logger_impl::formatHeader(severity, file, line);
+    *_output << logger_impl::formatHeader(*this, severity, file, line);
     logArgs(*_output, std::forward<Args>(args)...);
   }
 }

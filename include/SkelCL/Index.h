@@ -91,7 +91,10 @@ public:
   indexPoint_type get() const;
 
   const Index& rowID() const;
+  const Index& y() const;
+
   const Index& columnID() const;
+  const Index& x() const;
 
 private:
   indexPoint_type _indexPoint;
