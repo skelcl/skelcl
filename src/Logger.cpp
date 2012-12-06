@@ -38,6 +38,7 @@
 ///
 
 #include <chrono>
+#include <functional>
 #include <ostream>
 
 #include "SkelCL/detail/Logger.h"
@@ -49,17 +50,19 @@ namespace detail {
 Logger defaultLogger;
 
 Logger::Logger()
+  : _startTime(std::chrono::high_resolution_clock::now()),
 #ifdef NDEBUG
-  : _severity(Severity::Info)  // set default level to Info in release
+   _severity(Severity::Info)  // set default level to Info in release
 #else
-  : _severity(Severity::Debug) // ... and Debug in debug builds
+   _severity(Severity::Debug) // ... and Debug in debug builds
 #endif
   , _output(&std::clog)
 {
 }
 
 Logger::Logger(std::ostream& output, Severity::Type severity)
-  : _severity(severity), _output(&output)
+  : _startTime(std::chrono::high_resolution_clock::now()),
+    _severity(severity), _output(&output)
 {
 }
 
@@ -73,27 +76,17 @@ void Logger::setLoggingLevel(Severity::Type severity)
   _severity = severity;
 }
 
+const std::chrono::high_resolution_clock::time_point& Logger::startTimePoint() const
+{
+  return _startTime;
+}
+
 void Logger::logArgs(std::ostream& output)
 {
   output << std::endl;
 }
 
 namespace logger_impl {
-
-std::ostream& printTimePoint(std::ostream& stream)
-{
-  auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
-  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
-
-  char prevFill = stream.fill('0'); // save fill char
-  stream << std::right
-         // extract just the 3 last digits of the seconds
-         << std::setw(3) << (ms / 1000) % 1000 << "."
-         // extract just the milliseconds
-         << std::setw(3) << ms % 1000          << "s";
-  stream.fill(prevFill); // reset fill char
-  return stream;
-}
 
 std::string severityToString(Logger::Severity::Type severity)
 {
@@ -221,7 +214,8 @@ std::string getErrorString(cl_int err)
   return ostr.str();
 }
 
-std::string formatHeader(Logger::Severity::Type severity,
+std::string formatHeader(const Logger& logger,
+                         Logger::Severity::Type severity,
                          const char*    file,
                          const int      line)
 {
@@ -231,11 +225,22 @@ std::string formatHeader(Logger::Severity::Type severity,
          << std::setw(16) << std::setfill('=')
          << getFileName(file) << ":"
          << std::setw( 4) << std::setfill(' ') << std::left
-         << line << " "
+         << line << " ";
+
 #ifndef NPROFILING
-         << printTimePoint << " "
+  auto sinceStart = std::chrono::high_resolution_clock::now() - logger.startTimePoint();
+  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(sinceStart).count();
+  char prevFill = stream.fill('0'); // save fill char
+  stream << std::right
+         // extract just the 3 last digits of the seconds
+         << std::setw(3) << (ms / 1000) % 1000 << "."
+         // extract just the milliseconds
+         << std::setw(3) << ms % 1000          << "s";
+  stream.fill(prevFill); // reset fill char
+  stream << " ";
 #endif
-         << std::setw( 5) << std::left
+
+  stream << std::setw( 5) << std::left
          << severityToString(severity)
          << "] ";
 
