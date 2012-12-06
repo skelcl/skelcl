@@ -57,12 +57,12 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
     __local SCL_TYPE_0 Ml[R][DS];
     __local SCL_TYPE_1 Nl[DS][C];
 
-    const uint   col = get_global_id(0);
-    const uint l_col = get_local_id(0);
-    const uint   row = get_global_id(1) % R + (get_global_id(1) / R) * R * SUBTILES;
-    const uint l_row = get_local_id(1);
+    const unsigned int   col = get_global_id(0);
+    const unsigned int l_col = get_local_id(0);
+    const unsigned int   row = get_global_id(1) % R + (get_global_id(1) / R) * R * SUBTILES;
+    const unsigned int l_row = get_local_id(1);
 
-    uint segment = 0;
+    unsigned int segment = 0;
 
     for (int m = 0; m < SUBTILES; ++m)
         if ((row + m * R < height) && (col < width))

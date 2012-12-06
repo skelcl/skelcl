@@ -157,7 +157,8 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
             LOG_DEBUG("dim: ", dimension, " height: ", elements[0], " width: ",elements[1]);
             LOG_DEBUG("local: ", local[0],",", local[1], " global: ", global[0],",",global[1]);
 
-            detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 6, std::forward<Args>(args)...);
+            detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 6,
+                                              std::forward<Args>(args)...);
 
 
             // keep buffers and arguments alive / mark them as in use
@@ -168,9 +169,7 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
                                                            std::forward<Args>(args)...);
 
             // after finishing the kernel invoke this function ...
-            auto invokeAfter =  [=] () {
-                                          (void)keepAlive;
-                                       };
+            auto invokeAfter =  [=] () { (void)keepAlive; };
 
             devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]), cl::NDRange(local[0], local[1]),
                                cl::NullRange, // offset
@@ -196,7 +195,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     ssedit::TempSourceFile reduceTemp(_srcReduce);
 
     auto func = reduceTemp.findFunction(_funcReduce); ASSERT(func.isValid());
-    reduceTemp.commitRename(func, "USR_REDUCE");
+    reduceTemp.commitRename(func, "TMP_REDUCE");
     reduceTemp.writeCommittedChanges();
 
     std::ifstream rFile(reduceTemp.getFileName());
@@ -244,12 +243,12 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
                                                          + zSource));
     // modify program
     //if (!program.loadBinary()) {
-    //program.transferParameters("USR_REDUCE", 2, "SCL_ALLPAIRS"); // problem: reduce parameter a und zip parameter a
-    //program.transferArguments("USR_REDUCE", 2, "SCL_ALLPAIRS"); // index?
-    program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS");
+    program.transferParameters("TMP_REDUCE", 2, "SCL_ALLPAIRS"); // problem: reduce parameter a und zip parameter a
+    program.transferArguments("TMP_REDUCE", 2, "USR_REDUCE");
+    program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS"); // reihenfolge? erst args von reduce dann zip?
     program.transferArguments("TMP_ZIP", 2, "USR_ZIP");
 
-    //program.renameFunction("TMP_REDUCE", "USR_REDUCE");
+    program.renameFunction("TMP_REDUCE", "USR_REDUCE");
     program.renameFunction("TMP_ZIP", "USR_ZIP");
 
     program.adjustTypes<Tleft, Tright, Tout>();
