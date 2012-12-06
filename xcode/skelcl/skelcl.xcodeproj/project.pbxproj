@@ -1491,7 +1491,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0450;
-				ORGANIZATIONNAME = "Sebastian Albers";
+				ORGANIZATIONNAME = "University of Münster";
 			};
 			buildConfigurationList = 9EA6576F1663AAC200904417 /* Build configuration list for PBXProject "skelcl" */;
 			compatibilityVersion = "Xcode 3.2";
