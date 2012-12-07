@@ -44,12 +44,12 @@
 #include <string>
 
 #include "detail/Skeleton.h"
+#include "detail/Program.h"
 
 namespace skelcl {
 
 class Source;
 template <typename> class Out;
-namespace detail { class Program; }
 
 template<typename> class Zip;
 
@@ -195,22 +195,10 @@ private:
   ///
   template <template <typename> class C,
             typename... Args>
-  void execute(const detail::Program& program,
-               C<Tout>& output,
+  void execute(C<Tout>& output,
                const C<Tleft>& left,
                const C<Tright>& right,
                Args&&... args);
-  ///
-  /// \brief Create a program object from the provided source string
-  ///
-  /// \param source The source code defined by the application developer
-  ///
-  /// \return A program object customized with the source code defined by
-  ///         the application developer, as well as the zip skeleton's
-  ///         kernel implementation
-  ///
-  template <template <typename> class C>
-  detail::Program createAndBuildProgram() const;
 
   ///
   /// \brief Prepares the inputs for kernel execution
@@ -237,9 +225,20 @@ private:
   void prepareOutput(C<Tout>& output,
                      const C<Tleft>& left,
                      const C<Tright>& right);
+  
+  ///
+  /// \brief Create a program object from the provided source string
+  ///
+  /// \param source The source code defined by the application developer
+  ///
+  /// \return A program object customized with the source code defined by
+  ///         the application developer, as well as the zip skeleton's
+  ///         kernel implementation
+  ///
+  detail::Program createAndBuildProgram(const std::string& source,
+                                        const std::string& funcName) const;
 
-  std::string _source;
-  std::string _funcName;
+  const detail::Program _program;
 };
 
 template<typename Tleft,
@@ -259,20 +258,18 @@ public:
 private:
   template <template <typename> class C,
             typename... Args>
-  void execute(const detail::Program& program,
-               const C<Tleft>& left,
+  void execute(const C<Tleft>& left,
                const C<Tright>& right,
                Args&&... args);
-  template <template <typename> class C>
-  detail::Program createAndBuildProgram() const;
 
   template <template <typename> class C>
   void prepareInput(const C<Tleft>& left,
                     const C<Tright>& right);
 
+  detail::Program createAndBuildProgram(const std::string& source,
+                                        const std::string& funcName) const;
 
-  std::string _source;
-  std::string _funcName;
+  const detail::Program _program;
 };
 
 // TODO: when template aliases are available:

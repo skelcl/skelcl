@@ -70,8 +70,7 @@ template<typename Tleft, typename Tright, typename Tout>
 Zip<Tout(Tleft, Tright)>::Zip(const Source& source,
                               const std::string& funcName)
   : detail::Skeleton(),
-    _source(source),
-    _funcName(funcName)
+    _program(createAndBuildProgram(source, funcName))
 {
   LOG_DEBUG_INFO("Create new Zip object (", this, ")");
 }
@@ -98,15 +97,13 @@ C<Tout>& Zip<Tout(Tleft, Tright)>::operator()(Out< C<Tout> > output,
 {
   ASSERT(left.size() <= right.size());
 
-  auto program = createAndBuildProgram<C>();
-
   prepareInput(left, right);
 
   prepareAdditionalInput(std::forward<Args>(args)...);
 
   prepareOutput(output.container(), left, right);
 
-  execute(program, output.container(), left, right, std::forward<Args>(args)...);
+  execute(output.container(), left, right, std::forward<Args>(args)...);
 
   updateModifiedStatus(output, std::forward<Args>(args)...);
 
@@ -116,8 +113,7 @@ C<Tout>& Zip<Tout(Tleft, Tright)>::operator()(Out< C<Tout> > output,
 template <typename Tleft, typename Tright, typename Tout>
 template <template <typename> class C,
           typename... Args>
-void Zip<Tout(Tleft, Tright)>::execute(const detail::Program& program,
-                                       C<Tout>& output,
+void Zip<Tout(Tleft, Tright)>::execute(C<Tout>& output,
                                        const C<Tleft>& left,
                                        const C<Tright>& right,
                                        Args&&... args)
@@ -137,7 +133,7 @@ void Zip<Tout(Tleft, Tright)>::execute(const detail::Program& program,
     cl_uint global    = detail::util::ceilToMultipleOf(elements, local);
 
     try {
-      cl::Kernel kernel(program.kernel(*devicePtr, "SCL_ZIP"));
+      cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_ZIP"));
 
       kernel.setArg(0, leftBuffer.clBuffer());
       kernel.setArg(1, rightBuffer.clBuffer());
@@ -171,18 +167,23 @@ void Zip<Tout(Tleft, Tright)>::execute(const detail::Program& program,
 }
 
 template<typename Tleft, typename Tright, typename Tout>
-template<template <typename> class C>
-detail::Program Zip<Tout(Tleft, Tright)>::createAndBuildProgram() const
+detail::Program
+  Zip<Tout(Tleft, Tright)>::createAndBuildProgram(const std::string& source,
+                                                  const std::string& funcName) const
 {
-  ASSERT_MESSAGE(!_source.empty(),
+  ASSERT_MESSAGE(!source.empty(),
     "Tried to create program with empty user source.");
 
   // create program
-
-  std::string s(C<Tleft>::deviceFunctions());
-  // first: user defined source
-  s.append(_source);
-  // second: append skeleton implementation source
+  // first: device specific functions
+  std::string deviceFunctions;
+  deviceFunctions.append(Vector<Tleft>::deviceFunctions());
+  deviceFunctions.append(Matrix<Tleft>::deviceFunctions());
+  
+  std::string s(deviceFunctions);
+  // second: user defined source
+  s.append(source);
+  // last: append skeleton implementation source
   s.append(R"(
 
 typedef float SCL_TYPE_0;
@@ -202,16 +203,16 @@ __kernel void SCL_ZIP(
 )");
   auto program = detail::Program(s,
                                  detail::util::hash("//Zip\n"
-                                                    + C<Tleft>::deviceFunctions()
-                                                    + _source) );
+                                                    + deviceFunctions
+                                                    + source) );
 
   // modify program
   if (!program.loadBinary()) {
     // append parameters from user function to kernel
-    program.transferParameters(_funcName, 2, "SCL_ZIP");
-    program.transferArguments(_funcName, 2, "SCL_FUNC");
+    program.transferParameters(funcName, 2, "SCL_ZIP");
+    program.transferArguments(funcName, 2, "SCL_FUNC");
     // rename user function
-    program.renameFunction(_funcName, "SCL_FUNC");
+    program.renameFunction(funcName, "SCL_FUNC");
     // rename typedefs
     program.adjustTypes<Tleft, Tright, Tout>();
   }
@@ -275,8 +276,7 @@ template<typename Tleft, typename Tright>
 Zip<void(Tleft, Tright)>::Zip(const Source& source,
                               const std::string& funcName)
   : detail::Skeleton(),
-    _source(source),
-    _funcName(funcName)
+    _program(createAndBuildProgram(source, funcName))
 {
   LOG_DEBUG_INFO("Create new Zip<void(Tleft, Tright)> object (", this, ")");
 }
@@ -290,13 +290,11 @@ void Zip<void(Tleft, Tright)>::operator()(const C<Tleft>& left,
 {
   ASSERT(left.size() <= right.size());
 
-  auto program = createAndBuildProgram<C>();
-
   prepareInput(left, right);
 
   prepareAdditionalInput(std::forward<Args>(args)...);
 
-  execute(program, left, right, std::forward<Args>(args)...);
+  execute(left, right, std::forward<Args>(args)...);
 
   updateModifiedStatus(std::forward<Args>(args)...);
 }
@@ -304,8 +302,7 @@ void Zip<void(Tleft, Tright)>::operator()(const C<Tleft>& left,
 template <typename Tleft, typename Tright>
 template <template <typename> class C,
           typename... Args>
-void Zip<void(Tleft, Tright)>::execute(const detail::Program& program,
-                                       const C<Tleft>& left,
+void Zip<void(Tleft, Tright)>::execute(const C<Tleft>& left,
                                        const C<Tright>& right,
                                        Args&&... args)
 {
@@ -323,7 +320,7 @@ void Zip<void(Tleft, Tright)>::execute(const detail::Program& program,
     cl_uint global    = detail::util::ceilToMultipleOf(elements, local);
 
     try {
-      cl::Kernel kernel(program.kernel(*devicePtr, "SCL_ZIP"));
+      cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_ZIP"));
 
       kernel.setArg(0, leftBuffer.clBuffer());
       kernel.setArg(1, rightBuffer.clBuffer());
@@ -355,18 +352,23 @@ void Zip<void(Tleft, Tright)>::execute(const detail::Program& program,
 }
 
 template<typename Tleft, typename Tright>
-template<template <typename> class C>
-detail::Program Zip<void(Tleft, Tright)>::createAndBuildProgram() const
+detail::Program
+  Zip<void(Tleft, Tright)>::createAndBuildProgram(const std::string& source,
+                                                  const std::string& funcName) const
 {
-  ASSERT_MESSAGE(!_source.empty(),
+  ASSERT_MESSAGE(!source.empty(),
     "Tried to create program with empty user source.");
 
   // create program
+  // first: device specific functions
+  std::string deviceFunctions;
+  deviceFunctions.append(Vector<Tleft>::deviceFunctions());
+  deviceFunctions.append(Matrix<Tleft>::deviceFunctions());
 
-  std::string s(C<Tleft>::deviceFunctions());
-  // first: user defined source
-  s.append(_source);
-  // second: append skeleton implementation source
+  std::string s(deviceFunctions);
+  // second: user defined source
+  s.append(source);
+  // last: append skeleton implementation source
   s.append(R"(
 
 typedef float SCL_TYPE_0;
@@ -383,16 +385,16 @@ __kernel void SCL_ZIP(
 )");
   auto program = detail::Program(s,
                                  detail::util::hash("//Zip\n"
-                                                    + C<Tleft>::deviceFunctions()
-                                                    + _source) );
+                                                    + deviceFunctions
+                                                    + source) );
 
   // modify program
   if (!program.loadBinary()) {
     // append parameters from user function to kernel
-    program.transferParameters(_funcName, 2, "SCL_ZIP");
-    program.transferArguments(_funcName, 2, "SCL_FUNC");
+    program.transferParameters(funcName, 2, "SCL_ZIP");
+    program.transferArguments(funcName, 2, "SCL_FUNC");
     // rename user function
-    program.renameFunction(_funcName, "SCL_FUNC");
+    program.renameFunction(funcName, "SCL_FUNC");
     // rename typedefs
     program.adjustTypes<Tleft, Tright>();
   }
