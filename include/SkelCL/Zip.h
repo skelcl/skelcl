@@ -242,6 +242,39 @@ private:
   std::string _funcName;
 };
 
+template<typename Tleft,
+         typename Tright>
+class Zip<void(Tleft, Tright)> : public detail::Skeleton {
+public:
+  Zip<void(Tleft, Tright)>(const Source& source,
+                           const std::string& funcName
+                                              = std::string("func"));
+
+  template <template <typename> class C,
+            typename... Args>
+  void operator()(const C<Tleft>& left,
+                  const C<Tright>& right,
+                  Args&&... args);
+
+private:
+  template <template <typename> class C,
+            typename... Args>
+  void execute(const detail::Program& program,
+               const C<Tleft>& left,
+               const C<Tright>& right,
+               Args&&... args);
+  template <template <typename> class C>
+  detail::Program createAndBuildProgram() const;
+
+  template <template <typename> class C>
+  void prepareInput(const C<Tleft>& left,
+                    const C<Tright>& right);
+
+
+  std::string _source;
+  std::string _funcName;
+};
+
 // TODO: when template aliases are available:
 // template<typename T>
 // using Zip = Zip<T(T, T)>;

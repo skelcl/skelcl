@@ -268,6 +268,167 @@ void Zip<Tout(Tleft, Tright)>::prepareOutput(C<Tout>& output,
   output.createDeviceBuffers();
 }
 
+
+// ## Zip<Tleft, Tright, void> #####################################
+
+template<typename Tleft, typename Tright>
+Zip<void(Tleft, Tright)>::Zip(const Source& source,
+                              const std::string& funcName)
+  : detail::Skeleton(),
+    _source(source),
+    _funcName(funcName)
+{
+  LOG_DEBUG_INFO("Create new Zip<void(Tleft, Tright)> object (", this, ")");
+}
+
+template <typename Tleft, typename Tright>
+template <template <typename> class C,
+          typename... Args>
+void Zip<void(Tleft, Tright)>::operator()(const C<Tleft>& left,
+                                          const C<Tright>& right,
+                                          Args&&... args)
+{
+  ASSERT(left.size() <= right.size());
+
+  auto program = createAndBuildProgram<C>();
+
+  prepareInput(left, right);
+
+  prepareAdditionalInput(std::forward<Args>(args)...);
+
+  execute(program, left, right, std::forward<Args>(args)...);
+
+  updateModifiedStatus(std::forward<Args>(args)...);
+}
+
+template <typename Tleft, typename Tright>
+template <template <typename> class C,
+          typename... Args>
+void Zip<void(Tleft, Tright)>::execute(const detail::Program& program,
+                                       const C<Tleft>& left,
+                                       const C<Tright>& right,
+                                       Args&&... args)
+{
+  ASSERT( left.distribution().isValid() && right.distribution().isValid() );
+  ASSERT( left.distribution()           == right.distribution()           );
+  ASSERT( left.size() >= right.size() );
+
+  for (auto& devicePtr : left.distribution().devices()) {
+    auto& leftBuffer  = left.deviceBuffer(*devicePtr);
+    auto& rightBuffer = right.deviceBuffer(*devicePtr);
+
+    cl_uint elements  = leftBuffer.size();
+    cl_uint local     = std::min(this->workGroupSize(),
+                                 devicePtr->maxWorkGroupSize());
+    cl_uint global    = detail::util::ceilToMultipleOf(elements, local);
+
+    try {
+      cl::Kernel kernel(program.kernel(*devicePtr, "SCL_ZIP"));
+
+      kernel.setArg(0, leftBuffer.clBuffer());
+      kernel.setArg(1, rightBuffer.clBuffer());
+      kernel.setArg(2, elements);
+
+      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 3,
+                                        std::forward<Args>(args)...);
+
+      auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
+                                                     leftBuffer.clBuffer(),
+                                                     rightBuffer.clBuffer(),
+                                                     std::forward<Args>(args)...);
+
+      // after finishing the kernel invoke this function ...
+      auto invokeAfter = [=] () {
+                                  (void)keepAlive;
+                                };
+
+      devicePtr->enqueue(kernel,
+                         cl::NDRange(global), cl::NDRange(local),
+                         cl::NullRange, // offset
+                         invokeAfter);
+
+    } catch (cl::Error& err) {
+      ABORT_WITH_ERROR(err);
+    }
+  }
+  LOG_DEBUG_INFO("Zip kernel started");
+}
+
+template<typename Tleft, typename Tright>
+template<template <typename> class C>
+detail::Program Zip<void(Tleft, Tright)>::createAndBuildProgram() const
+{
+  ASSERT_MESSAGE(!_source.empty(),
+    "Tried to create program with empty user source.");
+
+  // create program
+
+  std::string s(C<Tleft>::deviceFunctions());
+  // first: user defined source
+  s.append(_source);
+  // second: append skeleton implementation source
+  s.append(R"(
+
+typedef float SCL_TYPE_0;
+typedef float SCL_TYPE_1;
+
+__kernel void SCL_ZIP(
+    const __global SCL_TYPE_0*  SCL_LEFT,
+    const __global SCL_TYPE_1*  SCL_RIGHT,
+    const unsigned int          SCL_ELEMENTS ) {
+  if (get_global_id(0) < SCL_ELEMENTS) {
+    SCL_FUNC(SCL_LEFT[get_global_id(0)], SCL_RIGHT[get_global_id(0)]);
+  }
+}
+)");
+  auto program = detail::Program(s,
+                                 detail::util::hash("//Zip\n"
+                                                    + C<Tleft>::deviceFunctions()
+                                                    + _source) );
+
+  // modify program
+  if (!program.loadBinary()) {
+    // append parameters from user function to kernel
+    program.transferParameters(_funcName, 2, "SCL_ZIP");
+    program.transferArguments(_funcName, 2, "SCL_FUNC");
+    // rename user function
+    program.renameFunction(_funcName, "SCL_FUNC");
+    // rename typedefs
+    program.adjustTypes<Tleft, Tright>();
+  }
+  // build program
+  program.build();
+
+  return program;
+}
+
+template <typename Tleft, typename Tright>
+template <template <typename> class C>
+void Zip<void(Tleft, Tright)>::prepareInput(const C<Tleft>& left,
+                                            const C<Tright>& right)
+{
+  // set default distribution if required
+  if (   !left.distribution().isValid()
+      && !right.distribution().isValid() ) {
+    left.setDistribution(detail::BlockDistribution< C<Tleft> >());
+    right.setDistribution(detail::BlockDistribution< C<Tright> >());
+  } else if (!left.distribution().isValid()) {
+    left.setDistribution(right.distribution());
+  } else if (!right.distribution().isValid()) {
+    right.setDistribution(left.distribution());
+  } else if ( left.distribution() != right.distribution() ) {
+    // TODO: find a better solution
+    left.setDistribution(detail::BlockDistribution< C<Tleft> >());
+    right.setDistribution(detail::BlockDistribution< C<Tright> >());
+  }
+  // create buffers if required
+  left.createDeviceBuffers();
+  right.createDeviceBuffers();
+  // copy data to devices
+  left.startUpload();
+  right.startUpload();
+}
+
 } // namespace skelcl
 
 #endif // ZIP_DEF_H_
