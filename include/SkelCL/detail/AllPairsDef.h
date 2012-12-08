@@ -112,6 +112,8 @@ Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > outp
 
     prepareInput(left, right);
 
+    prepareAdditionalInput(std::forward<Args>(args)...);
+
     prepareOutput(output.container(), left, right);
 
     execute(program, output.container(), left, right, std::forward<Args>(args)...);
@@ -191,7 +193,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     ASSERT_MESSAGE( !_srcZip.empty(),
                     "Tried to create program with empty user zip source." );
 
-    // _srcReduce: replace func by USR_REDUCE
+    // _srcReduce: replace func by ZMP_REDUCE
     ssedit::TempSourceFile reduceTemp(_srcReduce);
 
     auto func = reduceTemp.findFunction(_funcReduce); ASSERT(func.isValid());
@@ -202,7 +204,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     std::string rSource( (std::istreambuf_iterator<char>(rFile)),
                          std::istreambuf_iterator<char>() );
 
-    // _srcZip: replace func by USR_ZIP
+    // _srcZip: replace func by TMP_ZIP
     ssedit::TempSourceFile zipTemp(_srcZip);
 
     func = zipTemp.findFunction(_funcReduce); ASSERT(func.isValid());
@@ -242,17 +244,17 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
                                                          + rSource
                                                          + zSource));
     // modify program
-    //if (!program.loadBinary()) {
-    program.transferParameters("TMP_REDUCE", 2, "SCL_ALLPAIRS"); // problem: reduce parameter a und zip parameter a
-    program.transferArguments("TMP_REDUCE", 2, "USR_REDUCE");
-    program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS"); // reihenfolge? erst args von reduce dann zip?
-    program.transferArguments("TMP_ZIP", 2, "USR_ZIP");
+    if (!program.loadBinary()) {
+        program.transferParameters("TMP_REDUCE", 2, "SCL_ALLPAIRS"); // problem: reduce parameter a und zip parameter a
+        program.transferArguments("TMP_REDUCE", 2, "USR_REDUCE");
+        program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS"); // reihenfolge? erst args von reduce dann zip?
+        program.transferArguments("TMP_ZIP", 2, "USR_ZIP");
 
-    program.renameFunction("TMP_REDUCE", "USR_REDUCE");
-    program.renameFunction("TMP_ZIP", "USR_ZIP");
+        program.renameFunction("TMP_REDUCE", "USR_REDUCE");
+        program.renameFunction("TMP_ZIP", "USR_ZIP");
 
-    program.adjustTypes<Tleft, Tright, Tout>();
-    //}
+        program.adjustTypes<Tleft, Tright, Tout>();
+    }
 
     program.build();
 
@@ -265,8 +267,33 @@ void AllPairs<Tout(Tleft, Tright)>::prepareInput(const Matrix<Tleft>& left,
                                                  const Matrix<Tright>& right)
 {
     // set distributions
-    left.setDistribution(detail::BlockDistribution< Matrix<Tleft> >()); // some rows of matrix
-    right.setDistribution(detail::CopyDistribution< Matrix<Tright> >()); // whole matrix
+    if (!left.distribution().isValid() && !right.distribution().isValid()) { // left + right not valid
+        left.setDistribution(detail::BlockDistribution< Matrix<Tleft> >());
+        right.setDistribution(detail::CopyDistribution< Matrix<Tright> >());
+    } else if (!left.distribution().isValid()) { // only left not valid
+        if (right.distribution() == detail::CopyDistribution< Matrix<Tright> >()) // right copy -> left block
+            left.setDistribution(detail::BlockDistribution< Matrix<Tleft> >());
+        else if (right.distribution() == detail::SingleDistribution< Matrix<Tright> >()) // right single -> left single
+            left.setDistribution(detail::SingleDistribution< Matrix<Tleft> >());
+        else { // right block -> left block + change right to copy TODO: good idea?
+            left.setDistribution(detail::BlockDistribution< Matrix<Tleft> >());
+            right.setDistribution(detail::CopyDistribution< Matrix<Tright> >());
+        }
+    } else if (!right.distribution().isValid()) { // only right not valid
+        if (left.distribution() == detail::BlockDistribution< Matrix<Tleft> >()) // left block -> right copy
+            right.setDistribution(detail::CopyDistribution< Matrix<Tright> >());
+        else if (left.distribution() == detail::CopyDistribution< Matrix<Tleft> >())
+            right.setDistribution(detail::CopyDistribution< Matrix<Tright> >());
+        else if (left.distribution() == detail::SingleDistribution< Matrix<Tleft> >())
+            right.setDistribution(detail::SingleDistribution< Matrix<Tright> >());
+        else
+            ASSERT_MESSAGE(false, "if check only valid for single, copy and block distribution. new distribution added?");
+    } else if (left.distribution() != detail::BlockDistribution< Matrix<Tleft> >() &&
+               right.distribution() != detail::CopyDistribution< Matrix<Tright> >()) {
+        // TODO
+        left.setDistribution(detail::BlockDistribution< Matrix<Tleft> >());
+        right.setDistribution(detail::CopyDistribution< Matrix<Tright> >());
+    }
 
     // create buffers if required
     left.createDeviceBuffers();
