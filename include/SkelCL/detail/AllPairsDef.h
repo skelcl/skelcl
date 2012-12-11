@@ -266,33 +266,57 @@ template<typename Tleft, typename Tright, typename Tout>
 void AllPairs<Tout(Tleft, Tright)>::prepareInput(const Matrix<Tleft>& left,
                                                  const Matrix<Tright>& right)
 {
+    bool isLeftCopy    = (dynamic_cast<detail::CopyDistribution< Matrix<Tleft> >*>(&left.distribution())     != nullptr);
+    bool isLeftSingle  = (dynamic_cast<detail::SingleDistribution< Matrix<Tleft> >*>(&left.distribution())   != nullptr);
+    bool isLeftBlock   = (dynamic_cast<detail::BlockDistribution< Matrix<Tleft> >*>(&left.distribution())    != nullptr);
+
+    bool isRightCopy   = (dynamic_cast<detail::CopyDistribution< Matrix<Tright> >*>(&right.distribution())   != nullptr);
+    bool isRightSingle = (dynamic_cast<detail::SingleDistribution< Matrix<Tright> >*>(&right.distribution()) != nullptr);
+    bool isRightBlock  = (dynamic_cast<detail::BlockDistribution< Matrix<Tright> >*>(&right.distribution())  != nullptr);
+
     // set distributions
-    if (!left.distribution().isValid() && !right.distribution().isValid()) { // left + right not valid
+
+    // left and right not valid
+    if (!left.distribution().isValid() && !right.distribution().isValid()) {
         left.setDistribution(detail::BlockDistribution< Matrix<Tleft> >());
         right.setDistribution(detail::CopyDistribution< Matrix<Tright> >());
-    } else if (!left.distribution().isValid()) { // only left not valid
-        if (right.distribution() == detail::CopyDistribution< Matrix<Tright> >()) // right copy -> left block
+
+    // only left not valid
+    } else if (!left.distribution().isValid()) {
+        if (isRightCopy) // right copy -> left block
             left.setDistribution(detail::BlockDistribution< Matrix<Tleft> >());
-        else if (right.distribution() == detail::SingleDistribution< Matrix<Tright> >()) // right single -> left single
+        else if (isRightSingle) // right single -> left single
             left.setDistribution(detail::SingleDistribution< Matrix<Tleft> >());
-        else { // right block -> left block + change right to copy TODO: good idea?
+        else if (isRightBlock) { // right block -> left block + change right to copy
             left.setDistribution(detail::BlockDistribution< Matrix<Tleft> >());
             right.setDistribution(detail::CopyDistribution< Matrix<Tright> >());
         }
-    } else if (!right.distribution().isValid()) { // only right not valid
-        if (left.distribution() == detail::BlockDistribution< Matrix<Tleft> >()) // left block -> right copy
+        else
+            ASSERT_MESSAGE(false, "if check only valid for single, copy and block distribution. new distribution added?");
+
+    // only right not valid
+    } else if (!right.distribution().isValid()) {
+        if (isLeftBlock) // left block -> right copy
             right.setDistribution(detail::CopyDistribution< Matrix<Tright> >());
-        else if (left.distribution() == detail::CopyDistribution< Matrix<Tleft> >())
+        else if (isLeftCopy) // left copy -> right copy
             right.setDistribution(detail::CopyDistribution< Matrix<Tright> >());
-        else if (left.distribution() == detail::SingleDistribution< Matrix<Tleft> >())
+        else if (isLeftSingle) // left single -> right single
             right.setDistribution(detail::SingleDistribution< Matrix<Tright> >());
         else
             ASSERT_MESSAGE(false, "if check only valid for single, copy and block distribution. new distribution added?");
-    } else if (left.distribution() != detail::BlockDistribution< Matrix<Tleft> >() &&
-               right.distribution() != detail::CopyDistribution< Matrix<Tright> >()) {
-        // TODO
-        left.setDistribution(detail::BlockDistribution< Matrix<Tleft> >());
-        right.setDistribution(detail::CopyDistribution< Matrix<Tright> >());
+
+    // both valid
+    } else {
+        if (isLeftCopy && isRightSingle)
+            left.setDistribution(detail::SingleDistribution< Matrix<Tleft> >()); // single okay?
+        else if (isLeftBlock && isRightSingle)
+            right.setDistribution(detail::CopyDistribution< Matrix<Tright> >());
+        else if (isLeftSingle && isRightBlock)
+            right.setDistribution(detail::SingleDistribution< Matrix<Tright> >()); // single okay?
+        else if (isLeftCopy && isRightBlock)
+            right.setDistribution(detail::CopyDistribution< Matrix<Tright> >());
+        else if (isLeftBlock && isRightBlock)
+            right.setDistribution(detail::CopyDistribution< Matrix<Tright> >());
     }
 
     // create buffers if required

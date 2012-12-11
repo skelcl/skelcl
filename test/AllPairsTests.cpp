@@ -126,6 +126,7 @@ void testAllPairsWithMatrices(const unsigned int height, const unsigned int dim,
     }
 }
 
+// Test additional arguments
 TEST_F(AllPairsTest, TransferArgErrorAllPairs) {
     skelcl::Zip<float(float, float)> zip("float func(float x, float y, float a){ return x*y+a; }");
     skelcl::Reduce<float(float)> reduce("float func(float x, float y, float b){ return x+y+b; }");
@@ -149,8 +150,8 @@ TEST_F(AllPairsTest, TransferArgErrorAllPairs) {
     EXPECT_EQ(64, right.rowCount());
     EXPECT_EQ(64, right.columnCount());
 
-    float a = 5.0; float b = 6.0;
-    skelcl::Matrix<float> output = allpairs(left, right, b, a); // 5.0 -> fehler
+    float a = 5.0f; float b = 6.0f;
+    skelcl::Matrix<float> output = allpairs(left, right, b, a);
     EXPECT_EQ(64, output.rowCount());
     EXPECT_EQ(64, output.columnCount());
 
@@ -158,7 +159,7 @@ TEST_F(AllPairsTest, TransferArgErrorAllPairs) {
         for (size_t j = 0; j < output.columnCount(); ++j) {
             float tmp = 0;
             for (size_t k = 0; k < left.columnCount(); ++k) {
-                tmp += (left[i][k] * right[k][j] + a) + b ; // kein a, b -> fehler
+                tmp += (left[i][k] * right[k][j] + a) + b;
             }
             EXPECT_EQ(tmp, output[i][j]);
         }
