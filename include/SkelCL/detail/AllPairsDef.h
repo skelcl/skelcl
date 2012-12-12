@@ -135,7 +135,7 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
     ASSERT( left.distribution().isValid() && right.distribution().isValid() );
     ASSERT( output.rowCount() == left.rowCount() && output.columnCount() == right.columnCount() );
 
-    for (auto& devicePtr : left.distribution().devices()) { // ab hier neu
+    for (auto& devicePtr : left.distribution().devices()) {
         auto& outputBuffer = output.deviceBuffer(*devicePtr);
         auto& leftBuffer   = left.deviceBuffer(*devicePtr);
         auto& rightBuffer  = right.deviceBuffer(*devicePtr);
@@ -193,7 +193,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     ASSERT_MESSAGE( !_srcZip.empty(),
                     "Tried to create program with empty user zip source." );
 
-    // _srcReduce: replace func by ZMP_REDUCE
+    // _srcReduce: replace func by TMP_REDUCE
     ssedit::TempSourceFile reduceTemp(_srcReduce);
 
     auto func = reduceTemp.findFunction(_funcReduce); ASSERT(func.isValid());
@@ -235,8 +235,6 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
     s.append(
       #include "AllPairsKernel.cl"
     );
-
-    //LOG_DEBUG(s);
 
     auto program = detail::Program(s, detail::util::hash("//AllPairs\n"
                                                          + Matrix<Tout>::deviceFunctions()
@@ -338,8 +336,8 @@ void AllPairs<Tout(Tleft, Tright)>::prepareOutput(Matrix<Tout>& output,
     if (output.rowCount() != left.rowCount() || output.columnCount() != right.columnCount())
         output.resize(typename Matrix<Tout>::size_type(left.rowCount(), right.columnCount()));
 
-    // set distribution
-    output.setDistribution(detail::BlockDistribution< Matrix<Tout> >());
+    // adopt distribution from left input
+    output.setDistribution(left.distribution()); // richtiger typ (Tout)?
 
     //create buffers if required
     output.createDeviceBuffers();
