@@ -43,6 +43,7 @@
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/AllPairs.h>
+#include <SkelCL/AllPairs2.h>
 #include <SkelCL/Zip.h>
 #include <SkelCL/Reduce.h>
 #include <SkelCL/detail/Logger.h>
@@ -62,24 +63,24 @@ protected:
 };
 
 // Tests Constructor
-TEST_F(AllPairsTest, CreateAllPairsWithZipAndReduce) {
+TEST_F(AllPairsTest, ConstructorWithZipAndReduce) {
     skelcl::Zip<float(float, float)> zip("float func(float x, float y){ return x*y; }");
     skelcl::Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
     skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
 }
 
 // Tests kernel with matrixmultiplication of two 64x64 matrices
-TEST_F(AllPairsTest, SquareMatrices64x64AllPairs) {
+TEST_F(AllPairsTest, SquareMatrices64x64) {
     testAllPairsWithMatrices(64, 64, 64);
 }
 
 // Tests kernel with matrixmultiplication with one 32x128 matrix and one 128x32 matrix
-TEST_F(AllPairsTest, NoSquareMatrices32x128SimpleAllPairs) {
+TEST_F(AllPairsTest, NoSquareMatrices32x128Simple) {
     testAllPairsWithMatrices(32, 128, 32);
 }
 
 // Tests kernel with matrixmultiplication with two arbitrary matrices
-TEST_F(AllPairsTest, ArbitraryMatricesAllPairs) {
+TEST_F(AllPairsTest, ArbitraryMatrices) {
     testAllPairsWithMatrices(100, 2, 60);
 }
 
@@ -127,7 +128,7 @@ void testAllPairsWithMatrices(const unsigned int height, const unsigned int dim,
 }
 
 // Test additional arguments
-TEST_F(AllPairsTest, TransferArgErrorAllPairs) {
+TEST_F(AllPairsTest, AdditionalArguments) {
     skelcl::Zip<float(float, float)> zip("float func(float x, float y, float a){ return x*y+a; }");
     skelcl::Reduce<float(float)> reduce("float func(float x, float y, float b){ return x+y+b; }");
     skelcl::AllPairs<float(float, float)> allpairs(reduce, zip);
@@ -160,6 +161,48 @@ TEST_F(AllPairsTest, TransferArgErrorAllPairs) {
             float tmp = 0;
             for (size_t k = 0; k < left.columnCount(); ++k) {
                 tmp += (left[i][k] * right[k][j] + a) + b;
+            }
+            EXPECT_EQ(tmp, output[i][j]);
+        }
+    }
+}
+
+// Tests alternative kernel-constructor
+TEST_F(AllPairsTest, AlternativeKernelConstructor) {
+    skelcl::AllPairs2<float(float, float)> allpairs("float func(float* r, float* c, const unsigned int dim) {float res=0; for (int i=0; i<dim; ++i) {res+=r[i]*c[i];} return res;");
+}
+
+// Tests alternative kernel
+TEST_F(AllPairsTest, AlternativeKernel) {
+    skelcl::AllPairs2<float(float, float)> allpairs("float func(float* r, float* c, const unsigned int dim) {float res=0; for (int i=0; i<dim; ++i) {res+=r[i]*c[i];} return res;}");
+
+    std::vector<float> tmpleft(4096);
+    for (size_t i = 0; i < tmpleft.size(); ++i)
+      tmpleft[i] = i % 100;
+    EXPECT_EQ(4096, tmpleft.size());
+
+    std::vector<float> tmpright(4096);
+    for (size_t i = 0; i < tmpright.size(); ++i)
+      tmpright[i] = i % 101;
+    EXPECT_EQ(4096, tmpright.size());
+
+    skelcl::Matrix<float> left(tmpleft, 64);
+    EXPECT_EQ(64, left.rowCount());
+    EXPECT_EQ(64, left.columnCount());
+
+    skelcl::Matrix<float> right(tmpright, 64);
+    EXPECT_EQ(64, right.rowCount());
+    EXPECT_EQ(64, right.columnCount());
+
+    skelcl::Matrix<float> output = allpairs(left, right);
+    EXPECT_EQ(64, output.rowCount());
+    EXPECT_EQ(64, output.columnCount());
+
+    for (size_t i = 0; i < output.rowCount(); ++i) {
+        for (size_t j = 0; j < output.columnCount(); ++j) {
+            float tmp = 0;
+            for (size_t k = 0; k < left.columnCount(); ++k) {
+                tmp += (left[i][k] * right[k][j]);
             }
             EXPECT_EQ(tmp, output[i][j]);
         }
