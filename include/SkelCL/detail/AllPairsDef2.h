@@ -191,6 +191,25 @@ detail::Program AllPairs2<Tout(Tleft, Tright)>::createAndBuildProgram() const
     // create program
     std::string s(Matrix<Tout>::deviceFunctions());
 
+    s.append("\n");
+
+    s.append("typedef float SCL_TYPE_0;\n");
+    s.append("typedef float SCL_TYPE_1;\n");
+    s.append("typedef float SCL_TYPE_2;\n");
+
+    s.append(R"(
+typedef struct {
+    const __global SCL_TYPE_0* data;
+    unsigned int width;
+    unsigned int dimension;
+    unsigned int row;
+    unsigned int column;
+} matrix_t;
+
+SCL_TYPE_0 getElementFromRow(matrix_t*, const unsigned int);
+SCL_TYPE_0 getElementFromColumn(matrix_t*, const unsigned int);
+)");
+
     // user source
     s.append(_srcUser);
 

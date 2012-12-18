@@ -39,9 +39,13 @@
  
 R"(
 
-typedef float SCL_TYPE_0;
-typedef float SCL_TYPE_1;
-typedef float SCL_TYPE_2;
+SCL_TYPE_0 getElementFromRow(matrix_t *matrix, const unsigned int element_id) {
+    return matrix->data[(matrix->row) * matrix->dimension + element_id];
+}
+
+SCL_TYPE_0 getElementFromColumn(matrix_t *matrix, const unsigned int element_id) {
+    return matrix->data[element_id * (matrix->width) + matrix->column];
+}
 
 __kernel void SCL_ALLPAIRS2(const __global SCL_TYPE_0* M,
                             const __global SCL_TYPE_1* N,
@@ -50,21 +54,25 @@ __kernel void SCL_ALLPAIRS2(const __global SCL_TYPE_0* M,
                             const unsigned int height,
                             const unsigned int width) {
 
-    SCL_TYPE_1 Ng[64];
-    SCL_TYPE_0 Mg[64];
-
     const unsigned int col = get_global_id(0);
     const unsigned int row = get_global_id(1);
 
-    if (col < width) {
-        for (unsigned int i = 0; i < dimension; ++i) {
-            Ng[i] = N[i * width + col];
-            Mg[i] = M[row * width + i];
-        }
-    }
+    matrix_t Mm;
+    Mm.data = M;
+    Mm.width = width;
+    Mm.dimension = dimension;
+    Mm.row = row;
+    Mm.column = col;
+
+    matrix_t Nm;
+    Nm.data = N;
+    Nm.width = width;
+    Nm.dimension = dimension;
+    Nm.row = row;
+    Nm.column = col;
 
     if (row < height && col < width) {
-        P[row * width + col] = USR_FUNC(Mg, Ng, dimension);
+        P[row * width + col] = USR_FUNC(&Mm, &Nm, dimension);
     }
 }
 )"
