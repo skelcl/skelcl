@@ -39,11 +39,11 @@
  
 R"(
 
-SCL_TYPE_0 getElementFromRow(matrix_t *matrix, const unsigned int element_id) {
+SCL_TYPE_0 getElementFromRow(lmatrix_t *matrix, const unsigned int element_id) {
     return matrix->data[(matrix->row) * matrix->dimension + element_id];
 }
 
-SCL_TYPE_0 getElementFromColumn(matrix_t *matrix, const unsigned int element_id) {
+SCL_TYPE_1 getElementFromColumn(rmatrix_t *matrix, const unsigned int element_id) {
     return matrix->data[element_id * (matrix->width) + matrix->column];
 }
 
@@ -57,18 +57,14 @@ __kernel void SCL_ALLPAIRS2(const __global SCL_TYPE_0* M,
     const unsigned int col = get_global_id(0);
     const unsigned int row = get_global_id(1);
 
-    matrix_t Mm;
+    lmatrix_t Mm;
     Mm.data = M;
-    Mm.width = width;
     Mm.dimension = dimension;
     Mm.row = row;
-    Mm.column = col;
 
-    matrix_t Nm;
+    rmatrix_t Nm;
     Nm.data = N;
     Nm.width = width;
-    Nm.dimension = dimension;
-    Nm.row = row;
     Nm.column = col;
 
     if (row < height && col < width) {

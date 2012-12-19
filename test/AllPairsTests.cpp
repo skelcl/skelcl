@@ -169,12 +169,16 @@ TEST_F(AllPairsTest, AdditionalArguments) {
 
 // Tests alternative kernel-constructor
 TEST_F(AllPairsTest, AlternativeKernelConstructor) {
-    skelcl::AllPairs2<float(float, float)> allpairs("float func(float* r, float* c, const unsigned int dim) {float res=0; for (int i=0; i<dim; ++i) {res+=r[i]*c[i];} return res;");
+    skelcl::AllPairs2<float(float, float)> allpairs("float func(lmatrix_t *row, rmatrix_t *col, const unsigned int dim){return 1;}");
 }
 
 // Tests alternative kernel
 TEST_F(AllPairsTest, AlternativeKernel) {
-    skelcl::AllPairs2<float(float, float)> allpairs("float func(matrix_t *row, matrix_t *col, const unsigned int dim){float res=0; for (int i=0; i<dim;++i){res+=getElementFromRow(row, i)*getElementFromColumn(col, i);} return res;}");
+    skelcl::AllPairs2<float(float, float)> allpairs("float func(lmatrix_t *row, rmatrix_t *col, const unsigned int dim) {" \
+                                                    "float res = 0;" \
+                                                    "for (int i = 0; i < dim; ++i) {" \
+                                                    "  res += getElementFromRow(row, i) * getElementFromColumn(col, i); }" \
+                                                    "return res; }");
 
     std::vector<float> tmpleft(4096);
     for (size_t i = 0; i < tmpleft.size(); ++i)
