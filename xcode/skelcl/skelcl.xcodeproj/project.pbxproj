@@ -177,6 +177,7 @@
 		D01C2705166D2F6400D28BCE /* MatrixSize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D01C2704166D2F6400D28BCE /* MatrixSize.cpp */; };
 		D06DFA18166D48CD0007FA44 /* DeviceID.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D06DFA17166D48CD0007FA44 /* DeviceID.cpp */; };
 		D06DFA1A166D48D60007FA44 /* PlatformID.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D06DFA19166D48D60007FA44 /* PlatformID.cpp */; };
+		D0F3033F1682333400F3DA90 /* Map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0F3033E1682333400F3DA90 /* Map.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -641,6 +642,7 @@
 		D01C2704166D2F6400D28BCE /* MatrixSize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MatrixSize.cpp; sourceTree = "<group>"; };
 		D06DFA17166D48CD0007FA44 /* DeviceID.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeviceID.cpp; sourceTree = "<group>"; };
 		D06DFA19166D48D60007FA44 /* PlatformID.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PlatformID.cpp; sourceTree = "<group>"; };
+		D0F3033E1682333400F3DA90 /* Map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Map.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -991,6 +993,7 @@
 				9EA657C01663AADB00904417 /* KernelUtil.cpp */,
 				9EA657C11663AADB00904417 /* Local.cpp */,
 				9EA657C21663AADB00904417 /* Logger.cpp */,
+				D0F3033E1682333400F3DA90 /* Map.cpp */,
 				D01C2704166D2F6400D28BCE /* MatrixSize.cpp */,
 				D06DFA19166D48D60007FA44 /* PlatformID.cpp */,
 				9EA657C31663AADB00904417 /* Program.cpp */,
@@ -1766,6 +1769,7 @@
 				D01C2705166D2F6400D28BCE /* MatrixSize.cpp in Sources */,
 				D06DFA18166D48CD0007FA44 /* DeviceID.cpp in Sources */,
 				D06DFA1A166D48D60007FA44 /* PlatformID.cpp in Sources */,
+				D0F3033F1682333400F3DA90 /* Map.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

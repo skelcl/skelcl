@@ -19,6 +19,7 @@ set (SKELCL_SOURCES
       KernelUtil.cpp
       Local.cpp
       Logger.cpp
+      Map.cpp
       MatrixSize.cpp
       PlatformID.cpp
       Program.cpp
