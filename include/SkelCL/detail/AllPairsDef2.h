@@ -141,7 +141,7 @@ void AllPairs2<Tout(Tleft, Tright)>::execute(const detail::Program& program,
         cl_uint local[2]      = {16, 16};
         cl_uint global[2]     = {detail::util::ceilToMultipleOf(elements[1], local[0]),
                                  detail::util::ceilToMultipleOf(elements[0], local[1])};
-        cl_uint dimension     = {left.columnCount()};
+        cl_uint dimension     = left.columnCount();
 
         LOG_DEBUG("dim: ", dimension, " height: ", elements[0], " width: ",elements[1]);
         LOG_DEBUG("local: ", local[0],",", local[1], " global: ", global[0],",",global[1]);
@@ -191,6 +191,7 @@ detail::Program AllPairs2<Tout(Tleft, Tright)>::createAndBuildProgram() const
     // create program
     std::string s(Matrix<Tout>::deviceFunctions());
 
+    // helper structs and functions
     s.append(R"(
 typedef float SCL_TYPE_0;
 typedef float SCL_TYPE_1;
@@ -208,8 +209,13 @@ typedef struct {
     unsigned int column;
 } rmatrix_t;
 
-SCL_TYPE_0 getElementFromRow(lmatrix_t*, const unsigned int);
-SCL_TYPE_1 getElementFromColumn(rmatrix_t*, const unsigned int);
+SCL_TYPE_0 getElementFromRow(lmatrix_t *matrix, const unsigned int element_id) {
+    return matrix->data[(matrix->row) * matrix->dimension + element_id];
+}
+
+SCL_TYPE_1 getElementFromColumn(rmatrix_t *matrix, const unsigned int element_id) {
+    return matrix->data[element_id * (matrix->width) + matrix->column];
+}
 
 )");
 

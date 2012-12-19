@@ -144,7 +144,7 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
         cl_uint local[2]      = {32, 8}; // C, R
         cl_uint global[2]     = {detail::util::ceilToMultipleOf(elements[1], local[0]),
                                  detail::util::ceilToMultipleOf(elements[0], local[1]*4)/4}; // 4 SUBTILES
-        cl_uint dimension     = {left.columnCount()};
+        cl_uint dimension     = left.columnCount();
 
         LOG_DEBUG("dim: ", dimension, " height: ", elements[0], " width: ",elements[1]);
         LOG_DEBUG("local: ", local[0],",", local[1], " global: ", global[0],",",global[1]);
