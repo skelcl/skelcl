@@ -146,8 +146,8 @@ DeviceBuffer& DeviceBuffer::operator=(DeviceBuffer&& rhs)
   rhs._size     = 0;
   rhs._elemSize = 0;
   rhs._buffer   = cl::Buffer();
-  LOG_DEBUG_INFO("Move assignment to DeviceBuffer object (", this, ") now with ",
-                 getInfo());
+  LOG_DEBUG_INFO("Move assignment to DeviceBuffer object (", this,
+                 ") now with ", getInfo());
   return *this;
 }
 

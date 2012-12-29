@@ -65,7 +65,8 @@ Significances::Significances(size_t deviceCount)
 #ifndef NDEBUG // in debug build only (to prevent unused variable warning)
   const value_type zero     = 0.0;
   const value_type epsilon  = static_cast<value_type>(1.0e-10);
-  ASSERT( std::accumulate( _values.cbegin(), _values.cend(), zero ) - one < epsilon );
+  ASSERT(   std::accumulate( _values.cbegin(), _values.cend(), zero )
+          - one < epsilon );
 #endif
 }
 
@@ -76,7 +77,8 @@ Significances::Significances(std::initializer_list<value_type> significances)
   const value_type zero     = 0.0;
   const value_type one      = 1.0;
   const value_type epsilon  = static_cast<value_type>(1.0e-10);
-  ASSERT( std::accumulate( _values.cbegin(), _values.cend(), zero ) - one < epsilon );
+  ASSERT(   std::accumulate( _values.cbegin(), _values.cend(), zero )
+          - one < epsilon );
 #endif
 }
 
@@ -85,14 +87,16 @@ bool Significances::operator==(const Significances& rhs) const
   return _values == rhs._values;
 }
 
-void Significances::setSignificances(std::initializer_list<value_type> significances)
+void Significances::setSignificances(std::initializer_list<value_type>
+                                          significances)
 {
   _values.assign( significances.begin(), significances.end() );
 #ifndef NDEBUG // in debug build only (to prevent unused variable warning)
   const value_type zero     = 0.0;
   const value_type one      = 1.0;
   const value_type epsilon  = static_cast<value_type>(1.0e-10);
-  ASSERT( std::accumulate( _values.cbegin(), _values.cend(), zero ) - one < epsilon );
+  ASSERT(   std::accumulate( _values.cbegin(), _values.cend(), zero )
+          - one < epsilon );
 #endif
 }
 

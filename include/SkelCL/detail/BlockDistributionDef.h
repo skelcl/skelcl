@@ -47,39 +47,39 @@ namespace skelcl {
 namespace detail {
 
 template <template <typename> class C, typename T>
-BlockDistribution< C<T> >::BlockDistribution(const DeviceList& deviceList)
-  : Distribution< C<T> >(deviceList), _significances(deviceList.size())
+BlockDistribution<C<T>>::BlockDistribution(const DeviceList& deviceList)
+  : Distribution<C<T>>(deviceList), _significances(deviceList.size())
 {
 }
 
 template <template <typename> class C, typename T>
-BlockDistribution< C<T> >::BlockDistribution(const DeviceList& deviceList,
-                                             const Significances& significances)
-  : Distribution< C<T> >(deviceList), _significances(significances)
+BlockDistribution<C<T>>::BlockDistribution(const DeviceList& deviceList,
+                                           const Significances& significances)
+  : Distribution<C<T>>(deviceList), _significances(significances)
 {
 }
 
 template <template <typename> class C, typename T>
 template <typename U>
-BlockDistribution< C<T> >::BlockDistribution( const BlockDistribution< C<U> >& rhs)
-  : Distribution< C<T> >(rhs), _significances(rhs.getSignificances())
+BlockDistribution<C<T>>::BlockDistribution(const BlockDistribution<C<U>>& rhs)
+  : Distribution<C<T>>(rhs), _significances(rhs.getSignificances())
 {
 }
 
 template <template <typename> class C, typename T>
-BlockDistribution< C<T> >::~BlockDistribution()
+BlockDistribution<C<T>>::~BlockDistribution()
 {
 }
 
 template <template <typename> class C, typename T>
-bool BlockDistribution< C<T> >::isValid() const
+bool BlockDistribution<C<T>>::isValid() const
 {
   return true;
 }
 
 template <template <typename> class C, typename T>
-void BlockDistribution< C<T> >::startUpload(C<T>& container,
-                                            Event* events) const
+void BlockDistribution<C<T>>::startUpload(C<T>& container,
+                                          Event* events) const
 {
   ASSERT(events != nullptr);
 
@@ -97,8 +97,8 @@ void BlockDistribution< C<T> >::startUpload(C<T>& container,
 }
 
 template <template <typename> class C, typename T>
-void BlockDistribution< C<T> >::startDownload(C<T>& container,
-                                              Event* events) const
+void BlockDistribution<C<T>>::startDownload(C<T>& container,
+                                            Event* events) const
 {
   ASSERT(events != nullptr);
 
@@ -116,8 +116,10 @@ void BlockDistribution< C<T> >::startDownload(C<T>& container,
 }
 
 template <template <typename> class C, typename T>
-size_t BlockDistribution< C<T> >::sizeForDevice(const C<T>& container,
-                                                const std::shared_ptr<detail::Device>& devicePtr) const
+size_t
+  BlockDistribution<C<T>>::sizeForDevice(const C<T>& container,
+                                         const std::shared_ptr<detail::Device>&
+                                            devicePtr) const
 {
   return block_distribution_helper::sizeForDevice<T>(devicePtr,
                                                      container.size(),
@@ -126,10 +128,10 @@ size_t BlockDistribution< C<T> >::sizeForDevice(const C<T>& container,
 }
 
 template <template <typename> class C, typename T>
-bool BlockDistribution< C<T> >::dataExchangeOnDistributionChange(
-                                   Distribution< C<T> >& newDistribution)
+bool BlockDistribution<C<T>>::dataExchangeOnDistributionChange(
+                                   Distribution<C<T>>& newDistribution)
 {
-  auto block = dynamic_cast<BlockDistribution< C<T> >*>(&newDistribution);
+  auto block = dynamic_cast<BlockDistribution<C<T>>*>(&newDistribution);
 
   if (block == nullptr) { // distributions differ => data exchange
     return true;
@@ -145,13 +147,13 @@ bool BlockDistribution< C<T> >::dataExchangeOnDistributionChange(
 }
 
 template <template <typename> class C, typename T>
-const Significances& BlockDistribution< C<T> >::getSignificances() const
+const Significances& BlockDistribution<C<T>>::getSignificances() const
 {
   return this->_significances;
 }
 
 template <template <typename> class C, typename T>
-bool BlockDistribution< C<T> >::doCompare(const Distribution< C<T> >& rhs) const
+bool BlockDistribution<C<T>>::doCompare(const Distribution<C<T>>& rhs) const
 {
   bool ret = false;
   // can rhs be casted into block distribution ?

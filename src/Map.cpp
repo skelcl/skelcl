@@ -47,120 +47,124 @@
 
 namespace skelcl {
   
-  // ## Map<Index, void> ################################################
+// ## Map<Index, void> ################################################
   
-  Map<void(Index)>::Map(const Source& source,
-                        const std::string& funcName)
+Map<void(Index)>::Map(const Source& source,
+                      const std::string& funcName)
   : Skeleton(),
-  detail::MapHelper<void(Index)>(createAndBuildProgram(source, funcName))
+    detail::MapHelper<void(Index)>(createAndBuildProgram(source, funcName))
+{
+}
+  
+detail::Program
+  Map<void(Index)>::createAndBuildProgram(const std::string& source,
+                                          const std::string& funcName) const
+{
+  ASSERT_MESSAGE(!source.empty(),
+                 "Tried to create program with empty user source.");
+  
+  // create program
+  // first: device specific functions
+  std::string deviceFunctions;
+  deviceFunctions.append(Vector<Index>::deviceFunctions());
+  deviceFunctions.append(Matrix<Index>::deviceFunctions());
+  std::string s(deviceFunctions);
+  s.append(R"(
+           typedef size_t Index;
+           
+           )");
+  // second: user defined source
+  s.append(source);
+  // last: append skeleton implementation source
+  s.append(R"(
+           
+           __kernel void SCL_MAP(const unsigned int SCL_OFFSET)
   {
+    SCL_FUNC(get_global_id(0)+SCL_OFFSET);
+  }
+           )");
+  auto program = detail::Program(s,
+                                 detail::util::hash("//Map\n"
+                                                    + deviceFunctions
+                                                    + source) );
+  
+  // modify program
+  if (!program.loadBinary()) {
+    // append parameters from user function to kernel
+    program.transferParameters(funcName, 1, "SCL_MAP");
+    program.transferArguments(funcName, 1, "SCL_FUNC");
+    // rename user function
+    program.renameFunction(funcName, "SCL_FUNC");
   }
   
-  detail::Program Map<void(Index)>::createAndBuildProgram(const std::string& source,
-                                                          const std::string& funcName) const
-  {
-    ASSERT_MESSAGE(!source.empty(),
-                   "Tried to create program with empty user source.");
-    
-    // create program
-    // first: device specific functions
-    std::string deviceFunctions;
-    deviceFunctions.append(Vector<Index>::deviceFunctions());
-    deviceFunctions.append(Matrix<Index>::deviceFunctions());
-    std::string s(deviceFunctions);
-    s.append(R"(
-             typedef size_t Index;
-             
-             )");
-    // second: user defined source
-    s.append(source);
-    // last: append skeleton implementation source
-    s.append(R"(
-             
-             __kernel void SCL_MAP(const unsigned int SCL_OFFSET)
-    {
-      SCL_FUNC(get_global_id(0)+SCL_OFFSET);
-    }
-             )");
-    auto program = detail::Program(s,
-                                   detail::util::hash("//Map\n"
-                                                      + deviceFunctions
-                                                      + source) );
-    
-    // modify program
-    if (!program.loadBinary()) {
-      // append parameters from user function to kernel
-      program.transferParameters(funcName, 1, "SCL_MAP");
-      program.transferArguments(funcName, 1, "SCL_FUNC");
-      // rename user function
-      program.renameFunction(funcName, "SCL_FUNC");
-    }
-    
-    // build program
-    program.build();
-    
-    return program;
-  }
+  // build program
+  program.build();
+  
+  return program;
+}
   
   
-  // ## Map<IndexPoint, void> ################################################
-  Map<void(IndexPoint)>::Map(const Source& source,
-                             const std::string& funcName)
-  : Skeleton(),
-  detail::MapHelper<void(IndexPoint)>(createAndBuildProgram(source, funcName))
-  {
+// ## Map<IndexPoint, void> ################################################
+Map<void(IndexPoint)>::Map(const Source& source,
+                           const std::string& funcName)
+: Skeleton(),
+detail::MapHelper<void(IndexPoint)>(createAndBuildProgram(source, funcName))
+{
+}
+
+detail::Program
+  Map<void(IndexPoint)>::createAndBuildProgram(
+                                               const std::string& source,
+                                               const std::string& funcName
+                                              ) const
+{
+  ASSERT_MESSAGE(!source.empty(),
+                 "Tried to create program with empty user source.");
+  
+  // create program
+  // first: device specific functions
+  std::string deviceFunctions;
+  deviceFunctions.append(Matrix<IndexPoint>::deviceFunctions());
+  std::string s(deviceFunctions);
+  s.append(R"(
+           typedef struct {
+             size_t x;
+             size_t y;
+           } IndexPoint;
+           
+           )");
+  // second: user defined source
+  s.append(source);
+  // last: append skeleton implementation source
+  s.append(R"(
+           
+           __kernel void SCL_MAP(const unsigned int SCL_ROW_OFFSET)
+           {
+             // dim 1 is the columns, dim 0 the rows
+             IndexPoint p;
+             p.x = get_global_id(1);
+             p.y = get_global_id(0) + SCL_ROW_OFFSET;
+             SCL_FUNC(p);
+           }
+           )");
+  auto program = detail::Program(s,
+                                 detail::util::hash("//Map\n"
+                                                    + deviceFunctions
+                                                    + source) );
+  
+  // modify program
+  if (!program.loadBinary()) {
+    // append parameters from user function to kernel
+    program.transferParameters(funcName, 1, "SCL_MAP");
+    program.transferArguments(funcName, 1, "SCL_FUNC");
+    // rename user function
+    program.renameFunction(funcName, "SCL_FUNC");
   }
   
-  detail::Program Map<void(IndexPoint)>::createAndBuildProgram(const std::string& source,
-                                                               const std::string& funcName) const
-  {
-    ASSERT_MESSAGE(!source.empty(),
-                   "Tried to create program with empty user source.");
-    
-    // create program
-    // first: device specific functions
-    std::string deviceFunctions;
-    deviceFunctions.append(Matrix<IndexPoint>::deviceFunctions());
-    std::string s(deviceFunctions);
-    s.append(R"(
-             typedef struct {
-               size_t x;
-               size_t y;
-             } IndexPoint;
-             
-             )");
-    // second: user defined source
-    s.append(source);
-    // last: append skeleton implementation source
-    s.append(R"(
-             
-             __kernel void SCL_MAP(const unsigned int SCL_ROW_OFFSET)
-             {
-               // dim 1 is the columns, dim 0 the rows
-               IndexPoint p;
-               p.x = get_global_id(1);
-               p.y = get_global_id(0) + SCL_ROW_OFFSET;
-               SCL_FUNC(p);
-             }
-             )");
-    auto program = detail::Program(s,
-                                   detail::util::hash("//Map\n"
-                                                      + deviceFunctions
-                                                      + source) );
-    
-    // modify program
-    if (!program.loadBinary()) {
-      // append parameters from user function to kernel
-      program.transferParameters(funcName, 1, "SCL_MAP");
-      program.transferArguments(funcName, 1, "SCL_FUNC");
-      // rename user function
-      program.renameFunction(funcName, "SCL_FUNC");
-    }
-    
-    // build program
-    program.build();
-    
-    return program;
-  }
+  // build program
+  program.build();
+  
+  return program;
+}
   
 } // namespace skelcl

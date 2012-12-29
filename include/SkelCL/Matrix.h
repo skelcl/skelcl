@@ -113,8 +113,8 @@ public:
    ///
   Matrix(const size_type size,
          const value_type& value = value_type(),
-         const detail::Distribution< Matrix<T> >& distribution
-                                    = detail::Distribution< Matrix<T> >());
+         const detail::Distribution<Matrix<T>>& distribution
+                                    = detail::Distribution<Matrix<T>>());
 
    ///
    /// \brief constructor with a std::vector and the number of columns as
@@ -122,20 +122,25 @@ public:
    ///
   Matrix(const std::vector<T>& vector,
          const typename size_type::size_type columnCount,
-         const detail::Distribution< Matrix<T> >& distribution = detail::Distribution< Matrix<T> >());
+         const detail::Distribution<Matrix<T>>& distribution
+            = detail::Distribution<Matrix<T>>());
 
   ///
   /// \brief constructor with a std::vector and a matrix_size as parameter
   ///
   Matrix(const std::vector<T>& vector,
          const size_type size,
-         const detail::Distribution< Matrix<T> >& distribution = detail::Distribution< Matrix<T> >());
+         const detail::Distribution<Matrix<T>>& distribution
+            = detail::Distribution<Matrix<T>>());
 
   ///
-  /// \brief static function creating a matrix from 2 dim std::vector as parameter
+  /// \brief static function creating a matrix from 2 dim std::vector as
+  ///        parameter
   ///
-  static Matrix<T> from2DVector(const std::vector<std::vector<T> >& matrix,
-                                const detail::Distribution< Matrix<T> >& distribution = detail::Distribution< Matrix<T> >());
+  static Matrix<T> from2DVector(const std::vector<std::vector<T>>& matrix,
+                                const detail::Distribution<Matrix<T>>&
+                                    distribution
+                                      = detail::Distribution<Matrix<T>>());
 
   ///
   /// \brief constructor with 2 iterators and the number of columns as parameter
@@ -143,7 +148,8 @@ public:
   template <class InputIterator>
   Matrix(InputIterator first, InputIterator last,
          const typename size_type::size_type columnCount,
-         const detail::Distribution< Matrix<T> >& distribution = detail::Distribution< Matrix<T> >());
+         const detail::Distribution<Matrix<T>>& distribution
+             = detail::Distribution<Matrix<T>>());
 
    ///
    /// \brief constructor with 2 iterators and a matrix_size as parameter
@@ -151,7 +157,8 @@ public:
   template <class InputIterator>
     Matrix(InputIterator first, InputIterator last,
            const size_type size,
-           const detail::Distribution< Matrix<T> >& distribution = detail::Distribution< Matrix<T> >());
+           const detail::Distribution<Matrix<T>>& distribution
+              = detail::Distribution<Matrix<T>>());
 
   ///
   /// \brief  Explicit deleted copy constructor
@@ -244,15 +251,18 @@ public:
   void clear();
 
   // Some functions from parent Container
-  detail::Distribution< Matrix<T> >& distribution() const;
+  detail::Distribution<Matrix<T>>& distribution() const;
 
   template <typename U>
-  void setDistribution(const detail::Distribution< Matrix<U> >& distribution) const;
+  void setDistribution(const detail::Distribution<Matrix<U>>&
+                          distribution) const;
 
   template <typename U>
-  void setDistribution(const std::unique_ptr<detail::Distribution< Matrix<U> > >& newDistribution) const;
+  void setDistribution(const std::unique_ptr<detail::Distribution<Matrix<U>>>&
+                          newDistribution) const;
 
-  void setDistribution(std::unique_ptr<detail::Distribution< Matrix<T> > >&& newDistribution) const;
+  void setDistribution(std::unique_ptr<detail::Distribution<Matrix<T>>>&&
+                          newDistribution) const;
 
   void createDeviceBuffers() const;
 
@@ -280,14 +290,15 @@ private:
   std::string getInfo() const;
   std::string getDebugInfo() const;
 
-          MatrixSize                                              _size;
+          MatrixSize                                  _size;
   mutable
-    std::unique_ptr< detail::Distribution< Matrix<T> > >          _distribution;
-  mutable bool                                                    _hostBufferUpToDate;
-  mutable bool                                                    _deviceBuffersUpToDate;
-  mutable host_buffer_type                                        _hostBuffer;
+    std::unique_ptr<detail::Distribution<Matrix<T>>>  _distribution;
+  mutable bool                                        _hostBufferUpToDate;
+  mutable bool                                        _deviceBuffersUpToDate;
+  mutable host_buffer_type                            _hostBuffer;
     // _deviceBuffers empty => buffers not created
-  mutable std::map<detail::Device::id_type, detail::DeviceBuffer> _deviceBuffers;
+  mutable std::map< detail::Device::id_type,
+                    detail::DeviceBuffer >            _deviceBuffers;
 };
 
 } // namespace skelcl

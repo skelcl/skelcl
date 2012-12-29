@@ -63,7 +63,8 @@
 namespace {
 
 std::string binaryFilename(const std::string& hash,
-                           const std::shared_ptr<skelcl::detail::Device>& devicePtr)
+                           const std::shared_ptr<skelcl::detail::Device>&
+                                devicePtr)
 {
   std::stringstream filename;
   // escape spaces in device name

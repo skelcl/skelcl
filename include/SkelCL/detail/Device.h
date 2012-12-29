@@ -223,18 +223,18 @@ public:
                         size_t hostOffset = 0) const;
 
   ///
-  /// \brief Enqueues a memory operation to copy data from one buffer to the other.
-  ///        Both buffers should reside on the same device (or at least in the same
-  ///        context).
+  /// \brief Enqueues a memory operation to copy data from one buffer to the
+  ///        other. Both buffers should reside on the same device (or at least
+  ///        in the same context).
   ///
   /// \param from       The Buffer from which the data is copied
-  ///        to         The Buffer where the data is copied into. This buffer has
-  ///                   to be at least the same size as the from buffer.
+  ///        to         The Buffer where the data is copied into. This buffer
+  ///                   has to be at least the same size as the from buffer.
   ///        fromOffset Offset used inside the from buffer. The value has to be
-  ///                   given in Bytes! In total the size of the from buffer minus
-  ///                   the from offset bytes are copied to the to buffer.
-  ///        toOffset   Offset used inside the to buffer. The value has to be given
-  ///                   in Bytes!
+  ///                   given in Bytes! In total the size of the from buffer
+  ///                   minus the from offset bytes are copied to the to buffer.
+  ///        toOffset   Offset used inside the to buffer. The value has to be
+  ///                   given in Bytes!
   ///
   /// \return An OpenCL Event object which can be used to wait for the
   ///         operation to complete

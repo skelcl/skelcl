@@ -62,7 +62,7 @@ void MapHelper<Tout(Tin)>::prepareInput(const C<Tin>& input) const
 {
   // set default distribution if required
   if (!input.distribution().isValid()) {
-    input.setDistribution(BlockDistribution< C<Tin> >());
+    input.setDistribution(BlockDistribution<C<Tin>>());
   }
   // create buffers if required
   input.createDeviceBuffers();

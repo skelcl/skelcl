@@ -94,7 +94,7 @@ C<Tout> Map<Tout(Tin)>::operator()(const C<Tin>& input,
 template <typename Tin, typename Tout>
 template <template <typename> class C,
           typename... Args>
-C<Tout>& Map<Tout(Tin)>::operator()(Out< C<Tout> > output,
+C<Tout>& Map<Tout(Tin)>::operator()(Out<C<Tout>> output,
                                     const C<Tin>& input,
                                     Args&&... args) const
 {
@@ -143,7 +143,8 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
       auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
                                                      inputBuffer.clBuffer(),
                                                      outputBuffer.clBuffer(),
-                                                     std::forward<Args>(args)...);
+                                                     std::forward<Args>(args)...
+                                                    );
 
       // after finishing the kernel invoke this function ...
       auto invokeAfter =  [=] () {
@@ -162,8 +163,9 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
 }
 
 template <typename Tin, typename Tout>
-detail::Program Map<Tout(Tin)>::createAndBuildProgram(const std::string& source,
-                                                      const std::string& funcName) const
+detail::Program
+  Map<Tout(Tin)>::createAndBuildProgram(const std::string& source,
+                                        const std::string& funcName) const
 {
   ASSERT_MESSAGE(!source.empty(),
     "Tried to create program with empty user source.");
@@ -265,7 +267,8 @@ void Map<void(Tin)>::execute(const C<Tin>& input,
 
       auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
                                                      inputBuffer.clBuffer(),
-                                                     std::forward<Args>(args)...);
+                                                     std::forward<Args>(args)...
+                                                    );
 
       // after finishing the kernel invoke this function and release keepAlive
       auto invokeAfter =  [=] () {
@@ -284,8 +287,9 @@ void Map<void(Tin)>::execute(const C<Tin>& input,
 }
 
 template <typename Tin>
-detail::Program Map<void(Tin)>::createAndBuildProgram(const std::string& source,
-                                                      const std::string& funcName) const
+detail::Program
+  Map<void(Tin)>::createAndBuildProgram(const std::string& source,
+                                        const std::string& funcName) const
 {
   ASSERT_MESSAGE(!source.empty(),
     "Tried to create program with empty user source.");
@@ -355,13 +359,13 @@ Vector<Tout> Map<Tout(Index)>::operator()(const Vector<Index>& input,
 
 template <typename Tout>
 template <typename... Args>
-Vector<Tout>& Map<Tout(Index)>::operator()(Out< Vector<Tout> > output,
+Vector<Tout>& Map<Tout(Index)>::operator()(Out<Vector<Tout>> output,
                                            const Vector<Index>& input,
                                            Args&&... args) const
 {
   // set default distribution if required
   if (!input.distribution().isValid()) {
-    input.setDistribution(detail::BlockDistribution< Vector<Index> >());
+    input.setDistribution(detail::BlockDistribution<Vector<Index>>());
   }
   // no need to fully prepare index container
 
@@ -405,7 +409,9 @@ void Map<Tout(Index)>::execute(Vector<Tout>& output,
 
       std::vector<cl::Buffer> keepAlive;
       keepAlive.push_back(outputBuffer.clBuffer());
-      detail::kernelUtil::keepAlive(keepAlive, *devicePtr, std::forward<Args>(args)...);
+      detail::kernelUtil::keepAlive(keepAlive,
+                                    *devicePtr,
+                                    std::forward<Args>(args)...);
 
       // after finishing the kernel invoke this function ...
       auto invokeAfter =  [=] () {
@@ -426,8 +432,9 @@ void Map<Tout(Index)>::execute(Vector<Tout>& output,
 }
 
 template <typename Tout>
-detail::Program Map<Tout(Index)>::createAndBuildProgram(const std::string& source,
-                                                        const std::string& funcName) const
+detail::Program
+  Map<Tout(Index)>::createAndBuildProgram(const std::string& source,
+                                          const std::string& funcName) const
 {
   ASSERT_MESSAGE(!source.empty(),
     "Tried to create program with empty user source.");
@@ -486,7 +493,7 @@ void Map<void(Index)>::operator()(const Vector<Index>& input,
 {
   // set default distribution if required
   if (!input.distribution().isValid()) {
-    input.setDistribution(detail::BlockDistribution< Vector<Index> >());
+    input.setDistribution(detail::BlockDistribution<Vector<Index>>());
   }
   // no need to further prepare index container
 
@@ -519,7 +526,8 @@ void Map<void(Index)>::execute(const Vector<Index>& input,
                                         std::forward<Args>(args)...);
 
       auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
-                                                     std::forward<Args>(args)...);
+                                                     std::forward<Args>(args)...
+                                                    );
 
       // after finishing the kernel invoke this function ...
       auto invokeAfter =  [=] () { (void)keepAlive; };
@@ -559,13 +567,13 @@ Matrix<Tout> Map<Tout(IndexPoint)>::operator()(const Matrix<IndexPoint>& input,
 
 template <typename Tout>
 template <typename... Args>
-Matrix<Tout>& Map<Tout(IndexPoint)>::operator()(Out< Matrix<Tout> > output,
+Matrix<Tout>& Map<Tout(IndexPoint)>::operator()(Out<Matrix<Tout>> output,
                                                 const Matrix<IndexPoint>& input,
                                                 Args&&... args) const
 {
   // set default distribution if required
   if (!input.distribution().isValid()) {
-    input.setDistribution(detail::BlockDistribution< Matrix<Index> >());
+    input.setDistribution(detail::BlockDistribution<Matrix<Index>>());
   }
   // no need to further prepare index matrix
   
@@ -615,7 +623,8 @@ void Map<Tout(IndexPoint)>::execute(Matrix<Tout>& output,
       
       auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
                                                      outputBuffer.clBuffer(),
-                                                     std::forward<Args>(args)...);
+                                                     std::forward<Args>(args)...
+                                                    );
       
       // after finishing the kernel invoke this function ...
       auto invokeAfter =  [=] () { (void)keepAlive; };
@@ -635,8 +644,11 @@ void Map<Tout(IndexPoint)>::execute(Matrix<Tout>& output,
 }
 
 template <typename Tout>
-detail::Program Map<Tout(IndexPoint)>::createAndBuildProgram(const std::string& source,
-                                                             const std::string& funcName) const
+detail::Program
+  Map<Tout(IndexPoint)>::createAndBuildProgram(
+                                               const std::string& source,
+                                               const std::string& funcName
+                                              ) const
 {
   ASSERT_MESSAGE(!source.empty(),
                  "Tried to create program with empty user source.");
@@ -668,7 +680,7 @@ typedef struct {
     IndexPoint p;
     p.x = get_global_id(1);
     p.y = get_global_id(0) + SCL_ROW_OFFSET;
-    SCL_OUT[ get_global_id(0) * SCL_COL_COUNT + get_global_id(1) ] = SCL_FUNC(p);
+    SCL_OUT[get_global_id(0) * SCL_COL_COUNT + get_global_id(1)] = SCL_FUNC(p);
   }
            )");
   auto program = detail::Program(s,
@@ -702,7 +714,7 @@ void Map<void(IndexPoint)>::operator()(const Matrix<IndexPoint>& input,
 {
   // set default distribution if required
   if (!input.distribution().isValid()) {
-    input.setDistribution(detail::BlockDistribution< Matrix<IndexPoint> >());
+    input.setDistribution(detail::BlockDistribution<Matrix<IndexPoint>>());
   }
   // no need to further prepare index container
   
@@ -724,7 +736,7 @@ void Map<void(IndexPoint)>::execute(const Matrix<IndexPoint>& input,
     auto colCount = input.size().columnCount();
     auto rowCount = elements / colCount;
     
-    size_t wgSize      =  detail::util::floorPow2( sqrt(this->workGroupSize()) );
+    size_t wgSize      =  detail::util::floorPow2(sqrt(this->workGroupSize()));
     cl_uint local      = std::min(wgSize,
                                   devicePtr->maxWorkGroupSize());
     
@@ -740,7 +752,8 @@ void Map<void(IndexPoint)>::execute(const Matrix<IndexPoint>& input,
                                         std::forward<Args>(args)...);
       
       auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
-                                                     std::forward<Args>(args)...);
+                                                     std::forward<Args>(args)...
+                                                    );
       
       // after finishing the kernel invoke this function ...
       auto invokeAfter =  [=] () {

@@ -70,8 +70,8 @@ public:
   Matrix() = delete;
 
   Matrix(const size_type size,
-         const detail::Distribution< Matrix<IndexPoint> >& distribution
-           = detail::Distribution< Matrix<IndexPoint> >());
+         const detail::Distribution<Matrix<IndexPoint>>& distribution
+           = detail::Distribution<Matrix<IndexPoint>>());
   Matrix(const Matrix<IndexPoint>& rhs) = delete;
   Matrix(Matrix<IndexPoint>&& rhs) = delete;
   Matrix<IndexPoint>& operator=(const Matrix<IndexPoint>&) = delete;
@@ -94,7 +94,7 @@ public:
   /// \return A pointer to the current distribution of the vector, of nullptr
   ///         if no distribution is set
   ///
-  detail::Distribution< Matrix<IndexPoint> >& distribution() const;
+  detail::Distribution<Matrix<IndexPoint>>& distribution() const;
 
   ///
   /// \brief Changes the distribution of the vector

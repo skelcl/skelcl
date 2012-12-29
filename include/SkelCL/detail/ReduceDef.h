@@ -97,7 +97,7 @@ Vector<T> Reduce<T(T)>::operator()(const Vector<T>& input,
 
 template <typename T>
 template <typename... Args>
-Vector<T>& Reduce<T(T)>::operator()(Out< Vector<T> > output,
+Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
                                     const Vector<T>& input,
                                     Args&&... args)
 {
@@ -110,14 +110,17 @@ Vector<T>& Reduce<T(T)>::operator()(Out< Vector<T> > output,
   auto& device = *(input.distribution().devices().front());
 
   // ... determine if and how the first reduction step is performed ...
-  auto firstLevel  = determineFirstLevelParameters(device, input, output.container());
+  auto firstLevel  = determineFirstLevelParameters(device, input,
+                                                   output.container());
   if (firstLevel) {
     LOG_DEBUG_INFO("firstLevel.workGroupSize: ",    firstLevel->workGroupSize,
                    ", firstLevel.workGroupCount: ", firstLevel->workGroupCount);
   }
 
   // ... determine how the second (and final) reduction step is performed ...
-  auto secondLevel = determineSecondLevelParameters(device, input, output.container(), firstLevel);
+  auto secondLevel = determineSecondLevelParameters(device, input,
+                                                    output.container(),
+                                                    firstLevel);
   LOG_DEBUG_INFO("secondLevel.workGroupSize: ",    secondLevel->workGroupSize,
                  ", secondLevel.workGroupCount: ", secondLevel->workGroupCount);
 
@@ -152,7 +155,7 @@ void Reduce<T(T)>::prepareInput(const Vector<T>& input)
 {
   // set default distribution if required
   if (!input.distribution().isValid()) {
-    input.setDistribution(detail::SingleDistribution< Vector<T> >());
+    input.setDistribution(detail::SingleDistribution<Vector<T>>());
   }
   // create buffers if required
   input.createDeviceBuffers();
@@ -291,10 +294,12 @@ std::shared_ptr<typename Reduce<T(T)>::Level>
 
 template <typename T>
 std::shared_ptr<typename Reduce<T(T)>::Level>
-  Reduce<T(T)>::determineSecondLevelParameters(const detail::Device& device,
-                                               const Vector<T>& input,
-                                               const Vector<T>& output,
-                                               const std::shared_ptr<Reduce<T(T)>::Level>& firstLevel)
+  Reduce<T(T)>::determineSecondLevelParameters(
+          const detail::Device& device,
+          const Vector<T>& input,
+          const Vector<T>& output,
+          const std::shared_ptr<Reduce<T(T)>::Level>& firstLevel
+                                              )
 {
   auto level = std::make_shared<typename Reduce<T(T)>::Level>();
 

@@ -64,16 +64,19 @@
 namespace skelcl {
 
 Matrix<IndexPoint>::Matrix(const size_type size,
-                           const detail::Distribution< Matrix<IndexPoint> >& distribution)
+                           const detail::Distribution<Matrix<IndexPoint>>&
+                              distribution)
   : _maxIndex{size.rowCount()-1, size.columnCount()-1},
     _distribution(detail::cloneAndConvert<IndexPoint>(distribution))
 {
-  LOG_DEBUG_INFO("Created new IndexMatrix object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new IndexMatrix object (", this, ") with ",
+                 getDebugInfo());
 }
 
 Matrix<IndexPoint>::~Matrix()
 {
-  LOG_DEBUG_INFO("IndexMatrix object (", this, ") with ", getDebugInfo(), " destroyed");
+  LOG_DEBUG_INFO("IndexMatrix object (", this, ") with ", getDebugInfo(),
+                 " destroyed");
 }
 
 //  template <>
@@ -102,12 +105,12 @@ typename detail::Sizes Matrix<IndexPoint>::sizes() const
   return s;
 }
 
-Matrix<IndexPoint>::value_type Matrix<IndexPoint>::operator[]( size_type n ) const
+Matrix<IndexPoint>::value_type Matrix<IndexPoint>::operator[](size_type n) const
 {
   return {n.rowCount(), n.columnCount()};
 }
 
-Matrix<IndexPoint>::value_type Matrix<IndexPoint>::at( size_type n ) const
+Matrix<IndexPoint>::value_type Matrix<IndexPoint>::at(size_type n) const
 {
   if (    std::make_tuple(n.rowCount(), n.columnCount())
       >=  std::make_tuple(_maxIndex.rowID(), _maxIndex.columnID()) ) {
@@ -126,28 +129,36 @@ Matrix<IndexPoint>::value_type Matrix<IndexPoint>::back() const
   return _maxIndex;
 }
 
-detail::Distribution< Matrix<IndexPoint> >& Matrix<IndexPoint>::distribution() const
+detail::Distribution<Matrix<IndexPoint>>&
+  Matrix<IndexPoint>::distribution() const
 {
   ASSERT(_distribution != nullptr);
   return *_distribution;
 }
 
 template <typename U>
-void Matrix<IndexPoint>::setDistribution(const detail::Distribution< Matrix<U> >& origDistribution) const
+void Matrix<IndexPoint>::setDistribution(const detail::Distribution<Matrix<U>>&
+                                            origDistribution) const
 {
   ASSERT(origDistribution.isValid());
   this->setDistribution(detail::cloneAndConvert<IndexPoint>(origDistribution));
 }
 
 template <typename U>
-void Matrix<IndexPoint>::setDistribution(const std::unique_ptr<detail::Distribution< Matrix<U> > >& newDistribution) const
+void
+  Matrix<IndexPoint>::setDistribution(
+      const std::unique_ptr<detail::Distribution<Matrix<U>>>&
+          newDistribution) const
 {
   ASSERT(newDistribution != nullptr);
   ASSERT(newDistribution->isValid());
   this->setDistribution(detail::cloneAndConvert<IndexPoint>(*newDistribution));
 }
 
-void Matrix<IndexPoint>::setDistribution(std::unique_ptr<detail::Distribution< Matrix<IndexPoint> > >&& newDistribution) const
+void
+  Matrix<IndexPoint>::setDistribution(
+      std::unique_ptr<detail::Distribution<Matrix<IndexPoint>>>&&
+          newDistribution) const
 {
   ASSERT(newDistribution != nullptr);
   ASSERT(newDistribution->isValid());
@@ -156,8 +167,8 @@ void Matrix<IndexPoint>::setDistribution(std::unique_ptr<detail::Distribution< M
 
   ASSERT(_distribution->isValid());
 
-  LOG_DEBUG_INFO("IndexMatrix object (", this, ") assigned new distribution, now with ",
-                  getDebugInfo());
+  LOG_DEBUG_INFO("IndexMatrix object (", this,
+                 ") assigned new distribution, now with ", getDebugInfo());
 }
 
 std::string Matrix<IndexPoint>::deviceFunctions()
@@ -179,7 +190,8 @@ std::string Matrix<IndexPoint>::getDebugInfo() const
   return s.str();
 }
 
-const detail::DeviceBuffer& Matrix<IndexPoint>::deviceBuffer(const detail::Device& /*device*/) const
+const detail::DeviceBuffer&
+  Matrix<IndexPoint>::deviceBuffer(const detail::Device& /*device*/) const
 {
   ASSERT_MESSAGE(false, "This function should never be called!");
   static detail::DeviceBuffer db;

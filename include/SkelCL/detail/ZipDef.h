@@ -90,7 +90,7 @@ C<Tout> Zip<Tout(Tleft, Tright)>::operator()(const C<Tleft>& left,
 template <typename Tleft, typename Tright, typename Tout>
 template <template <typename> class C,
           typename... Args>
-C<Tout>& Zip<Tout(Tleft, Tright)>::operator()(Out< C<Tout> > output,
+C<Tout>& Zip<Tout(Tleft, Tright)>::operator()(Out<C<Tout>> output,
                                               const C<Tleft>& left,
                                               const C<Tright>& right,
                                               Args&&... args)
@@ -147,7 +147,8 @@ void Zip<Tout(Tleft, Tright)>::execute(C<Tout>& output,
                                                      leftBuffer.clBuffer(),
                                                      rightBuffer.clBuffer(),
                                                      outputBuffer.clBuffer(),
-                                                     std::forward<Args>(args)...);
+                                                     std::forward<Args>(args)...
+                                                    );
 
       // after finishing the kernel invoke this function ...
       auto invokeAfter = [=] () {
@@ -168,8 +169,10 @@ void Zip<Tout(Tleft, Tright)>::execute(C<Tout>& output,
 
 template<typename Tleft, typename Tright, typename Tout>
 detail::Program
-  Zip<Tout(Tleft, Tright)>::createAndBuildProgram(const std::string& source,
-                                                  const std::string& funcName) const
+  Zip<Tout(Tleft, Tright)>::createAndBuildProgram(
+                                                  const std::string& source,
+                                                  const std::string& funcName
+                                                 ) const
 {
   ASSERT_MESSAGE(!source.empty(),
     "Tried to create program with empty user source.");
@@ -230,16 +233,16 @@ void Zip<Tout(Tleft, Tright)>::prepareInput(const C<Tleft>& left,
   // set default distribution if required
   if (   !left.distribution().isValid()
       && !right.distribution().isValid() ) {
-    left.setDistribution(detail::BlockDistribution< C<Tleft> >());
-    right.setDistribution(detail::BlockDistribution< C<Tright> >());
+    left.setDistribution(detail::BlockDistribution<C<Tleft>>());
+    right.setDistribution(detail::BlockDistribution<C<Tright>>());
   } else if (!left.distribution().isValid()) {
     left.setDistribution(right.distribution());
   } else if (!right.distribution().isValid()) {
     right.setDistribution(left.distribution());
   } else if ( left.distribution() != right.distribution() ) {
     // TODO: find a better solution
-    left.setDistribution(detail::BlockDistribution< C<Tleft> >());
-    right.setDistribution(detail::BlockDistribution< C<Tright> >());
+    left.setDistribution(detail::BlockDistribution<C<Tleft>>());
+    right.setDistribution(detail::BlockDistribution<C<Tright>>());
   }
   // create buffers if required
   left.createDeviceBuffers();
@@ -332,7 +335,8 @@ void Zip<void(Tleft, Tright)>::execute(const C<Tleft>& left,
       auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
                                                      leftBuffer.clBuffer(),
                                                      rightBuffer.clBuffer(),
-                                                     std::forward<Args>(args)...);
+                                                     std::forward<Args>(args)...
+                                                    );
 
       // after finishing the kernel invoke this function ...
       auto invokeAfter = [=] () {
@@ -353,8 +357,10 @@ void Zip<void(Tleft, Tright)>::execute(const C<Tleft>& left,
 
 template<typename Tleft, typename Tright>
 detail::Program
-  Zip<void(Tleft, Tright)>::createAndBuildProgram(const std::string& source,
-                                                  const std::string& funcName) const
+  Zip<void(Tleft, Tright)>::createAndBuildProgram(
+                                                  const std::string& source,
+                                                  const std::string& funcName
+                                                 ) const
 {
   ASSERT_MESSAGE(!source.empty(),
     "Tried to create program with empty user source.");
@@ -412,16 +418,16 @@ void Zip<void(Tleft, Tright)>::prepareInput(const C<Tleft>& left,
   // set default distribution if required
   if (   !left.distribution().isValid()
       && !right.distribution().isValid() ) {
-    left.setDistribution(detail::BlockDistribution< C<Tleft> >());
-    right.setDistribution(detail::BlockDistribution< C<Tright> >());
+    left.setDistribution(detail::BlockDistribution<C<Tleft>>());
+    right.setDistribution(detail::BlockDistribution<C<Tright>>());
   } else if (!left.distribution().isValid()) {
     left.setDistribution(right.distribution());
   } else if (!right.distribution().isValid()) {
     right.setDistribution(left.distribution());
   } else if ( left.distribution() != right.distribution() ) {
     // TODO: find a better solution
-    left.setDistribution(detail::BlockDistribution< C<Tleft> >());
-    right.setDistribution(detail::BlockDistribution< C<Tright> >());
+    left.setDistribution(detail::BlockDistribution<C<Tleft>>());
+    right.setDistribution(detail::BlockDistribution<C<Tright>>());
   }
   // create buffers if required
   left.createDeviceBuffers();

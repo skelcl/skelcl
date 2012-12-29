@@ -50,72 +50,77 @@ namespace skelcl {
 namespace detail {
 
 template <template <typename> class C, typename T>
-SingleDistribution< C<T> >::SingleDistribution(std::shared_ptr<Device> device)
-  : Distribution< C<T> >( {device} )
+SingleDistribution<C<T>>::SingleDistribution(std::shared_ptr<Device> device)
+  : Distribution<C<T>>( {device} )
 {
   ASSERT(this->_devices.size() == 1);
 }
 
 template <template <typename> class C, typename T>
 template <typename U>
-SingleDistribution< C<T> >::SingleDistribution( const SingleDistribution< C<U> >& rhs)
-  : Distribution< C<T> >( rhs )
+SingleDistribution<C<T>>::SingleDistribution(const SingleDistribution<C<U>>&
+                                                rhs)
+  : Distribution<C<T>>( rhs )
 {
 }
 
 template <template <typename> class C, typename T>
-SingleDistribution< C<T> >::~SingleDistribution()
+SingleDistribution<C<T>>::~SingleDistribution()
 {
 }
 
 template <template <typename> class C, typename T>
-bool SingleDistribution< C<T> >::isValid() const
+bool SingleDistribution<C<T>>::isValid() const
 {
   return true;
 }
 
 template <template <typename> class C, typename T>
-void SingleDistribution< C<T> >::startUpload(C<T>& container,
+void SingleDistribution<C<T>>::startUpload(C<T>& container,
+                                           Event* events) const
+{
+  ASSERT(events != nullptr);
+  ASSERT(this->_devices.size() == 1);
+
+  auto& device = *(this->_devices.front());
+  auto& buffer = container.deviceBuffer(device);
+
+  auto event = device.enqueueWrite(buffer,
+                                   container.hostBuffer().begin());
+
+  events->insert(event);
+}
+
+template <template <typename> class C, typename T>
+void SingleDistribution<C<T>>::startDownload(C<T>& container,
                                              Event* events) const
 {
   ASSERT(events != nullptr);
   ASSERT(this->_devices.size() == 1);
 
-  auto& buffer = container.deviceBuffer(*(this->_devices.front()));
+  auto& device = *(this->_devices.front());
+  auto& buffer = container.deviceBuffer(device);
 
-  auto event = this->_devices.front()->enqueueWrite(buffer,
-                                                    container.hostBuffer().begin());
-
-  events->insert(event);
-}
-
-template <template <typename> class C, typename T>
-void SingleDistribution< C<T> >::startDownload(C<T>& container,
-                                               Event* events) const
-{
-  ASSERT(events != nullptr);
-  ASSERT(this->_devices.size() == 1);
-
-  auto& buffer = container.deviceBuffer(*(this->_devices.front()));
-
-  auto event = this->_devices.front()->enqueueRead(buffer,
-                                                   container.hostBuffer().begin());
+  auto event = device.enqueueRead(buffer,
+                                  container.hostBuffer().begin());
 
   events->insert(event);
 }
 
 template <template <typename> class C, typename T>
-size_t SingleDistribution< C<T> >::sizeForDevice(const C<T>& container,
-                                                 const std::shared_ptr<detail::Device>& /*devicePtr*/) const
+size_t
+  SingleDistribution<C<T>>::sizeForDevice(const C<T>& container,
+                                          const std::shared_ptr<detail::Device>&
+                                              /*devicePtr*/) const
 {
   return single_distribution_helper::sizeForDevice<T>(container.size());
 }
 
 template <template <typename> class C, typename T>
-bool SingleDistribution< C<T> >::dataExchangeOnDistributionChange(
-                                   Distribution< C<T> >& newDistribution)
+bool SingleDistribution<C<T>>::dataExchangeOnDistributionChange(
+                                   Distribution<C<T>>& newDistribution)
 {
-  auto single = dynamic_cast<SingleDistribution< C<T> >*>(&newDistribution);
+  auto single = dynamic_cast<SingleDistribution<C<T>>*>(&newDistribution);
 
   if (single == nullptr) { // distributions differ => data exchange
     return true;
@@ -129,10 +134,10 @@ bool SingleDistribution< C<T> >::dataExchangeOnDistributionChange(
 }
 
 template <template <typename> class C, typename T>
-bool SingleDistribution< C<T> >::doCompare(const Distribution< C<T> >& rhs) const
+bool SingleDistribution<C<T>>::doCompare(const Distribution<C<T>>& rhs) const
 {
   bool ret = false;
-  auto const copyRhs = dynamic_cast<const SingleDistribution< C<T> >*>(&rhs);
+  auto const copyRhs = dynamic_cast<const SingleDistribution<C<T>>*>(&rhs);
   if (copyRhs) {
     ret = true;
   }
