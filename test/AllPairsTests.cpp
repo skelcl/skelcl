@@ -53,7 +53,7 @@ void testAllPairsWithMatrices(const unsigned int, const unsigned int, const unsi
 class AllPairsTest : public ::testing::Test {
 protected:
     AllPairsTest() {
-        skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::DebugInfo);
+        //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::DebugInfo);
         skelcl::init(skelcl::nDevices(1));
     }
 
@@ -182,12 +182,12 @@ TEST_F(AllPairsTest, AlternativeKernel) {
 
     std::vector<float> tmpleft(4096);
     for (size_t i = 0; i < tmpleft.size(); ++i)
-      tmpleft[i] = i % 100;
+      tmpleft[i] = i % 99;
     EXPECT_EQ(4096, tmpleft.size());
 
     std::vector<float> tmpright(4096);
     for (size_t i = 0; i < tmpright.size(); ++i)
-      tmpright[i] = i % 101;
+      tmpright[i] = i % 103;
     EXPECT_EQ(4096, tmpright.size());
 
     skelcl::Matrix<float> left(tmpleft, 64);
