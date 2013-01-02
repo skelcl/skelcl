@@ -80,7 +80,7 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
         for (int s = 0; s < SUBTILES; ++s) {
             SCL_TYPE_2 result = SCL_IDENTITY;
             if ((row + s * R < height) && (col < width))
-                P[(row + s * R) * width + col];
+                result = P[(row + s * R) * width + col];
 
             uint jj = segment * DS / C; 
             uint coffset = segment * DS - jj * C;
