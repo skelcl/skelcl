@@ -81,7 +81,7 @@ TEST_F(AllPairsTest, NoSquareMatrices32x128Simple) {
 
 // Tests kernel with matrixmultiplication with two arbitrary matrices
 TEST_F(AllPairsTest, ArbitraryMatrices) {
-    testAllPairsWithMatrices(100, 2, 60);
+    testAllPairsWithMatrices(100, 60, 11);
 }
 
 // M * N = D

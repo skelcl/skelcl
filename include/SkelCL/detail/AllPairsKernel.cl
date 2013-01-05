@@ -45,8 +45,8 @@ typedef float SCL_TYPE_2;
 
 #define R 8
 #define C 32
-#define SUBTILES 4
-#define DS 50
+#define SUBTILES 16
+#define DS 64
 
 __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
                            const __global SCL_TYPE_1* N,
@@ -62,23 +62,21 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
     const unsigned int   row = get_global_id(1) % R + (get_global_id(1) / R) * R * SUBTILES;
     const unsigned int l_row = get_local_id(1);
 
-    unsigned int segment = 0;
-
     for (int m = 0; m < SUBTILES; ++m)
         if ((row + m * R < height) && (col < width))
             P[(row + m * R) * width + col] = SCL_IDENTITY;
 
-    while (segment * DS < dimension) {
+    for (int segment = 0; segment < dimension/DS; ++segment) {
 
         uint ii = segment * DS / R;
         uint roffset = segment * DS - ii * R;
-        uint end = (dimension < (segment + 1) * DS) ? dimension : (segment + 1) * DS;
+        uint end = (segment + 1) * DS;
         for (int i = ii; i * R < end; ++i)
             if (((i - ii) * R + l_row >= roffset) && (i * R + l_row < end) && (col < width))
                 Nl[(i - ii) * R + l_row - roffset][l_col] = N[(i * R + l_row) * width + col]; 
 
         for (int s = 0; s < SUBTILES; ++s) {
-            SCL_TYPE_2 result = SCL_IDENTITY;
+            SCL_TYPE_2 result;
             if ((row + s * R < height) && (col < width))
                 result = P[(row + s * R) * width + col];
 
@@ -91,11 +89,8 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
 
             barrier(CLK_LOCAL_MEM_FENCE); 
 
-            SCL_TYPE_2 tmp;
-            uint endk = (dimension < (segment + 1) * DS) ? dimension % DS : DS;
-            for (int k = 0; k < endk; ++k) {
-                tmp = USR_ZIP(Ml[l_row][k], Nl[k][l_col]);
-                result = USR_REDUCE(result, tmp);
+            for (int k = 0; k < DS; ++k) {
+                result = USR_REDUCE(result, USR_ZIP(Ml[l_row][k], Nl[k][l_col]));
             }
 
             if ((row + s * R < height) && (col < width))
@@ -103,7 +98,41 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
 
             barrier(CLK_GLOBAL_MEM_FENCE);
         } 
-        ++segment; 
+    }
+    
+    if (dimension % DS != 0 && DS > 1) {
+        
+        int segment = dimension/DS;
+
+        uint ii = segment * DS / R;
+        uint roffset = segment * DS - ii * R;
+        for (int i = ii; i * R < dimension; ++i)
+            if (((i - ii) * R + l_row >= roffset) && (i * R + l_row < dimension) && (col < width))
+                Nl[(i - ii) * R + l_row - roffset][l_col] = N[(i * R + l_row) * width + col]; 
+
+        for (int s = 0; s < SUBTILES; ++s) {
+            SCL_TYPE_2 result;
+            if ((row + s * R < height) && (col < width))
+                result = P[(row + s * R) * width + col];
+
+            uint jj = segment * DS / C; 
+            uint coffset = segment * DS - jj * C;
+
+            for (int j = jj; j * C < dimension; ++j)
+                if (((j - jj) * C + l_col >= coffset) && (j * C + l_col < dimension) && (row + s * R < height))
+                    Ml[l_row][(j - jj) * C + l_col - coffset] = M[(row + s * R) * dimension + (j * C + l_col)];
+
+            barrier(CLK_LOCAL_MEM_FENCE); 
+
+            for (int k = 0; k < dimension % DS; ++k) {
+                result = USR_REDUCE(result, USR_ZIP(Ml[l_row][k], Nl[k][l_col]));
+            }
+
+            if ((row + s * R < height) && (col < width))
+                P[(row + s * R) * width + col] = result;
+
+            barrier(CLK_GLOBAL_MEM_FENCE);
+        } 
     }
 }
 )"

@@ -32,7 +32,7 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
         barrier(CLK_LOCAL_MEM_FENCE);
     } 
     
-    if (dimension % SIZE != 0) {
+    if (dimension % SIZE != 0 && SIZE > 1) {
         int m = dimension/SIZE;
         
         if (row < height && m * SIZE + l_col < dimension)
