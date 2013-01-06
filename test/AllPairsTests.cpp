@@ -38,6 +38,7 @@
 #include <gtest/gtest.h>
 
 #include <cstdio>
+#include <cstdlib>
 #include <vector>
 
 #include <SkelCL/SkelCL.h>
@@ -55,6 +56,8 @@ protected:
     AllPairsTest() {
         //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::DebugInfo);
         skelcl::init(skelcl::nDevices(1));
+
+        srand(1);
     }
 
     ~AllPairsTest() {
@@ -96,12 +99,12 @@ void testAllPairsWithMatrices(const unsigned int height, const unsigned int dim,
 
     std::vector<float> tmpleft(height*dim);
     for (size_t i = 0; i < tmpleft.size(); ++i)
-      tmpleft[i] = i % 100;
+        tmpleft[i] = rand() % 100;
     EXPECT_EQ(height*dim, tmpleft.size());
 
     std::vector<float> tmpright(dim*width);
     for (size_t i = 0; i < tmpright.size(); ++i)
-      tmpright[i] = i % 101;
+        tmpright[i] = rand() % 101;
     EXPECT_EQ(dim*width, tmpright.size());
 
     skelcl::Matrix<float> left(tmpleft, dim);
@@ -135,12 +138,12 @@ TEST_F(AllPairsTest, AdditionalArguments) {
 
     std::vector<float> tmpleft(4096);
     for (size_t i = 0; i < tmpleft.size(); ++i)
-      tmpleft[i] = i % 100;
+        tmpleft[i] = rand() % 100;
     EXPECT_EQ(4096, tmpleft.size());
 
     std::vector<float> tmpright(4096);
     for (size_t i = 0; i < tmpright.size(); ++i)
-      tmpright[i] = i % 101;
+        tmpright[i] = rand() % 101;
     EXPECT_EQ(4096, tmpright.size());
 
     skelcl::Matrix<float> left(tmpleft, 64);
@@ -180,33 +183,37 @@ TEST_F(AllPairsTest, AlternativeKernel) {
                                                     "  res += getElementFromRow(row, i) * getElementFromColumn(col, i); }" \
                                                     "return res; }");
 
-    std::vector<float> tmpleft(4096);
+    const unsigned int height = 100;
+    const unsigned int dim = 55;
+    const unsigned int width = 23;
+
+    std::vector<float> tmpleft(height*dim);
     for (size_t i = 0; i < tmpleft.size(); ++i)
-      tmpleft[i] = i % 99;
-    EXPECT_EQ(4096, tmpleft.size());
+        tmpleft[i] = rand() % 99;
+    EXPECT_EQ(height*dim, tmpleft.size());
 
-    std::vector<float> tmpright(4096);
+    std::vector<float> tmpright(dim*width);
     for (size_t i = 0; i < tmpright.size(); ++i)
-      tmpright[i] = i % 103;
-    EXPECT_EQ(4096, tmpright.size());
+        tmpright[i] = rand() % 101;
+    EXPECT_EQ(dim*width, tmpright.size());
 
-    skelcl::Matrix<float> left(tmpleft, 64);
-    EXPECT_EQ(64, left.rowCount());
-    EXPECT_EQ(64, left.columnCount());
+    skelcl::Matrix<float> left(tmpleft, dim);
+    EXPECT_EQ(height, left.rowCount());
+    EXPECT_EQ(dim, left.columnCount());
 
-    skelcl::Matrix<float> right(tmpright, 64);
-    EXPECT_EQ(64, right.rowCount());
-    EXPECT_EQ(64, right.columnCount());
+    skelcl::Matrix<float> right(tmpright, width);
+    EXPECT_EQ(dim, right.rowCount());
+    EXPECT_EQ(width, right.columnCount());
 
     skelcl::Matrix<float> output = allpairs(left, right);
-    EXPECT_EQ(64, output.rowCount());
-    EXPECT_EQ(64, output.columnCount());
+    EXPECT_EQ(height, output.rowCount());
+    EXPECT_EQ(width, output.columnCount());
 
     for (size_t i = 0; i < output.rowCount(); ++i) {
         for (size_t j = 0; j < output.columnCount(); ++j) {
             float tmp = 0;
             for (size_t k = 0; k < left.columnCount(); ++k) {
-                tmp += (left[i][k] * right[k][j]);
+                tmp += left[i][k] * right[k][j];
             }
             EXPECT_EQ(tmp, output[i][j]);
         }
