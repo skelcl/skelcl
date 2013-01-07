@@ -219,3 +219,49 @@ TEST_F(AllPairsTest, AlternativeKernel) {
         }
     }
 }
+
+// Tests alternative kernel with additional arguments
+TEST_F(AllPairsTest, AltKernelAddArguments) {
+    skelcl::AllPairs2<float(float, float)> allpairs("float func(lmatrix_t *row, rmatrix_t *col, const unsigned int dim, int start) {" \
+                                                    "float res = start;" \
+                                                    "for (int i = 0; i < dim; ++i) {" \
+                                                    "  res += getElementFromRow(row, i) * getElementFromColumn(col, i); }" \
+                                                    "return res; }");
+
+    const unsigned int height = 10;
+    const unsigned int dim = 55;
+    const unsigned int width = 23;
+
+    std::vector<float> tmpleft(height*dim);
+    for (size_t i = 0; i < tmpleft.size(); ++i)
+        tmpleft[i] = rand() % 98;
+    EXPECT_EQ(height*dim, tmpleft.size());
+
+    std::vector<float> tmpright(dim*width);
+    for (size_t i = 0; i < tmpright.size(); ++i)
+        tmpright[i] = rand() % 107;
+    EXPECT_EQ(dim*width, tmpright.size());
+
+    skelcl::Matrix<float> left(tmpleft, dim);
+    EXPECT_EQ(height, left.rowCount());
+    EXPECT_EQ(dim, left.columnCount());
+
+    skelcl::Matrix<float> right(tmpright, width);
+    EXPECT_EQ(dim, right.rowCount());
+    EXPECT_EQ(width, right.columnCount());
+
+    int start = 100;
+    skelcl::Matrix<float> output = allpairs(left, right, start);
+    EXPECT_EQ(height, output.rowCount());
+    EXPECT_EQ(width, output.columnCount());
+
+    for (size_t i = 0; i < output.rowCount(); ++i) {
+        for (size_t j = 0; j < output.columnCount(); ++j) {
+            float tmp = start;
+            for (size_t k = 0; k < left.columnCount(); ++k) {
+                tmp += left[i][k] * right[k][j];
+            }
+            EXPECT_EQ(tmp, output[i][j]);
+        }
+    }
+}
