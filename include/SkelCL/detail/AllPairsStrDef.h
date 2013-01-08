@@ -32,92 +32,123 @@
  *****************************************************************************/
 
 ///
-/// \file AllPairs.h
+/// \file AllPairsStrDef.h
 ///
 ///	\author Malte Friese <malte.friese@uni-muenster.de>
 ///
 
-#ifndef ALLPAIRS_H
-#define ALLPAIRS_H
+#ifndef ALLPAIRS2_STR_DEF_H
+#define ALLPAIRS2_STR_DEF_H
 
-//#include <istream>
+#include <algorithm>
+#include <istream>
+#include <iterator>
+#include <memory>
 #include <string>
+#include <type_traits>
+#include <utility>
 
-#include "AllPairsBase.h"
-#include "AllPairsStr.h"
-#include "AllPairsZR.h"
-#include "Matrix.h"
-#include "Reduce.h"
-#include "Zip.h"
-#include "Out.h"
+#define __CL_ENABLE_EXCEPTIONS
+#include <CL/cl.h>
+#undef __CL_ENABLE_EXCEPTIONS
 
+#include <ssedit/TempSourceFile.h>
+#include <ssedit/Function.h>
+
+#include "../Distributions.h"
+#include "../Matrix.h"
+#include "../Reduce.h"
+#include "../Zip.h"
+#include "../Out.h"
+
+#include "Assert.h"
+#include "Device.h"
+#include "KernelUtil.h"
+#include "Logger.h"
+#include "Program.h"
+#include "Skeleton.h"
+#include "Util.h"
 
 namespace skelcl {
 
-template<typename> class AllPairs;
-
-template<typename Tleft,
-         typename Tright,
-         typename Tout>
-class AllPairs<Tout(Tleft, Tright)> {
-
-    public:
-    // Konstruktor
-    AllPairs<Tout(Tleft, Tright)>(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip);
-    AllPairs<Tout(Tleft, Tright)>(const std::string& source, const std::string& func = std::string("func"));
-
-    // Ausführungsoperator
-    template <typename... Args>
-    Matrix<Tout> operator()(const Matrix<Tleft>& left,
-                            const Matrix<Tright>& right,
-                            Args&&... args);
-
-    // Ausführungsoperator mit Referenz
-    template <typename... Args>
-    Matrix<Tout>& operator()(Out< Matrix<Tout> > output,
-                             const Matrix<Tleft>& left,
-                             const Matrix<Tright>& right,
-                             Args&&... args);
-
-    private:
-    AllPairsBase<Tout(Tleft, Tright)> *allpairs;
-};
-
-// Konstruktor 1
+// Konstruktor
 template<typename Tleft, typename Tright, typename Tout>
-AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip)
+AllPairsStr<Tout(Tleft, Tright)>::AllPairsStr(const std::string& source, const std::string& func)
+    : _srcUser(source),
+      _funcUser(func)
 {
-    allpairs = new AllPairsZR<Tout(Tleft, Tright)>(reduce, zip);
+    this->_C = 16;
+    this->_R = 16;
+    this->_S = 1;
+
+    LOG_DEBUG("Create new AllPairs object (", this, ")");
 }
 
-// Konstruktor 2
+// Programm erstellen
 template<typename Tleft, typename Tright, typename Tout>
-AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::string& func)
+detail::Program AllPairsStr<Tout(Tleft, Tright)>::createAndBuildProgram() const
 {
-    allpairs = new AllPairsStr<Tout(Tleft, Tright)>(source, func);
+    ASSERT_MESSAGE( !_srcUser.empty(),
+                    "Tried to create program with empty user source." );
+
+    // create program
+    std::string s(Matrix<Tout>::deviceFunctions());
+
+    // helper structs and functions
+    s.append(R"(
+typedef float SCL_TYPE_0;
+typedef float SCL_TYPE_1;
+typedef float SCL_TYPE_2;
+
+typedef struct {
+    const __global SCL_TYPE_0* data;
+    unsigned int dimension;
+    unsigned int row;
+} lmatrix_t;
+
+typedef struct {
+    const __global SCL_TYPE_1* data;
+    unsigned int width;
+    unsigned int column;
+} rmatrix_t;
+
+SCL_TYPE_0 getElementFromRow(lmatrix_t *matrix, const unsigned int element_id) {
+    return matrix->data[(matrix->row) * matrix->dimension + element_id];
 }
 
-
-// public interface
-template<typename Tleft, typename Tright, typename Tout>
-template <typename... Args>
-Matrix<Tout> AllPairs<Tout(Tleft, Tright)>::operator()(const Matrix<Tleft>& left,
-                                                       const Matrix<Tright>& right,
-                                                       Args&&... args)
-{
-    return allpairs->operator()(left, right, std::forward<Args>(args)...);
+SCL_TYPE_1 getElementFromColumn(rmatrix_t *matrix, const unsigned int element_id) {
+    return matrix->data[element_id * (matrix->width) + matrix->column];
 }
 
-template<typename Tleft, typename Tright, typename Tout>
-template <typename... Args>
-Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > output,
-                                                        const Matrix<Tleft>& left,
-                                                        const Matrix<Tright>& right,
-                                                        Args&&... args)
-{
-    return allpairs->operator()(output, left, right, std::forward<Args>(args)...);
+)");
+
+    // user source
+    s.append(_srcUser);
+
+    // allpairs skeleton source
+    s.append(
+      #include "AllPairsKernel2.cl"
+    );
+
+    auto program = detail::Program(s, detail::util::hash("//AllPairs\n"
+                                                         + Matrix<Tout>::deviceFunctions()
+                                                         + _srcUser
+                                                         + _funcUser));
+    // modify program
+    if (!program.loadBinary()) {
+        program.transferParameters(_funcUser, 3, "SCL_ALLPAIRS");
+        program.transferArguments(_funcUser, 3, "USR_FUNC");
+
+        program.renameFunction(_funcUser, "USR_FUNC");
+
+        program.adjustTypes<Tleft, Tright, Tout>();
+    }
+
+    program.build();
+
+    return program;
 }
 
 } // namespace skelcl
 
-#endif // ALLPAIRS_H
+#endif // ALLPAIRS_STR_DEF_H

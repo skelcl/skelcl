@@ -30,7 +30,9 @@ set (SKELCL_SOURCES
 
 set (SKELCL_HEADERS
       ../include/SkelCL/AllPairs.h
-      ../include/SkelCL/AllPairs2.h
+      ../include/SkelCL/AllPairsBase.h
+      ../include/SkelCL/AllPairsStr.h
+      ../include/SkelCL/AllPairsZR.h
       ../include/SkelCL/Distributions.h
       ../include/SkelCL/IndexVector.h
       ../include/SkelCL/SkelCL.h
@@ -41,8 +43,9 @@ set (SKELCL_HEADERS
       ../include/SkelCL/Source.h
       ../include/SkelCL/Vector.h
       ../include/SkelCL/Zip.h
-      ../include/SkelCL/detail/AllPairsDef.h
-      ../include/SkelCL/detail/AllPairsDef2.h
+      ../include/SkelCL/detail/AllPairsBaseDef.h
+      ../include/SkelCL/detail/AllPairsStrDef.h
+      ../include/SkelCL/detail/AllPairsZRDef.h
       ../include/SkelCL/detail/AllPairsKernel.cl
       ../include/SkelCL/detail/AllPairsKernel2.cl
       ../include/SkelCL/detail/Assert.h

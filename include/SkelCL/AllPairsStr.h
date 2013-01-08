@@ -32,35 +32,47 @@
  *****************************************************************************/
 
 ///
-/// \file AllPairsKernel2.cl
+/// \file AllPairsStr.h
 ///
-/// \author Malte Friese <malte.friese@uni-muenster.de>
+///	\author Malte Friese <malte.friese@uni-muenster.de>
 ///
- 
-R"(
 
-__kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
-                           const __global SCL_TYPE_1* N,
-                                 __global SCL_TYPE_2* P,
-                           const unsigned int dimension,
-                           const unsigned int height,
-                           const unsigned int width) {
+#ifndef ALLPAIRS_STR_H
+#define ALLPAIRS_STR_H
 
-    const unsigned int col = get_global_id(0);
-    const unsigned int row = get_global_id(1);
+#include <istream>
+#include <string>
 
-    lmatrix_t Mm;
-    Mm.data = M;
-    Mm.dimension = dimension;
-    Mm.row = row;
+#include "detail/Skeleton.h"
 
-    rmatrix_t Nm;
-    Nm.data = N;
-    Nm.width = width;
-    Nm.column = col;
+namespace skelcl {
 
-    if (row < height && col < width) {
-        P[row * width + col] = USR_FUNC(&Mm, &Nm, dimension);
-    }
-}
-)"
+template <typename> class Matrix;
+template <typename> class Out;
+namespace detail { class Program; }
+
+template<typename> class AllPairsStr;
+
+
+template<typename Tleft,
+         typename Tright,
+         typename Tout>
+class AllPairsStr<Tout(Tleft, Tright)> : public AllPairsBase<Tout(Tleft, Tright)> {
+
+    public:
+    // Konstruktor
+    AllPairsStr<Tout(Tleft, Tright)>(const std::string& source, const std::string& func = std::string("func"));
+
+    protected:
+    // Programm erstellen
+    detail::Program createAndBuildProgram() const;
+
+    std::string _srcUser;
+    std::string _funcUser;
+};
+
+} // namespace skelcl
+
+#include "detail/AllPairsStrDef.h"
+
+#endif // ALLPAIRS_STR_H

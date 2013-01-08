@@ -32,13 +32,13 @@
  *****************************************************************************/
 
 ///
-/// \file AllPairs2.h
+/// \file AllPairs.h
 ///
 ///	\author Malte Friese <malte.friese@uni-muenster.de>
 ///
 
-#ifndef ALLPAIRS2_H
-#define ALLPAIRS2_H
+#ifndef ALLPAIRS_ZR_H
+#define ALLPAIRS_ZR_H
 
 #include <istream>
 #include <string>
@@ -53,77 +53,31 @@ template <typename> class Zip;
 template <typename> class Out;
 namespace detail { class Program; }
 
-template<typename> class AllPairs2;
+template<typename> class AllPairsZR;
 
-///
-/// \class AllPairs
-///
-/// \brief An instance of the AllPairs skeleton describes a calculation of all two
-///        pairs which can be performed on a device.
-///
-/// \tparam Tleft  Type of the left input data of the skeleton
-///         Tright Type of the right input data of the skeleton
-///         Tout   Type of the output data of the skeleton
-///
-/// On creation the AllPairs skeleton is customized with a given reduce and
-/// zip skeleton.
-/// The AllPairs skeleton can then be called by passing two matrix containers.
-/// The AllPairs skeleton will compute the results of all two pairs of the row
-/// and column-vectors from the matrices and store them in a result matrix.
-/// More formally: When M and N are two matrices of dimension height x dimension
-/// and dimension x width. Then D is the result matrix of dimension height x width.
-/// Every D[i,j] is the scalar result from Reduce(Zip(M_i, N_j)), where M_i is
-/// the ith row in M and N_j is the jth column in N.
-///
+
 template<typename Tleft,
          typename Tright,
          typename Tout>
-class AllPairs2<Tout(Tleft, Tright)> : public detail::Skeleton {
+class AllPairsZR<Tout(Tleft, Tright)> : public AllPairsBase<Tout(Tleft, Tright)> {
 
     public:
     // Konstruktor
-    AllPairs2<Tout(Tleft, Tright)>(const std::string& source, const std::string& func = std::string("func"));
+    AllPairsZR<Tout(Tleft, Tright)>(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip);
 
-    // Ausführungsoperator
-    template <typename... Args>
-    Matrix<Tout> operator()(const Matrix<Tleft>& left,
-                            const Matrix<Tright>& right,
-                            Args&&... args);
-
-    // Ausführungsoperator mit Referenz
-    template <typename... Args>
-    Matrix<Tout>& operator()(Out< Matrix<Tout> > output,
-                             const Matrix<Tleft>& left,
-                             const Matrix<Tright>& right,
-                             Args&&... args);
-
-    private:
-    // Ausführen
-    template <typename... Args>
-    void execute(const detail::Program& program,
-                 Matrix<Tout>& output,
-                 const Matrix<Tleft>& left,
-                 const Matrix<Tright>& right,
-                 Args&&... args);
-
+    protected:
     // Programm erstellen
     detail::Program createAndBuildProgram() const;
 
-    // Eingabe vorbereiten
-    void prepareInput(const Matrix<Tleft>& left,
-                      const Matrix<Tright>& right);
-
-    // Ausgabe vorbereiten
-    void prepareOutput(Matrix<Tout>& output,
-                       const Matrix<Tleft>& left,
-                       const Matrix<Tright>& right);
-
-    std::string _srcUser;
-    std::string _funcUser;
+    std::string _srcReduce;
+    std::string _srcZip;
+    std::string _funcReduce;
+    std::string _funcZip;
+    std::string _idReduce;
 };
 
 } // namespace skelcl
 
-#include "detail/AllPairsDef2.h"
+#include "detail/AllPairsZRDef.h"
 
-#endif // ALLPAIRS2_H
+#endif // ALLPAIRS_ZR_H
