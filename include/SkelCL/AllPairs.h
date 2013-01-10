@@ -66,6 +66,12 @@ class AllPairs<Tout(Tleft, Tright)> {
     AllPairs<Tout(Tleft, Tright)>(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip);
     AllPairs<Tout(Tleft, Tright)>(const std::string& source, const std::string& func = std::string("func"));
 
+    // Destruktor
+    ~AllPairs();
+
+    AllPairs(const AllPairs& rhs) = default; // geht das?
+    AllPairs& operator=(const AllPairs& rhs) = default;
+
     // Ausführungsoperator
     template <typename... Args>
     Matrix<Tout> operator()(const Matrix<Tleft>& left,
@@ -95,6 +101,13 @@ template<typename Tleft, typename Tright, typename Tout>
 AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::string& func)
 {
     allpairs = new AllPairsStr<Tout(Tleft, Tright)>(source, func);
+}
+
+// Destruktor
+template<typename Tleft, typename Tright, typename Tout>
+AllPairs<Tout(Tleft, Tright)>::~AllPairs() {
+    delete allpairs;
+    allpairs = 0;
 }
 
 
