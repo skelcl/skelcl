@@ -40,31 +40,49 @@
 #ifndef ALLPAIRS_H
 #define ALLPAIRS_H
 
-//#include <istream>
+#include <istream>
 #include <string>
 
-#include "AllPairsBase.h"
-#include "AllPairsStr.h"
-#include "AllPairsZR.h"
-#include "Matrix.h"
-#include "Reduce.h"
-#include "Zip.h"
-#include "Out.h"
-
+#include "detail/Skeleton.h"
 
 namespace skelcl {
 
+template <typename> class Matrix;
+template <typename> class Reduce;
+template <typename> class Zip;
+template <typename> class Out;
+namespace detail { class Program; }
+
 template<typename> class AllPairs;
 
+///
+/// \class AllPairs
+///
+/// \brief An instance of the AllPairs skeleton describes a calculation of all two
+///        pairs which can be performed on a device.
+///
+/// \tparam Tleft  Type of the left input data of the skeleton
+///         Tright Type of the right input data of the skeleton
+///         Tout   Type of the output data of the skeleton
+///
+/// On creation the AllPairs skeleton is customized with a given reduce and
+/// zip skeleton.
+/// The AllPairs skeleton can then be called by passing two matrix containers.
+/// The AllPairs skeleton will compute the results of all two pairs of the row
+/// and column-vectors from the matrices and store them in a result matrix.
+/// More formally: When M and N are two matrices of dimension height x dimension
+/// and dimension x width. Then D is the result matrix of dimension height x width.
+/// Every D[i,j] is the scalar result from Reduce(Zip(M_i, N_j)), where M_i is
+/// the ith row in M and N_j is the jth column in N.
+///
 template<typename Tleft,
          typename Tright,
          typename Tout>
-class AllPairs<Tout(Tleft, Tright)> {
+class AllPairs<Tout(Tleft, Tright)> : public detail::Skeleton {
 
     public:
     // Konstruktor
     AllPairs<Tout(Tleft, Tright)>(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip);
-    AllPairs<Tout(Tleft, Tright)>(const std::string& source, const std::string& func = std::string("func"));
 
     // Ausführungsoperator
     template <typename... Args>
@@ -80,44 +98,35 @@ class AllPairs<Tout(Tleft, Tright)> {
                              Args&&... args);
 
     private:
-    AllPairsBase<Tout(Tleft, Tright)> *allpairs;
+    // Ausführen
+    template <typename... Args>
+    void execute(const detail::Program& program,
+                 Matrix<Tout>& output,
+                 const Matrix<Tleft>& left,
+                 const Matrix<Tright>& right,
+                 Args&&... args);
+
+    // Programm erstellen
+    detail::Program createAndBuildProgram() const;
+
+    // Eingabe vorbereiten
+    void prepareInput(const Matrix<Tleft>& left,
+                      const Matrix<Tright>& right);
+
+    // Ausgabe vorbereiten
+    void prepareOutput(Matrix<Tout>& output,
+                       const Matrix<Tleft>& left,
+                       const Matrix<Tright>& right);
+
+    std::string _srcReduce;
+    std::string _srcZip;
+    std::string _funcReduce;
+    std::string _funcZip;
+    std::string _idReduce;
 };
 
-// Konstruktor 1
-template<typename Tleft, typename Tright, typename Tout>
-AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip)
-{
-    allpairs = new AllPairsZR<Tout(Tleft, Tright)>(reduce, zip);
-}
-
-// Konstruktor 2
-template<typename Tleft, typename Tright, typename Tout>
-AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::string& func)
-{
-    allpairs = new AllPairsStr<Tout(Tleft, Tright)>(source, func);
-}
-
-
-// public interface
-template<typename Tleft, typename Tright, typename Tout>
-template <typename... Args>
-Matrix<Tout> AllPairs<Tout(Tleft, Tright)>::operator()(const Matrix<Tleft>& left,
-                                                       const Matrix<Tright>& right,
-                                                       Args&&... args)
-{
-    return allpairs->operator()(left, right, std::forward<Args>(args)...);
-}
-
-template<typename Tleft, typename Tright, typename Tout>
-template <typename... Args>
-Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > output,
-                                                        const Matrix<Tleft>& left,
-                                                        const Matrix<Tright>& right,
-                                                        Args&&... args)
-{
-    return allpairs->operator()(output, left, right, std::forward<Args>(args)...);
-}
-
 } // namespace skelcl
+
+#include "detail/AllPairsDef.h"
 
 #endif // ALLPAIRS_H

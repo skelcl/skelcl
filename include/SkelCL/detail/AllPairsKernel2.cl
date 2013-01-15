@@ -39,12 +39,12 @@
  
 R"(
 
-__kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
-                           const __global SCL_TYPE_1* N,
-                                 __global SCL_TYPE_2* P,
-                           const unsigned int dimension,
-                           const unsigned int height,
-                           const unsigned int width) {
+__kernel void SCL_ALLPAIRS2(const __global SCL_TYPE_0* M,
+                            const __global SCL_TYPE_1* N,
+                                  __global SCL_TYPE_2* P,
+                            const unsigned int dimension,
+                            const unsigned int height,
+                            const unsigned int width) {
 
     const unsigned int col = get_global_id(0);
     const unsigned int row = get_global_id(1);
