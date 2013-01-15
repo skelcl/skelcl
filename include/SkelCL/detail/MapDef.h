@@ -403,9 +403,8 @@ void Map<Tout(Index)>::execute(Vector<Tout>& output,
       detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 2,
                                         std::forward<Args>(args)...);
 
-      std::vector<cl::Buffer> keepAlive;
-      keepAlive.push_back(outputBuffer.clBuffer());
-      detail::kernelUtil::keepAlive(keepAlive, *devicePtr, std::forward<Args>(args)...);
+      auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
+                                                     std::forward<Args>(args)...);
 
       // after finishing the kernel invoke this function ...
       auto invokeAfter =  [=] () {
