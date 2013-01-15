@@ -79,7 +79,18 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const 
       _srcZip(zip.source()),
       _funcReduce(reduce.func()),
       _funcZip(zip.func()),
-      _idReduce(reduce.id())
+      _idReduce(reduce.id()),
+      _isSpecial(true), _C(32), _R(8), _S(16) // must match AllPairsKernel.cl values!
+{
+    LOG_DEBUG("Create new AllPairs object (", this, ")");
+}
+
+template<typename Tleft, typename Tright, typename Tout>
+AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::string& func)
+    : detail::Skeleton(),
+      _srcUser(source),
+      _funcUser(func),
+      _isSpecial(false), _C(16), _R(16), _S(1)
 {
     LOG_DEBUG("Create new AllPairs object (", this, ")");
 }
@@ -141,9 +152,9 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
         auto& rightBuffer  = right.deviceBuffer(*devicePtr);
 
         cl_uint elements[2]   = {output.rowCount(), output.columnCount()};
-        cl_uint local[2]      = {32, 8}; // C, R
+        cl_uint local[2]      = {_C, _R}; // C, R
         cl_uint global[2]     = {detail::util::ceilToMultipleOf(elements[1], local[0]),
-                                 detail::util::ceilToMultipleOf(elements[0], local[1]*4)/4}; // 4 SUBTILES
+                                 detail::util::ceilToMultipleOf(elements[0], local[1]*_S)/_S}; // SUBTILES
         cl_uint dimension     = left.columnCount();
 
         LOG_DEBUG("dim: ", dimension, " height: ", elements[0], " width: ",elements[1]);
@@ -187,6 +198,14 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
 // Programm erstellen
 template<typename Tleft, typename Tright, typename Tout>
 detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
+{
+    if (_isSpecial)
+        return createAndBuildProgramSpecial();
+    return createAndBuildProgramGeneral();
+}
+
+template<typename Tleft, typename Tright, typename Tout>
+detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() const
 {
     ASSERT_MESSAGE( !_srcReduce.empty(),
                     "Tried to create program with empty user reduce source." );
@@ -250,6 +269,70 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
 
         program.renameFunction("TMP_REDUCE", "USR_REDUCE");
         program.renameFunction("TMP_ZIP", "USR_ZIP");
+
+        program.adjustTypes<Tleft, Tright, Tout>();
+    }
+
+    program.build();
+
+    return program;
+}
+
+template<typename Tleft, typename Tright, typename Tout>
+detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramGeneral() const
+{
+    ASSERT_MESSAGE( !_srcUser.empty(),
+                    "Tried to create program with empty user source." );
+
+    // create program
+    std::string s(Matrix<Tout>::deviceFunctions());
+
+    // helper structs and functions
+    s.append(R"(
+typedef float SCL_TYPE_0;
+typedef float SCL_TYPE_1;
+typedef float SCL_TYPE_2;
+
+typedef struct {
+    const __global SCL_TYPE_0* data;
+    unsigned int dimension;
+    unsigned int row;
+} lmatrix_t;
+
+typedef struct {
+    const __global SCL_TYPE_1* data;
+    unsigned int width;
+    unsigned int column;
+} rmatrix_t;
+
+SCL_TYPE_0 getElementFromRow(lmatrix_t *matrix, const unsigned int element_id) {
+    return matrix->data[(matrix->row) * matrix->dimension + element_id];
+}
+
+SCL_TYPE_1 getElementFromColumn(rmatrix_t *matrix, const unsigned int element_id) {
+    return matrix->data[element_id * (matrix->width) + matrix->column];
+}
+
+)");
+
+    // user source
+    s.append(_srcUser);
+
+    // allpairs skeleton source
+    s.append(
+      #include "AllPairsKernel2.cl"
+    );
+
+    auto program = detail::Program(s, detail::util::hash("//AllPairs\n"
+                                                         + Matrix<Tout>::deviceFunctions()
+                                                         + _srcUser
+                                                         + _funcUser));
+    // modify program
+    if (!program.loadBinary()) {
+        program.transferParameters(_funcUser, 3, "SCL_ALLPAIRS");
+        program.transferArguments(_funcUser, 3, "USR_FUNC");
+
+        program.renameFunction(_funcUser, "USR_FUNC");
 
         program.adjustTypes<Tleft, Tright, Tout>();
     }

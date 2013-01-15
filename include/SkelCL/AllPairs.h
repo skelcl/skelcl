@@ -81,8 +81,10 @@ template<typename Tleft,
 class AllPairs<Tout(Tleft, Tright)> : public detail::Skeleton {
 
     public:
-    // Konstruktor
+    // Konstruktoren
     AllPairs<Tout(Tleft, Tright)>(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip);
+
+    AllPairs<Tout(Tleft, Tright)>(const std::string& source, const std::string& func = std::string("func"));
 
     // Ausführungsoperator
     template <typename... Args>
@@ -108,6 +110,8 @@ class AllPairs<Tout(Tleft, Tright)> : public detail::Skeleton {
 
     // Programm erstellen
     detail::Program createAndBuildProgram() const;
+    detail::Program createAndBuildProgramSpecial() const;
+    detail::Program createAndBuildProgramGeneral() const;
 
     // Eingabe vorbereiten
     void prepareInput(const Matrix<Tleft>& left,
@@ -118,11 +122,22 @@ class AllPairs<Tout(Tleft, Tright)> : public detail::Skeleton {
                        const Matrix<Tleft>& left,
                        const Matrix<Tright>& right);
 
+    // used by special implementation
     std::string _srcReduce;
     std::string _srcZip;
     std::string _funcReduce;
     std::string _funcZip;
     std::string _idReduce;
+
+    // used by general implementation
+    std::string _srcUser;
+    std::string _funcUser;
+
+    // used by both implementations
+    bool _isSpecial;
+    unsigned int _C;
+    unsigned int _R;
+    unsigned int _S;
 };
 
 } // namespace skelcl

@@ -44,7 +44,6 @@
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/AllPairs.h>
-#include <SkelCL/AllPairs2.h>
 #include <SkelCL/Zip.h>
 #include <SkelCL/Reduce.h>
 #include <SkelCL/detail/Logger.h>
@@ -172,12 +171,12 @@ TEST_F(AllPairsTest, AdditionalArguments) {
 
 // Tests alternative kernel-constructor
 TEST_F(AllPairsTest, AlternativeKernelConstructor) {
-    skelcl::AllPairs2<float(float, float)> allpairs("float func(lmatrix_t *row, rmatrix_t *col, const unsigned int dim){return 1;}");
+    skelcl::AllPairs<float(float, float)> allpairs("float func(lmatrix_t *row, rmatrix_t *col, const unsigned int dim){return 1;}");
 }
 
 // Tests alternative kernel
 TEST_F(AllPairsTest, AlternativeKernel) {
-    skelcl::AllPairs2<float(float, float)> allpairs("float func(lmatrix_t *row, rmatrix_t *col, const unsigned int dim) {" \
+    skelcl::AllPairs<float(float, float)> allpairs("float func(lmatrix_t *row, rmatrix_t *col, const unsigned int dim) {" \
                                                     "float res = 0;" \
                                                     "for (int i = 0; i < dim; ++i) {" \
                                                     "  res += getElementFromRow(row, i) * getElementFromColumn(col, i); }" \
@@ -222,7 +221,7 @@ TEST_F(AllPairsTest, AlternativeKernel) {
 
 // Tests alternative kernel with additional arguments
 TEST_F(AllPairsTest, AltKernelAddArguments) {
-    skelcl::AllPairs2<float(float, float)> allpairs("float func(lmatrix_t *row, rmatrix_t *col, const unsigned int dim, int start) {" \
+    skelcl::AllPairs<float(float, float)> allpairs("float func(lmatrix_t *row, rmatrix_t *col, const unsigned int dim, int start) {" \
                                                     "float res = start;" \
                                                     "for (int i = 0; i < dim; ++i) {" \
                                                     "  res += getElementFromRow(row, i) * getElementFromColumn(col, i); }" \
