@@ -39,10 +39,11 @@
 
 #include <string>
 
+#include <pvsutil/Assert.h>
+
 #include "SkelCL/Map.h"
 #include "SkelCL/Source.h"
 
-#include "SkelCL/detail/Assert.h"
 #include "SkelCL/detail/Program.h"
 
 namespace skelcl {

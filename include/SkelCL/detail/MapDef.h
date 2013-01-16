@@ -54,6 +54,9 @@
 #include <CL/cl.h>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include <pvsutil/Assert.h>
+#include <pvsutil/Logger.h>
+
 #include "../Distributions.h"
 #include "../Index.h"
 #include "../Out.h"
@@ -61,10 +64,8 @@
 #include "../Source.h"
 #include "../Vector.h"
 
-#include "Assert.h"
 #include "Device.h"
 #include "KernelUtil.h"
-#include "Logger.h"
 #include "Program.h"
 #include "Skeleton.h"
 #include "Util.h"

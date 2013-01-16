@@ -32,74 +32,103 @@
  *****************************************************************************/
  
 ///
-/// \file LoggerDef.h
+/// \file Logger.h
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef LOGGER_DEF_H_
-#define LOGGER_DEF_H_
+#ifndef LOGGER_H_
+#define LOGGER_H_
 
-#include <iomanip>
-#include <iostream>
+#include <chrono>
 #include <ostream>
-#include <sstream>
-#include <string>
-
-#ifndef NPROFILING
-#include <sys/time.h>
-#endif
 
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
-#include "Assert.h"
+namespace pvsutil {
 
-namespace skelcl {
+class Logger {
+public:
+  struct Severity {
+    enum Type {
+      Error = 0,
+      Warning,
+      Info,
+      Debug,
+      DebugInfo
+    };
+  };
 
-namespace detail {
+  Logger();
 
-namespace logger_impl {
+  Logger(std::ostream& output, Severity::Type severity);
 
-std::string getErrorString(cl_int err);
+  void setOutput(std::ostream& output);
 
-std::string formatHeader(const Logger& logger,
-                         Logger::Severity::Type severity,
-                         const char*    file,
-                         const int      line);
+  void setLoggingLevel(Severity::Type severity);
 
-} // namespace logger_impl
+  template <typename... Args>
+  void log(Severity::Type severity, const char* file, int line,
+           Args&&... args);
 
-template <typename... Args>
-void Logger::log(Severity::Type severity,
-                 const char* file, int line,
-                 Args&&... args)
-{
-  if (severity <= _severity) {
-    *_output << logger_impl::formatHeader(*this, severity, file, line);
-    logArgs(*_output, std::forward<Args>(args)...);
-  }
-}
+  const std::chrono::high_resolution_clock::time_point& startTimePoint() const;
 
-template <typename... Args>
-void Logger::logArgs(std::ostream& output, const cl::Error& err, Args&&... args)
-{
-  output << "OpenCL error: " << logger_impl::getErrorString(err.err())
-         << " " << err.what();
-  logArgs(output, std::forward<Args>(args)...);
-}
+private:
+  void logArgs(std::ostream& output);
 
-template <typename T, typename... Args>
-void Logger::logArgs(std::ostream& output, T value, Args&&... args)
-{
-  output << value;
-  logArgs(output, std::forward<Args>(args)...);
-}
+  template <typename... Args>
+  void logArgs(std::ostream& output, const cl::Error& err, Args&&... args);
 
-} // namespace detail
+  template <typename T, typename... Args>
+  void logArgs(std::ostream& output, T value, Args&&... args);
 
-} // namespace skelcl
+  std::chrono::high_resolution_clock::time_point  _startTime;
+  Severity::Type                                  _severity;
+  std::ostream*                                   _output;
+};
 
-#endif // LOGGER_DEF_H_
+#define LOG(severity, ...)\
+  pvsutil::defaultLogger.log(severity, __FILE__, __LINE__,\
+                                    __VA_ARGS__)
+
+#define LOG_ERROR(...)\
+  LOG(pvsutil::Logger::Severity::Error, __VA_ARGS__)
+
+#define ABORT_WITH_ERROR(err)\
+  LOG_ERROR(err); abort()
+
+#ifdef NDEBUG
+
+#define LOG_WARNING(...)    (void(0))
+#define LOG_INFO(...)       (void(0))
+#define LOG_DEBUG(...)      (void(0))
+#define LOG_DEBUG_INFO(...) (void(0))
+
+#else  // DEBUG
+
+#define LOG_WARNING(...)\
+  LOG(pvsutil::Logger::Severity::Warning, __VA_ARGS__)
+
+#define LOG_INFO(...)\
+  LOG(pvsutil::Logger::Severity::Info, __VA_ARGS__)
+
+#define LOG_DEBUG(...)\
+  LOG(pvsutil::Logger::Severity::Debug, __VA_ARGS__)
+
+#define LOG_DEBUG_INFO(...)\
+  LOG(pvsutil::Logger::Severity::DebugInfo, __VA_ARGS__)
+
+#endif // NDEBUG
+
+// Default logger connected per default to std::clog
+extern Logger defaultLogger;
+
+
+} // namespace pvsutil
+
+#include "detail/LoggerDef.h"
+
+#endif // LOGGER_H_
 

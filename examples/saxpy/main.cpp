@@ -42,10 +42,11 @@
 #include <algorithm>
 #include <numeric>
 
+#include <pvsutil/Logger.h>
+
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/Zip.h>
-#include <SkelCL/detail/Logger.h>
 
 using namespace skelcl;
 

@@ -37,15 +37,16 @@
 
 #include <gtest/gtest.h>
 
+#include <pvsutil/Logger.h>
+
 #include <SkelCL/Distributions.h>
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
-#include <SkelCL/detail/Logger.h>
 
 class VectorTest : public ::testing::Test {
 protected:
   VectorTest() {
-    skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+    pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
     skelcl::init(skelcl::nDevices(1));
   };
 

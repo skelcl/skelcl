@@ -37,16 +37,16 @@
 
 #include <gtest/gtest.h>
 
+#include <pvsutil/Logger.h>
+
 #include <SkelCL/Distributions.h>
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Matrix.h>
-#include <SkelCL/detail/Logger.h>
 
 class MatrixTest : public ::testing::Test {
 protected:
   MatrixTest() {
-    skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
-    skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+    pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
     skelcl::init(skelcl::nDevices(1));
   };
 

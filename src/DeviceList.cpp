@@ -47,14 +47,15 @@
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include <pvsutil/Assert.h>
+#include <pvsutil/Logger.h>
+
 #include "SkelCL/detail/DeviceList.h"
 
-#include "SkelCL/detail/Assert.h"
 #include "SkelCL/detail/Device.h"
 #include "SkelCL/detail/DeviceID.h"
 #include "SkelCL/detail/DeviceProperties.h"
 #include "SkelCL/detail/PlatformID.h"
-#include "SkelCL/detail/Logger.h"
 
 namespace skelcl {
 

@@ -41,13 +41,13 @@
 #include <cstdio>
 #include <memory>
 
-#include "SkelCL/detail/Assert.h"
+#include "pvsutil/Assert.h"
 
-#include "SkelCL/detail/Logger.h"
+#include "pvsutil/Logger.h"
 
-namespace skelcl {
+namespace pvsutil {
 
-namespace detail {
+namespace assert_impl {
 
 void ASSERT_IMPL(const char* file,
                  const int   line,
@@ -92,7 +92,7 @@ void ASSERT_IMPL(const char* file,
 
 #pragma GCC diagnostic pop
 
-} // namespace detail
+} // namespace assert_impl
 
-} // namespace skelcl
+} // namespace pvsutil
 

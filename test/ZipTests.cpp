@@ -41,15 +41,16 @@
 
 #include <cstdio>
 
+#include <pvsutil/Logger.h>
+
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/Zip.h>
-#include <SkelCL/detail/Logger.h>
 
 class ZipTest : public ::testing::Test {
 protected:
   ZipTest() {
-//    skelcl::detail::Logger.setLoggingLevel(skelcl::detail::Severity::Debug);
+//    pvsutil::Logger.setLoggingLevel(pvsutil::Severity::Debug);
     skelcl::init(skelcl::nDevices(1));
   };
 

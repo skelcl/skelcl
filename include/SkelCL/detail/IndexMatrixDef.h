@@ -51,15 +51,16 @@
 #include <utility>
 #include <vector>
 
+#include <pvsutil/Assert.h>
+#include <pvsutil/Logger.h>
+
 #include "../Distributions.h"
 
-#include "Assert.h"
 #include "Device.h"
 #include "DeviceBuffer.h"
 #include "DeviceList.h"
 #include "Distribution.h"
 #include "Event.h"
-#include "Logger.h"
 
 namespace skelcl {
 

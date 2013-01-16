@@ -46,6 +46,8 @@
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include <pvsutil/Logger.h>
+
 #include "../Local.h"
 #include "../Matrix.h"
 #include "../Out.h"
@@ -53,7 +55,6 @@
 
 #include "Device.h"
 #include "DeviceBuffer.h"
-#include "Logger.h"
 
 namespace skelcl {
 

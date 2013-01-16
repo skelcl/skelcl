@@ -41,16 +41,17 @@
 
 #include <cstdio>
 
+#include <pvsutil/Logger.h>
+
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Matrix.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/Map.h>
-#include <SkelCL/detail/Logger.h>
 
 class MapTest : public ::testing::Test {
 protected:
   MapTest() {
-    //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::DebugInfo);
+    //pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
     skelcl::init(skelcl::nDevices(1));
   };
 

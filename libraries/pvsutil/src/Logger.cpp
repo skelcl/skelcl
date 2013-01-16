@@ -41,11 +41,9 @@
 #include <functional>
 #include <ostream>
 
-#include "SkelCL/detail/Logger.h"
+#include "pvsutil/Logger.h"
 
-namespace skelcl {
-
-namespace detail {
+namespace pvsutil {
 
 Logger defaultLogger;
 
@@ -249,7 +247,5 @@ std::string formatHeader(const Logger& logger,
 
 } // namespace logger_impl
 
-} // namespace detail
-
-} // namespacce skelcl
+} // namespacce pvsutil
 

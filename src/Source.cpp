@@ -40,9 +40,9 @@
 #include <istream>
 #include <string>
 
-#include "SkelCL/Source.h"
+#include <pvsutil/Assert.h>
 
-#include "SkelCL/detail/Assert.h"
+#include "SkelCL/Source.h"
 
 namespace skelcl {
 

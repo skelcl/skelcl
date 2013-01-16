@@ -40,9 +40,10 @@
 #ifndef MAP_HELPER_DEF_H_
 #define MAP_HELPER_DEF_H_
 
+#include <pvsutil/Logger.h>
+
 #include "../Distributions.h"
 
-#include "Logger.h"
 #include "Util.h"
 #include "KernelUtil.h"
 

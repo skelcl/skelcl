@@ -42,7 +42,8 @@
 
 #include <functional>
 
-#include "Assert.h"
+#include <pvsutil/Assert.h>
+
 #include "DeviceList.h"
 
 namespace skelcl {

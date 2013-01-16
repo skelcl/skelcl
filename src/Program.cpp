@@ -48,16 +48,17 @@
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include <pvsutil/Assert.h>
+#include <pvsutil/Logger.h>
+
 #include <ssedit/Function.h>
 #include <ssedit/TempSourceFile.h>
 #include <ssedit/Typedef.h>
 
 #include "SkelCL/detail/Program.h"
 
-#include "SkelCL/detail/Assert.h"
 #include "SkelCL/detail/Device.h"
 #include "SkelCL/detail/DeviceList.h"
-#include "SkelCL/detail/Logger.h"
 #include "SkelCL/detail/Util.h"
 
 namespace {

@@ -39,15 +39,16 @@
 
 #include <fstream>
 
+#include <pvsutil/Logger.h>
+
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/Reduce.h>
-#include <SkelCL/detail/Logger.h>
 
 class ReduceTest : public ::testing::Test {
 protected:
   ReduceTest() {
-    //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+    //pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
     skelcl::init(skelcl::nDevices(1));
   };
 
