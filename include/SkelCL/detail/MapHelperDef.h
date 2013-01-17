@@ -57,6 +57,11 @@ MapHelper<Tout(Tin)>::MapHelper(detail::Program&& program)
 }
 
 template <typename Tin, typename Tout>
+MapHelper<Tout(Tin)>::~MapHelper()
+{
+}
+
+template <typename Tin, typename Tout>
 template <template <typename> class C>
 void MapHelper<Tout(Tin)>::prepareInput(const C<Tin>& input) const
 {

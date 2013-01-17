@@ -73,7 +73,7 @@ class IndexPoint {
 public:
   typedef std::pair<Index, Index> indexPoint_type;
 
-  IndexPoint() = default;
+  IndexPoint();
 
   IndexPoint(const indexPoint_type& indexPoint);
   IndexPoint(const Index& x, const Index& y);

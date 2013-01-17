@@ -54,6 +54,12 @@ namespace skelcl {
 
 namespace detail {
 
+
+Event::Event()
+  : _events()
+{
+}
+
 Event::Event(const std::vector<cl::Event>& events)
   : _events(events)
 {

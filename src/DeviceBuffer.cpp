@@ -75,6 +75,11 @@ namespace skelcl {
 
 namespace detail {
 
+DeviceBuffer::DeviceBuffer()
+  : _device(), _size(), _elemSize(), _flags(), _buffer()
+{
+}
+
 DeviceBuffer::DeviceBuffer(const std::shared_ptr<Device>& devicePtr,
                            const size_t size,
                            const size_t elemSize,
