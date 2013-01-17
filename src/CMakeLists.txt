@@ -43,6 +43,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/Zip.h
       ../include/SkelCL/detail/AllPairsDef.h
       ../include/SkelCL/detail/AllPairsKernel.cl
+      ../include/SkelCL/detail/AllPairsKernel2.cl
       ../include/SkelCL/detail/Assert.h
       ../include/SkelCL/detail/BlockDistribution.h
       ../include/SkelCL/detail/BlockDistributionDef.h

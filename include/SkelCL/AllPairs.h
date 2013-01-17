@@ -55,15 +55,36 @@ namespace detail { class Program; }
 
 template<typename> class AllPairs;
 
-// Klasse
+///
+/// \class AllPairs
+///
+/// \brief An instance of the AllPairs skeleton describes a calculation of all two
+///        pairs which can be performed on a device.
+///
+/// \tparam Tleft  Type of the left input data of the skeleton
+///         Tright Type of the right input data of the skeleton
+///         Tout   Type of the output data of the skeleton
+///
+/// On creation the AllPairs skeleton is customized with a given reduce and
+/// zip skeleton.
+/// The AllPairs skeleton can then be called by passing two matrix containers.
+/// The AllPairs skeleton will compute the results of all two pairs of the row
+/// and column-vectors from the matrices and store them in a result matrix.
+/// More formally: When M and N are two matrices of dimension height x dimension
+/// and dimension x width. Then D is the result matrix of dimension height x width.
+/// Every D[i,j] is the scalar result from Reduce(Zip(M_i, N_j)), where M_i is
+/// the ith row in M and N_j is the jth column in N.
+///
 template<typename Tleft,
          typename Tright,
          typename Tout>
 class AllPairs<Tout(Tleft, Tright)> : public detail::Skeleton {
 
     public:
-    // Konstruktor
+    // Konstruktoren
     AllPairs<Tout(Tleft, Tright)>(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip);
+
+    AllPairs<Tout(Tleft, Tright)>(const std::string& source, const std::string& func = std::string("func"));
 
     // Ausführungsoperator
     template <typename... Args>
@@ -89,6 +110,8 @@ class AllPairs<Tout(Tleft, Tright)> : public detail::Skeleton {
 
     // Programm erstellen
     detail::Program createAndBuildProgram() const;
+    detail::Program createAndBuildProgramSpecial() const;
+    detail::Program createAndBuildProgramGeneral() const;
 
     // Eingabe vorbereiten
     void prepareInput(const Matrix<Tleft>& left,
@@ -99,10 +122,22 @@ class AllPairs<Tout(Tleft, Tright)> : public detail::Skeleton {
                        const Matrix<Tleft>& left,
                        const Matrix<Tright>& right);
 
+    // used by special implementation
     std::string _srcReduce;
     std::string _srcZip;
     std::string _funcReduce;
     std::string _funcZip;
+    std::string _idReduce;
+
+    // used by general implementation
+    std::string _srcUser;
+    std::string _funcUser;
+
+    // used by both implementations
+    bool _isSpecial;
+    unsigned int _C;
+    unsigned int _R;
+    unsigned int _S;
 };
 
 } // namespace skelcl

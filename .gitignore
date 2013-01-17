@@ -1,9 +1,11 @@
+*.*~
 *.swp
 *.user
 build*
 libraries/gtest
 libraries/ssedit/libraries/gtest
 libraries/ssedit/libraries/libclang
+libraries/ssedit/libraries/libclang64
 xcuserdata
 !xcshareddata
 !xcschemes
