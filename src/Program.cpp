@@ -122,6 +122,36 @@ void Program::transferParameters(const std::string& from,
             param != params.end();
           ++param) {
     ASSERT(param->isValid());
+
+    if (param->getType().getKind() == CXType_Typedef) {
+      ssedit::Typedef t(param->getType().getTypeDeclaration(), *_sourceFile);
+      auto pos = t.getName().rfind("_matrix_t");
+      // if the type is a typedef and it's ending with '_matrix_t' ...
+      if ( pos != std::string::npos ) {
+        // extract front part of the tyepdef name
+        std::string typeAsString(t.getName().substr(0, pos));
+        // first add pointer as parameter
+        _sourceFile->commitAppendParameter( toFunc,
+                                            "__global " + typeAsString +
+                                            "* " + param->getName() + "_data" );
+        // then column count of the matrix
+        _sourceFile->commitAppendParameter( toFunc,
+                                            "uint " + param->getName() +
+                                            "_col_count" );
+        // finally add source code to create local variable, which is passed to
+        // the function instead of the actual parameter
+        _sourceFile->commitInsertSourceAtFunctionBegin( toFunc, "\n" +
+            // local create variable
+            t.getName() + " " + param->getName() + ";\n" +
+            // set pointer
+            param->getName()+".data = "+param->getName() + "_data;\n" +
+            // set column count
+            param->getName()+".col_count = "+param->getName() + "_col_count;\n"
+          );
+        continue; // skip 'normal' appending of parameter
+      }
+    }
+
     _sourceFile->commitAppendParameter(toFunc, *param);
   }
 }

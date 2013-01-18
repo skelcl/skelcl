@@ -56,13 +56,21 @@
 #include <pvsutil/Logger.h>
 
 #include "../Distributions.h"
+#include "../Source.h"
 
 #include "Device.h"
 #include "DeviceBuffer.h"
 #include "DeviceList.h"
 #include "Event.h"
+#include "Util.h"
 
 namespace skelcl {
+
+template <typename T>
+RegisterDeviceFunctions<T>::RegisterDeviceFunctions()
+{
+  detail::CommonDefinitions::append(Matrix<T>::deviceFunctions());
+}
 
 
 template <typename T>
@@ -74,6 +82,7 @@ Matrix<T>::Matrix()
     _hostBuffer(),
     _deviceBuffers()
 {
+  (void)registerDeviceFunctions;
   LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
       getDebugInfo());
 }
@@ -89,6 +98,7 @@ Matrix<T>::Matrix(const size_type size,
     _hostBuffer( _size.elemCount(), value ),
     _deviceBuffers()
 {
+  (void)registerDeviceFunctions;
   LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
       getDebugInfo());
 }
@@ -104,6 +114,7 @@ Matrix<T>::Matrix(const std::vector<T>& vector,
     _hostBuffer(vector),
     _deviceBuffers()
 {
+  (void)registerDeviceFunctions;
   auto rowCount = vector.size() / columnCount;
   if (vector.size() % columnCount == 0) {
     _size = { rowCount, columnCount };
@@ -126,6 +137,7 @@ Matrix<T>::Matrix(const std::vector<T>& vector,
     _hostBuffer(vector),
     _deviceBuffers()
 {
+  (void)registerDeviceFunctions;
   _hostBuffer.resize(size.elemCount());
   LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
       getDebugInfo());
@@ -169,6 +181,7 @@ Matrix<T>::Matrix(InputIterator first, InputIterator last,
     _hostBuffer(),
     _deviceBuffers()
 {
+  (void)registerDeviceFunctions;
   auto size = std::distance(first, last);
   auto rowCount = size / columnCount;
   if (size % columnCount == 0) {
@@ -194,6 +207,7 @@ Matrix<T>::Matrix(InputIterator first, InputIterator last,
     _hostBuffer(first, last),
     _deviceBuffers()
 {
+  (void)registerDeviceFunctions;
   _hostBuffer.resize(size.elemCount());
   LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
       getDebugInfo());
@@ -208,6 +222,7 @@ Matrix<T>::Matrix(Matrix<T>&& rhs)
     _hostBuffer(std::move(rhs._hostBuffer)),
     _deviceBuffers(std::move(rhs._deviceBuffers))
 {
+  (void)registerDeviceFunctions;
   _size = {0, 0};
   _hostBuffer.clear();
 
@@ -822,19 +837,19 @@ std::string Matrix<T>::deviceFunctions()
   std::stringstream s;
   s << "#ifndef " << type << "_MATRIX_T\n"
     << "typedef struct {\n"
-    << "  const " << type << "* data;\n"
+    << "  __global " << type << "* data;\n"
     << "  unsigned int col_count;\n"
     << "} " << type << "_matrix_t;\n"
     << "#define " << type << "_MATRIX_T\n"
     << "#endif\n\n";
 
   s << "#ifndef MATRIX_GET\n"
-    << "#define get(m, x, y) m.data[(int)(y * m.col_count + x)]\n"
+    << "#define get(m, y, x) m.data[(int)(y * m.col_count + x)]\n"
     << "#define MATRIX_GET\n"
     << "#endif\n";
 
   s << "#ifndef MATRIX_SET\n"
-    << "#define set(m, x, y, v) m.data[(int)(y * m.col_count + x)] = v\n"
+    << "#define set(m, y, x, v) m.data[(int)(y * m.col_count + x)] = v\n"
     << "#define MATRIX_SET\n"
     << "#endif\n";
 

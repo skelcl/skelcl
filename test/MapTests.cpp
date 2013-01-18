@@ -51,8 +51,8 @@
 class MapTest : public ::testing::Test {
 protected:
   MapTest() {
-    pvsutil::defaultLogger.setLoggingLevel(
-        pvsutil::Logger::Severity::DebugInfo );
+    //pvsutil::defaultLogger.setLoggingLevel(
+    //    pvsutil::Logger::Severity::DebugInfo );
 
     skelcl::init(skelcl::nDevices(1));
   };
@@ -243,6 +243,7 @@ TEST_F(MapTest, MatrixAddArgs) {
 
 TEST_F(MapTest, MatrixAddArgsMatrix) {
 #if 0
+  // old way
   skelcl::Map<float(float)> m(R"(
 float func( float f,__global float* mat, uint mat_col_count, float add2)
 {
@@ -251,9 +252,9 @@ float func( float f,__global float* mat, uint mat_col_count, float add2)
 )");
 #endif
   skelcl::Map<float(float)> m(R"(
-float func( float f, float_matrix_t mat, float add2 )
+float func( float f, float_matrix_t mat, float add2, int_matrix_t mat2 )
 {
-  return f + get(mat, 1, 1) + add2;
+  return f + get(mat, 1, 1) + add2 + get(mat2, 1, 2);
 }
 )");
 
@@ -273,15 +274,18 @@ float func( float f, float_matrix_t mat, float add2 )
   skelcl::Matrix<float> mat(vec2, 3);
   EXPECT_EQ(skelcl::Matrix<float>::size_type(4,3), mat.size());
 
+  skelcl::Matrix<int> mat2( {2,3} );
+  mat2[1][2] = 5;
+
   float add2 = 7.75f;
 
-  skelcl::Matrix<float> output = m(input, mat, add2);
+  skelcl::Matrix<float> output = m(input, mat, add2, mat2);
 
   EXPECT_EQ(input.size(), output.size());
 
   for (size_t i = 0; i < output.rowCount(); ++i) {
       for(size_t j = 0; j < output.columnCount(); ++j) {
-        EXPECT_EQ(input[i][j]+mat({1,1})+add2, output[i][j]);
+        EXPECT_EQ(input[i][j]+mat({1,1})+add2+mat2[1][2], output[i][j]);
       }
   }
 }

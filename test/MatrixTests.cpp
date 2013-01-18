@@ -56,21 +56,21 @@ protected:
 };
 
 TEST_F(MatrixTest, CreateEmptyMatrix) {
-  skelcl::Matrix<int> mi;
+  skelcl::Matrix<float> mi;
 
   EXPECT_TRUE(mi.empty());
   EXPECT_EQ( skelcl::MatrixSize(0,0) , mi.size());
 }
 
 TEST_F(MatrixTest, CreateMatrix) {
-  skelcl::Matrix<int> mi( {10,10} );
+  skelcl::Matrix<double> mi( {10,10} );
 
   EXPECT_FALSE(mi.empty());
   EXPECT_EQ(100, mi.size().elemCount());
   EXPECT_EQ(0, *mi.begin());
   for (size_t i = 0; i < 10; ++i) {
     for (size_t j = 0; j < 10; ++j) {
-      EXPECT_EQ(0, mi({i,j}));
+      EXPECT_EQ(0.0, mi({i,j}));
     }
   }
 }

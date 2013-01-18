@@ -38,6 +38,8 @@
 #include <algorithm>
 #include <vector>
 
+#include <pvsutil/Logger.h>
+
 #include "ssedit/Function.h"
 
 #include "ssedit/Entity.h"
@@ -56,12 +58,26 @@ struct IsParameter {
   }
 };
 
+struct IsFirstCompoundStmt {
+  IsFirstCompoundStmt() : found(false) {}
+  bool found;
+
+  bool operator()(const Cursor& cursor)
+  {
+    if (!found && cursor.isOfKind(CXCursor_CompoundStmt)) {
+      found = true;
+      return true;
+    }
+    return false;
+  }
+};
+
 } // unnamed namespace
 
 namespace ssedit {
 
 Function::Function(const Cursor& cursor, SourceFile& sourceFile)
-    : Entity(cursor, sourceFile), _parameters()
+    : Entity(cursor, sourceFile), _parameters(), _functionBody()
 {
   std::vector<Cursor> parameterCursors;
   _cursor.gatherChildren(&parameterCursors, ::IsParameter());
@@ -72,6 +88,11 @@ Function::Function(const Cursor& cursor, SourceFile& sourceFile)
                  [this](Cursor& pCursor){
                   _parameters.push_back( Parameter(pCursor, *_sourceFile) );
                  } );
+
+  // search first compound statement, i.e. body of the function
+  std::vector<Cursor> firstCompoundStmt;
+  _cursor.gatherChildren(&firstCompoundStmt, ::IsFirstCompoundStmt());
+  _functionBody = firstCompoundStmt.front();
 }
 
 Function::Function(const Function& rhs)
@@ -89,6 +110,11 @@ Function& Function::operator=(const Function& rhs)
 const std::vector<Parameter>& Function::getParameters() const
 {
   return _parameters;
+}
+
+const Cursor& Function::getFunctionBody() const
+{
+  return _functionBody;
 }
 
 Type Function::getResultType() const

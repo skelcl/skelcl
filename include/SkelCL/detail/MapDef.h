@@ -171,10 +171,7 @@ detail::Program Map<Tout(Tin)>::createAndBuildProgram(const std::string& source,
 
   // create program
   // first: device specific functions
-  std::string deviceFunctions;
-  deviceFunctions.append(Vector<Tin>::deviceFunctions());
-  deviceFunctions.append(Matrix<Tin>::deviceFunctions());
-  std::string s(deviceFunctions);
+  std::string s(detail::CommonDefinitions::getSource());
   // second: user defined source
   s.append(source);
   // last: append skeleton implementation source
@@ -193,10 +190,7 @@ __kernel void SCL_MAP(
   }
 }
 )");
-  auto program = detail::Program(s,
-                                 detail::util::hash("//Map\n"
-                                                    + deviceFunctions
-                                                    + source) );
+  auto program = detail::Program(s, detail::util::hash(s));
 
   // modify program
   if (!program.loadBinary()) {
@@ -293,10 +287,7 @@ detail::Program Map<void(Tin)>::createAndBuildProgram(const std::string& source,
 
   // create program
   // first: device specific functions
-  std::string deviceFunctions;
-  deviceFunctions.append(Vector<Tin>::deviceFunctions());
-  deviceFunctions.append(Matrix<Tin>::deviceFunctions());
-  std::string s(deviceFunctions);
+  std::string s(detail::CommonDefinitions::getSource());
   // second: user defined source
   s.append(source);
   // last: append skeleton implementation source
@@ -313,10 +304,7 @@ __kernel void SCL_MAP(
   }
 }
 )");
-  auto program = detail::Program(s,
-                                 detail::util::hash("//Map\n"
-                                                    + deviceFunctions
-                                                    + source) );
+  auto program = detail::Program(s, detail::util::hash(s));
 
   // modify program
   if (!program.loadBinary()) {
@@ -434,9 +422,7 @@ detail::Program Map<Tout(Index)>::createAndBuildProgram(const std::string& sourc
 
   // create program
   // first: device specific functions
-  std::string deviceFunctions;
-  deviceFunctions.append(Vector<Index>::deviceFunctions());
-  std::string s(deviceFunctions);
+  std::string s(detail::CommonDefinitions::getSource());
   s.append(R"(
 typedef size_t Index;
 
@@ -455,10 +441,7 @@ __kernel void SCL_MAP(
   SCL_OUT[get_global_id(0)] = SCL_FUNC(get_global_id(0)+SCL_OFFSET);
 }
 )");
-  auto program = detail::Program(s,
-                                 detail::util::hash("//Map\n"
-                                                    + deviceFunctions
-                                                    + source) );
+  auto program = detail::Program(s, detail::util::hash(s));
 
   // modify program
   if (!program.loadBinary()) {
@@ -643,9 +626,7 @@ detail::Program Map<Tout(IndexPoint)>::createAndBuildProgram(const std::string& 
   
   // create program
   // first: device specific functions
-  std::string deviceFunctions;
-  deviceFunctions.append(Matrix<IndexPoint>::deviceFunctions());
-  std::string s(deviceFunctions);
+  std::string s(detail::CommonDefinitions::getSource());
   s.append(R"(
 typedef struct {
   size_t x;
@@ -671,10 +652,7 @@ typedef struct {
     SCL_OUT[ get_global_id(0) * SCL_COL_COUNT + get_global_id(1) ] = SCL_FUNC(p);
   }
            )");
-  auto program = detail::Program(s,
-                                 detail::util::hash("//Map\n"
-                                                    + deviceFunctions
-                                                    + source) );
+  auto program = detail::Program(s, detail::util::hash(s));
   
   // modify program
   if (!program.loadBinary()) {

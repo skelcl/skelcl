@@ -82,6 +82,12 @@ private:
 };
 
 template <typename T>
+class RegisterDeviceFunctions {
+public:
+  RegisterDeviceFunctions();
+};
+
+template <typename T>
 class Matrix {
 public:
   typedef std::vector<T> host_buffer_type;
@@ -280,6 +286,9 @@ private:
   std::string getInfo() const;
   std::string getDebugInfo() const;
 
+
+  static RegisterDeviceFunctions<T> registerDeviceFunctions;
+
           MatrixSize                                              _size;
   mutable
     std::unique_ptr< detail::Distribution< Matrix<T> > >          _distribution;
@@ -289,6 +298,9 @@ private:
     // _deviceBuffers empty => buffers not created
   mutable std::map<detail::Device::id_type, detail::DeviceBuffer> _deviceBuffers;
 };
+
+template <typename T>
+RegisterDeviceFunctions<T> Matrix<T>::registerDeviceFunctions;
 
 } // namespace skelcl
 
