@@ -51,7 +51,9 @@
 class MapTest : public ::testing::Test {
 protected:
   MapTest() {
-    //pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
+    pvsutil::defaultLogger.setLoggingLevel(
+        pvsutil::Logger::Severity::DebugInfo );
+
     skelcl::init(skelcl::nDevices(1));
   };
 
@@ -148,7 +150,8 @@ TEST_F(MapTest, AddArgs) {
 }
 
 TEST_F(MapTest, MapVoid) {
-  skelcl::Map<void(float)> m{ "void func(float f, __global float* out) { out[get_global_id(0)] = f; }" };
+  skelcl::Map<void(float)> m{ "void func(float f, __global float* out) \
+    { out[get_global_id(0)] = f; }" };
 
   skelcl::Vector<float> input(10);
   for (size_t i = 0; i < input.size(); ++i) {
@@ -174,7 +177,6 @@ skelcl::Vector<float> execute(const skelcl::Vector<float>& input)
 }
 
 TEST_F(MapTest, TempInputVector) {
-  //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
   auto size = 1024 * 1000;
   skelcl::Vector<float> output;
   skelcl::Vector<float> input(size);
@@ -188,7 +190,6 @@ TEST_F(MapTest, TempInputVector) {
   for (size_t i = 0; i < output.size(); ++i) {
     EXPECT_EQ(-input[i], output[i]);
   }
-  //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Warning);
 }
 
 TEST_F(MapTest, SimpleMap2D) {
@@ -215,7 +216,6 @@ TEST_F(MapTest, SimpleMap2D) {
 }
 
 TEST_F(MapTest, MatrixAddArgs) {
-  //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
   skelcl::Map<float(float)> m(
         "float func(float f, float add, float add2) { return f+add+add2; }");
 
@@ -242,9 +242,16 @@ TEST_F(MapTest, MatrixAddArgs) {
 }
 
 TEST_F(MapTest, MatrixAddArgsMatrix) {
-  //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+#if 0
   skelcl::Map<float(float)> m(R"(
 float func( float f,__global float* mat, uint mat_col_count, float add2)
+{
+  return f + get(mat, 1, 1) + add2;
+}
+)");
+#endif
+  skelcl::Map<float(float)> m(R"(
+float func( float f, float_matrix_t mat, float add2 )
 {
   return f + get(mat, 1, 1) + add2;
 }
