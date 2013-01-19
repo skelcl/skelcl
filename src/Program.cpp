@@ -309,17 +309,22 @@ void Program::createProgramsFromSource()
   std::string source( (std::istreambuf_iterator<char>(file)),
                        std::istreambuf_iterator<char>() );
 
-  cl::Program::Sources sources(1, std::make_pair(source.c_str(),
-                                                 source.length()));
-
   // insert programs into _clPrograms
   std::transform( globalDeviceList.begin(), globalDeviceList.end(),
                   std::back_inserter(_clPrograms),
-      [&sources](DeviceList::const_reference devicePtr) {
+      [&source](DeviceList::const_reference devicePtr) -> cl::Program {
+        std::stringstream s;
+        s << "#define skelcl_get_device_id() (" << devicePtr->id() << ")\n";
+        s << source;
+
+        LOG_DEBUG_INFO("Create cl::Program for device ", devicePtr->id(),
+                       " with source:\n", s.str(), "\n");
+
+        cl::Program::Sources sources(1, std::make_pair(s.str().c_str(),
+                                                       s.str().length()));
         return cl::Program(devicePtr->clContext(), sources);
       });
 
-  LOG_DEBUG_INFO("Create cl::Program with source:\n", source, "\n");
 }
 
 void Program::saveBinary()

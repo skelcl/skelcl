@@ -128,6 +128,31 @@ TEST_F(MapTest, SimpleMultiDeviceMap) {
   }
 }
 
+TEST_F(MapTest, SimpleMultiDeviceMap2) {
+  skelcl::terminate();
+  skelcl::init(skelcl::nDevices(2));
+  skelcl::Map<int(float)> m{ "float func(float f) \
+    { return skelcl_get_device_id(); }" };
+
+  skelcl::Vector<float> input(10);
+  EXPECT_EQ(10, input.size());
+
+  skelcl::Vector<int> output = m(input);
+
+  EXPECT_EQ(10, output.size());
+  for (size_t i = 0; i < output.size(); ++i) {
+    if (skelcl::detail::globalDeviceList.size() == 2) {
+      if (i < 5) {
+        EXPECT_EQ(0, output[i]);
+      } else {
+        EXPECT_EQ(1, output[i]);
+      }
+    } else {
+      EXPECT_EQ(0, output[i]);
+    }
+  }
+}
+
 TEST_F(MapTest, AddArgs) {
   skelcl::Map<float(float)> m{ "float func(float f, float add, float add2)\
                                  { return f+add+add2; }" };

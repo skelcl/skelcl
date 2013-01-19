@@ -163,8 +163,9 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
 }
 
 template <typename Tin, typename Tout>
-detail::Program Map<Tout(Tin)>::createAndBuildProgram(const std::string& source,
-                                                      const std::string& funcName) const
+detail::Program
+  Map<Tout(Tin)>::createAndBuildProgram(const std::string& source,
+                                        const std::string& funcName) const
 {
   ASSERT_MESSAGE(!source.empty(),
     "Tried to create program with empty user source.");
