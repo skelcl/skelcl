@@ -322,9 +322,11 @@ std::shared_ptr<skelcl::detail::Program>
 {
   ASSERT_MESSAGE(!_userSource.empty(),
     "Tried to create program with empty user source.");
-  // first: user defined source
-  std::string s(preamble + _userSource);
-  // second: append skeleton implementation source
+  // first: device specific functions
+  std::string s(detail::CommonDefinitions::getSource());
+  // second: user defined source
+  s.append(preamble + _userSource);
+  // last: append skeleton implementation source
   s.append(
     #include "ReduceKernel.cl"
   );
