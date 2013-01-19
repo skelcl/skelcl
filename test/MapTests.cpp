@@ -308,11 +308,13 @@ TEST_F(MapTest, MapWithSingleDistribution1) {
   skelcl::terminate();
   skelcl::init();
 
-  skelcl::Map<int(int)> map{"int func(int i) { return -i; }"};
-  skelcl::Vector<int> input(10);
-  auto dev = ++(skelcl::detail::globalDeviceList.begin());
-  skelcl::distribution::setSingle(input, *dev);
+  if (skelcl::detail::globalDeviceList.size() > 1) {
+    skelcl::Map<int(int)> map{"int func(int i) { return -i; }"};
+    skelcl::Vector<int> input(10);
+    auto dev = ++(skelcl::detail::globalDeviceList.begin());
+    skelcl::distribution::setSingle(input, *dev);
 
-  skelcl::Vector<int> output = map(input);
+    skelcl::Vector<int> output = map(input);
+  }
 }
 
