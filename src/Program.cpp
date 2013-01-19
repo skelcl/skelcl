@@ -313,16 +313,19 @@ void Program::createProgramsFromSource()
   std::transform( globalDeviceList.begin(), globalDeviceList.end(),
                   std::back_inserter(_clPrograms),
       [&source](DeviceList::const_reference devicePtr) -> cl::Program {
-        std::stringstream s;
-        s << "#define skelcl_get_device_id() (" << devicePtr->id() << ")\n";
-        s << source;
+        std::stringstream ss;
+        ss << "#define skelcl_get_device_id() " << devicePtr->id() << "\n";
+
+        std::string s(ss.str());
+        s.append(source);
 
         LOG_DEBUG_INFO("Create cl::Program for device ", devicePtr->id(),
-                       " with source:\n", s.str(), "\n");
+                       " with source:\n", s, "\n");
 
-        cl::Program::Sources sources(1, std::make_pair(s.str().c_str(),
-                                                       s.str().length()));
-        return cl::Program(devicePtr->clContext(), sources);
+        return cl::Program(devicePtr->clContext(),
+                           cl::Program::Sources(1, std::make_pair(s.c_str(),
+                                                                  s.length()))
+                          );
       });
 
 }
