@@ -65,10 +65,7 @@ namespace skelcl {
     
     // create program
     // first: device specific functions
-    std::string deviceFunctions;
-    deviceFunctions.append(Vector<Index>::deviceFunctions());
-    deviceFunctions.append(Matrix<Index>::deviceFunctions());
-    std::string s(deviceFunctions);
+    std::string s(detail::CommonDefinitions::getSource());
     s.append(R"(
              typedef size_t Index;
              
@@ -83,10 +80,7 @@ namespace skelcl {
       SCL_FUNC(get_global_id(0)+SCL_OFFSET);
     }
              )");
-    auto program = detail::Program(s,
-                                   detail::util::hash("//Map\n"
-                                                      + deviceFunctions
-                                                      + source) );
+    auto program = detail::Program(s, detail::util::hash(s));
     
     // modify program
     if (!program.loadBinary()) {
@@ -120,9 +114,7 @@ namespace skelcl {
     
     // create program
     // first: device specific functions
-    std::string deviceFunctions;
-    deviceFunctions.append(Matrix<IndexPoint>::deviceFunctions());
-    std::string s(deviceFunctions);
+    std::string s(detail::CommonDefinitions::getSource());
     s.append(R"(
              typedef struct {
                size_t x;
@@ -144,10 +136,7 @@ namespace skelcl {
                SCL_FUNC(p);
              }
              )");
-    auto program = detail::Program(s,
-                                   detail::util::hash("//Map\n"
-                                                      + deviceFunctions
-                                                      + source) );
+    auto program = detail::Program(s, detail::util::hash(s));
     
     // modify program
     if (!program.loadBinary()) {
