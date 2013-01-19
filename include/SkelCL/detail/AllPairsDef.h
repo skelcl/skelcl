@@ -71,7 +71,7 @@
 
 namespace skelcl {
 
-// Konstruktor
+// Constructor for special case implementation using reduce and zip for allpairs computations
 template<typename Tleft, typename Tright, typename Tout>
 AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip)
     : detail::Skeleton(),
@@ -85,6 +85,7 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const 
     LOG_DEBUG("Create new AllPairs object (", this, ")");
 }
 
+// Constructor for general case using user defined code as a string for all pairs computations
 template<typename Tleft, typename Tright, typename Tout>
 AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::string& func)
     : detail::Skeleton(),
@@ -95,7 +96,7 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::st
     LOG_DEBUG("Create new AllPairs object (", this, ")");
 }
 
-// Ausführungsoperator
+
 template<typename Tleft, typename Tright, typename Tout>
 template <typename... Args>
 Matrix<Tout> AllPairs<Tout(Tleft, Tright)>::operator()(const Matrix<Tleft>& left,
@@ -107,7 +108,7 @@ Matrix<Tout> AllPairs<Tout(Tleft, Tright)>::operator()(const Matrix<Tleft>& left
     return output;
 }
 
-// Ausführungsoperator mit Referenz
+
 template<typename Tleft, typename Tright, typename Tout>
 template <typename... Args>
 Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > output,
@@ -134,7 +135,7 @@ Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > outp
     return output.container();
 }
 
-// Ausführen
+
 template<typename Tleft, typename Tright, typename Tout>
 template <typename... Args>
 void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
@@ -195,7 +196,7 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
     LOG_INFO("AllPairs kernel started");
 }
 
-// Programm erstellen
+// build program based on used constructor
 template<typename Tleft, typename Tright, typename Tout>
 detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
 {
@@ -262,9 +263,9 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
                                                          + zSource));
     // modify program
     if (!program.loadBinary()) {
-        program.transferParameters("TMP_REDUCE", 2, "SCL_ALLPAIRS"); // problem: reduce parameter a und zip parameter a
+        program.transferParameters("TMP_REDUCE", 2, "SCL_ALLPAIRS"); // problem: parameters with the same name in reduce and zip
         program.transferArguments("TMP_REDUCE", 2, "USR_REDUCE");
-        program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS"); // reihenfolge? erst args von reduce dann zip?
+        program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS"); // order of parameters? reduce first
         program.transferArguments("TMP_ZIP", 2, "USR_ZIP");
 
         program.renameFunction("TMP_REDUCE", "USR_REDUCE");
@@ -342,7 +343,7 @@ SCL_TYPE_1 getElementFromColumn(rmatrix_t *matrix, const unsigned int element_id
     return program;
 }
 
-// Eingabe vorbereiten
+
 template<typename Tleft, typename Tright, typename Tout>
 void AllPairs<Tout(Tleft, Tright)>::prepareInput(const Matrix<Tleft>& left,
                                                  const Matrix<Tright>& right)
@@ -409,7 +410,7 @@ void AllPairs<Tout(Tleft, Tright)>::prepareInput(const Matrix<Tleft>& left,
     right.startUpload();
 }
 
-// Ausgabe vorbereiten
+
 template<typename Tleft, typename Tright, typename Tout>
 void AllPairs<Tout(Tleft, Tright)>::prepareOutput(Matrix<Tout>& output,
                                                   const Matrix<Tleft>& left,
@@ -420,7 +421,7 @@ void AllPairs<Tout(Tleft, Tright)>::prepareOutput(Matrix<Tout>& output,
         output.resize(typename Matrix<Tout>::size_type(left.rowCount(), right.columnCount()));
 
     // adopt distribution from left input
-    output.setDistribution(left.distribution()); // richtiger typ (Tout)?
+    output.setDistribution(left.distribution()); // correct type (Tout)?
 
     //create buffers if required
     output.createDeviceBuffers();
