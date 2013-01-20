@@ -41,7 +41,8 @@
 #include <numeric>
 #include <vector>
 
-#include "SkelCL/detail/Assert.h"
+#include <pvsutil/Assert.h>
+
 #include "SkelCL/detail/Device.h"
 
 #include "SkelCL/detail/Significances.h"

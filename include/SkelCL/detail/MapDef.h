@@ -54,6 +54,9 @@
 #include <CL/cl.h>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include <pvsutil/Assert.h>
+#include <pvsutil/Logger.h>
+
 #include "../Distributions.h"
 #include "../Index.h"
 #include "../Out.h"
@@ -61,10 +64,8 @@
 #include "../Source.h"
 #include "../Vector.h"
 
-#include "Assert.h"
 #include "Device.h"
 #include "KernelUtil.h"
-#include "Logger.h"
 #include "Program.h"
 #include "Skeleton.h"
 #include "Util.h"
@@ -172,10 +173,7 @@ detail::Program
 
   // create program
   // first: device specific functions
-  std::string deviceFunctions;
-  deviceFunctions.append(Vector<Tin>::deviceFunctions());
-  deviceFunctions.append(Matrix<Tin>::deviceFunctions());
-  std::string s(deviceFunctions);
+  std::string s(detail::CommonDefinitions::getSource());
   // second: user defined source
   s.append(source);
   // last: append skeleton implementation source
@@ -194,10 +192,7 @@ __kernel void SCL_MAP(
   }
 }
 )");
-  auto program = detail::Program(s,
-                                 detail::util::hash("//Map\n"
-                                                    + deviceFunctions
-                                                    + source) );
+  auto program = detail::Program(s, detail::util::hash(s));
 
   // modify program
   if (!program.loadBinary()) {
@@ -296,10 +291,7 @@ detail::Program
 
   // create program
   // first: device specific functions
-  std::string deviceFunctions;
-  deviceFunctions.append(Vector<Tin>::deviceFunctions());
-  deviceFunctions.append(Matrix<Tin>::deviceFunctions());
-  std::string s(deviceFunctions);
+  std::string s(detail::CommonDefinitions::getSource());
   // second: user defined source
   s.append(source);
   // last: append skeleton implementation source
@@ -316,10 +308,7 @@ __kernel void SCL_MAP(
   }
 }
 )");
-  auto program = detail::Program(s,
-                                 detail::util::hash("//Map\n"
-                                                    + deviceFunctions
-                                                    + source) );
+  auto program = detail::Program(s, detail::util::hash(s));
 
   // modify program
   if (!program.loadBinary()) {
@@ -407,11 +396,8 @@ void Map<Tout(Index)>::execute(Vector<Tout>& output,
       detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 2,
                                         std::forward<Args>(args)...);
 
-      std::vector<cl::Buffer> keepAlive;
-      keepAlive.push_back(outputBuffer.clBuffer());
-      detail::kernelUtil::keepAlive(keepAlive,
-                                    *devicePtr,
-                                    std::forward<Args>(args)...);
+      auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
+                                                     std::forward<Args>(args)...);
 
       // after finishing the kernel invoke this function ...
       auto invokeAfter =  [=] () {
@@ -441,9 +427,7 @@ detail::Program
 
   // create program
   // first: device specific functions
-  std::string deviceFunctions;
-  deviceFunctions.append(Vector<Index>::deviceFunctions());
-  std::string s(deviceFunctions);
+  std::string s(detail::CommonDefinitions::getSource());
   s.append(R"(
 typedef size_t Index;
 
@@ -462,10 +446,7 @@ __kernel void SCL_MAP(
   SCL_OUT[get_global_id(0)] = SCL_FUNC(get_global_id(0)+SCL_OFFSET);
 }
 )");
-  auto program = detail::Program(s,
-                                 detail::util::hash("//Map\n"
-                                                    + deviceFunctions
-                                                    + source) );
+  auto program = detail::Program(s, detail::util::hash(s));
 
   // modify program
   if (!program.loadBinary()) {
@@ -655,9 +636,7 @@ detail::Program
   
   // create program
   // first: device specific functions
-  std::string deviceFunctions;
-  deviceFunctions.append(Matrix<IndexPoint>::deviceFunctions());
-  std::string s(deviceFunctions);
+  std::string s(detail::CommonDefinitions::getSource());
   s.append(R"(
 typedef struct {
   size_t x;
@@ -683,10 +662,7 @@ typedef struct {
     SCL_OUT[get_global_id(0) * SCL_COL_COUNT + get_global_id(1)] = SCL_FUNC(p);
   }
            )");
-  auto program = detail::Program(s,
-                                 detail::util::hash("//Map\n"
-                                                    + deviceFunctions
-                                                    + source) );
+  auto program = detail::Program(s, detail::util::hash(s));
   
   // modify program
   if (!program.loadBinary()) {

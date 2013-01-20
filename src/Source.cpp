@@ -40,9 +40,9 @@
 #include <istream>
 #include <string>
 
-#include "SkelCL/Source.h"
+#include <pvsutil/Assert.h>
 
-#include "SkelCL/detail/Assert.h"
+#include "SkelCL/Source.h"
 
 namespace skelcl {
 
@@ -85,4 +85,35 @@ Source::operator std::string() const
   return _source;
 }
 
+void Source::append(const std::string& source)
+{
+  _source.append("\n" + source);
+}
+
+namespace detail {
+
+CommonDefinitions::CommonDefinitions()
+  : _source(" ")
+{
+}
+
+CommonDefinitions& CommonDefinitions::instance()
+{
+  static CommonDefinitions instance;
+  return instance;
+}
+
+void CommonDefinitions::append(const std::string& source)
+{
+  CommonDefinitions::instance()._source.append(source);
+}
+
+const Source& CommonDefinitions::getSource()
+{
+  return CommonDefinitions::instance()._source;
+}
+
+} // namespace detail
+
 } // namespace skelcl
+

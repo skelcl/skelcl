@@ -45,6 +45,8 @@
 
 #include <clang-c/Index.h>
 
+#include <pvsutil/Logger.h>
+
 #include "ssedit/SourceFile.h"
 #include "ssedit/DeltaTree.h"
 #include "ssedit/Function.h"
@@ -241,7 +243,8 @@ void SourceFile::commitReplaceType(Typedef& tdef,
 }
 
 
-void SourceFile::commitAppendParameter(Function& func, Parameter& param)
+void SourceFile::commitAppendParameter(Function& func,
+                                       const std::string& paramAsString)
 {
   if (!func.isValid()) {
     return;
@@ -256,6 +259,20 @@ void SourceFile::commitAppendParameter(Function& func, Parameter& param)
 
   SourceLocation insertLoc    = clang_getLocationForOffset( _tu.get(), _file,
                                   offset + size );
+
+
+
+  _deltaTree.insertDelta( Delta(SourceRange(insertLoc, insertLoc),
+                                "," + paramAsString,
+                                Delta::INSERT) );
+}
+
+
+void SourceFile::commitAppendParameter(Function& func, Parameter& param)
+{
+  if (!func.isValid()) {
+    return;
+  }
 
   SourceRange paramRange = param.getCursor().getExtent();
 
@@ -277,9 +294,7 @@ void SourceFile::commitAppendParameter(Function& func, Parameter& param)
     ::addGlobalAddressSpaceModifier(&paramToken);
   }
 
-  _deltaTree.insertDelta( Delta(SourceRange(insertLoc, insertLoc),
-                                "," + paramToken,
-                                Delta::INSERT) );
+  commitAppendParameter(func, paramToken);
 }
 
 
@@ -303,6 +318,27 @@ void SourceFile::commitAppendArgument(CallExpression& callExpression,
 
   _deltaTree.insertDelta( Delta(SourceRange(insertLoc, insertLoc),
                                 paramToken,
+                                Delta::INSERT) );
+}
+
+
+void SourceFile::commitInsertSourceAtFunctionBegin(Function& func,
+                                                   const std::string& source)
+{
+  if (!func.isValid()) {
+    return;
+  }
+
+  auto functionBody = func.getFunctionBody();
+
+  SourceRange range = functionBody.getExtent();
+  SourceLocation insertLoc( clang_getLocationForOffset(
+                                          _tu.get(), _file,
+                                          range.getStart().offset+1
+                                                      )
+                          );
+  _deltaTree.insertDelta( Delta(SourceRange(insertLoc, insertLoc),
+                                source,
                                 Delta::INSERT) );
 }
 

@@ -43,11 +43,11 @@
 #include <sstream>
 #include <string>
 
-#include "Assert.h"
+#include <pvsutil/Assert.h>
+
 #include "Device.h"
 #include "DeviceList.h"
 #include "Event.h"
-#include "Logger.h"
 
 namespace skelcl {
 

@@ -71,6 +71,11 @@ Index::index_type Index::get() const
   return _index;
 }
 
+IndexPoint::IndexPoint()
+  : _indexPoint()
+{
+}
+
 IndexPoint::IndexPoint(const indexPoint_type& indexPoint)
   : _indexPoint(indexPoint)
 {

@@ -52,14 +52,15 @@
 #include <CL/cl.h>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include <pvsutil/Assert.h>
+#include <pvsutil/Logger.h>
+
 #include "../Distributions.h"
 #include "../Out.h"
 #include "../Source.h"
 
-#include "Assert.h"
 #include "Device.h"
 #include "KernelUtil.h"
-#include "Logger.h"
 #include "Program.h"
 #include "Skeleton.h"
 #include "Util.h"
@@ -179,11 +180,7 @@ detail::Program
 
   // create program
   // first: device specific functions
-  std::string deviceFunctions;
-  deviceFunctions.append(Vector<Tleft>::deviceFunctions());
-  deviceFunctions.append(Matrix<Tleft>::deviceFunctions());
-  
-  std::string s(deviceFunctions);
+  std::string s(detail::CommonDefinitions::getSource());
   // second: user defined source
   s.append(source);
   // last: append skeleton implementation source
@@ -204,10 +201,7 @@ __kernel void SCL_ZIP(
   }
 }
 )");
-  auto program = detail::Program(s,
-                                 detail::util::hash("//Zip\n"
-                                                    + deviceFunctions
-                                                    + source) );
+  auto program = detail::Program(s, detail::util::hash(s));
 
   // modify program
   if (!program.loadBinary()) {
@@ -367,11 +361,7 @@ detail::Program
 
   // create program
   // first: device specific functions
-  std::string deviceFunctions;
-  deviceFunctions.append(Vector<Tleft>::deviceFunctions());
-  deviceFunctions.append(Matrix<Tleft>::deviceFunctions());
-
-  std::string s(deviceFunctions);
+  std::string s(detail::CommonDefinitions::getSource());
   // second: user defined source
   s.append(source);
   // last: append skeleton implementation source
@@ -389,10 +379,7 @@ __kernel void SCL_ZIP(
   }
 }
 )");
-  auto program = detail::Program(s,
-                                 detail::util::hash("//Zip\n"
-                                                    + deviceFunctions
-                                                    + source) );
+  auto program = detail::Program(s, detail::util::hash(s));
 
   // modify program
   if (!program.loadBinary()) {

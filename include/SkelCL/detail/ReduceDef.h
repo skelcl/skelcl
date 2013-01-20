@@ -58,16 +58,17 @@
 #include <CL/cl.h>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include <pvsutil/Assert.h>
+#include <pvsutil/Logger.h>
+
 #include "../Distributions.h"
 #include "../Out.h"
 #include "../Source.h"
 
-#include "Assert.h"
 #include "Device.h"
 #include "DeviceBuffer.h"
 #include "DeviceList.h"
 #include "KernelUtil.h"
-#include "Logger.h"
 #include "Program.h"
 #include "Skeleton.h"
 #include "Util.h"
@@ -326,9 +327,11 @@ std::shared_ptr<skelcl::detail::Program>
 {
   ASSERT_MESSAGE(!_userSource.empty(),
     "Tried to create program with empty user source.");
-  // first: user defined source
-  std::string s(preamble + _userSource);
-  // second: append skeleton implementation source
+  // first: device specific functions
+  std::string s(detail::CommonDefinitions::getSource());
+  // second: user defined source
+  s.append(preamble + _userSource);
+  // last: append skeleton implementation source
   s.append(
     #include "ReduceKernel.cl"
   );

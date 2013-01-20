@@ -57,7 +57,7 @@ class DeviceBuffer {
 public:
   typedef size_t size_type;
 
-  DeviceBuffer() = default;
+  DeviceBuffer();
 
   DeviceBuffer(const std::shared_ptr<Device>& devicePtr,
                const size_t size,

@@ -44,8 +44,6 @@
 #include <SkelCL/Matrix.h>
 #include <SkelCL/Vector.h>
 
-#include <SkelCL/detail/Logger.h>
-
 class DistributionTest : public ::testing::Test {
 protected:
   DistributionTest()
