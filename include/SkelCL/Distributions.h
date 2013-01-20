@@ -81,11 +81,11 @@ struct identity {
 ///         given container.
 /// 
 template <template <typename> class C, typename T>
-std::unique_ptr< skelcl::detail::Distribution< C<T> > >
+std::unique_ptr<skelcl::detail::Distribution<C<T>>>
     Block( const C<T>& /*c*/ )
 {
-  return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-            new skelcl::detail::BlockDistribution< C<T> >() );
+  return std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
+            new skelcl::detail::BlockDistribution<C<T>>() );
 }
 
 /// 
@@ -103,8 +103,8 @@ std::unique_ptr< skelcl::detail::Distribution< C<T> > >
 template <template <typename> class C, typename T>
 void setBlock( const C<T>& c)
 {
-  c.setDistribution( std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-        new skelcl::detail::BlockDistribution< C<T> >() ) );
+  c.setDistribution( std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
+        new skelcl::detail::BlockDistribution<C<T>>() ) );
 }
 
 /// 
@@ -124,13 +124,13 @@ void setBlock( const C<T>& c)
 ///         given container.
 /// 
 template <template <typename> class C, typename T>
-std::unique_ptr< skelcl::detail::Distribution< C<T> > >
+std::unique_ptr<skelcl::detail::Distribution<C<T>>>
     Copy( const C<T>& /*c*/,
-          typename identity<std::function<T(const T&, const T&)> >::type
+          typename identity<std::function<T(const T&, const T&)>>::type
             combineFunc = nullptr )
 {
-  return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-        new skelcl::detail::CopyDistribution< C<T> >(
+  return std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
+        new skelcl::detail::CopyDistribution<C<T>>(
                                     detail::globalDeviceList, combineFunc ) );
 }
 
@@ -150,8 +150,8 @@ template <template <typename> class C, typename T>
 void setCopy( const C<T>& c,
               std::function<T(const T&, const T&)> combineFunc = nullptr)
 {
-  c.setDistribution( std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-        new skelcl::detail::CopyDistribution< C<T> >(
+  c.setDistribution( std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
+        new skelcl::detail::CopyDistribution<C<T>>(
           detail::globalDeviceList, combineFunc ) ) );
 }
 
@@ -172,11 +172,11 @@ void setCopy( const C<T>& c,
 ///         the given container and the default device.
 /// 
 template <template <typename> class C, typename T>
-std::unique_ptr< skelcl::detail::Distribution< C<T> > >
+std::unique_ptr<skelcl::detail::Distribution<C<T>>>
     Single( const C<T>& /*c*/ )
 {
-  return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-        new skelcl::detail::SingleDistribution< C<T> >() );
+  return std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
+        new skelcl::detail::SingleDistribution<C<T>>() );
 }
 
 /// 
@@ -197,12 +197,12 @@ std::unique_ptr< skelcl::detail::Distribution< C<T> > >
 ///         the given container and for the given device.
 /// 
 template <template <typename> class C, typename T>
-std::unique_ptr< skelcl::detail::Distribution< C<T> > >
+std::unique_ptr<skelcl::detail::Distribution<C<T>>>
     Single( const C<T>& /*c*/,
             const std::shared_ptr<skelcl::detail::Device>& device )
 {
-  return std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-        new skelcl::detail::SingleDistribution< C<T> >(device) );
+  return std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
+        new skelcl::detail::SingleDistribution<C<T>>(device) );
 }
 
 /// 
@@ -220,8 +220,8 @@ std::unique_ptr< skelcl::detail::Distribution< C<T> > >
 template <template <typename> class C, typename T>
 void setSingle( const C<T>& c )
 {
-  c.setDistribution( std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-        new skelcl::detail::SingleDistribution< C<T> >() ) );
+  c.setDistribution( std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
+        new skelcl::detail::SingleDistribution<C<T>>() ) );
 }
 
 /// 
@@ -241,8 +241,8 @@ template <template <typename> class C, typename T>
 void setSingle( const C<T>& c,
                 const std::shared_ptr<skelcl::detail::Device>& device )
 {
-  c.setDistribution( std::unique_ptr< skelcl::detail::Distribution< C<T> > >(
-        new skelcl::detail::SingleDistribution< C<T> >(device) ) );
+  c.setDistribution( std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
+        new skelcl::detail::SingleDistribution<C<T>>(device) ) );
 }
 
 } // namespace distribution
@@ -268,33 +268,33 @@ namespace detail {
 ///         argument where the template argument U is replaced by T.
 /// 
 template <typename T, typename U, template <typename> class C>
-std::unique_ptr< Distribution< C<T> > >
-    cloneAndConvert(const Distribution< C<U> >& dist)
+std::unique_ptr<Distribution<C<T>>>
+    cloneAndConvert(const Distribution<C<U>>& dist)
 {
   // block distribution
-  auto block = dynamic_cast<const BlockDistribution< C<U> >*>(&dist);
+  auto block = dynamic_cast<const BlockDistribution<C<U>>*>(&dist);
   if (block != nullptr) {
-    return std::unique_ptr< Distribution< C<T> > >(
-            new BlockDistribution< C<T> >(*block) );
+    return std::unique_ptr<Distribution<C<T>>>(
+            new BlockDistribution<C<T>>(*block) );
   }
 
   // copy distribution
-  auto copy = dynamic_cast<const CopyDistribution< C<U> >*>(&dist);
+  auto copy = dynamic_cast<const CopyDistribution<C<U>>*>(&dist);
   if (copy != nullptr) {
-    return std::unique_ptr< Distribution< C<T> > >(
-            new CopyDistribution< C<T> >(*copy) );
+    return std::unique_ptr<Distribution<C<T>>>(
+            new CopyDistribution<C<T>>(*copy) );
   }
 
   // single distribution
-  auto single = dynamic_cast<const SingleDistribution< C<U> >*>(&dist);
+  auto single = dynamic_cast<const SingleDistribution<C<U>>*>(&dist);
   if (single != nullptr) {
-    return std::unique_ptr< Distribution< C<T> > >(
-            new SingleDistribution< C<T> >(*single) );
+    return std::unique_ptr<Distribution<C<T>>>(
+            new SingleDistribution<C<T>>(*single) );
   }
 
   // default distribution
-  return std::unique_ptr< Distribution< C<T> > >(
-            new Distribution< C<T> >(dist) );
+  return std::unique_ptr<Distribution<C<T>>>(
+            new Distribution<C<T>>(dist) );
 }
 
 } // namespace detail

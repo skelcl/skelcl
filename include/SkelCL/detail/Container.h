@@ -177,7 +177,8 @@ public:
   ///         doesn't hold an buffer for the device an invalid
   ///         DeviceBuffer is returned.
   ///
-  virtual const detail::DeviceBuffer& deviceBuffer(const detail::Device& device) const = 0;
+  virtual const detail::DeviceBuffer& deviceBuffer(const detail::Device&
+                                                      device) const = 0;
 };
 
 } // namespace detail

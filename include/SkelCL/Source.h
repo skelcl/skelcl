@@ -96,10 +96,33 @@ public:
   ///
   operator std::string() const;
 
+  void append(const std::string& source);
+
 private:
   /// string used to store the source code
   std::string _source;
 };
+
+namespace detail {
+
+class CommonDefinitions {
+public:
+  static CommonDefinitions& instance();
+
+  static void append(const std::string& source);
+
+  static const Source& getSource();
+
+  CommonDefinitions(const CommonDefinitions&) = delete;
+  CommonDefinitions& operator=(const CommonDefinitions&) = delete;
+
+private:
+  CommonDefinitions();
+
+  Source _source;
+};
+
+} // namespace detail
 
 } // namespace skelcl
 

@@ -52,34 +52,45 @@
 #include <utility>
 #include <vector>
 
-#include "../Distributions.h"
+#include <pvsutil/Assert.h>
+#include <pvsutil/Logger.h>
 
-#include "Assert.h"
+#include "../Distributions.h"
+#include "../Source.h"
+
 #include "Device.h"
 #include "DeviceBuffer.h"
 #include "DeviceList.h"
 #include "Event.h"
-#include "Logger.h"
+#include "Util.h"
 
 namespace skelcl {
+
+template <typename T>
+RegisterDeviceFunctions<T>::RegisterDeviceFunctions()
+{
+  detail::CommonDefinitions::append(Matrix<T>::deviceFunctions());
+}
 
 
 template <typename T>
 Matrix<T>::Matrix()
   : _size( {0,0} ),
-    _distribution(new detail::Distribution< Matrix<T> >()),
+    _distribution(new detail::Distribution<Matrix<T>>()),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(),
     _deviceBuffers()
 {
-  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ", getDebugInfo());
+  (void)registerDeviceFunctions;
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+      getDebugInfo());
 }
 
 template <typename T>
 Matrix<T>::Matrix(const size_type size,
                   const value_type& value,
-                  const detail::Distribution< Matrix<T> >& distribution)
+                  const detail::Distribution<Matrix<T>>& distribution)
   : _size(size),
     _distribution(detail::cloneAndConvert<T>(distribution)),
     _hostBufferUpToDate(true),
@@ -87,13 +98,15 @@ Matrix<T>::Matrix(const size_type size,
     _hostBuffer( _size.elemCount(), value ),
     _deviceBuffers()
 {
-  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ", getDebugInfo());
+  (void)registerDeviceFunctions;
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+      getDebugInfo());
 }
 
 template <typename T>
 Matrix<T>::Matrix(const std::vector<T>& vector,
                   const size_type::size_type columnCount,
-                  const detail::Distribution< Matrix<T> >& distribution)
+                  const detail::Distribution<Matrix<T>>& distribution)
   : _size({0,0}),
     _distribution(detail::cloneAndConvert<T>(distribution)),
     _hostBufferUpToDate(true),
@@ -101,6 +114,7 @@ Matrix<T>::Matrix(const std::vector<T>& vector,
     _hostBuffer(vector),
     _deviceBuffers()
 {
+  (void)registerDeviceFunctions;
   auto rowCount = vector.size() / columnCount;
   if (vector.size() % columnCount == 0) {
     _size = { rowCount, columnCount };
@@ -108,13 +122,14 @@ Matrix<T>::Matrix(const std::vector<T>& vector,
     _size = { rowCount + 1, columnCount };
     _hostBuffer.resize(_size.elemCount());
   }
-  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+      getDebugInfo());
 }
 
 template <typename T>
 Matrix<T>::Matrix(const std::vector<T>& vector,
                   const size_type size,
-                  const detail::Distribution< Matrix<T> >& distribution)
+                  const detail::Distribution<Matrix<T>>& distribution)
   : _size(size),
     _distribution(detail::cloneAndConvert<T>(distribution)),
     _hostBufferUpToDate(true),
@@ -122,14 +137,16 @@ Matrix<T>::Matrix(const std::vector<T>& vector,
     _hostBuffer(vector),
     _deviceBuffers()
 {
+  (void)registerDeviceFunctions;
   _hostBuffer.resize(size.elemCount());
-  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+      getDebugInfo());
 }
 
 template <typename T>
 Matrix<T>
-  Matrix<T>::from2DVector(const std::vector<std::vector<T> >& input,
-                          const detail::Distribution< Matrix<T> >& distribution)
+  Matrix<T>::from2DVector(const std::vector<std::vector<T>>& input,
+                          const detail::Distribution<Matrix<T>>& distribution)
 {
   Matrix<T> matrix;
   matrix._size = {input.size(), input[0].size()};
@@ -147,7 +164,8 @@ Matrix<T>
     // ... advance pointer in host buffer
     std::advance(iter, matrix._size.columnCount());
   }
-  LOG_DEBUG_INFO("Created new Matrix object (", &matrix, " with ", matrix.getDebugInfo());
+  LOG_DEBUG_INFO("Created new Matrix object (", &matrix, " with ",
+      matrix.getDebugInfo());
   return matrix;
 }
 
@@ -155,7 +173,7 @@ template <typename T>
 template <typename InputIterator>
 Matrix<T>::Matrix(InputIterator first, InputIterator last,
                   const size_type::size_type columnCount,
-                  const detail::Distribution< Matrix<T> >& distribution)
+                  const detail::Distribution<Matrix<T>>& distribution)
   : _size( {0,0} ),
     _distribution(detail::cloneAndConvert<T>(distribution)),
     _hostBufferUpToDate(true),
@@ -163,6 +181,7 @@ Matrix<T>::Matrix(InputIterator first, InputIterator last,
     _hostBuffer(),
     _deviceBuffers()
 {
+  (void)registerDeviceFunctions;
   auto size = std::distance(first, last);
   auto rowCount = size / columnCount;
   if (size % columnCount == 0) {
@@ -172,14 +191,15 @@ Matrix<T>::Matrix(InputIterator first, InputIterator last,
   }
   _hostBuffer.assign(first, last);
   _hostBuffer.resize(_size.elemCount());
-  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+      getDebugInfo());
 }
 
 template <typename T>
 template <typename InputIterator>
 Matrix<T>::Matrix(InputIterator first, InputIterator last,
                   const size_type size,
-                  const detail::Distribution< Matrix<T> >& distribution)
+                  const detail::Distribution<Matrix<T>>& distribution)
   : _size(size),
     _distribution(detail::cloneAndConvert<T>(distribution)),
     _hostBufferUpToDate(true),
@@ -187,8 +207,10 @@ Matrix<T>::Matrix(InputIterator first, InputIterator last,
     _hostBuffer(first, last),
     _deviceBuffers()
 {
+  (void)registerDeviceFunctions;
   _hostBuffer.resize(size.elemCount());
-  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+      getDebugInfo());
 }
 
 template <typename T>
@@ -200,10 +222,12 @@ Matrix<T>::Matrix(Matrix<T>&& rhs)
     _hostBuffer(std::move(rhs._hostBuffer)),
     _deviceBuffers(std::move(rhs._deviceBuffers))
 {
+  (void)registerDeviceFunctions;
   _size = {0, 0};
   _hostBuffer.clear();
 
-  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+      getDebugInfo());
 }
 
 template <typename T>
@@ -227,7 +251,8 @@ Matrix<T>& Matrix<T>::operator=(Matrix<T>&& rhs)
 template <typename T>
 Matrix<T>::~Matrix()
 {
-  LOG_DEBUG_INFO("Matrix object (", this, ") with ", getDebugInfo(), " destroyed");
+  LOG_DEBUG_INFO("Matrix object (", this, ") with ", getDebugInfo(),
+      " destroyed");
 }
 
 template <typename T>
@@ -364,7 +389,8 @@ void Matrix<T>::resize(const size_type& size, T c)
   // set size last, to avoid problems, when moving the "old" data around
   _size = size;
 
-  LOG_DEBUG_INFO("Matrix object (", this, ") resized, now with ", getDebugInfo());
+  LOG_DEBUG_INFO("Matrix object (", this, ") resized, now with ",
+      getDebugInfo());
 }
 
 template <typename T>
@@ -608,7 +634,8 @@ void Matrix<T>::insert_row(typename coordinate::index_type rowIndex,
 }
 
 template <typename T>
-typename Matrix<T>::iterator Matrix<T>::erase_row(typename coordinate::index_type rowIndex)
+typename Matrix<T>::iterator
+  Matrix<T>::erase_row(typename coordinate::index_type rowIndex)
 {
   _size = { _size.rowCount() -1 , _size.columnCount() };
   return _hostBuffer.erase(row_begin(rowIndex), row_end(rowIndex));
@@ -623,7 +650,7 @@ void Matrix<T>::clear()
 }
 
 template <typename T>
-detail::Distribution< Matrix<T> >& Matrix<T>::distribution() const
+detail::Distribution<Matrix<T>>& Matrix<T>::distribution() const
 {
   ASSERT(_distribution != nullptr);
   return *_distribution;
@@ -631,7 +658,8 @@ detail::Distribution< Matrix<T> >& Matrix<T>::distribution() const
 
 template <typename T>
 template <typename U>
-void Matrix<T>::setDistribution(const detail::Distribution< Matrix<U> >& origDistribution) const
+void Matrix<T>::setDistribution(const detail::Distribution<Matrix<U>>&
+                                    origDistribution) const
 {
   ASSERT(origDistribution.isValid());
   // convert and set distribution
@@ -640,7 +668,10 @@ void Matrix<T>::setDistribution(const detail::Distribution< Matrix<U> >& origDis
 
 template <typename T>
 template <typename U>
-void Matrix<T>::setDistribution(const std::unique_ptr<detail::Distribution< Matrix<U> > >& origDistribution) const
+void
+  Matrix<T>::setDistribution(
+              const std::unique_ptr<detail::Distribution<Matrix<U>>>&
+                  origDistribution ) const
 {
   ASSERT(origDistribution != nullptr);
   ASSERT(origDistribution.isValid());
@@ -649,7 +680,10 @@ void Matrix<T>::setDistribution(const std::unique_ptr<detail::Distribution< Matr
 }
 
 template <typename T>
-void Matrix<T>::setDistribution(std::unique_ptr<detail::Distribution< Matrix<T> > >&& newDistribution) const
+void
+  Matrix<T>::setDistribution(
+              std::unique_ptr<detail::Distribution<Matrix<T>>>&&
+                  newDistribution ) const
 {
   ASSERT(newDistribution != nullptr);
   ASSERT(newDistribution->isValid());
@@ -665,8 +699,8 @@ void Matrix<T>::setDistribution(std::unique_ptr<detail::Distribution< Matrix<T> 
   _distribution = std::move(newDistribution);
   ASSERT(_distribution->isValid());
 
-  LOG_DEBUG_INFO("Matrix object (", this, ") assigned new distribution, now with ",
-                 getDebugInfo());
+  LOG_DEBUG_INFO("Matrix object (", this,
+                 ") assigned new distribution, now with ", getDebugInfo());
 }
 
 
@@ -798,10 +832,28 @@ typename Matrix<T>::host_buffer_type& Matrix<T>::hostBuffer() const
 template <typename T>
 std::string Matrix<T>::deviceFunctions()
 {
-  return R"(
-#define get(matrix, x, y) matrix[(int)(y * matrix##_col_count + x)]
-#define set(matrix, x, y, value) matrix[(int)(y * matrix##_col_count + x)] = value
-)";
+  std::string type = detail::util::typeToString<T>();
+
+  std::stringstream s;
+  s << "#ifndef " << type << "_MATRIX_T\n"
+    << "typedef struct {\n"
+    << "  __global " << type << "* data;\n"
+    << "  unsigned int col_count;\n"
+    << "} " << type << "_matrix_t;\n"
+    << "#define " << type << "_MATRIX_T\n"
+    << "#endif\n\n";
+
+  s << "#ifndef MATRIX_GET\n"
+    << "#define get(m, y, x) m.data[(int)(y * m.col_count + x)]\n"
+    << "#define MATRIX_GET\n"
+    << "#endif\n";
+
+  s << "#ifndef MATRIX_SET\n"
+    << "#define set(m, y, x, v) m.data[(int)(y * m.col_count + x)] = v\n"
+    << "#define MATRIX_SET\n"
+    << "#endif\n";
+
+  return s.str();
 }
 
 template <typename T>

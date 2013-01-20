@@ -179,7 +179,7 @@ public:
   ///
   template <template <typename> class C,
             typename... Args>
-  C<Tout>& operator()(Out< C<Tout> > output,
+  C<Tout>& operator()(Out<C<Tout>> output,
                       const C<Tleft>& left,
                       const C<Tright>& right,
                       Args&&... args);

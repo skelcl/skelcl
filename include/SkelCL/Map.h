@@ -163,7 +163,7 @@ public:
   /// 
   template <template <typename> class C,
             typename... Args>
-  C<Tout>& operator()(Out< C<Tout> > output,
+  C<Tout>& operator()(Out<C<Tout>> output,
                       const C<Tin>&  input,
                       Args&&... args) const;
 
@@ -361,7 +361,7 @@ public:
   ///               additionally provided arguments.
   /// 
   template <typename... Args>
-  Vector<Tout>& operator()(Out< Vector<Tout> > output,
+  Vector<Tout>& operator()(Out<Vector<Tout>> output,
                            const Vector<Index>& input,
                            Args&&... args) const;
 
@@ -549,7 +549,7 @@ public:
   ///               additionally provided arguments.
   /// 
   template <typename... Args>
-  Matrix<Tout>& operator()(Out< Matrix<Tout> > output,
+  Matrix<Tout>& operator()(Out<Matrix<Tout>> output,
                            const Matrix<IndexPoint>& input,
                            Args&&... args) const;
   

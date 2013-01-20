@@ -42,7 +42,8 @@
 
 #include <functional>
 
-#include "Assert.h"
+#include <pvsutil/Assert.h>
+
 #include "DeviceList.h"
 
 namespace skelcl {
@@ -50,35 +51,35 @@ namespace skelcl {
 namespace detail {
 
 template <template <typename> class C, typename T>
-CopyDistribution< C<T> >::CopyDistribution(const DeviceList& deviceList,
-                                           std::function<T(const T&, const T&)>
+CopyDistribution<C<T>>::CopyDistribution(const DeviceList& deviceList,
+                                         std::function<T(const T&, const T&)>
                                              combineFunc)
-  : Distribution< C<T> >(deviceList), _combineFunc(combineFunc)
+  : Distribution<C<T>>(deviceList), _combineFunc(combineFunc)
 {
 }
 
 template <template <typename> class C, typename T>
 template <typename U>
-CopyDistribution< C<T> >::CopyDistribution( const CopyDistribution< C<U> >& rhs)
-  : Distribution< C<T> >(rhs), _combineFunc(nullptr)
+CopyDistribution<C<T>>::CopyDistribution( const CopyDistribution<C<U>>& rhs)
+  : Distribution<C<T>>(rhs), _combineFunc(nullptr)
 {
   // TODO: allow this? How handle this?
 }
 
 template <template <typename> class C, typename T>
-CopyDistribution< C<T> >::~CopyDistribution()
+CopyDistribution<C<T>>::~CopyDistribution()
 {
 }
 
 template <template <typename> class C, typename T>
-bool CopyDistribution< C<T> >::isValid() const
+bool CopyDistribution<C<T>>::isValid() const
 {
   return true;
 }
 
 template <template <typename> class C, typename T>
-void CopyDistribution< C<T> >::startUpload(C<T>& container,
-                                           Event* events) const
+void CopyDistribution<C<T>>::startUpload(C<T>& container,
+                                         Event* events) const
 {
   ASSERT(events != nullptr);
 
@@ -93,18 +94,19 @@ void CopyDistribution< C<T> >::startUpload(C<T>& container,
 }
 
 template <template <typename> class C, typename T>
-void CopyDistribution< C<T> >::startDownload(C<T>& container,
-                                             Event* events) const
+void CopyDistribution<C<T>>::startDownload(C<T>& container,
+                                           Event* events) const
 {
   ASSERT(events != nullptr);
 
   if (_combineFunc == nullptr) {
     // take data from the first device
+    auto& firstDevice = *(this->_devices.front());
 
-    auto& buffer = container.deviceBuffer(*(this->_devices.front()));
+    auto& buffer = container.deviceBuffer(firstDevice);
 
-    auto event = this->_devices.front()->enqueueRead(buffer,
-                                                     container.hostBuffer().begin());
+    auto event = firstDevice.enqueueRead(buffer,container.hostBuffer().begin());
+
     events->insert(event);
 
   } else { // using combine function
@@ -143,30 +145,32 @@ void CopyDistribution< C<T> >::startDownload(C<T>& container,
 }
 
 template <template <typename> class C, typename T>
-size_t CopyDistribution< C<T> >::sizeForDevice(const C<T>& container,
-                                               const std::shared_ptr<detail::Device>& /*d*/) const
+size_t
+  CopyDistribution<C<T>>::sizeForDevice(const C<T>& container,
+                                        const std::shared_ptr<detail::Device>&
+                                            /*d*/) const
 {
   return copy_distribution_helper::sizeForDevice<T>(container.size());
 }
 
 template <template <typename> class C, typename T>
-bool CopyDistribution< C<T> >::dataExchangeOnDistributionChange(
-                                   Distribution< C<T> >& /*newDistribution*/)
+bool CopyDistribution<C<T>>::dataExchangeOnDistributionChange(
+                                   Distribution<C<T>>& /*newDistribution*/)
 {
   return true; // always do data exchange for copy distibution
 }
 
 template <template <typename> class C, typename T>
-std::function<T(const T&, const T&)> CopyDistribution< C<T> >::combineFunc() const
+std::function<T(const T&, const T&)> CopyDistribution<C<T>>::combineFunc() const
 {
   return this->_combineFunc;
 }
 
 template <template <typename> class C, typename T>
-bool CopyDistribution< C<T> >::doCompare(const Distribution< C<T> >& rhs) const
+bool CopyDistribution<C<T>>::doCompare(const Distribution<C<T>>& rhs) const
 {
   bool ret = false;
-  auto const copyRhs = dynamic_cast<const CopyDistribution< C<T> >*>(&rhs);
+  auto const copyRhs = dynamic_cast<const CopyDistribution<C<T>>*>(&rhs);
   if (copyRhs) {
     ret = true;
   }

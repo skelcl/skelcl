@@ -43,14 +43,15 @@
 #include <string>
 #include <sstream>
 
+#include <pvsutil/Logger.h>
+
 #include <SkelCL/detail/Program.h>
 #include <SkelCL/detail/Util.h>
-#include <SkelCL/detail/Logger.h>
 
 class ProgramTest : public ::testing::Test {
 protected:
   ProgramTest() {
-    skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+    pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
   };
 
   ~ProgramTest() {

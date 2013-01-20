@@ -134,7 +134,7 @@ public:
   /// 
   /// \brief Creates an IndexPoint with the values {0,0}.
   /// 
-  IndexPoint() = default;
+  IndexPoint();
 
   /// 
   /// \brief Copy constructor. Creates an IndexPoint with the same values as the
