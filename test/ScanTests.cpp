@@ -69,15 +69,15 @@ TEST_F(ScanTest, CreateScanWithString) {
 TEST_F(ScanTest, SimpleScan) {
   skelcl::Scan<int(int)> s{ "int func(int x, int y){ return x+y; }" };
 
-  skelcl::Vector<int> input(10);
+  skelcl::Vector<int> input(1024);
   for (size_t i = 0; i < input.size(); ++i) {
     input[i] = 1;
   }
-  EXPECT_EQ(10, input.size());
+  EXPECT_EQ(1024, input.size());
 
   skelcl::Vector<int> output = s(input);
 
-  EXPECT_EQ(10, output.size());
+  EXPECT_EQ(1024, output.size());
   for (size_t i = 0; i < output.size(); ++i) {
     EXPECT_EQ(i, output[i]);
   }

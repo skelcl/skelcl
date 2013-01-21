@@ -93,7 +93,7 @@ void SCL_SCAN(__global       SCL_TYPE_0* dataSet,
   const int gid2_0 = gid << 1;
   const int gid2_1 = gid2_0 + 1;
 
-  // Cache the datas in local memory
+  // Cache the data in local memory
 
 #ifdef SUPPORT_AVOID_BANK_CONFLICT
   uint ai  = tid;
@@ -102,11 +102,11 @@ void SCL_SCAN(__global       SCL_TYPE_0* dataSet,
   uint gbi = gid + lwz;
   uint bankOffsetA = CONFLICT_FREE_OFFSET(ai); 
   uint bankOffsetB = CONFLICT_FREE_OFFSET(bi);
-  localBuffer[ai + bankOffsetA] = (gai < blockSumsSize) ? dataSet[gai] : 0; 
-  localBuffer[bi + bankOffsetB] = (gbi < blockSumsSize) ? dataSet[gbi] : 0;
+  localBuffer[ai + bankOffsetA] = (gai < blockSumsSize) ? dataSet[gai] : SCL_IDENTITY; 
+  localBuffer[bi + bankOffsetB] = (gbi < blockSumsSize) ? dataSet[gbi] : SCL_IDENTITY;
 #else
-  localBuffer[tid2_0] = (gid2_0 < blockSumsSize) ? dataSet[gid2_0] : 0;
-  localBuffer[tid2_1] = (gid2_1 < blockSumsSize) ? dataSet[gid2_1] : 0;
+  localBuffer[tid2_0] = (gid2_0 < blockSumsSize) ? dataSet[gid2_0] : SCL_IDENTITY;
+  localBuffer[tid2_1] = (gid2_1 < blockSumsSize) ? dataSet[gid2_1] : SCL_IDENTITY;
 #endif
 
   // bottom-up

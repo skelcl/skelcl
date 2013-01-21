@@ -124,18 +124,17 @@ void Scan<T(T)>::execute(Vector<T>& output,
   cl_uint wgSize      = std::min(this->workGroupSize(),
                                  devicePtr->maxWorkGroupSize());
 
-#if 0
   // clear output with identity
   {
     cl_uint global = detail::util::ceilToMultipleOf(outputBuffer.size(), wgSize);
     
     cl::Kernel clearKernel(_program.kernel(*devicePtr, "SCL_CLEAR"));
     clearKernel.setArg(0, outputBuffer.clBuffer());
-    clearKernel.setArg(1, outputBuffer.size());
+    clearKernel.setArg(1, static_cast<cl_uint>(outputBuffer.size()));
 
     devicePtr->enqueue(clearKernel, cl::NDRange(global), cl::NDRange(wgSize));
   }
-#endif
+  try {
 
   // calculate number of passes
   unsigned int passes = calculateNumberOfPasses(wgSize, elements);
@@ -149,6 +148,7 @@ void Scan<T(T)>::execute(Vector<T>& output,
 
     n = (n + wgSize - 1) / wgSize; // round up while dividing
   }
+  LOG_DEBUG_INFO("Intermediate buffers allocated");
 
   cl::Kernel scanKernel(_program.kernel(*devicePtr, "SCL_SCAN"));
   // allocate shared memory
@@ -164,7 +164,7 @@ void Scan<T(T)>::execute(Vector<T>& output,
                                                     local);
     scanKernel.setArg(0, currentInput->clBuffer());
     scanKernel.setArg(2, currentOutput->clBuffer());
-    scanKernel.setArg(3, currentOutput->size());
+    scanKernel.setArg(3, static_cast<cl_uint>(currentOutput->size()));
 
     // set additional kernel args
 
@@ -176,6 +176,18 @@ void Scan<T(T)>::execute(Vector<T>& output,
     // use the calculated results as input for the next pass
     currentInput = currentOutput;
   }
+
+  {
+    std::vector<T> data(tmpBuffers[0].size());
+    devicePtr->enqueueRead(tmpBuffers[0], data.data(), 0);
+    LOG_DEBUG_INFO("Front: ", data.front());
+    LOG_DEBUG_INFO("data[1]: ", data[1]);
+    LOG_DEBUG_INFO("data[2]: ", data[2]);
+    LOG_DEBUG_INFO("data[3]: ", data[3]);
+    LOG_DEBUG_INFO("data[4]: ", data[4]);
+    LOG_DEBUG_INFO("data[5]: ", data[5]);
+  }
+  ABORT_WITH_ERROR(-1);
 
   // enqueue uniform addition as last step of the scan
   cl::Kernel uniformAddKernel(_program.kernel(*devicePtr, "SCL_UNIFORM_ADD"));
@@ -193,7 +205,7 @@ void Scan<T(T)>::execute(Vector<T>& output,
                                                     local);
     uniformAddKernel.setArg(0, currentOutput->clBuffer());
     uniformAddKernel.setArg(1, currentInput->clBuffer());
-    uniformAddKernel.setArg(2, currentInput->size());
+    uniformAddKernel.setArg(2, static_cast<cl_uint>(currentInput->size()));
 
     devicePtr->enqueue(uniformAddKernel, cl::NDRange(global), cl::NDRange(local));
   }
@@ -202,6 +214,10 @@ void Scan<T(T)>::execute(Vector<T>& output,
   // the tmp buffer holds the result
   if (passes == 1) {
     output.replaceDeviceBuffer(std::move(tmpBuffers[0]), *devicePtr);
+  }
+
+  } catch (cl::Error& err) {
+    ABORT_WITH_ERROR(err);
   }
 
   LOG_DEBUG_INFO("Scan kernel started");
