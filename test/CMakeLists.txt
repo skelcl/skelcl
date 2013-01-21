@@ -27,4 +27,5 @@ add_testcase (DeviceSelectionTests)
 add_testcase (MatrixTests)
 add_testcase (IndexVectorTests)
 add_testcase (IndexMatrixTests)
+add_testcase (ScanTests)
 

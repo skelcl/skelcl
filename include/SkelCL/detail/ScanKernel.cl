@@ -72,10 +72,10 @@ typedef float SCL_TYPE_0;
 #endif
 
 __kernel
-void kernel__ExclusivePrefixScan(__global       SCL_TYPE_0* dataSet,
-                                 __local        SCL_TYPE_0* localBuffer,
-                                 __global       SCL_TYPE_0* blockSums,
-                                          const uint        blockSumsSize )
+void SCL_SCAN(__global       SCL_TYPE_0* dataSet,
+              __local        SCL_TYPE_0* localBuffer,
+              __global       SCL_TYPE_0* blockSums,
+                       const uint        blockSumsSize)
 {
   const uint gid = get_global_id(0);
   const uint tid = get_local_id(0);
@@ -198,9 +198,9 @@ void kernel__ExclusivePrefixScan(__global       SCL_TYPE_0* dataSet,
 // scan of top elements of input arrays.
 //------------------------------------------------------------
 
-__kernel void kernel__UniformAdd(__global       SCL_TYPE_0* output,
-                                 __global const SCL_TYPE_0* blockSums,
-                                          const uint        outputSize)
+__kernel void SCL_UNIFORM_ADD(__global       SCL_TYPE_0* output,
+                              __global const SCL_TYPE_0* blockSums,
+                                       const uint        outputSize)
 {
         uint gid     = get_global_id(0) * 2;
   const uint tid     = get_local_id(0);
@@ -242,6 +242,14 @@ __kernel void kernel__UniformAdd(__global       SCL_TYPE_0* output,
     output[gid] = SCL_FUNC(output[gid], localBuffer[0]);
   }
 #endif
+}
+
+__kernel void SCL_CLEAR(__global       SCL_TYPE_0* output,
+                                 const uint        elements)
+{
+  if (get_global_id(0) < elements) {
+    output[get_global_id(0)] = SCL_IDENTITY;
+  }
 }
 
 )"

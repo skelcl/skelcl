@@ -52,14 +52,15 @@
 #include <CL/cl.h>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include <pvsutil/Assert.h>
+#include <pvsutil/Logger.h>
+
 #include "../Distributions.h"
 #include "../Out.h"
 #include "../Source.h"
 
-#include "Assert.h"
 #include "Device.h"
 #include "KernelUtil.h"
-#include "Logger.h"
 #include "Program.h"
 #include "Skeleton.h"
 #include "Util.h"
@@ -108,43 +109,57 @@ template <typename T>
 template <typename... Args>
 void Scan<T(T)>::execute(Vector<T>& output,
                          const Vector<T>& input,
-                         Args&&... args)
+                         Args&&... /*args*/)
 {
   ASSERT( input.distribution().isValid() );
 
   // TODO: relax to multiple devices later
-  ASSERT( input.distribution().decies().size() == 1 );
+  ASSERT( input.distribution().devices().size() == 1 );
 
-  auto& device        = *(input.distribution().devices().front());
-  auto& outputBuffer  = output.deviceBuffer(device);
-  auto& inputBuffer   = input.deviceBuffer(device);
+  auto& devicePtr     = input.distribution().devices().front();
+  auto& outputBuffer  = output.deviceBuffer(*devicePtr);
+  auto& inputBuffer   = input.deviceBuffer(*devicePtr);
 
   cl_uint elements    = inputBuffer.size();
   cl_uint wgSize      = std::min(this->workGroupSize(),
-                                 device.maxWorkGroupSize());
+                                 devicePtr->maxWorkGroupSize());
+
+#if 0
+  // clear output with identity
+  {
+    cl_uint global = detail::util::ceilToMultipleOf(outputBuffer.size(), wgSize);
+    
+    cl::Kernel clearKernel(_program.kernel(*devicePtr, "SCL_CLEAR"));
+    clearKernel.setArg(0, outputBuffer.clBuffer());
+    clearKernel.setArg(1, outputBuffer.size());
+
+    devicePtr->enqueue(clearKernel, cl::NDRange(global), cl::NDRange(wgSize));
+  }
+#endif
 
   // calculate number of passes
   unsigned int passes = calculateNumberOfPasses(wgSize, elements);
+  LOG_DEBUG_INFO("Scan being performed in ", passes, " passes");
 
   // allocate intermediate buffers
-  detail::DeviceBuffer tmpBuffers[passes];
+  std::vector<detail::DeviceBuffer> tmpBuffers(passes);
   cl_uint n = elements;
   for (auto& buffer : tmpBuffers) {
-    buffer = detail::DeviceBuffer(&device, n, sizeof(T));
+    buffer = detail::DeviceBuffer(devicePtr, n, sizeof(T));
 
     n = (n + wgSize - 1) / wgSize; // round up while dividing
   }
 
-  cl::Kernel scanKernel(_program.kernel(device, "SCL_SCAN"));
+  cl::Kernel scanKernel(_program.kernel(*devicePtr, "SCL_SCAN"));
   // allocate shared memory
   scanKernel.setArg( 1, cl::__local(sizeof(T) * wgSize) );
 
-  // perform the scan for each pass
-  auto* currentInput = &input.deviceBuffer(device);
+  // enqueue the scan for each pass
+  auto* currentInput = &inputBuffer;
   for (unsigned int i = 0; i < passes; i++) {
-    auto* currentOutput = tmpBuffers[i];
+    auto* currentOutput = &tmpBuffers[i];
 
-    cl_uint local  = workGroupSize / 2;
+    cl_uint local  = wgSize / 2;
     cl_uint global = detail::util::ceilToMultipleOf(currentOutput->size() / 2,
                                                     local);
     scanKernel.setArg(0, currentInput->clBuffer());
@@ -154,32 +169,41 @@ void Scan<T(T)>::execute(Vector<T>& output,
     // set additional kernel args
 
     // launch kernel
-    device.enqueue(scanKernel, cl::NDRange(global), cl::NDRange(local));
+    devicePtr->enqueue(scanKernel, cl::NDRange(global), cl::NDRange(local));
+    LOG_DEBUG_INFO("Perform pass number ", i, " with input (", currentInput,
+                   ") and output (", currentOutput, ")");
 
     // use the calculated results as input for the next pass
     currentInput = currentOutput;
   }
 
-  // perform uniform addition as last step of the scan
-  cl::Kernel uniformAddKernel(_program.kernel(device, "SCL_UNIFORM_ADD"));
-  for (unsigned int i = passes - 2; i >= 0; i--) {
-    auto* currentInput = tmpBuffers[i];
-    detail::DeviceBuffer* currentOutput = nullptr;
+  // enqueue uniform addition as last step of the scan
+  cl::Kernel uniformAddKernel(_program.kernel(*devicePtr, "SCL_UNIFORM_ADD"));
+  for (int i = passes - 2; i >= 0; i--) {
+    auto* currentInput = &tmpBuffers[i];
+    const detail::DeviceBuffer* currentOutput = nullptr;
     if ( i > 0 ) {
-      currentOutput = tmpBuffers[i-1];
+      currentOutput = &tmpBuffers[i-1];
     } else { // i == 0
       currentOutput = &outputBuffer;
     }
 
-    cl_uint local = workGroupSize / 2;
+    cl_uint local = wgSize / 2;
     cl_uint global = detail::util::ceilToMultipleOf(currentInput->size() / 2,
                                                     local);
     uniformAddKernel.setArg(0, currentOutput->clBuffer());
     uniformAddKernel.setArg(1, currentInput->clBuffer());
     uniformAddKernel.setArg(2, currentInput->size());
 
-    device.enqueue(uniformAddKernel, cl::NDRange(global), cl::NDRange(local));
+    devicePtr->enqueue(uniformAddKernel, cl::NDRange(global), cl::NDRange(local));
   }
+
+  // if only one pass was performed no addition as last step was done and
+  // the tmp buffer holds the result
+  if (passes == 1) {
+    output.replaceDeviceBuffer(std::move(tmpBuffers[0]), *devicePtr);
+  }
+
   LOG_DEBUG_INFO("Scan kernel started");
 }
 
@@ -193,7 +217,7 @@ unsigned int Scan<T(T)>::calculateNumberOfPasses(size_t workGroupSize,
     elements = (elements + workGroupSize - 1) / workGroupSize;
     passes++;
   } while (elements > 1);
-  return passes
+  return passes;
 }
 
 template<typename T>
@@ -207,31 +231,24 @@ detail::Program
 
   // create program
   // first: device specific functions
-  std::string deviceFunctions;
-  deviceFunctions.append(Vector<Tleft>::deviceFunctions());
-  deviceFunctions.append(Matrix<Tleft>::deviceFunctions());
-  
-  std::string s(deviceFunctions);
-  // second: user defined source
+  std::string s(detail::CommonDefinitions::getSource());
+  // second: define identity
+  s.append("#define SCL_IDENTITY (" + id + ")\n");
+  // next: user defined source
   s.append(source);
   // last: append skeleton implementation source
   s.append(
     #include "ScanKernel.cl"
   );
-  auto program = detail::Program(s,
-                                 detail::util::hash("//Scan\n"
-                                                    + deviceFunctions
-                                                    + source) );
+  auto program = detail::Program(s, detail::util::hash(s));
 
   // modify program
   if (!program.loadBinary()) {
-#if 0
     // append parameters from user function to kernel
-    program.transferParameters(funcName, 2, "SCL_ZIP");
+    program.transferParameters(funcName, 2, "SCL_SCAN");
     program.transferArguments(funcName, 2, "SCL_FUNC");
     // rename user function
     program.renameFunction(funcName, "SCL_FUNC");
-#endif
     // rename typedefs
     program.adjustTypes<T>();
   }
@@ -246,7 +263,7 @@ void Scan<T(T)>::prepareInput(const Vector<T>& input)
 {
   // set default distribution if required
   if (!input.distribution().isValid()) {
-    input.setDistribution(detail::SinglDistribution<Vector<T>>());
+    input.setDistribution(detail::SingleDistribution<Vector<T>>());
   }
   // create buffers if required
   input.createDeviceBuffers();
