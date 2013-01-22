@@ -71,13 +71,18 @@ Index::index_type Index::get() const
   return _index;
 }
 
+IndexPoint::IndexPoint()
+  : _indexPoint()
+{
+}
+
 IndexPoint::IndexPoint(const indexPoint_type& indexPoint)
   : _indexPoint(indexPoint)
 {
 }
 
-IndexPoint::IndexPoint(const Index& x, const Index& y)
-  : _indexPoint(std::make_pair(x,y))
+IndexPoint::IndexPoint(const Index& row, const Index& column)
+  : _indexPoint(std::make_pair(row,column))
 {
 }
 

@@ -191,6 +191,8 @@ public:
   ///
   void commitAppendParameter(Function& func, Parameter& param);
 
+  void commitAppendParameter(Function& func, const std::string& paramAsString);
+
   ///
   /// \brief Initiate appending the given parameter as argument (just the name
   ///        of the parameter, not the type) to the given callExpression
@@ -208,6 +210,9 @@ public:
   ///
   void commitAppendArgument(CallExpression& callExpression,
                             Parameter& param);
+
+  void commitInsertSourceAtFunctionBegin(Function& func,
+                                         const std::string& source);
 
   ///
   /// \brief Write changes, made using calls to the functions prefixed with

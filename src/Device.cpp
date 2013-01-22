@@ -45,11 +45,12 @@
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include <pvsutil/Assert.h>
+#include <pvsutil/Logger.h>
+
 #include "SkelCL/detail/Device.h"
 
-#include "SkelCL/detail/Assert.h"
 #include "SkelCL/detail/DeviceBuffer.h"
-#include "SkelCL/detail/Logger.h"
 
 namespace {
 

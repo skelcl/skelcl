@@ -37,13 +37,14 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
+#include <pvsutil/Logger.h>
+
 #include "SkelCL/SkelCL.h"
 
 #include "SkelCL/detail/DeviceList.h"
 #include "SkelCL/detail/DeviceProperties.h"
 #include "SkelCL/detail/PlatformID.h"
 #include "SkelCL/detail/DeviceID.h"
-#include "SkelCL/detail/Logger.h"
 
 namespace skelcl {
 

@@ -53,7 +53,7 @@ namespace detail {
 
 class Event {
 public:
-  Event() = default;
+  Event();
 
   Event(const std::vector<cl::Event>& events);
 

@@ -52,13 +52,13 @@ namespace detail {
 template <typename> class CopyDistribution;
 
 template <template <typename> class C, typename T>
-class CopyDistribution< C<T> > : public Distribution< C<T> > {
+class CopyDistribution<C<T>> : public Distribution<C<T>> {
 public:
   CopyDistribution(const DeviceList& deviceList = detail::globalDeviceList,
                    std::function<T(const T&, const T&)> combineFunc = nullptr);
 
   template <typename U>
-  CopyDistribution( const CopyDistribution< C<U> >& rhs);
+  CopyDistribution( const CopyDistribution<C<U>>& rhs);
 
   ~CopyDistribution();
 
@@ -73,12 +73,12 @@ public:
   size_t sizeForDevice(const C<T>& container,
                        const std::shared_ptr<detail::Device>& devicePtr) const;
 
-  bool dataExchangeOnDistributionChange(Distribution< C<T> >& newDistribution);
+  bool dataExchangeOnDistributionChange(Distribution<C<T>>& newDistribution);
 
   std::function<T(const T&, const T&)> combineFunc() const;
 
 protected:
-  bool doCompare(const Distribution< C<T> >& rhs) const;
+  bool doCompare(const Distribution<C<T>>& rhs) const;
 
 private:
   std::function<T(const T&, const T&)> _combineFunc;

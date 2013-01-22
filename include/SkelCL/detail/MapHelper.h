@@ -53,15 +53,15 @@ template<typename> class MapHelper;
 template<typename Tin, typename Tout>
 class MapHelper<Tout(Tin)> {
 public:
-  MapHelper<Tout(Tin)>() = delete;
+  MapHelper() = delete;
 
-  MapHelper<Tout(Tin)>(detail::Program&& program);
+  MapHelper(detail::Program&& program);
 
-  MapHelper<Tout(Tin)>(const MapHelper<Tout(Tin)>&) = default;
+  MapHelper(const MapHelper&) = default;
 
-  MapHelper<Tout(Tin)>& operator=(const MapHelper<Tout(Tin)>&) = default;
+  MapHelper& operator=(const MapHelper&) = default;
 
-  ~MapHelper<Tout(Tin)>() = default;
+  virtual ~MapHelper();
 
 protected:
   template <template <typename> class C>

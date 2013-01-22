@@ -61,8 +61,8 @@ public:
   Vector() = delete;
 
   Vector(const value_type size,
-         const detail::Distribution< Vector<Index> >& distribution
-                                    = detail::Distribution< Vector<Index> >());
+         const detail::Distribution<Vector<Index>>& distribution
+                                    = detail::Distribution<Vector<Index>>());
   Vector(const Vector<Index>& rhs);
   Vector(Vector<Index>&& rhs) = delete;
   Vector<Index>& operator=(const Vector<Index>&) = delete;
@@ -85,7 +85,7 @@ public:
   /// \return A pointer to the current distribution of the vector, of nullptr
   ///         if no distribution is set
   ///
-  detail::Distribution< Vector<Index> >& distribution() const;
+  detail::Distribution<Vector<Index>>& distribution() const;
 
   ///
   /// \brief Changes the distribution of the vector
@@ -98,12 +98,15 @@ public:
   ///                     vector
   ///
   template <typename U>
-  void setDistribution(const detail::Distribution< Vector<U> >& distribution) const;
+  void setDistribution(const detail::Distribution<Vector<U>>&
+                          distribution) const;
 
   template <typename U>
-  void setDistribution(const std::unique_ptr<detail::Distribution< Vector<U> > >& newDistribution) const;
+  void setDistribution(const std::unique_ptr<detail::Distribution<Vector<U>>>&
+                          newDistribution) const;
 
-  void setDistribution(std::unique_ptr<detail::Distribution< Vector<Index> > >&& newDistribution) const;
+  void setDistribution(std::unique_ptr<detail::Distribution<Vector<Index>>>&&
+                          newDistribution) const;
 
   static std::string deviceFunctions();
 
@@ -136,7 +139,7 @@ private:
 
     value_type                                                _maxIndex;
   mutable
-    std::unique_ptr< detail::Distribution< Vector<Index> > >  _distribution;
+    std::unique_ptr<detail::Distribution<Vector<Index>>>      _distribution;
 };
 
 } // namespace skelcl
