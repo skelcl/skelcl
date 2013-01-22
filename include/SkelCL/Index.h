@@ -190,8 +190,8 @@ public:
   bool operator!=(const IndexPoint& rhs) const;
 
   /// 
-  /// \brief Conversion operator. The IndexPoint object is automatically\
-  ///        converted in the underlying pair of unsigned integer representing
+  /// \brief Conversion operator. The IndexPoint object is automatically
+  ///        converted in the underlying pair of unsigned integer representig
   ///        this IndexPoint object.
   ///
   /// \return The pair of unsigned integer representing this IndexPoint object.

@@ -131,7 +131,7 @@ class AllPairs<Tout(Tleft, Tright)> : public detail::Skeleton {
     ///              will try to select a suitable distribution for allpairs computations
     ///
     ///        args  Additional arguments which are passed to the function
-    ///              named by funcName and defined in the source code at created.
+    ///              named by funcName and defined in its source code.
     ///              The individual arguments must be passed in the same order
     ///              here as they were defined in the funcName function
     ///              declaration.
@@ -168,7 +168,7 @@ class AllPairs<Tout(Tleft, Tright)> : public detail::Skeleton {
     ///              will try to select a suitable distribution for allpairs computations
     ///
     ///        args  Additional arguments which are passed to the function
-    ///              named by funcName and defined in the source code at created.
+    ///              named by funcName and defined in its source code.
     ///              The individual arguments must be passed in the same order
     ///              here as they were defined in the funcName function
     ///              declaration.
