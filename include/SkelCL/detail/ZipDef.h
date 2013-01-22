@@ -71,6 +71,8 @@ template<typename Tleft, typename Tright, typename Tout>
 Zip<Tout(Tleft, Tright)>::Zip(const Source& source,
                               const std::string& funcName)
   : detail::Skeleton(),
+    _source(source),
+    _funcName(funcName),
     _program(createAndBuildProgram(source, funcName))
 {
   LOG_DEBUG_INFO("Create new Zip object (", this, ")");

@@ -184,11 +184,11 @@ public:
                       const C<Tright>& right,
                       Args&&... args);
 
-  const std::string source() const {
+  const std::string& source() const {
       return _source;
   }
 
-  const std::string func() const {
+  const std::string& func() const {
       return _funcName;
   }
 
@@ -246,6 +246,8 @@ private:
   detail::Program createAndBuildProgram(const std::string& source,
                                         const std::string& funcName) const;
 
+  const std::string     _source;
+  const std::string     _funcName;
   const detail::Program _program;
 };
 

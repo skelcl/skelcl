@@ -45,7 +45,7 @@
 
 namespace {
 
-const size_t defaultWorkGroupSize = 256;
+const size_t defaultWorkGroupSize = 16;
 
 } // namespace
 
