@@ -30,14 +30,23 @@ set (LIBCLANG_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/libraries/libclang/include" CAC
 set (LIBCLANG_LIB_DIR "${PROJECT_SOURCE_DIR}/libraries/libclang/lib" CACHE STRING
      "Library directory of libclang.")
 
+# add libraries
+if (NOT TARGET pvsutil)
+  add_subdirectory (libraries/pvsutil)
+endif (NOT TARGET pvsutil)
+
 # skelcl's ssedit common dirs and libraries
 set (SSEDIT_COMMON_INCLUDE_DIR
+      "${PROJECT_SOURCE_DIR}/include"
+      "${PROJECT_SOURCE_DIR}/libraries/pvsutil/include"
       ${LIBCLANG_INCLUDE_DIR} CACHE INTERNAL
      "Common include directories used by ssedit.")
 set (SSEDIT_COMMON_LIBS
+      pvsutil
       clang CACHE INTERNAL
      "Common libraries used by ssedit.")
 set (SSEDIT_COMMON_LIB_DIR
+      "${PROJECT_BINARY_DIR}/libraries/pvsutil/lib"
       ${LIBCLANG_LIB_DIR} CACHE INTERNAL
      "Common library directories used by ssedit.")
 

@@ -91,7 +91,9 @@ __kernel void SCL_REDUCE(
     {
         SCL_TYPE_0 a = LOAD_GLOBAL(SCL_IN, i);
         /* alternative introduce padding with group_size? */
-        SCL_TYPE_0 b = (i+group_size < n) ? LOAD_GLOBAL(SCL_IN, i + group_size) : identity;
+        SCL_TYPE_0 b = (i+group_size < n) ?
+                            LOAD_GLOBAL(SCL_IN, i + group_size)
+                          : identity;
         SCL_TYPE_0 s = LOAD_LOCAL(shared, local_id);
         STORE_LOCAL(shared, local_id, SCL_FUNC(SCL_FUNC(a, b), s));
         i += (step_size) * get_num_groups(0); /* jump over all work_groups */
@@ -142,7 +144,8 @@ __kernel void SCL_REDUCE(
     if (local_id <   1) { ACCUM_LOCAL(shared, local_id, local_id +   1); }
     #endif
 
-    /* first work_item of the work_group stores the local result in the global memory */
+    /* first work_item of the work_group stores the local result in the
+     * global memory */
     barrier(CLK_LOCAL_MEM_FENCE);
     if (get_local_id(0) == 0) {
         SCL_TYPE_0 v = LOAD_LOCAL(shared, 0);

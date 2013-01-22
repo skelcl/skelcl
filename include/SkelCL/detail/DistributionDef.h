@@ -43,120 +43,123 @@
 #include <sstream>
 #include <string>
 
-#include "Assert.h"
+#include <pvsutil/Assert.h>
+
 #include "Device.h"
 #include "DeviceList.h"
 #include "Event.h"
-#include "Logger.h"
 
 namespace skelcl {
 
 namespace detail {
 
 template <template <typename> class C, typename T>
-Distribution< C<T> >::Distribution()
+Distribution<C<T>>::Distribution()
   : _devices()
 {
 }
 
 template <template <typename> class C, typename T>
 template <typename U>
-Distribution< C<T> >::Distribution(const Distribution< C<U> >& rhs)
+Distribution<C<T>>::Distribution(const Distribution<C<U>>& rhs)
   : _devices(rhs.devices())
 {
 }
 
 template <template <typename> class C, typename T>
 template <typename U>
-Distribution< C<T> >::Distribution(Distribution< C<U> >&& rhs)
+Distribution<C<T>>::Distribution(Distribution<C<U>>&& rhs)
   : _devices(std::move(rhs._devices))
 {
 }
 
 template <template <typename> class C, typename T>
-Distribution< C<T> >::~Distribution()
+Distribution<C<T>>::~Distribution()
 {
 }
 
 template <template <typename> class C, typename T>
 template <typename U>
-Distribution< C<T> >& Distribution< C<T> >::operator=(const Distribution< C<U> >& rhs)
+Distribution<C<T>>& Distribution<C<T>>::operator=(const Distribution<C<U>>& rhs)
 {
   _devices = rhs._devices;
 }
 
 template <template <typename> class C, typename T>
 template <typename U>
-Distribution< C<T> >& Distribution< C<T> >::operator=(Distribution< C<U> >&& rhs)
+Distribution<C<T>>& Distribution<C<T>>::operator=(Distribution<C<U>>&& rhs)
 {
   _devices = std::move(rhs._devices);
 }
 
 template <template <typename> class C, typename T>
-bool Distribution< C<T> >::operator==(const Distribution& rhs) const
+bool Distribution<C<T>>::operator==(const Distribution& rhs) const
 {
   return this->doCompare(rhs) && rhs.doCompare(*this);
 }
 
 template <template <typename> class C, typename T>
-bool Distribution< C<T> >::operator!=(const Distribution& rhs) const
+bool Distribution<C<T>>::operator!=(const Distribution& rhs) const
 {
   return !(this->operator==(rhs));
 }
 
 template <template <typename> class C, typename T>
-bool Distribution< C<T> >::isValid() const
+bool Distribution<C<T>>::isValid() const
 {
   return false;
 }
 
 template <template <typename> class C, typename T>
-void Distribution< C<T> >::startUpload(C<T>& /*container*/,
+void Distribution<C<T>>::startUpload(C<T>& /*container*/,
+                                     detail::Event* /*events*/) const
+{
+}
+
+template <template <typename> class C, typename T>
+void Distribution<C<T>>::startDownload(C<T>& /*container*/,
                                        detail::Event* /*events*/) const
 {
 }
 
 template <template <typename> class C, typename T>
-void Distribution< C<T> >::startDownload(C<T>& /*container*/,
-                                         detail::Event* /*events*/) const
-{
-}
-
-template <template <typename> class C, typename T>
-const detail::DeviceList& Distribution< C<T> >::devices() const
+const detail::DeviceList& Distribution<C<T>>::devices() const
 {
   return _devices;
 }
 
 template <template <typename> class C, typename T>
-const detail::DeviceList::value_type Distribution< C<T> >::device(const size_t device) const
+const detail::DeviceList::value_type
+  Distribution<C<T>>::device(const size_t device) const
 {
   ASSERT(device < _devices.size());
   return _devices[device];
 }
 
 template <template <typename> class C, typename T>
-size_t Distribution< C<T> >::sizeForDevice(const C<T>& /*container*/,
-                                           const std::shared_ptr<detail::Device>& /*d*/) const
+size_t
+  Distribution<C<T>>::sizeForDevice(const C<T>& /*container*/,
+                                    const std::shared_ptr<detail::Device>&
+                                        /*d*/) const
 {
   return 0;
 }
 
 template <template <typename> class C, typename T>
-bool Distribution< C<T> >::dataExchangeOnDistributionChange(
-                                   Distribution< C<T> >& /*newDistribution*/)
+bool Distribution<C<T>>::dataExchangeOnDistributionChange(
+                                   Distribution<C<T>>& /*newDistribution*/)
 {
   return false;
 }
 
 template <template <typename> class C, typename T>
-Distribution< C<T> >::Distribution(const detail::DeviceList& deviceList)
+Distribution<C<T>>::Distribution(const detail::DeviceList& deviceList)
   : _devices(deviceList)
 {
 }
 
 template <template <typename> class C, typename T>
-std::string Distribution< C<T> >::getInfo() const
+std::string Distribution<C<T>>::getInfo() const
 {
   std::stringstream s;
     s << "type: ";
@@ -166,7 +169,7 @@ std::string Distribution< C<T> >::getInfo() const
 }
 
 template <template <typename> class C, typename T>
-bool Distribution< C<T> >::doCompare(const Distribution& rhs) const
+bool Distribution<C<T>>::doCompare(const Distribution& rhs) const
 {
   return (_devices == rhs._devices);
 }

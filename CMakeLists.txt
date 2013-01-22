@@ -27,6 +27,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake-mod
 project (SkelCL)
 
 # add libraries
+if (NOT TARGET pvsutil)
+ add_subdirectory (libraries/pvsutil)
+endif (NOT TARGET pvsutil)
 add_subdirectory (libraries/ssedit)
 
 # specify options and provide common variables
@@ -43,17 +46,20 @@ find_package (OpenCL)
 # skelcl common dirs and libraries
 set (SKELCL_COMMON_INCLUDE_DIR
       "${PROJECT_SOURCE_DIR}/include"
+      "${PROJECT_SOURCE_DIR}/libraries/pvsutil/include"
       "${PROJECT_SOURCE_DIR}/libraries/ssedit/include"
       "${SSEDIT_COMMON_INCLUDE_DIR}" CACHE INTERNAL
      "Common include directories used by SkelCL.")
 set (SKELCL_COMMON_LIBS
       ${OPENCL_LIBRARIES}
       crypto
+      pvsutil
       ssedit
       "${SSEDIT_COMMON_LIBS}" CACHE INTERNAL
      "Common libraries used by SkelCL.")
 set (SKELCL_COMMON_LIB_DIR
       "${OPENCL_LIB_DIR}"
+      "${PROJECT_BINARY_DIR}/libraries/pvsutil/lib"
       "${PROJECT_BINARY_DIR}/libraries/ssedit/lib"
       "${SSEDIT_COMMON_LIB_DIR}" CACHE INTERNAL
      "Common library directories used by SkelCL.")

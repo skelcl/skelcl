@@ -50,94 +50,22 @@
 #include <utility>
 #include <vector>
 
+#include <pvsutil/Assert.h>
+#include <pvsutil/Logger.h>
+
 #include "../Distributions.h"
 
-#include "Assert.h"
 #include "Device.h"
 #include "DeviceBuffer.h"
 #include "DeviceList.h"
 #include "Distribution.h"
 #include "Event.h"
-#include "Logger.h"
 
 namespace skelcl {
 
-Vector<Index>::Vector(const value_type size,
-                      const detail::Distribution< Vector<Index> >& distribution)
-  : _maxIndex(size-1),
-    _distribution(detail::cloneAndConvert<Index>(distribution))
-{
-  LOG_DEBUG_INFO("Created new IndexVector object (", this, ") with ", getDebugInfo());
-}
-
-Vector<Index>::Vector(const Vector<Index>& rhs)
-  : _maxIndex(rhs._maxIndex),
-    _distribution(detail::cloneAndConvert<Index>(rhs.distribution()))
-{
-  LOG_DEBUG_INFO("Created new IndexVector object (", this, ") by copying (", &rhs,
-                 ") with ", getDebugInfo());
-}
-
-Vector<Index>::~Vector()
-{
-  LOG_DEBUG_INFO("IndexVector object (", this, ") with ", getDebugInfo(), " destroyed");
-}
-
-//  template <>
-//  const_iterator Vector<Index>::begin() const
-//  {
-//  }
-
-//  template <>
-//  const_iterator Vector<Index>::end() const;
-//  {
-//  }
-
-Vector<Index>::size_type Vector<Index>::size() const
-{
-  return _maxIndex+1;
-}
-
-typename detail::Sizes Vector<Index>::sizes() const
-{
-  ASSERT(_distribution != nullptr);
-
-  detail::Sizes s;
-  for (auto& devicePtr : _distribution->devices()) {
-    s.push_back(this->_distribution->sizeForDevice(*this, devicePtr));
-  }
-  return s;
-}
-
-Vector<Index>::value_type Vector<Index>::operator[]( size_type n ) const
-{
-  return n;
-}
-
-Vector<Index>::value_type Vector<Index>::at( size_type n ) const
-{
-  if (n >= _maxIndex) throw std::out_of_range("Out of range access.");
-  return n;
-}
-
-Vector<Index>::value_type Vector<Index>::front() const
-{
-  return 0;
-}
-
-Vector<Index>::value_type Vector<Index>::back() const
-{
-  return _maxIndex;
-}
-
-detail::Distribution< Vector<Index> >& Vector<Index>::distribution() const
-{
-  ASSERT(_distribution != nullptr);
-  return *_distribution;
-}
-
 template <typename U>
-void Vector<Index>::setDistribution(const detail::Distribution< Vector<U> >& origDistribution) const
+void Vector<Index>::setDistribution(const detail::Distribution<Vector<U>>&
+                                        origDistribution) const
 {
   ASSERT(origDistribution.isValid());
   // convert and set distribution
@@ -145,67 +73,15 @@ void Vector<Index>::setDistribution(const detail::Distribution< Vector<U> >& ori
 }
 
 template <typename U>
-void Vector<Index>::setDistribution(const std::unique_ptr<detail::Distribution< Vector<U> > >& origDistribution) const
+void
+  Vector<Index>::setDistribution(
+      const std::unique_ptr<detail::Distribution<Vector<U>>>&
+          origDistribution) const
 {
   ASSERT(origDistribution != nullptr);
   ASSERT(origDistribution->isValid());
   // convert and set distribution
   this->setDistribution(detail::cloneAndConvert<Index>(*origDistribution));
-}
-
-void Vector<Index>::setDistribution(std::unique_ptr<detail::Distribution< Vector<Index> > >&& newDistribution) const
-{
-  ASSERT(newDistribution != nullptr);
-  ASSERT(newDistribution->isValid());
-
-  _distribution = std::move(newDistribution);
-  ASSERT(_distribution->isValid());
-
-  LOG_DEBUG_INFO("IndexVector object (", this, ") assigned new distribution, now with ",
-                 getDebugInfo());
-}
-
-std::string Vector<Index>::deviceFunctions()
-{
-  return std::string();
-}
-
-std::string Vector<Index>::getInfo() const
-{
-  std::stringstream s;
-  s << "size: "                   << size();
-  return s.str();
-}
-
-std::string Vector<Index>::getDebugInfo() const
-{
-  std::stringstream s;
-  s << getInfo();
-  return s.str();
-}
-
-const detail::DeviceBuffer& Vector<Index>::deviceBuffer(const detail::Device& /*device*/) const
-{
-  ASSERT_MESSAGE(false, "This function should never be called!");
-  static detail::DeviceBuffer db;
-  return db;
-}
-
-std::vector<Index>& Vector<Index>::hostBuffer() const
-{
-  ASSERT_MESSAGE(false, "This function should never be called!");
-  static std::vector<Index> v;
-  return v;
-}
-
-void Vector<Index>::dataOnDeviceModified() const
-{
-  ASSERT_MESSAGE(false, "This function should never be called!");
-}
-
-void Vector<Index>::dataOnHostModified() const
-{
-  ASSERT_MESSAGE(false, "This function should never be called!");
 }
 
 } // namespace skelcl

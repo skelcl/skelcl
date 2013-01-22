@@ -45,12 +45,12 @@ namespace skelcl {
 namespace detail {
 
 template <typename T>
-OverlapDistribution< Vector<T> >::OverlapDistribution(
+OverlapDistribution<Vector<T>>::OverlapDistribution(
       Vector<T>::size_type overlapRadius,
       Padding padding,
       T neutralElement,
       const DeviceList& deviceList)
-  : Distribution< Vector<T> >(deviceList),
+  : Distribution<Vector<T>>(deviceList),
     _overlapRadius(overlapRadius),
     _padding(padding),
     _neutralElement(neutralElement)
@@ -58,12 +58,12 @@ OverlapDistribution< Vector<T> >::OverlapDistribution(
 }
 
 template <typename T>
-OverlapDistribution< Matrix<T> >::OverlapDistribution(
+OverlapDistribution<Matrix<T>>::OverlapDistribution(
       Matrix<T>::size_type::size_type overlapRadius,
       Padding padding,
       T neutralElement,
       const DeviceList& deviceList)
-  : Distribution< Matrix<T> >(deviceList),
+  : Distribution<Matrix<T>>(deviceList),
     _overlapRadius(overlapRadius),
     _padding(padding),
     _neutralElement(neutralElement)
@@ -72,8 +72,9 @@ OverlapDistribution< Matrix<T> >::OverlapDistribution(
 
 template <typename T>
 template <typename U>
-OverlapDistribution< Vector<T> >::OverlapDistribution( const OverlapDistribution< Vector<U> >& rhs)
-  : Distribution< Vector<T> >(rhs),
+OverlapDistribution<Vector<T>>::OverlapDistribution(
+        const OverlapDistribution<Vector<U>>& rhs)
+  : Distribution<Vector<T>>(rhs),
     _overlapRadius(rhs.overlapRadius()),
     _padding(rhs.padding()),
     _neutralElement(rhs.neutralElement())
@@ -82,8 +83,9 @@ OverlapDistribution< Vector<T> >::OverlapDistribution( const OverlapDistribution
 
 template <typename T>
 template <typename U>
-OverlapDistribution< Matrix<T> >::OverlapDistribution( const OverlapDistribution< Matrix<U> >& rhs)
-  : Distribution< Matrix<T> >(rhs),
+OverlapDistribution<Matrix<T>>::OverlapDistribution(
+        const OverlapDistribution<Matrix<U>>& rhs)
+  : Distribution<Matrix<T>>(rhs),
     _overlapRadius(rhs.overlapRadius()),
     _padding(rhs.padding()),
     _neutralElement(rhs.neutralElement())
@@ -91,30 +93,30 @@ OverlapDistribution< Matrix<T> >::OverlapDistribution( const OverlapDistribution
 }
 
 template <typename T>
-OverlapDistribution< Vector<T> >::~OverlapDistribution()
+OverlapDistribution<Vector<T>>::~OverlapDistribution()
 {
 }
 
 template <typename T>
-OverlapDistribution< Matrix<T> >::~OverlapDistribution()
+OverlapDistribution<Matrix<T>>::~OverlapDistribution()
 {
 }
 
 template <typename T>
-bool OverlapDistribution< Vector<T> >::isValid() const
-{
-  return true;
-}
-
-template <typename T>
-bool OverlapDistribution< Matrix<T> >::isValid() const
+bool OverlapDistribution<Vector<T>>::isValid() const
 {
   return true;
 }
 
 template <typename T>
-void OverlapDistribution< Vector<T> >::startUpload(Vector<T>& vector,
-                                                   Event* events) const
+bool OverlapDistribution<Matrix<T>>::isValid() const
+{
+  return true;
+}
+
+template <typename T>
+void OverlapDistribution<Vector<T>>::startUpload(Vector<T>& vector,
+                                                 Event* events) const
 {
   ASSERT(events != nullptr);
   std::vector<T> paddingFront;
@@ -179,8 +181,8 @@ void OverlapDistribution< Vector<T> >::startUpload(Vector<T>& vector,
 }
 
 template <typename T>
-void OverlapDistribution< Matrix<T> >::startUpload(Matrix<T>& matrix,
-                                                   Event* events) const
+void OverlapDistribution<Matrix<T>>::startUpload(Matrix<T>& matrix,
+                                                 Event* events) const
 {
   ASSERT(events != nullptr);
 
@@ -241,14 +243,16 @@ void OverlapDistribution< Matrix<T> >::startUpload(Matrix<T>& matrix,
 
     hostOffset += size - _overlapRadius * columnCount;
 
-    // offset += (buffer.size()-2*_overlap_radius*_size.column_count-deviceoffset);
+    // offset += (buffer.size()-2*_overlap_radius
+    //            *_size.column_count-deviceoffset);
     deviceOffset = 0; // after the first device, the device offset is 0
    }
 
    // Upload bottom padding at the end of last device
    auto& lastDevicePtr  = _devices.back();
    // calculate offset on the device ...
-   deviceOffset = matrix.deviceBuffer(lastDevicePtr).size() - paddingBottom.size();
+   deviceOffset =   matrix.deviceBuffer(lastDevicePtr).size()
+                  - paddingBottom.size();
 
    event = lastDevicePtr->enqueueWrite(
               matrix.deviceBuffer(lastDevicePtr),
@@ -259,8 +263,8 @@ void OverlapDistribution< Matrix<T> >::startUpload(Matrix<T>& matrix,
 }
 
 template <typename T>
-void OverlapDistribution< Vector<T> >::startDownload(Vector<T>& vector,
-                                                     Event* events) const
+void OverlapDistribution<Vector<T>>::startDownload(Vector<T>& vector,
+                                                   Event* events) const
 {
   ASSERT(events != nullptr);
 
@@ -286,8 +290,8 @@ void OverlapDistribution< Vector<T> >::startDownload(Vector<T>& vector,
 }
 
 template <typename T>
-void OverlapDistribution< Matrix<T> >::startDownload(Matrix<T>& matrix,
-                                                     Event* events) const
+void OverlapDistribution<Matrix<T>>::startDownload(Matrix<T>& matrix,
+                                                   Event* events) const
 {
   ASSERT(events != nullptr);
 
@@ -315,8 +319,11 @@ void OverlapDistribution< Matrix<T> >::startDownload(Matrix<T>& matrix,
 }
 
 template <typename T>
-size_t OverlapDistribution< Matrix<T> >::sizeForDevice(const Vector<T>& vector,
-                                                       const detail::Device::id_type id) const
+size_t
+  OverlapDistribution<Matrix<T>>::sizeForDevice(
+                                                const Vector<T>& vector,
+                                                const detail::Device::id_type id
+                                               ) const
 {
   if (id < _devices.size() - 1) {
     auto s = vector.size() / _devices.size();
@@ -333,8 +340,11 @@ size_t OverlapDistribution< Matrix<T> >::sizeForDevice(const Vector<T>& vector,
 }
 
 template <typename T>
-size_t OverlapDistribution< Matrix<T> >::sizeForDevice(const Matrix<T>& matrix,
-                                                       const detail::Device::id_type id) const
+size_t
+  OverlapDistribution<Matrix<T>>::sizeForDevice(
+                                                const Matrix<T>& matrix,
+                                                const detail::Device::id_type id
+                                               ) const
 {
   if (id < _devices.size() - 1) {
     auto s = matrix.size().rowCount() / _devices.size();
@@ -351,15 +361,15 @@ size_t OverlapDistribution< Matrix<T> >::sizeForDevice(const Matrix<T>& matrix,
 }
 
 template <typename T>
-bool OverlapDistribution< Vector<T> >::dataExchangeOnDistributionChange(
-                                Distribution< Vector<T> >& /*newDistribution*/)
+bool OverlapDistribution<Vector<T>>::dataExchangeOnDistributionChange(
+                                Distribution<Vector<T>>& /*newDistribution*/)
 {
   return true;
 }
 
 template <typename T>
-bool OverlapDistribution< Matrix<T> >::dataExchangeOnDistributionChange(
-                                Distribution< Matrix<T> >& /*newDistribution*/)
+bool OverlapDistribution<Matrix<T>>::dataExchangeOnDistributionChange(
+                                Distribution<Matrix<T>>& /*newDistribution*/)
 {
   return true;
 }
@@ -401,11 +411,13 @@ T& Matrix<T>::neutralElement() const
 }
 
 template <typename T>
-bool OverlapDistribution< Vector<T> >::doCompare(const Distribution< Vector<T> >& rhs) const
+bool OverlapDistribution<Vector<T>>::doCompare(const Distribution<Vector<T>>&
+                                                    rhs) const
 {
   bool ret = false;
   // can rhs be casted into overlap distribution ?
-  auto const overlapRhs = dynamic_cast<const OverlapDistribution< Vector<T> >*>(&rhs);
+  auto const overlapRhs =
+        dynamic_cast<const OverlapDistribution<Vector<T>>*>(&rhs);
   if (overlapRhs) {
     ret = true;
   }
@@ -413,11 +425,13 @@ bool OverlapDistribution< Vector<T> >::doCompare(const Distribution< Vector<T> >
 }
 
 template <typename T>
-bool OverlapDistribution< Matrix<T> >::doCompare(const Distribution< Matrix<T> >& rhs) const
+bool OverlapDistribution<Matrix<T>>::doCompare(const Distribution<Matrix<T>>&
+                                                    rhs) const
 {
   bool ret = false;
   // can rhs be casted into overlap distribution ?
-  auto const overlapRhs = dynamic_cast<const OverlapDistribution< Matrix<T> >*>(&rhs);
+  auto const overlapRhs =
+        dynamic_cast<const OverlapDistribution<Matrix<T>>*>(&rhs);
   if (overlapRhs) {
     ret = true;
   }

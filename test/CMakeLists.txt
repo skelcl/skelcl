@@ -27,8 +27,5 @@ add_testcase (DeviceSelectionTests)
 add_testcase (MatrixTests)
 add_testcase (IndexVectorTests)
 add_testcase (IndexMatrixTests)
-
-add_executable (AllPairsTests AllPairsTests.cpp)
-target_link_libraries (AllPairsTests SkelCL gtest_main ${SKELCL_COMMON_LIBS})
-add_test (AllPairsTests ${CMAKE_CURRENT_BINARY_DIR}/AllPairsTests)
+add_testcase (AllPairsTests)
 

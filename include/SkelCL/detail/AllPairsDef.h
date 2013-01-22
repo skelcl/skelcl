@@ -55,16 +55,17 @@
 #include <ssedit/TempSourceFile.h>
 #include <ssedit/Function.h>
 
+#include <pvsutil/Assert.h>
+#include <pvsutil/Logger.h>
+
 #include "../Distributions.h"
 #include "../Matrix.h"
 #include "../Reduce.h"
 #include "../Zip.h"
 #include "../Out.h"
 
-#include "Assert.h"
 #include "Device.h"
 #include "KernelUtil.h"
-#include "Logger.h"
 #include "Program.h"
 #include "Skeleton.h"
 #include "Util.h"
@@ -152,10 +153,11 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
         auto& leftBuffer   = left.deviceBuffer(*devicePtr);
         auto& rightBuffer  = right.deviceBuffer(*devicePtr);
 
-        cl_uint elements[2]   = {output.rowCount(), output.columnCount()};
+        cl_uint elements[2]   = { static_cast<cl_uint>(output.rowCount()),
+                                  static_cast<cl_uint>(output.columnCount()) };
         cl_uint local[2]      = {_C, _R}; // C, R
-        cl_uint global[2]     = {detail::util::ceilToMultipleOf(elements[1], local[0]),
-                                 detail::util::ceilToMultipleOf(elements[0], local[1]*_S)/_S}; // SUBTILES
+        cl_uint global[2]     = {static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements[1], local[0])),
+                                 static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements[0], local[1]*_S))/_S}; // SUBTILES
         cl_uint dimension     = left.columnCount();
 
         LOG_DEBUG("dim: ", dimension, " height: ", elements[0], " width: ",elements[1]);

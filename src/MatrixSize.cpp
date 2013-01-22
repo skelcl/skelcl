@@ -30,69 +30,100 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
+
 ///
-/// \file Assert.cpp
+/// \file SkelCL.cpp
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <cstdarg>
-#include <cstdio>
-#include <memory>
-
-#include "SkelCL/detail/Assert.h"
-
-#include "SkelCL/detail/Logger.h"
+#include "SkelCL/Matrix.h"
 
 namespace skelcl {
 
-namespace detail {
+// MatrixSize
 
-void ASSERT_IMPL(const char* file,
-                 const int   line,
-                 const bool  expression,
-                 const char* expressionString)
+MatrixSize::MatrixSize(size_type rowCount, size_type columnCount)
+: _rowCount(rowCount), _columnCount(columnCount)
 {
-  if (!expression) {
-    defaultLogger.log(Logger::Severity::Error, file, line,
-                      "Assertion `", expressionString,
-                      "' failed.");
-    abort();
-  }
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-
-void ASSERT_IMPL(const char* file,
-                 const int   line,
-                 const bool  expression,
-                 const char* expressionString,
-                 const char* formatString, ...)
+MatrixSize::size_type MatrixSize::elemCount() const
 {
-  if (!expression) {
-    va_list args;
-    va_start(args, formatString);
-    auto needed = vsnprintf(NULL, 0, formatString, args) + 1;
-    ASSERT(needed > 0);
-    {
-      std::unique_ptr<char[]> buffer(new char[needed]);
-
-      vsnprintf(&buffer[0], static_cast<size_t>(needed), formatString, args);
-
-      defaultLogger.log(Logger::Severity::Error, file, line,
-                        "Assertion `", expressionString, "' failed. ",
-                        &buffer[0]);
-    }
-    va_end(args);
-    abort();
-  }
+  return (_rowCount *_columnCount);
 }
 
-#pragma GCC diagnostic pop
+MatrixSize::size_type MatrixSize::rowCount() const
+{
+  return _rowCount;
+}
 
-} // namespace detail
+MatrixSize::size_type MatrixSize::columnCount() const
+{
+  return _columnCount;
+}
+
+bool MatrixSize::operator==(const MatrixSize& rhs) const
+{
+  return (   (_rowCount    == rhs._rowCount)
+          && (_columnCount == rhs._columnCount) );
+}
+
+bool MatrixSize::operator!=(const MatrixSize& rhs) const
+{
+  return !this->operator==(rhs);
+}
+
+bool MatrixSize::operator>(const MatrixSize& rhs) const
+{
+  if (_columnCount == rhs._columnCount) {
+    if (_rowCount > rhs._rowCount)
+      return true;
+  } else if (_columnCount > rhs._columnCount) {
+    if (_rowCount >= rhs._rowCount)
+      return true;
+  }
+  
+  return false;
+}
+
+bool MatrixSize::operator<(const MatrixSize& rhs) const
+{
+  if (_columnCount == rhs._columnCount) {
+    if (_rowCount < rhs._rowCount)
+      return true;
+  } else if (_columnCount < rhs._columnCount) {
+    if (_rowCount <= rhs._rowCount)
+      return true;
+  }
+  
+  return false;
+}
+
+bool MatrixSize::operator>=(const MatrixSize& rhs) const
+{
+  if (_columnCount == rhs._columnCount) {
+    if (_rowCount >= rhs._rowCount)
+      return true;
+  } else if (_columnCount > rhs._columnCount) {
+    if (_rowCount >= rhs._rowCount)
+      return true;
+  }
+  
+  return false;
+}
+
+bool MatrixSize::operator<=(const MatrixSize& rhs) const
+{
+  if (_columnCount == rhs._columnCount) {
+    if (_rowCount <= rhs._rowCount)
+      return true;
+  } else if (_columnCount < rhs._columnCount) {
+    if (_rowCount <= rhs._rowCount)
+      return true;
+  }
+  
+  return false;
+}
 
 } // namespace skelcl
-

@@ -40,10 +40,11 @@
 #include <iostream>
 #include <iterator>
 
+#include <pvsutil/Logger.h>
+
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/IndexMatrix.h>
 #include <SkelCL/Map.h>
-#include <SkelCL/detail/Logger.h>
 
 typedef struct {
   unsigned char r;
@@ -105,7 +106,7 @@ void mandelbrot()
 
 int main()
 {
-  //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+  //pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
   skelcl::init(skelcl::nDevices(2));
   mandelbrot();
   return 0;

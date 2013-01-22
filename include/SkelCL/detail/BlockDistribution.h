@@ -56,14 +56,14 @@ class DeviceList;
 template <typename> class BlockDistribution;
 
 template <template <typename> class C, typename T>
-class BlockDistribution< C<T> > : public Distribution< C<T> > {
+class BlockDistribution<C<T>> : public Distribution<C<T>> {
 public:
   BlockDistribution( const DeviceList& deviceList = globalDeviceList );
   BlockDistribution( const DeviceList& deviceList,
                      const Significances& significances );
 
   template <typename U>
-  BlockDistribution( const BlockDistribution< C<U> >& rhs);
+  BlockDistribution( const BlockDistribution<C<U>>& rhs);
 
   ~BlockDistribution();
 
@@ -76,12 +76,12 @@ public:
   size_t sizeForDevice(const C<T>& container,
                        const std::shared_ptr<detail::Device>& devicePtr) const;
 
-  bool dataExchangeOnDistributionChange(Distribution< C<T> >& newDistribution);
+  bool dataExchangeOnDistributionChange(Distribution<C<T>>& newDistribution);
 
   const Significances& getSignificances() const;
 
 private:
-  bool doCompare(const Distribution< C<T> >& rhs) const;
+  bool doCompare(const Distribution<C<T>>& rhs) const;
 
   Significances _significances;
 };

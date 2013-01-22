@@ -16,7 +16,7 @@ if [[ $platform == 'ubuntu' ]]; then
   rm clang+llvm-3.1-x86_64-linux-ubuntu_12.04.tar.gz
 fi
 
-if [[ $platform == 'osx']]; then
+if [[ $platform == 'osx' ]]; then
   # get and extract libclang (Step 2 from the INSTALL file)
   wget http://llvm.org/releases/3.1/clang+llvm-3.1-x86_64-apple-darwin11.tar.gz 
   tar xzf clang+llvm-3.1-x86_64-apple-darwin11.tar.gz

@@ -41,16 +41,19 @@
 
 #include <cstdio>
 
+#include <pvsutil/Logger.h>
+
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Matrix.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/Map.h>
-#include <SkelCL/detail/Logger.h>
 
 class MapTest : public ::testing::Test {
 protected:
   MapTest() {
-    //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::DebugInfo);
+    //pvsutil::defaultLogger.setLoggingLevel(
+    //    pvsutil::Logger::Severity::DebugInfo );
+
     skelcl::init(skelcl::nDevices(1));
   };
 
@@ -125,6 +128,31 @@ TEST_F(MapTest, SimpleMultiDeviceMap) {
   }
 }
 
+TEST_F(MapTest, SimpleMultiDeviceMap2) {
+  skelcl::terminate();
+  skelcl::init(skelcl::nDevices(2));
+  skelcl::Map<int(float)> m{ "float func(float f) \
+    { return skelcl_get_device_id(); }" };
+
+  skelcl::Vector<float> input(10);
+  EXPECT_EQ(10, input.size());
+
+  skelcl::Vector<int> output = m(input);
+
+  EXPECT_EQ(10, output.size());
+  for (size_t i = 0; i < output.size(); ++i) {
+    if (skelcl::detail::globalDeviceList.size() == 2) {
+      if (i < 5) {
+        EXPECT_EQ(0, output[i]);
+      } else {
+        EXPECT_EQ(1, output[i]);
+      }
+    } else {
+      EXPECT_EQ(0, output[i]);
+    }
+  }
+}
+
 TEST_F(MapTest, AddArgs) {
   skelcl::Map<float(float)> m{ "float func(float f, float add, float add2)\
                                  { return f+add+add2; }" };
@@ -147,7 +175,8 @@ TEST_F(MapTest, AddArgs) {
 }
 
 TEST_F(MapTest, MapVoid) {
-  skelcl::Map<void(float)> m{ "void func(float f, __global float* out) { out[get_global_id(0)] = f; }" };
+  skelcl::Map<void(float)> m{ "void func(float f, __global float* out) \
+    { out[get_global_id(0)] = f; }" };
 
   skelcl::Vector<float> input(10);
   for (size_t i = 0; i < input.size(); ++i) {
@@ -172,8 +201,9 @@ skelcl::Vector<float> execute(const skelcl::Vector<float>& input)
   return m(tmp);
 }
 
+#if 0
+// currently not working with nvidia opencl implementation
 TEST_F(MapTest, TempInputVector) {
-  //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
   auto size = 1024 * 1000;
   skelcl::Vector<float> output;
   skelcl::Vector<float> input(size);
@@ -187,8 +217,8 @@ TEST_F(MapTest, TempInputVector) {
   for (size_t i = 0; i < output.size(); ++i) {
     EXPECT_EQ(-input[i], output[i]);
   }
-  //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Warning);
 }
+#endif
 
 TEST_F(MapTest, SimpleMap2D) {
   skelcl::Map<float(float)> m("float func(float f){ return -f; }");
@@ -214,7 +244,6 @@ TEST_F(MapTest, SimpleMap2D) {
 }
 
 TEST_F(MapTest, MatrixAddArgs) {
-  //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
   skelcl::Map<float(float)> m(
         "float func(float f, float add, float add2) { return f+add+add2; }");
 
@@ -241,11 +270,19 @@ TEST_F(MapTest, MatrixAddArgs) {
 }
 
 TEST_F(MapTest, MatrixAddArgsMatrix) {
-  //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+#if 0
+  // old way
   skelcl::Map<float(float)> m(R"(
 float func( float f,__global float* mat, uint mat_col_count, float add2)
 {
   return f + get(mat, 1, 1) + add2;
+}
+)");
+#endif
+  skelcl::Map<float(float)> m(R"(
+float func( float f, float_matrix_t mat, float add2, int_matrix_t mat2 )
+{
+  return f + get(mat, 1, 1) + add2 + get(mat2, 1, 2);
 }
 )");
 
@@ -265,15 +302,18 @@ float func( float f,__global float* mat, uint mat_col_count, float add2)
   skelcl::Matrix<float> mat(vec2, 3);
   EXPECT_EQ(skelcl::Matrix<float>::size_type(4,3), mat.size());
 
+  skelcl::Matrix<int> mat2( {2,3} );
+  mat2[1][2] = 5;
+
   float add2 = 7.75f;
 
-  skelcl::Matrix<float> output = m(input, mat, add2);
+  skelcl::Matrix<float> output = m(input, mat, add2, mat2);
 
   EXPECT_EQ(input.size(), output.size());
 
   for (size_t i = 0; i < output.rowCount(); ++i) {
       for(size_t j = 0; j < output.columnCount(); ++j) {
-        EXPECT_EQ(input[i][j]+mat({1,1})+add2, output[i][j]);
+        EXPECT_EQ(input[i][j]+mat({1,1})+add2+mat2[1][2], output[i][j]);
       }
   }
 }
@@ -293,11 +333,13 @@ TEST_F(MapTest, MapWithSingleDistribution1) {
   skelcl::terminate();
   skelcl::init();
 
-  skelcl::Map<int(int)> map{"int func(int i) { return -i; }"};
-  skelcl::Vector<int> input(10);
-  auto dev = ++(skelcl::detail::globalDeviceList.begin());
-  skelcl::distribution::setSingle(input, *dev);
+  if (skelcl::detail::globalDeviceList.size() > 1) {
+    skelcl::Map<int(int)> map{"int func(int i) { return -i; }"};
+    skelcl::Vector<int> input(10);
+    auto dev = ++(skelcl::detail::globalDeviceList.begin());
+    skelcl::distribution::setSingle(input, *dev);
 
-  skelcl::Vector<int> output = map(input);
+    skelcl::Vector<int> output = map(input);
+  }
 }
 

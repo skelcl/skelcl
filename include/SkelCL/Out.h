@@ -62,14 +62,14 @@ template <typename> class Out;
 ///                       container
 ///
 template <template <typename> class ContainerType, typename T>
-class Out< ContainerType<T> > {
+class Out<ContainerType<T>> {
 public:
   ///
   /// \brief Constructor taking the container to wrap
   ///
   /// \param c Container to be wrapped
   ///
-  Out< ContainerType<T> >(ContainerType<T>& c)
+  Out<ContainerType<T>>(ContainerType<T>& c)
     : _container(c)
   {}
 
@@ -90,9 +90,9 @@ private:
 /// \param c Container to be wrapped
 ///
 template <template <typename> class ContainerType, typename T>
-Out< ContainerType<T> > out(ContainerType<T>& c)
+Out<ContainerType<T>> out(ContainerType<T>& c)
 {
-  return Out< ContainerType<T> >(c);
+  return Out<ContainerType<T>>(c);
 }
 
 } // namespace skelcl

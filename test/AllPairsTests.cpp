@@ -41,19 +41,20 @@
 #include <cstdlib>
 #include <vector>
 
+#include <pvsutil/Logger.h>
+
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/AllPairs.h>
 #include <SkelCL/Zip.h>
 #include <SkelCL/Reduce.h>
-#include <SkelCL/detail/Logger.h>
 
 void testAllPairsWithMatrices(const unsigned int, const unsigned int, const unsigned int);
 
 class AllPairsTest : public ::testing::Test {
 protected:
     AllPairsTest() {
-        //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::DebugInfo);
+        //pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
         skelcl::init(skelcl::nDevices(1));
 
         srand(1);

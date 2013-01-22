@@ -44,12 +44,12 @@
 #include <string>
 
 #include "detail/Skeleton.h"
+#include "detail/Program.h"
 
 namespace skelcl {
 
 class Source;
 template <typename> class Out;
-namespace detail { class Program; }
 
 template<typename> class Zip;
 
@@ -179,16 +179,16 @@ public:
   ///
   template <template <typename> class C,
             typename... Args>
-  C<Tout>& operator()(Out< C<Tout> > output,
+  C<Tout>& operator()(Out<C<Tout>> output,
                       const C<Tleft>& left,
                       const C<Tright>& right,
                       Args&&... args);
 
-  const std::string source() const {
+  const std::string& source() const {
       return _source;
   }
 
-  const std::string func() const {
+  const std::string& func() const {
       return _funcName;
   }
 
@@ -203,22 +203,10 @@ private:
   ///
   template <template <typename> class C,
             typename... Args>
-  void execute(const detail::Program& program,
-               C<Tout>& output,
+  void execute(C<Tout>& output,
                const C<Tleft>& left,
                const C<Tright>& right,
                Args&&... args);
-  ///
-  /// \brief Create a program object from the provided source string
-  ///
-  /// \param source The source code defined by the application developer
-  ///
-  /// \return A program object customized with the source code defined by
-  ///         the application developer, as well as the zip skeleton's
-  ///         kernel implementation
-  ///
-  template <template <typename> class C>
-  detail::Program createAndBuildProgram() const;
 
   ///
   /// \brief Prepares the inputs for kernel execution
@@ -245,9 +233,53 @@ private:
   void prepareOutput(C<Tout>& output,
                      const C<Tleft>& left,
                      const C<Tright>& right);
+  
+  ///
+  /// \brief Create a program object from the provided source string
+  ///
+  /// \param source The source code defined by the application developer
+  ///
+  /// \return A program object customized with the source code defined by
+  ///         the application developer, as well as the zip skeleton's
+  ///         kernel implementation
+  ///
+  detail::Program createAndBuildProgram(const std::string& source,
+                                        const std::string& funcName) const;
 
-  std::string _source;
-  std::string _funcName;
+  const std::string     _source;
+  const std::string     _funcName;
+  const detail::Program _program;
+};
+
+template<typename Tleft,
+         typename Tright>
+class Zip<void(Tleft, Tright)> : public detail::Skeleton {
+public:
+  Zip<void(Tleft, Tright)>(const Source& source,
+                           const std::string& funcName
+                                              = std::string("func"));
+
+  template <template <typename> class C,
+            typename... Args>
+  void operator()(const C<Tleft>& left,
+                  const C<Tright>& right,
+                  Args&&... args);
+
+private:
+  template <template <typename> class C,
+            typename... Args>
+  void execute(const C<Tleft>& left,
+               const C<Tright>& right,
+               Args&&... args);
+
+  template <template <typename> class C>
+  void prepareInput(const C<Tleft>& left,
+                    const C<Tright>& right);
+
+  detail::Program createAndBuildProgram(const std::string& source,
+                                        const std::string& funcName) const;
+
+  const detail::Program _program;
 };
 
 // TODO: when template aliases are available:

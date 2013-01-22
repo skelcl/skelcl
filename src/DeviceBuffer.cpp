@@ -45,12 +45,13 @@
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include <pvsutil/Assert.h>
+#include <pvsutil/Logger.h>
+
 #include "SkelCL/detail/DeviceBuffer.h"
 
-#include "SkelCL/detail/Assert.h"
 #include "SkelCL/detail/Device.h"
 #include "SkelCL/detail/DeviceList.h"
-#include "SkelCL/detail/Logger.h"
 
 namespace {
 
@@ -74,6 +75,11 @@ cl::Buffer createCLBuffer(const std::shared_ptr<Device>& devicePtr,
 namespace skelcl {
 
 namespace detail {
+
+DeviceBuffer::DeviceBuffer()
+  : _device(), _size(), _elemSize(), _flags(), _buffer()
+{
+}
 
 DeviceBuffer::DeviceBuffer(const std::shared_ptr<Device>& devicePtr,
                            const size_t size,
@@ -146,8 +152,8 @@ DeviceBuffer& DeviceBuffer::operator=(DeviceBuffer&& rhs)
   rhs._size     = 0;
   rhs._elemSize = 0;
   rhs._buffer   = cl::Buffer();
-  LOG_DEBUG_INFO("Move assignment to DeviceBuffer object (", this, ") now with ",
-                 getInfo());
+  LOG_DEBUG_INFO("Move assignment to DeviceBuffer object (", this,
+                 ") now with ", getInfo());
   return *this;
 }
 

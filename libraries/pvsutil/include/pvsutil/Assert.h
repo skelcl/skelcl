@@ -49,18 +49,18 @@
 #else  // DEBUG
 
 #define ASSERT(e)\
-  skelcl::detail::ASSERT_IMPL(__FILE__, __LINE__, e, #e)
+  pvsutil::assert_impl::ASSERT_IMPL(__FILE__, __LINE__, e, #e)
 
 #define ASSERT_MESSAGE(e, ...)\
-  skelcl::detail::ASSERT_IMPL(__FILE__, __LINE__, e, #e, __VA_ARGS__)
+  pvsutil::assert_impl::ASSERT_IMPL(__FILE__, __LINE__, e, #e, __VA_ARGS__)
 
 #define ONLY_IN_DEBUG(e) e
 
 #endif // NDEBUG
 
-namespace skelcl {
+namespace pvsutil {
 
-namespace detail {
+namespace assert_impl {
 
 ///
 /// \brief If expression evaluates to false an error message is printed and the
@@ -108,9 +108,9 @@ void ASSERT_IMPL(const char* file,
                  const char* expressionString,
                  const char* formatString, ...);
 
-} // namespace detail
+} // namespace assert_impl
 
-} // namespace skelcl
+} // namespace pvsutil
 
 #endif // ASSERT_H_
 
