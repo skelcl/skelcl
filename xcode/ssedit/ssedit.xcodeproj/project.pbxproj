@@ -55,6 +55,7 @@
 		9E0A90001663C18F00ACD2B4 /* RenameTypedefTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA6572C16639B0700904417 /* RenameTypedefTests.cpp */; };
 		9E0A90011663C18F00ACD2B4 /* TypedefInfoTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA6572D16639B0700904417 /* TypedefInfoTests.cpp */; };
 		9E0A90021663C18F00ACD2B4 /* TypeTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA6572E16639B0700904417 /* TypeTests.cpp */; };
+		9E239E2316AEA3CD0078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E2016AEA3BD0078F339 /* libpvsutil.dylib */; };
 		9EA656F4166398D500904417 /* CallExpression.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA656D7166398D500904417 /* CallExpression.h */; };
 		9EA656F5166398D500904417 /* Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA656D9166398D500904417 /* Cursor.h */; };
 		9EA656F6166398D500904417 /* Delta.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA656DA166398D500904417 /* Delta.h */; };
@@ -153,6 +154,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = 9EA6575C1663A0DB00904417;
 			remoteInfo = gtest;
+		};
+		9E239E1F16AEA3BD0078F339 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9E239E1B16AEA3BD0078F339 /* pvsutil.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 9E239E0016AEA1E80078F339;
+			remoteInfo = pvsutil;
+		};
+		9E239E2116AEA3C70078F339 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9E239E1B16AEA3BD0078F339 /* pvsutil.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 9E239DFF16AEA1E80078F339;
+			remoteInfo = pvsutil;
 		};
 		9EA657601663A9E400904417 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -281,6 +296,7 @@
 		9E0A8FD21663C0CB00ACD2B4 /* TypedefInfoTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TypedefInfoTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E0A8FE21663C0CE00ACD2B4 /* TypeTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TypeTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E0A8FF51663C16800ACD2B4 /* All Tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "All Tests"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9E239E1B16AEA3BD0078F339 /* pvsutil.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = pvsutil.xcodeproj; path = /Users/sebastian/Development/skelcl/xcode/skelcl/../pvsutil/pvsutil.xcodeproj; sourceTree = "<absolute>"; };
 		9EA656CE166398A900904417 /* libssedit.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libssedit.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EA656D7166398D500904417 /* CallExpression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CallExpression.h; sourceTree = "<group>"; };
 		9EA656D8166398D500904417 /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
@@ -422,6 +438,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E2316AEA3CD0078F339 /* libpvsutil.dylib in Frameworks */,
 				9EA6570F1663997B00904417 /* libclang.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -460,6 +477,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9E239E1C16AEA3BD0078F339 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9E239E2016AEA3BD0078F339 /* libpvsutil.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		9EA656C3166398A900904417 = {
 			isa = PBXGroup;
 			children = (
@@ -573,6 +598,7 @@
 		9EA658321663AC9C00904417 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				9E239E1B16AEA3BD0078F339 /* pvsutil.xcodeproj */,
 				9EA6570E1663997B00904417 /* libclang.dylib */,
 				9EA657641663AA6F00904417 /* libgtest_main.a */,
 				9EA657651663AA6F00904417 /* libgtest.a */,
@@ -778,6 +804,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				9E239E2216AEA3C70078F339 /* PBXTargetDependency */,
 			);
 			name = ssedit;
 			productName = ssedit;
@@ -856,6 +883,12 @@
 			mainGroup = 9EA656C3166398A900904417;
 			productRefGroup = 9EA656CF166398A900904417 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 9E239E1C16AEA3BD0078F339 /* Products */;
+					ProjectRef = 9E239E1B16AEA3BD0078F339 /* pvsutil.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				9EA656CD166398A900904417 /* ssedit */,
@@ -874,6 +907,16 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		9E239E2016AEA3BD0078F339 /* libpvsutil.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.dylib";
+			path = libpvsutil.dylib;
+			remoteRef = 9E239E1F16AEA3BD0078F339 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXSourcesBuildPhase section */
 		9E0A8F711663C01700ACD2B4 /* Sources */ = {
@@ -1034,6 +1077,11 @@
 			isa = PBXTargetDependency;
 			target = 9EA6575C1663A0DB00904417 /* gtest */;
 			targetProxy = 9E0A8FE91663C16800ACD2B4 /* PBXContainerItemProxy */;
+		};
+		9E239E2216AEA3C70078F339 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = pvsutil;
+			targetProxy = 9E239E2116AEA3C70078F339 /* PBXContainerItemProxy */;
 		};
 		9EA657611663A9E400904417 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1281,11 +1329,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					../../libraries/ssedit/libraries/libclang/include,
-					../../libraries/ssedit/libraries/gtest/include,
 					../../libraries/ssedit/include,
+					../../libraries/ssedit/libraries/gtest/include,
+					../../libraries/ssedit/libraries/libclang/include,
+					../../libraries/ssedit/libraries/pvsutil/include,
 				);
-				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../../libraries/ssedit/libraries/libclang/lib\"";
+				LIBRARY_SEARCH_PATHS = ../../libraries/ssedit/libraries/libclang/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -1311,11 +1360,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					../../libraries/ssedit/libraries/libclang/include,
-					../../libraries/ssedit/libraries/gtest/include,
 					../../libraries/ssedit/include,
+					../../libraries/ssedit/libraries/gtest/include,
+					../../libraries/ssedit/libraries/libclang/include,
+					../../libraries/ssedit/libraries/pvsutil/include,
 				);
-				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../../libraries/ssedit/libraries/libclang/lib\"";
+				LIBRARY_SEARCH_PATHS = ../../libraries/ssedit/libraries/libclang/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx;
 			};
