@@ -15,6 +15,8 @@ set (SKELCL_SOURCES
       DeviceProperties.cpp
       Event.cpp
       Index.cpp
+      IndexMatrix.cpp
+      IndexVector.cpp
       KernelUtil.cpp
       Local.cpp
       Map.cpp
@@ -31,6 +33,7 @@ set (SKELCL_SOURCES
 set (SKELCL_HEADERS
       ../include/SkelCL/AllPairs.h
       ../include/SkelCL/Distributions.h
+      ../include/SkelCL/IndexMatrix.h
       ../include/SkelCL/IndexVector.h
       ../include/SkelCL/SkelCL.h
       ../include/SkelCL/Map.h
@@ -56,6 +59,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/DeviceList.h
       ../include/SkelCL/detail/DeviceProperties.h
       ../include/SkelCL/detail/Event.h
+      ../include/SkelCL/detail/IndexMatrixDef.h
       ../include/SkelCL/detail/IndexVectorDef.h
       ../include/SkelCL/detail/KernelUtil.h
       ../include/SkelCL/detail/MapDef.h
