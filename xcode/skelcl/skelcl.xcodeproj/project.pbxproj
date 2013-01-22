@@ -9,67 +9,54 @@
 /* Begin PBXBuildFile section */
 		9E0A903A1663C27900ACD2B4 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658721663AD8D00904417 /* libgtest_main.a */; };
 		9E0A903B1663C27900ACD2B4 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658731663AD8D00904417 /* libgtest.a */; };
-		9E0A903C1663C27900ACD2B4 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 		9E0A903D1663C27900ACD2B4 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
 		9E0A903E1663C27900ACD2B4 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
 		9E0A90591664B58000ACD2B4 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658721663AD8D00904417 /* libgtest_main.a */; };
 		9E0A905A1664B58000ACD2B4 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658731663AD8D00904417 /* libgtest.a */; };
-		9E0A905B1664B58000ACD2B4 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 		9E0A905C1664B58000ACD2B4 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
 		9E0A905D1664B58000ACD2B4 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
 		9E0A906A1664B58400ACD2B4 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658721663AD8D00904417 /* libgtest_main.a */; };
 		9E0A906B1664B58400ACD2B4 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658731663AD8D00904417 /* libgtest.a */; };
-		9E0A906C1664B58400ACD2B4 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 		9E0A906D1664B58400ACD2B4 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
 		9E0A906E1664B58400ACD2B4 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
 		9E0A907B1664B58600ACD2B4 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658721663AD8D00904417 /* libgtest_main.a */; };
 		9E0A907C1664B58600ACD2B4 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658731663AD8D00904417 /* libgtest.a */; };
-		9E0A907D1664B58600ACD2B4 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 		9E0A907E1664B58600ACD2B4 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
 		9E0A907F1664B58600ACD2B4 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
 		9E0A908C1664B58700ACD2B4 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658721663AD8D00904417 /* libgtest_main.a */; };
 		9E0A908D1664B58700ACD2B4 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658731663AD8D00904417 /* libgtest.a */; };
-		9E0A908E1664B58700ACD2B4 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 		9E0A908F1664B58700ACD2B4 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
 		9E0A90901664B58700ACD2B4 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
 		9E0A909D1664B58900ACD2B4 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658721663AD8D00904417 /* libgtest_main.a */; };
 		9E0A909E1664B58900ACD2B4 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658731663AD8D00904417 /* libgtest.a */; };
-		9E0A909F1664B58900ACD2B4 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 		9E0A90A01664B58900ACD2B4 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
 		9E0A90A11664B58900ACD2B4 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
 		9E0A90AE1664B58A00ACD2B4 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658721663AD8D00904417 /* libgtest_main.a */; };
 		9E0A90AF1664B58A00ACD2B4 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658731663AD8D00904417 /* libgtest.a */; };
-		9E0A90B01664B58A00ACD2B4 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 		9E0A90B11664B58A00ACD2B4 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
 		9E0A90B21664B58A00ACD2B4 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
 		9E0A90BF1664B58C00ACD2B4 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658721663AD8D00904417 /* libgtest_main.a */; };
 		9E0A90C01664B58C00ACD2B4 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658731663AD8D00904417 /* libgtest.a */; };
-		9E0A90C11664B58C00ACD2B4 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 		9E0A90C21664B58C00ACD2B4 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
 		9E0A90C31664B58C00ACD2B4 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
 		9E0A90D01664B58F00ACD2B4 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658721663AD8D00904417 /* libgtest_main.a */; };
 		9E0A90D11664B58F00ACD2B4 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658731663AD8D00904417 /* libgtest.a */; };
-		9E0A90D21664B58F00ACD2B4 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 		9E0A90D31664B58F00ACD2B4 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
 		9E0A90D41664B58F00ACD2B4 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
 		9E0A90E11664B59100ACD2B4 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658721663AD8D00904417 /* libgtest_main.a */; };
 		9E0A90E21664B59100ACD2B4 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658731663AD8D00904417 /* libgtest.a */; };
-		9E0A90E31664B59100ACD2B4 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 		9E0A90E41664B59100ACD2B4 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
 		9E0A90E51664B59100ACD2B4 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
 		9E0A90F21664B5B300ACD2B4 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658721663AD8D00904417 /* libgtest_main.a */; };
 		9E0A90F31664B5B300ACD2B4 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658731663AD8D00904417 /* libgtest.a */; };
-		9E0A90F41664B5B300ACD2B4 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 		9E0A90F51664B5B300ACD2B4 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
 		9E0A90F61664B5B300ACD2B4 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
 		9E0A91031664B5B500ACD2B4 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658721663AD8D00904417 /* libgtest_main.a */; };
 		9E0A91041664B5B500ACD2B4 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658731663AD8D00904417 /* libgtest.a */; };
-		9E0A91051664B5B500ACD2B4 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 		9E0A91061664B5B500ACD2B4 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
 		9E0A91071664B5B500ACD2B4 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
 		9E0A91141664B5B600ACD2B4 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658721663AD8D00904417 /* libgtest_main.a */; };
 		9E0A91151664B5B600ACD2B4 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658731663AD8D00904417 /* libgtest.a */; };
-		9E0A91161664B5B600ACD2B4 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 		9E0A91171664B5B600ACD2B4 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
 		9E0A91181664B5B600ACD2B4 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
 		9E0A91301664B5EA00ACD2B4 /* DevicesTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA658531663ACEC00904417 /* DevicesTests.cpp */; };
@@ -92,6 +79,26 @@
 		9E0A91551664B80400ACD2B4 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA658831663AE7D00904417 /* main.cpp */; };
 		9E0A915B1664B9E500ACD2B4 /* ZipTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA6585E1663ACEC00904417 /* ZipTests.cpp */; };
 		9E0A915C1664BA0D00ACD2B4 /* DistributionTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA658551663ACEC00904417 /* DistributionTests.cpp */; };
+		9E239E2416AEA47D0078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E2B16AEA4CB0078F339 /* DeviceID.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E239E2916AEA4CB0078F339 /* DeviceID.h */; };
+		9E239E2C16AEA4CB0078F339 /* PlatformID.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E239E2A16AEA4CB0078F339 /* PlatformID.h */; };
+		9E239E2D16AEA5380078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E2E16AEA53E0078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E2F16AEA5420078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E3016AEA5460078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E3116AEA54A0078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E3216AEA54E0078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E3316AEA5520078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E3416AEA5550078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E3516AEA5590078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E3616AEA55C0078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E3716AEA5600078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E3816AEA5640078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E3916AEA5680078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E3A16AEA56B0078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E3B16AEA5720078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E3C16AEA5750078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
+		9E239E3D16AEA57B0078F339 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
 		9EA657C91663AADB00904417 /* cl.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA6577E1663AADB00904417 /* cl.h */; };
 		9EA657CA1663AADB00904417 /* cl.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 9EA6577F1663AADB00904417 /* cl.hpp */; };
 		9EA657CB1663AADB00904417 /* cl_ext.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657801663AADB00904417 /* cl_ext.h */; };
@@ -99,7 +106,6 @@
 		9EA657CD1663AADB00904417 /* cl_gl_ext.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657821663AADB00904417 /* cl_gl_ext.h */; };
 		9EA657CE1663AADB00904417 /* cl_platform.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657831663AADB00904417 /* cl_platform.h */; };
 		9EA657CF1663AADB00904417 /* opencl.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657841663AADB00904417 /* opencl.h */; };
-		9EA657D01663AADB00904417 /* Assert.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657871663AADB00904417 /* Assert.h */; };
 		9EA657D11663AADB00904417 /* BlockDistribution.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657881663AADB00904417 /* BlockDistribution.h */; };
 		9EA657D21663AADB00904417 /* BlockDistributionDef.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657891663AADB00904417 /* BlockDistributionDef.h */; };
 		9EA657D31663AADB00904417 /* Container.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA6578A1663AADB00904417 /* Container.h */; };
@@ -115,8 +121,6 @@
 		9EA657DD1663AADB00904417 /* IndexMatrixDef.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657941663AADB00904417 /* IndexMatrixDef.h */; };
 		9EA657DE1663AADB00904417 /* IndexVectorDef.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657951663AADB00904417 /* IndexVectorDef.h */; };
 		9EA657DF1663AADB00904417 /* KernelUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657961663AADB00904417 /* KernelUtil.h */; };
-		9EA657E01663AADB00904417 /* Logger.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657971663AADB00904417 /* Logger.h */; };
-		9EA657E11663AADB00904417 /* LoggerDef.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657981663AADB00904417 /* LoggerDef.h */; };
 		9EA657E21663AADB00904417 /* MapDef.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657991663AADB00904417 /* MapDef.h */; };
 		9EA657E31663AADB00904417 /* MapHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA6579A1663AADB00904417 /* MapHelper.h */; };
 		9EA657E41663AADB00904417 /* MapHelperDef.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA6579B1663AADB00904417 /* MapHelperDef.h */; };
@@ -146,7 +150,6 @@
 		9EA657FD1663AADB00904417 /* Source.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657B41663AADB00904417 /* Source.h */; };
 		9EA657FE1663AADB00904417 /* Vector.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657B51663AADB00904417 /* Vector.h */; };
 		9EA657FF1663AADB00904417 /* Zip.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA657B61663AADB00904417 /* Zip.h */; };
-		9EA658001663AADB00904417 /* Assert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA657B81663AADB00904417 /* Assert.cpp */; };
 		9EA658011663AADB00904417 /* Device.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA657BA1663AADB00904417 /* Device.cpp */; };
 		9EA658021663AADB00904417 /* DeviceBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA657BB1663AADB00904417 /* DeviceBuffer.cpp */; };
 		9EA658031663AADB00904417 /* DeviceList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA657BC1663AADB00904417 /* DeviceList.cpp */; };
@@ -155,7 +158,6 @@
 		9EA658061663AADB00904417 /* Index.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA657BF1663AADB00904417 /* Index.cpp */; };
 		9EA658071663AADB00904417 /* KernelUtil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA657C01663AADB00904417 /* KernelUtil.cpp */; };
 		9EA658081663AADB00904417 /* Local.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA657C11663AADB00904417 /* Local.cpp */; };
-		9EA658091663AADB00904417 /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA657C21663AADB00904417 /* Logger.cpp */; };
 		9EA6580A1663AADB00904417 /* Program.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA657C31663AADB00904417 /* Program.cpp */; };
 		9EA6580B1663AADB00904417 /* Significances.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA657C41663AADB00904417 /* Significances.cpp */; };
 		9EA6580C1663AADB00904417 /* SkelCL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA657C51663AADB00904417 /* SkelCL.cpp */; };
@@ -169,7 +171,6 @@
 		9EA658711663AD7500904417 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
 		9EA658741663AD8D00904417 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658721663AD8D00904417 /* libgtest_main.a */; };
 		9EA658751663AD8D00904417 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658731663AD8D00904417 /* libgtest.a */; };
-		9EA658761663ADA000904417 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 		9EA658771663ADDD00904417 /* DeviceSelectionTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA658521663ACEC00904417 /* DeviceSelectionTests.cpp */; };
 		9EA658921663AEB400904417 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA6587C1663AE7D00904417 /* main.cpp */; };
 		9EA658931663AEBA00904417 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
@@ -327,6 +328,27 @@
 			proxyType = 1;
 			remoteGlobalIDString = 9EA6575C1663A0DB00904417;
 			remoteInfo = gtest;
+		};
+		9E239E0B16AEA1E90078F339 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9E239E0716AEA1E80078F339 /* pvsutil.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 9E239E0016AEA1E80078F339;
+			remoteInfo = pvsutil;
+		};
+		9E239E2516AEA4910078F339 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9E239E0716AEA1E80078F339 /* pvsutil.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 9E239DFF16AEA1E80078F339;
+			remoteInfo = pvsutil;
+		};
+		9E239E2716AEA4910078F339 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9EA658121663AB8800904417 /* ssedit.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 9EA656CD166398A900904417;
+			remoteInfo = ssedit;
 		};
 		9EA658201663AB8900904417 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -538,6 +560,9 @@
 		9E0A911D1664B5B600ACD2B4 /* skelcl - ZipTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "skelcl - ZipTests"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E0A91461664B7C300ACD2B4 /* mandelbrot */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = mandelbrot; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E0A91521664B7C700ACD2B4 /* saxpy */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = saxpy; sourceTree = BUILT_PRODUCTS_DIR; };
+		9E239E0716AEA1E80078F339 /* pvsutil.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = pvsutil.xcodeproj; path = ../pvsutil/pvsutil.xcodeproj; sourceTree = "<group>"; };
+		9E239E2916AEA4CB0078F339 /* DeviceID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeviceID.h; sourceTree = "<group>"; };
+		9E239E2A16AEA4CB0078F339 /* PlatformID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlatformID.h; sourceTree = "<group>"; };
 		9EA657751663AAC200904417 /* libskelcl.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libskelcl.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EA6577E1663AADB00904417 /* cl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cl.h; sourceTree = "<group>"; };
 		9EA6577F1663AADB00904417 /* cl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = cl.hpp; sourceTree = "<group>"; };
@@ -546,7 +571,6 @@
 		9EA657821663AADB00904417 /* cl_gl_ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cl_gl_ext.h; sourceTree = "<group>"; };
 		9EA657831663AADB00904417 /* cl_platform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cl_platform.h; sourceTree = "<group>"; };
 		9EA657841663AADB00904417 /* opencl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opencl.h; sourceTree = "<group>"; };
-		9EA657871663AADB00904417 /* Assert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Assert.h; sourceTree = "<group>"; };
 		9EA657881663AADB00904417 /* BlockDistribution.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockDistribution.h; sourceTree = "<group>"; };
 		9EA657891663AADB00904417 /* BlockDistributionDef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockDistributionDef.h; sourceTree = "<group>"; };
 		9EA6578A1663AADB00904417 /* Container.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Container.h; sourceTree = "<group>"; };
@@ -562,8 +586,6 @@
 		9EA657941663AADB00904417 /* IndexMatrixDef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IndexMatrixDef.h; sourceTree = "<group>"; };
 		9EA657951663AADB00904417 /* IndexVectorDef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IndexVectorDef.h; sourceTree = "<group>"; };
 		9EA657961663AADB00904417 /* KernelUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KernelUtil.h; sourceTree = "<group>"; };
-		9EA657971663AADB00904417 /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logger.h; sourceTree = "<group>"; };
-		9EA657981663AADB00904417 /* LoggerDef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerDef.h; sourceTree = "<group>"; };
 		9EA657991663AADB00904417 /* MapDef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapDef.h; sourceTree = "<group>"; };
 		9EA6579A1663AADB00904417 /* MapHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapHelper.h; sourceTree = "<group>"; };
 		9EA6579B1663AADB00904417 /* MapHelperDef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapHelperDef.h; sourceTree = "<group>"; };
@@ -594,7 +616,6 @@
 		9EA657B41663AADB00904417 /* Source.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Source.h; sourceTree = "<group>"; };
 		9EA657B51663AADB00904417 /* Vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vector.h; sourceTree = "<group>"; };
 		9EA657B61663AADB00904417 /* Zip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Zip.h; sourceTree = "<group>"; };
-		9EA657B81663AADB00904417 /* Assert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Assert.cpp; sourceTree = "<group>"; };
 		9EA657BA1663AADB00904417 /* Device.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Device.cpp; sourceTree = "<group>"; };
 		9EA657BB1663AADB00904417 /* DeviceBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeviceBuffer.cpp; sourceTree = "<group>"; };
 		9EA657BC1663AADB00904417 /* DeviceList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeviceList.cpp; sourceTree = "<group>"; };
@@ -603,7 +624,6 @@
 		9EA657BF1663AADB00904417 /* Index.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Index.cpp; sourceTree = "<group>"; };
 		9EA657C01663AADB00904417 /* KernelUtil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KernelUtil.cpp; sourceTree = "<group>"; };
 		9EA657C11663AADB00904417 /* Local.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Local.cpp; sourceTree = "<group>"; };
-		9EA657C21663AADB00904417 /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logger.cpp; sourceTree = "<group>"; };
 		9EA657C31663AADB00904417 /* Program.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Program.cpp; sourceTree = "<group>"; };
 		9EA657C41663AADB00904417 /* Significances.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Significances.cpp; sourceTree = "<group>"; };
 		9EA657C51663AADB00904417 /* SkelCL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SkelCL.cpp; sourceTree = "<group>"; };
@@ -650,9 +670,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E2D16AEA5380078F339 /* libpvsutil.dylib in Frameworks */,
 				9E0A903A1663C27900ACD2B4 /* libgtest_main.a in Frameworks */,
 				9E0A903B1663C27900ACD2B4 /* libgtest.a in Frameworks */,
-				9E0A903C1663C27900ACD2B4 /* libssedit.dylib in Frameworks */,
 				9E0A903D1663C27900ACD2B4 /* libskelcl.dylib in Frameworks */,
 				9E0A903E1663C27900ACD2B4 /* OpenCL.framework in Frameworks */,
 			);
@@ -662,9 +682,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E2F16AEA5420078F339 /* libpvsutil.dylib in Frameworks */,
 				9E0A90591664B58000ACD2B4 /* libgtest_main.a in Frameworks */,
 				9E0A905A1664B58000ACD2B4 /* libgtest.a in Frameworks */,
-				9E0A905B1664B58000ACD2B4 /* libssedit.dylib in Frameworks */,
 				9E0A905C1664B58000ACD2B4 /* libskelcl.dylib in Frameworks */,
 				9E0A905D1664B58000ACD2B4 /* OpenCL.framework in Frameworks */,
 			);
@@ -674,9 +694,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E3016AEA5460078F339 /* libpvsutil.dylib in Frameworks */,
 				9E0A906A1664B58400ACD2B4 /* libgtest_main.a in Frameworks */,
 				9E0A906B1664B58400ACD2B4 /* libgtest.a in Frameworks */,
-				9E0A906C1664B58400ACD2B4 /* libssedit.dylib in Frameworks */,
 				9E0A906D1664B58400ACD2B4 /* libskelcl.dylib in Frameworks */,
 				9E0A906E1664B58400ACD2B4 /* OpenCL.framework in Frameworks */,
 			);
@@ -686,9 +706,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E3116AEA54A0078F339 /* libpvsutil.dylib in Frameworks */,
 				9E0A907B1664B58600ACD2B4 /* libgtest_main.a in Frameworks */,
 				9E0A907C1664B58600ACD2B4 /* libgtest.a in Frameworks */,
-				9E0A907D1664B58600ACD2B4 /* libssedit.dylib in Frameworks */,
 				9E0A907E1664B58600ACD2B4 /* libskelcl.dylib in Frameworks */,
 				9E0A907F1664B58600ACD2B4 /* OpenCL.framework in Frameworks */,
 			);
@@ -698,9 +718,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E3216AEA54E0078F339 /* libpvsutil.dylib in Frameworks */,
 				9E0A908C1664B58700ACD2B4 /* libgtest_main.a in Frameworks */,
 				9E0A908D1664B58700ACD2B4 /* libgtest.a in Frameworks */,
-				9E0A908E1664B58700ACD2B4 /* libssedit.dylib in Frameworks */,
 				9E0A908F1664B58700ACD2B4 /* libskelcl.dylib in Frameworks */,
 				9E0A90901664B58700ACD2B4 /* OpenCL.framework in Frameworks */,
 			);
@@ -710,9 +730,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E3316AEA5520078F339 /* libpvsutil.dylib in Frameworks */,
 				9E0A909D1664B58900ACD2B4 /* libgtest_main.a in Frameworks */,
 				9E0A909E1664B58900ACD2B4 /* libgtest.a in Frameworks */,
-				9E0A909F1664B58900ACD2B4 /* libssedit.dylib in Frameworks */,
 				9E0A90A01664B58900ACD2B4 /* libskelcl.dylib in Frameworks */,
 				9E0A90A11664B58900ACD2B4 /* OpenCL.framework in Frameworks */,
 			);
@@ -722,9 +742,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E3416AEA5550078F339 /* libpvsutil.dylib in Frameworks */,
 				9E0A90AE1664B58A00ACD2B4 /* libgtest_main.a in Frameworks */,
 				9E0A90AF1664B58A00ACD2B4 /* libgtest.a in Frameworks */,
-				9E0A90B01664B58A00ACD2B4 /* libssedit.dylib in Frameworks */,
 				9E0A90B11664B58A00ACD2B4 /* libskelcl.dylib in Frameworks */,
 				9E0A90B21664B58A00ACD2B4 /* OpenCL.framework in Frameworks */,
 			);
@@ -734,9 +754,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E3516AEA5590078F339 /* libpvsutil.dylib in Frameworks */,
 				9E0A90BF1664B58C00ACD2B4 /* libgtest_main.a in Frameworks */,
 				9E0A90C01664B58C00ACD2B4 /* libgtest.a in Frameworks */,
-				9E0A90C11664B58C00ACD2B4 /* libssedit.dylib in Frameworks */,
 				9E0A90C21664B58C00ACD2B4 /* libskelcl.dylib in Frameworks */,
 				9E0A90C31664B58C00ACD2B4 /* OpenCL.framework in Frameworks */,
 			);
@@ -746,9 +766,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E3616AEA55C0078F339 /* libpvsutil.dylib in Frameworks */,
 				9E0A90D01664B58F00ACD2B4 /* libgtest_main.a in Frameworks */,
 				9E0A90D11664B58F00ACD2B4 /* libgtest.a in Frameworks */,
-				9E0A90D21664B58F00ACD2B4 /* libssedit.dylib in Frameworks */,
 				9E0A90D31664B58F00ACD2B4 /* libskelcl.dylib in Frameworks */,
 				9E0A90D41664B58F00ACD2B4 /* OpenCL.framework in Frameworks */,
 			);
@@ -758,9 +778,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E3716AEA5600078F339 /* libpvsutil.dylib in Frameworks */,
 				9E0A90E11664B59100ACD2B4 /* libgtest_main.a in Frameworks */,
 				9E0A90E21664B59100ACD2B4 /* libgtest.a in Frameworks */,
-				9E0A90E31664B59100ACD2B4 /* libssedit.dylib in Frameworks */,
 				9E0A90E41664B59100ACD2B4 /* libskelcl.dylib in Frameworks */,
 				9E0A90E51664B59100ACD2B4 /* OpenCL.framework in Frameworks */,
 			);
@@ -770,9 +790,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E3816AEA5640078F339 /* libpvsutil.dylib in Frameworks */,
 				9E0A90F21664B5B300ACD2B4 /* libgtest_main.a in Frameworks */,
 				9E0A90F31664B5B300ACD2B4 /* libgtest.a in Frameworks */,
-				9E0A90F41664B5B300ACD2B4 /* libssedit.dylib in Frameworks */,
 				9E0A90F51664B5B300ACD2B4 /* libskelcl.dylib in Frameworks */,
 				9E0A90F61664B5B300ACD2B4 /* OpenCL.framework in Frameworks */,
 			);
@@ -782,9 +802,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E3916AEA5680078F339 /* libpvsutil.dylib in Frameworks */,
 				9E0A91031664B5B500ACD2B4 /* libgtest_main.a in Frameworks */,
 				9E0A91041664B5B500ACD2B4 /* libgtest.a in Frameworks */,
-				9E0A91051664B5B500ACD2B4 /* libssedit.dylib in Frameworks */,
 				9E0A91061664B5B500ACD2B4 /* libskelcl.dylib in Frameworks */,
 				9E0A91071664B5B500ACD2B4 /* OpenCL.framework in Frameworks */,
 			);
@@ -794,9 +814,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E3A16AEA56B0078F339 /* libpvsutil.dylib in Frameworks */,
 				9E0A91141664B5B600ACD2B4 /* libgtest_main.a in Frameworks */,
 				9E0A91151664B5B600ACD2B4 /* libgtest.a in Frameworks */,
-				9E0A91161664B5B600ACD2B4 /* libssedit.dylib in Frameworks */,
 				9E0A91171664B5B600ACD2B4 /* libskelcl.dylib in Frameworks */,
 				9E0A91181664B5B600ACD2B4 /* OpenCL.framework in Frameworks */,
 			);
@@ -806,6 +826,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E3C16AEA5750078F339 /* libpvsutil.dylib in Frameworks */,
 				9E0A91401664B7C300ACD2B4 /* libskelcl.dylib in Frameworks */,
 				9E0A91411664B7C300ACD2B4 /* OpenCL.framework in Frameworks */,
 			);
@@ -815,6 +836,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E3B16AEA5720078F339 /* libpvsutil.dylib in Frameworks */,
 				9E0A914C1664B7C700ACD2B4 /* libskelcl.dylib in Frameworks */,
 				9E0A914D1664B7C700ACD2B4 /* OpenCL.framework in Frameworks */,
 			);
@@ -824,6 +846,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E2416AEA47D0078F339 /* libpvsutil.dylib in Frameworks */,
 				9EA6582A1663AC3000904417 /* libcrypto.dylib in Frameworks */,
 				9EA658111663AAFD00904417 /* OpenCL.framework in Frameworks */,
 				9EA658281663AC2700904417 /* libssedit.dylib in Frameworks */,
@@ -834,9 +857,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E2E16AEA53E0078F339 /* libpvsutil.dylib in Frameworks */,
 				9EA658741663AD8D00904417 /* libgtest_main.a in Frameworks */,
 				9EA658751663AD8D00904417 /* libgtest.a in Frameworks */,
-				9EA658761663ADA000904417 /* libssedit.dylib in Frameworks */,
 				9EA658701663AD7300904417 /* libskelcl.dylib in Frameworks */,
 				9EA658711663AD7500904417 /* OpenCL.framework in Frameworks */,
 			);
@@ -846,6 +869,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E239E3D16AEA57B0078F339 /* libpvsutil.dylib in Frameworks */,
 				9EA658931663AEBA00904417 /* libskelcl.dylib in Frameworks */,
 				9EA658941663AEC800904417 /* OpenCL.framework in Frameworks */,
 			);
@@ -854,6 +878,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9E239E0816AEA1E80078F339 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		9EA6576A1663AAC200904417 = {
 			isa = PBXGroup;
 			children = (
@@ -939,7 +971,6 @@
 		9EA657861663AADB00904417 /* detail */ = {
 			isa = PBXGroup;
 			children = (
-				9EA657871663AADB00904417 /* Assert.h */,
 				9EA657881663AADB00904417 /* BlockDistribution.h */,
 				9EA657891663AADB00904417 /* BlockDistributionDef.h */,
 				9EA6578A1663AADB00904417 /* Container.h */,
@@ -947,6 +978,7 @@
 				9EA6578C1663AADB00904417 /* CopyDistributionDef.h */,
 				9EA6578D1663AADB00904417 /* Device.h */,
 				9EA6578E1663AADB00904417 /* DeviceBuffer.h */,
+				9E239E2916AEA4CB0078F339 /* DeviceID.h */,
 				9EA6578F1663AADB00904417 /* DeviceList.h */,
 				9EA657901663AADB00904417 /* DeviceProperties.h */,
 				9EA657911663AADB00904417 /* Distribution.h */,
@@ -955,8 +987,6 @@
 				9EA657941663AADB00904417 /* IndexMatrixDef.h */,
 				9EA657951663AADB00904417 /* IndexVectorDef.h */,
 				9EA657961663AADB00904417 /* KernelUtil.h */,
-				9EA657971663AADB00904417 /* Logger.h */,
-				9EA657981663AADB00904417 /* LoggerDef.h */,
 				9EA657991663AADB00904417 /* MapDef.h */,
 				9EA6579A1663AADB00904417 /* MapHelper.h */,
 				9EA6579B1663AADB00904417 /* MapHelperDef.h */,
@@ -964,6 +994,7 @@
 				9EA6579D1663AADB00904417 /* OverlapDistribution.h */,
 				9EA6579E1663AADB00904417 /* OverlapDistributionDef.h */,
 				9EA6579F1663AADB00904417 /* Padding.h */,
+				9E239E2A16AEA4CB0078F339 /* PlatformID.h */,
 				9EA657A01663AADB00904417 /* Program.h */,
 				9EA657A11663AADB00904417 /* ReduceDef.h */,
 				9EA657A21663AADB00904417 /* ReduceKernel.cl */,
@@ -981,7 +1012,6 @@
 		9EA657B71663AADB00904417 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				9EA657B81663AADB00904417 /* Assert.cpp */,
 				9EA658951663AF9C00904417 /* CMakeLists.txt */,
 				9EA657BA1663AADB00904417 /* Device.cpp */,
 				9EA657BB1663AADB00904417 /* DeviceBuffer.cpp */,
@@ -992,7 +1022,6 @@
 				9EA657BF1663AADB00904417 /* Index.cpp */,
 				9EA657C01663AADB00904417 /* KernelUtil.cpp */,
 				9EA657C11663AADB00904417 /* Local.cpp */,
-				9EA657C21663AADB00904417 /* Logger.cpp */,
 				D0F3033E1682333400F3DA90 /* Map.cpp */,
 				D01C2704166D2F6400D28BCE /* MatrixSize.cpp */,
 				D06DFA19166D48D60007FA44 /* PlatformID.cpp */,
@@ -1029,6 +1058,7 @@
 		9EA6582B1663AC6100904417 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				9E239E0716AEA1E80078F339 /* pvsutil.xcodeproj */,
 				9EA658121663AB8800904417 /* ssedit.xcodeproj */,
 				9EA658101663AAFD00904417 /* OpenCL.framework */,
 				9EA658291663AC3000904417 /* libcrypto.dylib */,
@@ -1114,7 +1144,6 @@
 				9EA657CD1663AADB00904417 /* cl_gl_ext.h in Headers */,
 				9EA657CE1663AADB00904417 /* cl_platform.h in Headers */,
 				9EA657CF1663AADB00904417 /* opencl.h in Headers */,
-				9EA657D01663AADB00904417 /* Assert.h in Headers */,
 				9EA657D11663AADB00904417 /* BlockDistribution.h in Headers */,
 				9EA657D21663AADB00904417 /* BlockDistributionDef.h in Headers */,
 				9EA657D31663AADB00904417 /* Container.h in Headers */,
@@ -1130,8 +1159,6 @@
 				9EA657DD1663AADB00904417 /* IndexMatrixDef.h in Headers */,
 				9EA657DE1663AADB00904417 /* IndexVectorDef.h in Headers */,
 				9EA657DF1663AADB00904417 /* KernelUtil.h in Headers */,
-				9EA657E01663AADB00904417 /* Logger.h in Headers */,
-				9EA657E11663AADB00904417 /* LoggerDef.h in Headers */,
 				9EA657E21663AADB00904417 /* MapDef.h in Headers */,
 				9EA657E31663AADB00904417 /* MapHelper.h in Headers */,
 				9EA657E41663AADB00904417 /* MapHelperDef.h in Headers */,
@@ -1161,6 +1188,8 @@
 				9EA657FD1663AADB00904417 /* Source.h in Headers */,
 				9EA657FE1663AADB00904417 /* Vector.h in Headers */,
 				9EA657FF1663AADB00904417 /* Zip.h in Headers */,
+				9E239E2B16AEA4CB0078F339 /* DeviceID.h in Headers */,
+				9E239E2C16AEA4CB0078F339 /* PlatformID.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1446,6 +1475,8 @@
 			buildRules = (
 			);
 			dependencies = (
+				9E239E2616AEA4910078F339 /* PBXTargetDependency */,
+				9E239E2816AEA4910078F339 /* PBXTargetDependency */,
 			);
 			name = skelcl;
 			productName = skelcl;
@@ -1507,6 +1538,10 @@
 			productRefGroup = 9EA657761663AAC200904417 /* Products */;
 			projectDirPath = "";
 			projectReferences = (
+				{
+					ProductGroup = 9E239E0816AEA1E80078F339 /* Products */;
+					ProjectRef = 9E239E0716AEA1E80078F339 /* pvsutil.xcodeproj */;
+				},
 				{
 					ProductGroup = 9EA658131663AB8800904417 /* Products */;
 					ProjectRef = 9EA658121663AB8800904417 /* ssedit.xcodeproj */;
@@ -1591,6 +1626,13 @@
 			fileType = "compiled.mach-o.executable";
 			path = TypeTests;
 			remoteRef = 9E0A90311663C23600ACD2B4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.dylib";
+			path = libpvsutil.dylib;
+			remoteRef = 9E239E0B16AEA1E90078F339 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		9EA658211663AB8900904417 /* libssedit.dylib */ = {
@@ -1750,7 +1792,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9EA658001663AADB00904417 /* Assert.cpp in Sources */,
 				9EA658011663AADB00904417 /* Device.cpp in Sources */,
 				9EA658021663AADB00904417 /* DeviceBuffer.cpp in Sources */,
 				9EA658031663AADB00904417 /* DeviceList.cpp in Sources */,
@@ -1759,7 +1800,6 @@
 				9EA658061663AADB00904417 /* Index.cpp in Sources */,
 				9EA658071663AADB00904417 /* KernelUtil.cpp in Sources */,
 				9EA658081663AADB00904417 /* Local.cpp in Sources */,
-				9EA658091663AADB00904417 /* Logger.cpp in Sources */,
 				9EA6580A1663AADB00904417 /* Program.cpp in Sources */,
 				9EA6580B1663AADB00904417 /* Significances.cpp in Sources */,
 				9EA6580C1663AADB00904417 /* SkelCL.cpp in Sources */,
@@ -1856,6 +1896,16 @@
 			isa = PBXTargetDependency;
 			name = gtest;
 			targetProxy = 9E0A91101664B5B600ACD2B4 /* PBXContainerItemProxy */;
+		};
+		9E239E2616AEA4910078F339 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = pvsutil;
+			targetProxy = 9E239E2516AEA4910078F339 /* PBXContainerItemProxy */;
+		};
+		9E239E2816AEA4910078F339 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = ssedit;
+			targetProxy = 9E239E2716AEA4910078F339 /* PBXContainerItemProxy */;
 		};
 		9EA6586F1663AD6900904417 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2212,10 +2262,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					../../libraries/ssedit/include,
 					../../include,
-					../../libraries/ssedit/libraries/libclang/include,
 					../../libraries/gtest/include,
+					../../libraries/pvsutil/include,
+					../../libraries/ssedit/include,
+					../../libraries/ssedit/libraries/libclang/include,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
@@ -2242,10 +2293,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					../../libraries/ssedit/include,
 					../../include,
-					../../libraries/ssedit/libraries/libclang/include,
 					../../libraries/gtest/include,
+					../../libraries/pvsutil/include,
+					../../libraries/ssedit/include,
+					../../libraries/ssedit/libraries/libclang/include,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx;
