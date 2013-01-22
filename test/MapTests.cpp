@@ -62,7 +62,6 @@ protected:
   };
 };
 
-#if 0
 TEST_F(MapTest, CreateMapWithString) {
   skelcl::Map<float(float)> m {"float func(float f){ return -f; }"};
 }
@@ -343,14 +342,16 @@ TEST_F(MapTest, MapWithSingleDistribution1) {
     skelcl::Vector<int> output = map(input);
   }
 }
-#endif
 
 TEST_F(MapTest, MapWithLocalMemory) {
-  pvsutil::defaultLogger.setLoggingLevel(
-      pvsutil::Logger::Severity::DebugInfo );
+  // Important for usage of skelcl::Local :
+  // input vector size must be multiple of workGroupSize to use barrier()!
+
   skelcl::Map<int(int)> map{"int func(int i, __local int* lp) \
-    { lp[0] = i; barrier(CLK_LOCAL_MEM_FENCE); return -lp[i]; }"};
-  skelcl::Vector<int> input(10);
+    { lp[0] = i; barrier(CLK_LOCAL_MEM_FENCE); return -lp[0]; }"};
+
+  map.setWorkGroupSize(16);
+  skelcl::Vector<int> input(32);
   for (size_t i = 0; i < input.size(); ++i) {
     input[i] = 5;
   }
