@@ -62,6 +62,7 @@ protected:
   };
 };
 
+#if 0
 TEST_F(MapTest, CreateMapWithString) {
   skelcl::Map<float(float)> m {"float func(float f){ return -f; }"};
 }
@@ -340,6 +341,23 @@ TEST_F(MapTest, MapWithSingleDistribution1) {
     skelcl::distribution::setSingle(input, *dev);
 
     skelcl::Vector<int> output = map(input);
+  }
+}
+#endif
+
+TEST_F(MapTest, MapWithLocalMemory) {
+  pvsutil::defaultLogger.setLoggingLevel(
+      pvsutil::Logger::Severity::DebugInfo );
+  skelcl::Map<int(int)> map{"int func(int i, __local int* lp) \
+    { lp[0] = i; barrier(CLK_LOCAL_MEM_FENCE); return -lp[i]; }"};
+  skelcl::Vector<int> input(10);
+  for (size_t i = 0; i < input.size(); ++i) {
+    input[i] = 5;
+  }
+
+  skelcl::Vector<int> output = map(input, skelcl::Local(sizeof(int)));
+  for (size_t i = 0; i < output.size(); ++i) {
+    EXPECT_EQ(-input[i], output[i]);
   }
 }
 

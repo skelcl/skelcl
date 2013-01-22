@@ -105,7 +105,7 @@ void setKernelArgs(cl::Kernel& kernel,
                    skelcl::detail::Sizes& sizes,
                    Args&&... args);
 
-template <typename T, typename... Args>
+template <typename... Args>
 void setKernelArgs(cl::Kernel& kernel,
                    const Device& device,
                    size_t index,
@@ -201,7 +201,7 @@ void setKernelArgs(cl::Kernel& kernel,
   setKernelArgs( kernel, device, ++index, std::forward<Args>(args)... );
 }
 
-template <typename T, typename... Args>
+template <typename... Args>
 void setKernelArgs(cl::Kernel& kernel,
                    const Device& device,
                    size_t index,
