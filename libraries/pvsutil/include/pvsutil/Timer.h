@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2011-2012 The SkelCL Team as listed in CREDITS.txt          *
+ * Copyright (c) 2011-2013 The SkelCL Team as listed in CREDITS.txt          *
  * http://skelcl.uni-muenster.de                                             *
  *                                                                           *
  * This file is part of SkelCL.                                              *
@@ -32,88 +32,34 @@
  *****************************************************************************/
 
 ///
-/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+/// \file Timer.h
+///
+/// \author Sebastian Albers <s.albers@uni-muenster.de>
 ///
 
-#include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <iterator>
+#ifndef TIMER_H_
+#define TIMER_H_
 
-#include <pvsutil/Logger.h>
+#include <chrono>
 
-#include <SkelCL/SkelCL.h>
-#include <SkelCL/IndexMatrix.h>
-#include <SkelCL/Map.h>
+namespace pvsutil {
+  
+class Timer {
+public:
+  // constructor, starts timer
+  Timer();
+  
+  // resets timer
+  void restart();
+  
+  // returns time difference in milliseconds since construction
+  // or last call of restart()
+  double stop();
+  
+private:
+  std::chrono::high_resolution_clock::time_point _startTime;
+};
+  
+} // namespace pvsutil
 
-SKELCL_COMMON_DEFINITION(
-typedef struct {    \
-  unsigned char r;  \
-  unsigned char g;  \
-  unsigned char b;  \
-} Pixel;            \
-)
-
-#define ITERATIONS 100
-
-#define WIDTH 4096
-#define HEIGHT 3072
-
-#define CENTER_X -0.73
-#define CENTER_Y -0.16
-#define ZOOM 27615
-SKELCL_ADD_DEFINE(ITERATIONS)
-SKELCL_ADD_DEFINE(WIDTH)
-SKELCL_ADD_DEFINE(HEIGHT)
-SKELCL_ADD_DEFINE(CENTER_X)
-SKELCL_ADD_DEFINE(CENTER_Y)
-SKELCL_ADD_DEFINE(ZOOM)
-
-//SKELCL_ADD_DEFINES(ITERATIONS, WIDTH, HEIGHT, CENTER_X, CENTER_Y, ZOOM)
-
-using namespace skelcl;
-
-std::ostream& operator<< (std::ostream& out, Pixel p)
-{
-  out << p.r << p.g << p.b;
-  return out;
-}
-
-template <typename Iterator>
-void writePPM (Iterator first, Iterator last, const std::string& filename)
-{
-  std::ofstream outputFile(filename.c_str());
-
-  outputFile << "P6\n" << WIDTH << " " << HEIGHT << "\n255\n";
-
-  std::copy(first, last, std::ostream_iterator<Pixel>(outputFile));
-}
-
-void mandelbrot()
-{
-  IndexMatrix positions({HEIGHT, WIDTH});
-
-  Map<Pixel(IndexPoint)> m(std::ifstream("mandelbrot.cl"));
-
-  float startX = CENTER_X - ((float) WIDTH / (ZOOM * 2));
-  float endX = CENTER_X + ((float) WIDTH / (ZOOM * 2));
-
-  float startY = CENTER_Y - ((float) HEIGHT / (ZOOM * 2));
-  float endY = CENTER_Y + ((float) HEIGHT / (ZOOM * 2));
-
-  float dx = (endX - startX) / WIDTH;
-  float dy = (endY - startY) / HEIGHT;
-
-  Matrix<Pixel> output = m(positions, startX, startY, dx, dy);
-
-  writePPM(output.begin(), output.end(), "mandelbrot.ppm");
-}
-
-int main()
-{
-  pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
-  skelcl::init(skelcl::nDevices(2));
-  mandelbrot();
-  return 0;
-}
-
+#endif // TIMER_H_

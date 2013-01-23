@@ -35,25 +35,9 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-typedef struct {
-  unsigned char r;
-  unsigned char g;
-  unsigned char b;
-} Pixel;
-
-#define ITERATIONS 100
-
 #define COLOR_R(n) ((n & 63) << 2)
 #define COLOR_G(n) ((n << 3) & 255)
 #define COLOR_B(n) ((n >> 8) & 255)
-
-#define WIDTH 4096
-#define HEIGHT 3072
-
-#define CENTER_X -0.73
-#define CENTER_Y -0.16
-#define ZOOM 27615
-
 
 int iterate(float x, float y)
 {

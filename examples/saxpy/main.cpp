@@ -43,6 +43,7 @@
 #include <numeric>
 
 #include <pvsutil/Logger.h>
+#include <pvsutil/Timer.h>
 
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
@@ -71,6 +72,8 @@ int main()
   int SIZE = 1024 * 1024; // 1 MB
   skelcl::init(); // initialize SkelCL
 
+  pvsutil::Timer timer;
+  
   // Y <- a * X + Y
   Zip<float(float, float)> saxpy("float func(float x, float y, float a){ return a*x + y; }");
 
@@ -80,8 +83,11 @@ int main()
 
   Y = saxpy( X, Y, a );
 
+  double time = timer.stop();
+  
   std::cout << "Y accumulated: ";
   std::cout << std::accumulate(Y.begin(), Y.end(), 0.0f) << std::endl;
+  std::cout << "elapsed time: " << time << " ms" << std::endl;
 
   return 0;
 }

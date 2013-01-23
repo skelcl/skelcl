@@ -78,18 +78,11 @@ void addGlobalAddressSpaceModifier(std::string* paramToken)
   // should be sufficient enough (ignoring e.g. comments)
 
   if (   paramToken->find("__global") == std::string::npos
-      && paramToken->find("global")   == std::string::npos ) {
+      && paramToken->find(  "global") == std::string::npos ) {
     // if global modifier cannot be found look for local modifier
-    auto pos      = paramToken->find("__local");
-    size_t length = 7; // length of __local
-    if (pos == std::string::npos) {
-      pos    = paramToken->find("local");
-      length = 5; // length of local
-    }
-
-    if (pos != std::string::npos) { // local modifier found => replace
-      paramToken->replace(pos, length, "__global");
-    } else { // local modifer also not found => add global modifer
+    if (   paramToken->find("__local") == std::string::npos
+        && paramToken->find(  "local") == std::string::npos ) {
+      // local modifier also not found => assume global modifier
       paramToken->insert(0, "__global ");
     }
   }
