@@ -30,113 +30,77 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
-///
-/// \file Util.cpp
+
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <iomanip>
-#include <ios>
-#include <sstream>
-#include <string>
+#include <gtest/gtest.h>
 
-#include <cmath>
-#include <cstdlib>
+#include <fstream>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include <openssl/sha.h>
-#pragma GCC diagnostic pop
+#include <cstdio>
 
-#include "SkelCL/detail/Util.h"
+#include <pvsutil/Logger.h>
 
-namespace skelcl {
+#include <SkelCL/SkelCL.h>
+#include <SkelCL/Vector.h>
+#include <SkelCL/Scan.h>
 
-namespace detail {
+class ScanTest : public ::testing::Test {
+protected:
+  ScanTest() {
+    pvsutil::defaultLogger.setLoggingLevel(
+        pvsutil::Logger::Severity::DebugInfo );
 
-namespace util {
+    skelcl::init(skelcl::nDevices(1));
+  };
 
-std::string envVarValue(const std::string& envVar)
-{
-  char* envValue = std::getenv(envVar.c_str());
-  if (envValue != NULL) {
-    return envValue;
-  } else {
-    return "";
+  ~ScanTest() {
+    skelcl::terminate();
+  };
+};
+
+TEST_F(ScanTest, CreateScanWithString) {
+  skelcl::Scan<float(float)> s{ "float func(float x, float y){ return x+y; }",
+                                "0.0f" };
+}
+
+TEST_F(ScanTest, SimpleScan) {
+  skelcl::Scan<int(int)> s{ "int func(int x, int y){ return x+y; }" };
+
+  skelcl::Vector<int> input(1024);
+  for (size_t i = 0; i < input.size(); ++i) {
+    input[i] = 1;
+  }
+  EXPECT_EQ(1024, input.size());
+
+  skelcl::Vector<int> output = s(input);
+
+  input.dataOnDeviceModified();
+
+  EXPECT_EQ(1024, output.size());
+  for (size_t i = 0; i < output.size(); ++i) {
+    EXPECT_EQ(i, output[i]);
   }
 }
 
-std::string hash(const std::string& string)
-{
-  unsigned char raw[20];
-  char* c_str = const_cast<char*>(string.c_str());
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  SHA1(reinterpret_cast<unsigned char*>(c_str), string.length(), raw);
-#pragma GCC diagnostic pop
-  std::ostringstream buffer;
-  for (int i = 0; i < 20; ++i) {
-    buffer << std::hex
-           << std::setw(2)
-           << std::setfill('0')
-           << static_cast<int>( raw[i] );
+TEST_F(ScanTest, SmallScan) {
+  skelcl::Scan<int(int)> s{ "int func(int x, int y){ return x+y; }" };
+
+  skelcl::Vector<int> input(10);
+  for (size_t i = 0; i < input.size(); ++i) {
+    input[i] = 1;
   }
-  return buffer.str();
-}
+  EXPECT_EQ(10, input.size());
 
-size_t devideAndRoundUp(size_t i, size_t j)
-{
-  size_t r = i / j;
-  if (i % j != 0) {
-    r++;
+  skelcl::Vector<int> output = s(input);
+
+  input.dataOnDeviceModified();
+
+  EXPECT_EQ(10, output.size());
+  for (size_t i = 0; i < output.size(); ++i) {
+    EXPECT_EQ(i, output[i]);
   }
-  return r;
 }
 
-size_t devideAndAlign(size_t i, size_t j, size_t a)
-{
-  size_t x = i / j;
-  if (i % j != 0)
-    ++x;
-  size_t r = x % a;
-  if (r != 0)
-    x = x + (a - r);
-  return x;
-}
-
-size_t ceilToMultipleOf(size_t i, size_t j)
-{
-  if (i == 0) return j;
-  size_t r = i % j;
-  if (r == 0)
-   return i;
-  else
-   return i + (j - r);
-}
-
-bool isPowerOfTwo(size_t n)
-{
-  return ((n & (n - 1)) == 0);
-}
-
-int floorPow2(int n)
-{
-  int exp;
-  frexp(static_cast<float>(n), &exp);
-  return 1 << (exp - 1);
-}
-
-int ceilPow2(int n)
-{
-  int exp;
-  frexp(static_cast<float>(n), &exp);
-  return 1 << exp;
-}
-
-} // namespace util
-
-} // namespace detail
-
-} // namespace skelcl

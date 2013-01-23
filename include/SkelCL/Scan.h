@@ -32,111 +32,87 @@
  *****************************************************************************/
  
 ///
-/// \file Util.cpp
+/// \file Scan.h
 ///
-/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///	\author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <iomanip>
-#include <ios>
-#include <sstream>
+#ifndef SCAN_H_
+#define SCAN_H_
+
+#include <istream>
 #include <string>
 
-#include <cmath>
-#include <cstdlib>
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include <openssl/sha.h>
-#pragma GCC diagnostic pop
-
-#include "SkelCL/detail/Util.h"
+#include "detail/Skeleton.h"
+#include "detail/Program.h"
 
 namespace skelcl {
 
-namespace detail {
+class Source;
+template <typename> class Out;
+template <typename> class Vector;
 
-namespace util {
+template<typename> class Scan;
 
-std::string envVarValue(const std::string& envVar)
-{
-  char* envValue = std::getenv(envVar.c_str());
-  if (envValue != NULL) {
-    return envValue;
-  } else {
-    return "";
-  }
-}
+template<typename T>
+class Scan<T(T)> : public detail::Skeleton {
+public:
+  Scan(const Source& source,
+       const std::string& id = "0",
+       const std::string& funcName = std::string("func"));
 
-std::string hash(const std::string& string)
-{
-  unsigned char raw[20];
-  char* c_str = const_cast<char*>(string.c_str());
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  SHA1(reinterpret_cast<unsigned char*>(c_str), string.length(), raw);
-#pragma GCC diagnostic pop
-  std::ostringstream buffer;
-  for (int i = 0; i < 20; ++i) {
-    buffer << std::hex
-           << std::setw(2)
-           << std::setfill('0')
-           << static_cast<int>( raw[i] );
-  }
-  return buffer.str();
-}
+  template <typename... Args>
+  Vector<T> operator()(const Vector<T>& input, Args&&... args);
 
-size_t devideAndRoundUp(size_t i, size_t j)
-{
-  size_t r = i / j;
-  if (i % j != 0) {
-    r++;
-  }
-  return r;
-}
+  template <typename... Args>
+  Vector<T>& operator()(Out<Vector<T>> output,
+                        const Vector<T>& input,
+                        Args&&... args);
 
-size_t devideAndAlign(size_t i, size_t j, size_t a)
-{
-  size_t x = i / j;
-  if (i % j != 0)
-    ++x;
-  size_t r = x % a;
-  if (r != 0)
-    x = x + (a - r);
-  return x;
-}
+private:
+  template <typename... Args>
+  void execute(Vector<T>& output,
+               const Vector<T>& input,
+               Args&&... args);
+  
+  unsigned int calculateNumberOfPasses(size_t workGroupSize,
+                                       size_t elements) const;
 
-size_t ceilToMultipleOf(size_t i, size_t j)
-{
-  if (i == 0) return j;
-  size_t r = i % j;
-  if (r == 0)
-   return i;
-  else
-   return i + (j - r);
-}
+  std::vector<detail::DeviceBuffer>
+    createImmediateBuffers(unsigned int passes,
+                           unsigned int wgSize,
+                           unsigned int elements,
+                           const detail::Device::ptr_type& devicePtr);
 
-bool isPowerOfTwo(size_t n)
-{
-  return ((n & (n - 1)) == 0);
-}
+  void performScanPasses(unsigned int passes,
+                         unsigned int wgSize,
+                         const detail::Device::ptr_type& devicePtr,
+                         const std::vector<detail::DeviceBuffer>& tmpBuffers,
+                         const detail::DeviceBuffer& inputBuffer,
+                         const detail::DeviceBuffer& outputBuffer);
 
-int floorPow2(int n)
-{
-  int exp;
-  frexp(static_cast<float>(n), &exp);
-  return 1 << (exp - 1);
-}
+  void performUniformCombination(unsigned int passes,
+                                 unsigned int wgSize,
+                                 const detail::Device::ptr_type& devicePtr,
+                                 const std::vector<detail::DeviceBuffer>&
+                                    tmpBuffers,
+                                 const detail::DeviceBuffer& outputBuffer);
 
-int ceilPow2(int n)
-{
-  int exp;
-  frexp(static_cast<float>(n), &exp);
-  return 1 << exp;
-}
+  void prepareInput(const Vector<T>& input);
 
-} // namespace util
+  void prepareOutput(Vector<T>& output,
+                     const Vector<T>& input);
+  
+  detail::Program createAndBuildProgram(const std::string& source,
+                                        const std::string& id,
+                                        const std::string& funcName) const;
 
-} // namespace detail
+  const detail::Program _program;
+};
 
 } // namespace skelcl
+
+#include "detail/ScanDef.h"
+
+#endif // Scan_H_
+
