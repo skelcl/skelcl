@@ -35,85 +35,57 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <iterator>
+#ifndef MACRO_H_
+#define MACRO_H_
 
-#include <pvsutil/Logger.h>
+#define CONCATENATE_IMPL(s1, s2) s1##s2
+#define CONCATENATE(s1, s2) CONCATENATE_IMPL(s1, s2)
 
-#include <SkelCL/SkelCL.h>
-#include <SkelCL/IndexMatrix.h>
-#include <SkelCL/Map.h>
+#define VA_NARGS_IMPL(_1, _2, _3, _4, _5, _6, _7, _8, _9, N, ...) N
+#define VA_NARGS(...) VA_NARGS_IMPL(__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1)
 
-SKELCL_COMMON_DEFINITION(
-typedef struct {    \
-  unsigned char r;  \
-  unsigned char g;  \
-  unsigned char b;  \
-} Pixel;            \
-)
+#ifdef __COUNTER__
+#define ANONYMOUS_VARIABLE \
+  CONCATENATE(anonymous, __COUNTER__)
+#else
+#define ANONYMOUS_VARIABLE \
+  CONCATENATE(anonymous, __LINE__)
+#endif
 
-#define ITERATIONS 100
+#define SKELCL_COMMON_DEFINITION(definition) \
+  definition \
+  skelcl::detail::RegisterCommonDefinition ANONYMOUS_VARIABLE(#definition);
 
-#define WIDTH 4096
-#define HEIGHT 3072
+#define SKELCL_ADD_DEFINE(define) \
+  skelcl::detail::RegisterCommonMacroDefinition \
+    ANONYMOUS_VARIABLE(#define, define);
 
-#define CENTER_X -0.73
-#define CENTER_Y -0.16
-#define ZOOM 27615
-SKELCL_ADD_DEFINE(ITERATIONS)
-SKELCL_ADD_DEFINE(WIDTH)
-SKELCL_ADD_DEFINE(HEIGHT)
-SKELCL_ADD_DEFINE(CENTER_X)
-SKELCL_ADD_DEFINE(CENTER_Y)
-SKELCL_ADD_DEFINE(ZOOM)
+#define FULLY_EXPANDED(count, ...) \
+  SKELCL_ADD_DEFINE_##count(__VA_ARGS__)
 
-//SKELCL_ADD_DEFINES(ITERATIONS, WIDTH, HEIGHT, CENTER_X, CENTER_Y, ZOOM)
+#define SEMI_EXPANDED(count, ...) \
+  FULLY_EXPANDED(count, __VA_ARGS__)
 
-using namespace skelcl;
+#define SKELCL_ADD_DEFINES(...) \
+  SEMI_EXPANDED(VA_NARGS(__VA_ARGS__), __VA_ARGS__)
 
-std::ostream& operator<< (std::ostream& out, Pixel p)
-{
-  out << p.r << p.g << p.b;
-  return out;
-}
+#define SKELCL_ADD_DEFINE_1(a) SKELCL_ADD_DEFINE(a)
+#define SKELCL_ADD_DEFINE_2(a,b) \
+  SKELCL_ADD_DEFINE_1(a) SKELCL_ADD_DEFINE(b)
+#define SKELCL_ADD_DEFINE_3(a,b,c) \
+  SKELCL_ADD_DEFINE_2(a,b) SKELCL_ADD_DEFINE(c)
+#define SKELCL_ADD_DEFINE_4(a,b,c,d) \
+  SKELCL_ADD_DEFINE_3(a,b,c) SKELCL_ADD_DEFINE(d)
+#define SKELCL_ADD_DEFINE_5(a,b,c,d,e) \
+  SKELCL_ADD_DEFINE_4(a,b,c,d) SKELCL_ADD_DEFINE(e)
+#define SKELCL_ADD_DEFINE_6(a,b,c,d,e,f) \
+  SKELCL_ADD_DEFINE_5(a,b,c,d,e) SKELCL_ADD_DEFINE(f)
+#define SKELCL_ADD_DEFINE_7(a,b,c,d,e,f,g) \
+  SKELCL_ADD_DEFINE_6(a,b,c,d,e,f) SKELCL_ADD_DEFINE(g)
+#define SKELCL_ADD_DEFINE_8(a,b,c,d,e,f,g,h) \
+  SKELCL_ADD_DEFINE_7(a,b,c,d,e,f,g) SKELCL_ADD_DEFINE(h)
+#define SKELCL_ADD_DEFINE_9(a,b,c,d,e,f,g,h,i) \
+  SKELCL_ADD_DEFINE_8(a,b,c,d,e,f,g,h) SKELCL_ADD_DEFINE(i)
 
-template <typename Iterator>
-void writePPM (Iterator first, Iterator last, const std::string& filename)
-{
-  std::ofstream outputFile(filename.c_str());
-
-  outputFile << "P6\n" << WIDTH << " " << HEIGHT << "\n255\n";
-
-  std::copy(first, last, std::ostream_iterator<Pixel>(outputFile));
-}
-
-void mandelbrot()
-{
-  IndexMatrix positions({HEIGHT, WIDTH});
-
-  Map<Pixel(IndexPoint)> m(std::ifstream("mandelbrot.cl"));
-
-  float startX = CENTER_X - ((float) WIDTH / (ZOOM * 2));
-  float endX = CENTER_X + ((float) WIDTH / (ZOOM * 2));
-
-  float startY = CENTER_Y - ((float) HEIGHT / (ZOOM * 2));
-  float endY = CENTER_Y + ((float) HEIGHT / (ZOOM * 2));
-
-  float dx = (endX - startX) / WIDTH;
-  float dy = (endY - startY) / HEIGHT;
-
-  Matrix<Pixel> output = m(positions, startX, startY, dx, dy);
-
-  writePPM(output.begin(), output.end(), "mandelbrot.ppm");
-}
-
-int main()
-{
-  pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
-  skelcl::init(skelcl::nDevices(2));
-  mandelbrot();
-  return 0;
-}
+#endif // MACRO_H_
 

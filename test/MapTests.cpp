@@ -343,3 +343,22 @@ TEST_F(MapTest, MapWithSingleDistribution1) {
   }
 }
 
+TEST_F(MapTest, MapWithLocalMemory) {
+  // Important for usage of skelcl::Local :
+  // input vector size must be multiple of workGroupSize to use barrier()!
+
+  skelcl::Map<int(int)> map{"int func(int i, __local int* lp) \
+    { lp[0] = i; barrier(CLK_LOCAL_MEM_FENCE); return -lp[0]; }"};
+
+  map.setWorkGroupSize(16);
+  skelcl::Vector<int> input(32);
+  for (size_t i = 0; i < input.size(); ++i) {
+    input[i] = 5;
+  }
+
+  skelcl::Vector<int> output = map(input, skelcl::Local(sizeof(int)));
+  for (size_t i = 0; i < output.size(); ++i) {
+    EXPECT_EQ(-input[i], output[i]);
+  }
+}
+
