@@ -9,9 +9,11 @@ include_directories (
 set (PVSUTIL_SOURCES
       ../include/pvsutil/Assert.h
       ../include/pvsutil/Logger.h
+      ../include/pvsutil/Timer.h
       ../include/pvsutil/detail/LoggerDef.h
       Assert.cpp
       Logger.cpp
+      Timer.cpp
     )
 
 # specify library target

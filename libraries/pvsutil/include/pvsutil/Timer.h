@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2011-2012 The SkelCL Team as listed in CREDITS.txt          *
+ * Copyright (c) 2011-2013 The SkelCL Team as listed in CREDITS.txt          *
  * http://skelcl.uni-muenster.de                                             *
  *                                                                           *
  * This file is part of SkelCL.                                              *
@@ -30,65 +30,36 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
-  
+
 ///
-/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+/// \file Timer.h
+///
+/// \author Sebastian Albers <s.albers@uni-muenster.de>
 ///
 
-#include <cstdlib>
-#include <ctime>
+#ifndef TIMER_H_
+#define TIMER_H_
 
-#include <iostream>
-#include <algorithm>
-#include <numeric>
+#include <chrono>
 
-#include <pvsutil/Logger.h>
-#include <pvsutil/Timer.h>
-
-#include <SkelCL/SkelCL.h>
-#include <SkelCL/Vector.h>
-#include <SkelCL/Zip.h>
-
-using namespace skelcl;
-
-template <typename ForwardIterator>
-void fillVector(ForwardIterator begin, ForwardIterator end)
-{
-  srand( (unsigned)time(0) );
-  while (begin != end) {
-    *begin = ( (float)rand()/(float)RAND_MAX ) * 125.0f;
-    ++begin;
-  }
-}
-
-float fillScalar()
-{
-  srand( (unsigned)time(0) );
-  return ((float)rand()/(float)RAND_MAX) * 125.0f;
-}
-
-int main()
-{
-  int SIZE = 1024 * 1024; // 1 MB
-  skelcl::init(); // initialize SkelCL
-
-  pvsutil::Timer timer;
+namespace pvsutil {
   
-  // Y <- a * X + Y
-  Zip<float(float, float)> saxpy("float func(float x, float y, float a){ return a*x + y; }");
-
-  Vector<float> X(SIZE); fillVector(X.begin(), X.end());
-  Vector<float> Y(SIZE); fillVector(Y.begin(), Y.end());
-  float a = fillScalar();
-
-  Y = saxpy( X, Y, a );
-
-  double time = timer.stop();
+class Timer {
+public:
+  // constructor, starts timer
+  Timer();
   
-  std::cout << "Y accumulated: ";
-  std::cout << std::accumulate(Y.begin(), Y.end(), 0.0f) << std::endl;
-  std::cout << "elapsed time: " << time << " ms" << std::endl;
+  // resets timer
+  void restart();
+  
+  // returns time difference in milliseconds since construction
+  // or last call of restart()
+  double stop();
+  
+private:
+  std::chrono::high_resolution_clock::time_point _startTime;
+};
+  
+} // namespace pvsutil
 
-  return 0;
-}
-
+#endif // TIMER_H_
