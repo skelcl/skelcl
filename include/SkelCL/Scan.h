@@ -78,6 +78,26 @@ private:
   unsigned int calculateNumberOfPasses(size_t workGroupSize,
                                        size_t elements) const;
 
+  std::vector<detail::DeviceBuffer>
+    createImmediateBuffers(unsigned int passes,
+                           unsigned int wgSize,
+                           unsigned int elements,
+                           const detail::Device::ptr_type& devicePtr);
+
+  void performScanPasses(unsigned int passes,
+                         unsigned int wgSize,
+                         const detail::Device::ptr_type& devicePtr,
+                         const std::vector<detail::DeviceBuffer>& tmpBuffers,
+                         const detail::DeviceBuffer& inputBuffer,
+                         const detail::DeviceBuffer& outputBuffer);
+
+  void performUniformCombination(unsigned int passes,
+                                 unsigned int wgSize,
+                                 const detail::Device::ptr_type& devicePtr,
+                                 const std::vector<detail::DeviceBuffer>&
+                                    tmpBuffers,
+                                 const detail::DeviceBuffer& outputBuffer);
+
   void prepareInput(const Vector<T>& input);
 
   void prepareOutput(Vector<T>& output,

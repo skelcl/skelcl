@@ -77,7 +77,28 @@ TEST_F(ScanTest, SimpleScan) {
 
   skelcl::Vector<int> output = s(input);
 
+  input.dataOnDeviceModified();
+
   EXPECT_EQ(1024, output.size());
+  for (size_t i = 0; i < output.size(); ++i) {
+    EXPECT_EQ(i, output[i]);
+  }
+}
+
+TEST_F(ScanTest, SmallScan) {
+  skelcl::Scan<int(int)> s{ "int func(int x, int y){ return x+y; }" };
+
+  skelcl::Vector<int> input(10);
+  for (size_t i = 0; i < input.size(); ++i) {
+    input[i] = 1;
+  }
+  EXPECT_EQ(10, input.size());
+
+  skelcl::Vector<int> output = s(input);
+
+  input.dataOnDeviceModified();
+
+  EXPECT_EQ(10, output.size());
   for (size_t i = 0; i < output.size(); ++i) {
     EXPECT_EQ(i, output[i]);
   }

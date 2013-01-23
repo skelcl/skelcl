@@ -72,7 +72,8 @@ typedef float SCL_TYPE_0;
 #endif
 
 __kernel
-void SCL_SCAN(__global       SCL_TYPE_0* dataSet,
+void SCL_SCAN(__global const SCL_TYPE_0* currentInput,
+              __global       SCL_TYPE_0* output,
               __local        SCL_TYPE_0* localBuffer,
               __global       SCL_TYPE_0* blockSums,
                        const uint        blockSumsSize)
@@ -102,14 +103,18 @@ void SCL_SCAN(__global       SCL_TYPE_0* dataSet,
   uint gbi = gid + lwz;
   uint bankOffsetA = CONFLICT_FREE_OFFSET(ai); 
   uint bankOffsetB = CONFLICT_FREE_OFFSET(bi);
-  localBuffer[ai + bankOffsetA] = (gai < blockSumsSize) ? dataSet[gai] : SCL_IDENTITY; 
-  localBuffer[bi + bankOffsetB] = (gbi < blockSumsSize) ? dataSet[gbi] : SCL_IDENTITY;
+  localBuffer[ai + bankOffsetA]
+    = (gai < blockSumsSize) ? currentInput[gai] : SCL_IDENTITY; 
+  localBuffer[bi + bankOffsetB]
+    = (gbi < blockSumsSize) ? currentInput[gbi] : SCL_IDENTITY;
 #else
-  localBuffer[tid2_0] = (gid2_0 < blockSumsSize) ? dataSet[gid2_0] : SCL_IDENTITY;
-  localBuffer[tid2_1] = (gid2_1 < blockSumsSize) ? dataSet[gid2_1] : SCL_IDENTITY;
+  localBuffer[tid2_0]
+    = (gid2_0 < blockSumsSize) ? currentInput[gid2_0] : SCL_IDENTITY;
+  localBuffer[tid2_1]
+    = (gid2_1 < blockSumsSize) ? currentInput[gid2_1] : SCL_IDENTITY;
 #endif
 
-  // bottom-up
+  // bottom-up (a.k.a. up-sweep phase)
   for(uint d = lwz; d > 0; d >>= 1) {
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -148,7 +153,7 @@ void SCL_SCAN(__global       SCL_TYPE_0* dataSet,
 #endif
   }
 
-  // top-down
+  // top-down (a.k.a. down-sweep phase)
   for(uint d = 1; d < localBufferSize; d <<= 1) {
     offset >>= 1;
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -178,14 +183,14 @@ void SCL_SCAN(__global       SCL_TYPE_0* dataSet,
   // Copy back from the local buffer to the output array
 
 #ifdef SUPPORT_AVOID_BANK_CONFLICT
-  dataSet[gai] = (gai < blockSumsSize) * localBuffer[ai + bankOffsetA];
-  dataSet[gbi] = (gbi < blockSumsSize) * localBuffer[bi + bankOffsetB];
+  output[gai] = (gai < blockSumsSize) * localBuffer[ai + bankOffsetA];
+  output[gbi] = (gbi < blockSumsSize) * localBuffer[bi + bankOffsetB];
 #else
   if (gid2_0 < blockSumsSize) {
-    dataSet[gid2_0] = localBuffer[tid2_0];
+    output[gid2_0] = localBuffer[tid2_0];
   }
   if (gid2_1 < blockSumsSize) {
-    dataSet[gid2_1] = localBuffer[tid2_1];
+    output[gid2_1] = localBuffer[tid2_1];
   }
 #endif
 }
@@ -198,9 +203,9 @@ void SCL_SCAN(__global       SCL_TYPE_0* dataSet,
 // scan of top elements of input arrays.
 //------------------------------------------------------------
 
-__kernel void SCL_UNIFORM_ADD(__global       SCL_TYPE_0* output,
-                              __global const SCL_TYPE_0* blockSums,
-                                       const uint        outputSize)
+__kernel void SCL_UNIFORM_COMBINATION(__global       SCL_TYPE_0* output,
+                                      __global const SCL_TYPE_0* blockSums,
+                                               const uint        outputSize)
 {
         uint gid     = get_global_id(0) * 2;
   const uint tid     = get_local_id(0);
@@ -242,14 +247,6 @@ __kernel void SCL_UNIFORM_ADD(__global       SCL_TYPE_0* output,
     output[gid] = SCL_FUNC(output[gid], localBuffer[0]);
   }
 #endif
-}
-
-__kernel void SCL_CLEAR(__global       SCL_TYPE_0* output,
-                                 const uint        elements)
-{
-  if (get_global_id(0) < elements) {
-    output[get_global_id(0)] = SCL_IDENTITY;
-  }
 }
 
 )"
