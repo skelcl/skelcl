@@ -39,9 +39,11 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <string>
 #include <vector>
 
 #include <pvsutil/Logger.h>
+#include <pvsutil/Timer.h>
 
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
@@ -62,34 +64,108 @@ void init(ForwardIterator begin, ForwardIterator end)
 }
 
 // multiply two matrices
-void matrixMult(const int rowCountA, const int columnCountA, const int columnCountB) {
+double matrixMult(const int rowCountA, const int columnCountA, const int columnCountB, const int checkResult) {
   
   const int rowCountB = columnCountA;
   LOG_INFO("started: multiplication of matrices A (", rowCountA, " x ", columnCountA, ") and B (",
            rowCountB, " x ", columnCountB, ")");
   
+  pvsutil::Timer timer;
+
   // initialize skeletons
   Zip<float(float, float)> zip("float func(float x, float y){ return x*y; }");
   Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
   AllPairs<float(float, float)> allpairs(reduce, zip);
   
-  std::vector<float> vectorA(rowCountA * columnCountA);
-  std::vector<float> vectorB(rowCountB * columnCountB);
+  Matrix<float> left( {rowCountA, columnCountA} );
+  Matrix<float> right( {rowCountB, columnCountB} );
   
-  init(vectorA.begin(), vectorA.end());
-  init(vectorB.begin(), vectorB.end());
+  init(left.begin(), left.end());
+  init(right.begin(), right.end());
   
-  Matrix<float> matrixA(vectorA, columnCountA);
-  Matrix<float> matrixB(vectorB, columnCountB);
-  
-  Matrix<float> output = allpairs(matrixA, matrixB);
-  LOG_INFO("finished: matrix C (", output.rowCount(), " x ", output.columnCount(), ") calculated");
+  Matrix<float> output = allpairs(left, right);
+
+  double elapsedTime = timer.stop();
+  LOG_INFO("finished: matrix C (", output.rowCount(), " x ", output.columnCount(), ") calculated, ",
+      "elapsed time: ", elapsedTime, " ms");
+
+  if (checkResult) {
+    unsigned int deviations = 0;
+    for (size_t i = 0; i < output.rowCount(); ++i) {
+      for (size_t j = 0; j < output.columnCount(); ++j) {
+        float gold = 0;
+        for (size_t k = 0; k < left.columnCount(); ++k) {
+          gold += left[i][k] * right[k][j];
+        }
+        if (output[i][j] != gold)
+          ++deviations;
+      }
+    }
+
+    if (deviations) {
+      LOG_ERROR("result check failed: ", deviations, " deviations");
+    } else {
+      LOG_INFO("result check succeeded, no deviations");
+    }
+  }
+
+  return elapsedTime;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
 //  pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
-  init(skelcl::nDevices(1)); // initialize SkelCL
-  matrixMult(1024, 512, 2048);
+
+  if (argc < 5 || argc > 8) {
+    std::cout << "usage: matrix_mult <row_count_A> <column_count_A> <column_count_B>"
+      << " <check_result> <repetitions> <device_type> <device_count>" << std::endl;
+    std::cout << "- row_count_A: row count of left matrix" << std::endl;
+    std::cout << "- column_count_A: column count of left matrix / row count"
+      << "of right matrix" << std::endl;
+    std::cout << "- column_count_B: column count of right matrix" << std::endl;
+    std::cout << "- check_result: 0 = no check, 1 = result is checked" << std::endl;
+    std::cout << "- repetitions: number of repetitions (optional, default: 1)" << std::endl;
+    std::cout << "- device_type: ANY, CPU, GPU, ACCELERATOR (optional, default: ANY)" << std::endl;
+    std::cout << "- device_count: number of devices (optional, default: 1)" << std::endl;
+    return 1;
+  }
+
+  // parse command line arguments
+  int rowCountA = atoi(argv[1]);
+  int columnCountA = atoi(argv[2]);
+  int columnCountB = atoi(argv[3]);
+  int checkResult = atoi(argv[4]);
+  int repetitions = 1;
+  if (argc > 5) {
+    repetitions = atoi(argv[5]);
+  }
+  device_type deviceType = device_type::ANY;
+  if (argc > 6) {
+    std::string deviceArg = argv[6];
+    if (deviceArg == "CPU") {
+        deviceType = device_type::CPU;
+    }
+    else if (deviceArg == "GPU") {
+        deviceType = device_type::GPU;
+    }
+    else if (deviceArg == "ACCELERATOR") {
+        deviceType = device_type::ACCELERATOR;
+    }
+  }
+  int deviceCount = 1;
+  if (argc > 7) {
+    deviceCount = atoi(argv[7]);
+  }
+
+  init(nDevices(deviceCount).deviceType(deviceType)); // initialize SkelCL
+  double totalTime = 0.0;
+  for (int i = 0; i < repetitions; i++) {
+    totalTime += matrixMult(rowCountA, columnCountA, columnCountB, checkResult);
+  }
+  double avgTime = totalTime / repetitions;
+  LOG_INFO("sizes: ", rowCountA, ", ", columnCountA, ", ", columnCountB, "; ",
+      "average time: ", avgTime, " ms");
+
   return 0;
 }
+
