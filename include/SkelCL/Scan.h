@@ -30,65 +30,89 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
-  
+ 
 ///
-/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+/// \file Scan.h
+///
+///	\author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <cstdlib>
-#include <ctime>
+#ifndef SCAN_H_
+#define SCAN_H_
 
-#include <iostream>
-#include <algorithm>
-#include <numeric>
+#include <istream>
+#include <string>
 
-#include <pvsutil/Logger.h>
-#include <pvsutil/Timer.h>
+#include "detail/Skeleton.h"
+#include "detail/Program.h"
 
-#include <SkelCL/SkelCL.h>
-#include <SkelCL/Vector.h>
-#include <SkelCL/Zip.h>
+namespace skelcl {
 
-using namespace skelcl;
+class Source;
+template <typename> class Out;
+template <typename> class Vector;
 
-template <typename ForwardIterator>
-void fillVector(ForwardIterator begin, ForwardIterator end)
-{
-  srand( (unsigned)time(0) );
-  while (begin != end) {
-    *begin = ( (float)rand()/(float)RAND_MAX ) * 125.0f;
-    ++begin;
-  }
-}
+template<typename> class Scan;
 
-float fillScalar()
-{
-  srand( (unsigned)time(0) );
-  return ((float)rand()/(float)RAND_MAX) * 125.0f;
-}
+template<typename T>
+class Scan<T(T)> : public detail::Skeleton {
+public:
+  Scan(const Source& source,
+       const std::string& id = "0",
+       const std::string& funcName = std::string("func"));
 
-int main()
-{
-  int SIZE = 1024 * 1024; // 1 MB
-  skelcl::init(); // initialize SkelCL
+  template <typename... Args>
+  Vector<T> operator()(const Vector<T>& input, Args&&... args);
 
-  pvsutil::Timer timer;
+  template <typename... Args>
+  Vector<T>& operator()(Out<Vector<T>> output,
+                        const Vector<T>& input,
+                        Args&&... args);
+
+private:
+  template <typename... Args>
+  void execute(Vector<T>& output,
+               const Vector<T>& input,
+               Args&&... args);
   
-  // Y <- a * X + Y
-  Zip<float(float, float)> saxpy("float func(float x, float y, float a){ return a*x + y; }");
+  unsigned int calculateNumberOfPasses(size_t workGroupSize,
+                                       size_t elements) const;
 
-  Vector<float> X(SIZE); fillVector(X.begin(), X.end());
-  Vector<float> Y(SIZE); fillVector(Y.begin(), Y.end());
-  float a = fillScalar();
+  std::vector<detail::DeviceBuffer>
+    createImmediateBuffers(unsigned int passes,
+                           unsigned int wgSize,
+                           unsigned int elements,
+                           const detail::Device::ptr_type& devicePtr);
 
-  Y = saxpy( X, Y, a );
+  void performScanPasses(unsigned int passes,
+                         unsigned int wgSize,
+                         const detail::Device::ptr_type& devicePtr,
+                         const std::vector<detail::DeviceBuffer>& tmpBuffers,
+                         const detail::DeviceBuffer& inputBuffer,
+                         const detail::DeviceBuffer& outputBuffer);
 
-  pvsutil::Timer::time_type time = timer.stop();
+  void performUniformCombination(unsigned int passes,
+                                 unsigned int wgSize,
+                                 const detail::Device::ptr_type& devicePtr,
+                                 const std::vector<detail::DeviceBuffer>&
+                                    tmpBuffers,
+                                 const detail::DeviceBuffer& outputBuffer);
+
+  void prepareInput(const Vector<T>& input);
+
+  void prepareOutput(Vector<T>& output,
+                     const Vector<T>& input);
   
-  std::cout << "Y accumulated: ";
-  std::cout << std::accumulate(Y.begin(), Y.end(), 0.0f) << std::endl;
-  std::cout << "elapsed time: " << time << " ms" << std::endl;
+  detail::Program createAndBuildProgram(const std::string& source,
+                                        const std::string& id,
+                                        const std::string& funcName) const;
 
-  return 0;
-}
+  const detail::Program _program;
+};
+
+} // namespace skelcl
+
+#include "detail/ScanDef.h"
+
+#endif // Scan_H_
 

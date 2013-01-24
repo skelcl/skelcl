@@ -46,6 +46,8 @@ namespace pvsutil {
   
 class Timer {
 public:
+  typedef std::chrono::milliseconds::rep time_type;
+  
   // constructor, starts timer
   Timer();
   
@@ -54,7 +56,7 @@ public:
   
   // returns time difference in milliseconds since construction
   // or last call of restart()
-  double stop();
+  time_type stop();
   
 private:
   std::chrono::high_resolution_clock::time_point _startTime;

@@ -42,6 +42,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <string>
 
 #define __CL_ENABLE_EXCEPTIONS
@@ -65,6 +66,7 @@ class DeviceBuffer;
 class Device {
 public:
   typedef size_t id_type;
+  typedef std::shared_ptr<Device> ptr_type;
 
   enum Type : size_t {
     ALL         = CL_DEVICE_TYPE_ALL,

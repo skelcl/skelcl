@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2011-2013 The SkelCL Team as listed in CREDITS.txt          *
+ * Copyright (c) 2011-2012 The SkelCL Team as listed in CREDITS.txt          *
  * http://skelcl.uni-muenster.de                                             *
  *                                                                           *
  * This file is part of SkelCL.                                              *
@@ -32,31 +32,75 @@
  *****************************************************************************/
 
 ///
-/// \file Timer.cpp
-///
-/// \author Sebastian Albers <s.albers@uni-muenster.de>
+/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <chrono>
+#include <gtest/gtest.h>
 
-#include "pvsutil/Timer.h"
+#include <fstream>
 
-namespace pvsutil {
-  
-Timer::Timer()
-  : _startTime(std::chrono::high_resolution_clock::now())
-{
+#include <cstdio>
+
+#include <pvsutil/Logger.h>
+
+#include <SkelCL/SkelCL.h>
+#include <SkelCL/Vector.h>
+#include <SkelCL/Scan.h>
+
+class ScanTest : public ::testing::Test {
+protected:
+  ScanTest() {
+    pvsutil::defaultLogger.setLoggingLevel(
+        pvsutil::Logger::Severity::DebugInfo );
+
+    skelcl::init(skelcl::nDevices(1));
+  };
+
+  ~ScanTest() {
+    skelcl::terminate();
+  };
+};
+
+TEST_F(ScanTest, CreateScanWithString) {
+  skelcl::Scan<float(float)> s{ "float func(float x, float y){ return x+y; }",
+                                "0.0f" };
 }
 
-void Timer::restart()
-{
-  _startTime = std::chrono::high_resolution_clock::now();
+TEST_F(ScanTest, SimpleScan) {
+  skelcl::Scan<int(int)> s{ "int func(int x, int y){ return x+y; }" };
+
+  skelcl::Vector<int> input(1024);
+  for (size_t i = 0; i < input.size(); ++i) {
+    input[i] = 1;
+  }
+  EXPECT_EQ(1024, input.size());
+
+  skelcl::Vector<int> output = s(input);
+
+  input.dataOnDeviceModified();
+
+  EXPECT_EQ(1024, output.size());
+  for (size_t i = 0; i < output.size(); ++i) {
+    EXPECT_EQ(i, output[i]);
+  }
 }
-  
-Timer::time_type Timer::stop() {
-  auto sinceStart =   std::chrono::high_resolution_clock::now() - _startTime;
-  using std::chrono::milliseconds; // avoid too long next line
-  return std::chrono::duration_cast<milliseconds>(sinceStart).count();
+
+TEST_F(ScanTest, SmallScan) {
+  skelcl::Scan<int(int)> s{ "int func(int x, int y){ return x+y; }" };
+
+  skelcl::Vector<int> input(10);
+  for (size_t i = 0; i < input.size(); ++i) {
+    input[i] = 1;
+  }
+  EXPECT_EQ(10, input.size());
+
+  skelcl::Vector<int> output = s(input);
+
+  input.dataOnDeviceModified();
+
+  EXPECT_EQ(10, output.size());
+  for (size_t i = 0; i < output.size(); ++i) {
+    EXPECT_EQ(i, output[i]);
+  }
 }
-  
-} // namespace pvsutil
+

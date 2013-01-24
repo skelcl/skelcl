@@ -28,4 +28,5 @@ add_testcase (MatrixTests)
 add_testcase (IndexVectorTests)
 add_testcase (IndexMatrixTests)
 add_testcase (AllPairsTests)
+add_testcase (ScanTests)
 
