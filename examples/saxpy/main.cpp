@@ -83,7 +83,7 @@ int main()
 
   Y = saxpy( X, Y, a );
 
-  double time = timer.stop();
+  pvsutil::Timer::time_type time = timer.stop();
   
   std::cout << "Y accumulated: ";
   std::cout << std::accumulate(Y.begin(), Y.end(), 0.0f) << std::endl;
