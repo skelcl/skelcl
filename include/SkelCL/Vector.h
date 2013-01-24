@@ -449,6 +449,9 @@ public:
   ///
   const detail::DeviceBuffer& deviceBuffer(const detail::Device& device) const;
 
+  void replaceDeviceBuffer(detail::DeviceBuffer&& deviceBuffer,
+                           const detail::Device& device);
+
   host_buffer_type& hostBuffer() const;
 
   static std::string deviceFunctions();

@@ -624,6 +624,13 @@ const detail::DeviceBuffer&
 }
 
 template <typename T>
+void Vector<T>::replaceDeviceBuffer(detail::DeviceBuffer&& deviceBuffer,
+                                    const detail::Device& device)
+{
+  _deviceBuffers[device.id()] = std::move(deviceBuffer);
+}
+
+template <typename T>
 typename Vector<T>::host_buffer_type& Vector<T>::hostBuffer() const
 {
   return _hostBuffer;
