@@ -53,11 +53,10 @@ void Timer::restart()
   _startTime = std::chrono::high_resolution_clock::now();
 }
   
-double Timer::stop() {
+Timer::time_type Timer::stop() {
   auto sinceStart =   std::chrono::high_resolution_clock::now() - _startTime;
   using std::chrono::milliseconds; // avoid too long next line
-  double ms = std::chrono::duration_cast<milliseconds>(sinceStart).count();
-  return ms;
+  return std::chrono::duration_cast<milliseconds>(sinceStart).count();
 }
   
 } // namespace pvsutil
