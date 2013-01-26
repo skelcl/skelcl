@@ -35,13 +35,13 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <gtest/gtest.h>
-
 #include <string>
 
 #include <pvsutil/Logger.h>
 
 #include <SkelCL/detail/Util.h>
+
+#include "Test.h"
 
 class SHA1Test : public ::testing::Test {
 protected:

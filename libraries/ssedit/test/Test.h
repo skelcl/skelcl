@@ -30,6 +30,17 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
+ 
+///
+/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
+
+#include <gtest/gtest.h>
+
+#pragma GCC diagnostic pop
 
 #include <clang-c/Index.h>
 

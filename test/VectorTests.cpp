@@ -35,13 +35,13 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <gtest/gtest.h>
-
 #include <pvsutil/Logger.h>
 
 #include <SkelCL/Distributions.h>
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
+
+#include "Test.h"
 
 class VectorTest : public ::testing::Test {
 protected:

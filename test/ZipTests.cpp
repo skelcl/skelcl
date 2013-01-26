@@ -35,8 +35,6 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <gtest/gtest.h>
-
 #include <fstream>
 
 #include <cstdio>
@@ -46,6 +44,8 @@
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/Zip.h>
+
+#include "Test.h"
 
 class ZipTest : public ::testing::Test {
 protected:

@@ -35,8 +35,6 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <gtest/gtest.h>
-
 #include <fstream>
 
 #include <cstdio>
@@ -47,6 +45,8 @@
 #include <SkelCL/Matrix.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/Map.h>
+
+#include "Test.h"
 
 class MapTest : public ::testing::Test {
 protected:

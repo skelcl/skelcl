@@ -35,14 +35,14 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <gtest/gtest.h>
-
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Distributions.h>
 #include <SkelCL/IndexVector.h>
 #include <SkelCL/IndexMatrix.h>
 #include <SkelCL/Matrix.h>
 #include <SkelCL/Vector.h>
+
+#include "Test.h"
 
 class DistributionTest : public ::testing::Test {
 protected:

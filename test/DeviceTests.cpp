@@ -35,12 +35,9 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <gtest/gtest.h>
-
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-
 #include <SkelCL/detail/Device.h>
+
+#include "Test.h"
 
 class DeviceTest : public ::testing::Test {
 protected:
