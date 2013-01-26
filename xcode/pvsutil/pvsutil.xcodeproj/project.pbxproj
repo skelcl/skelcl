@@ -1,0 +1,261 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		9E1EA34116B02555000BCBBB /* Assert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9E239E1616AEA2300078F339 /* Assert.cpp */; };
+		9E1EA34216B02555000BCBBB /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9E239E1716AEA2300078F339 /* Logger.cpp */; };
+		9E1EA34316B0255E000BCBBB /* LoggerDef.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E239E0F16AEA2060078F339 /* LoggerDef.h */; };
+		9E1EA34416B0255E000BCBBB /* Assert.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E239E0D16AEA2060078F339 /* Assert.h */; };
+		9E1EA34516B0255E000BCBBB /* Logger.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E239E1016AEA2060078F339 /* Logger.h */; };
+		9E1EA34716B02702000BCBBB /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9E1EA34616B02702000BCBBB /* Timer.cpp */; };
+		9E1EA34916B02716000BCBBB /* Timer.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E1EA34816B02716000BCBBB /* Timer.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		9E1EA34616B02702000BCBBB /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Timer.cpp; path = ../../libraries/pvsutil/src/Timer.cpp; sourceTree = "<group>"; };
+		9E1EA34816B02716000BCBBB /* Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Timer.h; path = ../../libraries/pvsutil/include/pvsutil/Timer.h; sourceTree = "<group>"; };
+		9E239E0016AEA1E80078F339 /* libpvsutil.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpvsutil.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		9E239E0D16AEA2060078F339 /* Assert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Assert.h; path = ../../libraries/pvsutil/include/pvsutil/Assert.h; sourceTree = "<group>"; };
+		9E239E0F16AEA2060078F339 /* LoggerDef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerDef.h; sourceTree = "<group>"; };
+		9E239E1016AEA2060078F339 /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Logger.h; path = ../../libraries/pvsutil/include/pvsutil/Logger.h; sourceTree = "<group>"; };
+		9E239E1616AEA2300078F339 /* Assert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Assert.cpp; path = ../../libraries/pvsutil/src/Assert.cpp; sourceTree = "<group>"; };
+		9E239E1716AEA2300078F339 /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Logger.cpp; path = ../../libraries/pvsutil/src/Logger.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		9E239DFD16AEA1E80078F339 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		9E239DF516AEA1E80078F339 = {
+			isa = PBXGroup;
+			children = (
+				9E239E1416AEA20E0078F339 /* include */,
+				9E239E1516AEA2190078F339 /* src */,
+				9E239E0116AEA1E80078F339 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		9E239E0116AEA1E80078F339 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9E239E0016AEA1E80078F339 /* libpvsutil.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9E239E0E16AEA2060078F339 /* detail */ = {
+			isa = PBXGroup;
+			children = (
+				9E239E0F16AEA2060078F339 /* LoggerDef.h */,
+			);
+			name = detail;
+			path = ../../libraries/pvsutil/include/pvsutil/detail;
+			sourceTree = "<group>";
+		};
+		9E239E1416AEA20E0078F339 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				9E239E0E16AEA2060078F339 /* detail */,
+				9E239E0D16AEA2060078F339 /* Assert.h */,
+				9E239E1016AEA2060078F339 /* Logger.h */,
+				9E1EA34816B02716000BCBBB /* Timer.h */,
+			);
+			name = include;
+			sourceTree = "<group>";
+		};
+		9E239E1516AEA2190078F339 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				9E239E1616AEA2300078F339 /* Assert.cpp */,
+				9E239E1716AEA2300078F339 /* Logger.cpp */,
+				9E1EA34616B02702000BCBBB /* Timer.cpp */,
+			);
+			name = src;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		9E239DFE16AEA1E80078F339 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9E1EA34316B0255E000BCBBB /* LoggerDef.h in Headers */,
+				9E1EA34416B0255E000BCBBB /* Assert.h in Headers */,
+				9E1EA34516B0255E000BCBBB /* Logger.h in Headers */,
+				9E1EA34916B02716000BCBBB /* Timer.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		9E239DFF16AEA1E80078F339 /* pvsutil */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9E239E0416AEA1E80078F339 /* Build configuration list for PBXNativeTarget "pvsutil" */;
+			buildPhases = (
+				9E239DFC16AEA1E80078F339 /* Sources */,
+				9E239DFD16AEA1E80078F339 /* Frameworks */,
+				9E239DFE16AEA1E80078F339 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = pvsutil;
+			productName = pvsutil;
+			productReference = 9E239E0016AEA1E80078F339 /* libpvsutil.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		9E239DF716AEA1E80078F339 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0450;
+				ORGANIZATIONNAME = "University of Münster";
+			};
+			buildConfigurationList = 9E239DFA16AEA1E80078F339 /* Build configuration list for PBXProject "pvsutil" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 9E239DF516AEA1E80078F339;
+			productRefGroup = 9E239E0116AEA1E80078F339 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				9E239DFF16AEA1E80078F339 /* pvsutil */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9E239DFC16AEA1E80078F339 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9E1EA34116B02555000BCBBB /* Assert.cpp in Sources */,
+				9E1EA34216B02555000BCBBB /* Logger.cpp in Sources */,
+				9E1EA34716B02702000BCBBB /* Timer.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		9E239E0216AEA1E80078F339 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		9E239E0316AEA1E80078F339 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		9E239E0516AEA1E80078F339 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					../../libraries/pvsutil/libraries/gtest/include,
+					../../libraries/pvsutil/include,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		9E239E0616AEA1E80078F339 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					../../libraries/pvsutil/libraries/gtest/include,
+					../../libraries/pvsutil/include,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9E239DFA16AEA1E80078F339 /* Build configuration list for PBXProject "pvsutil" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9E239E0216AEA1E80078F339 /* Debug */,
+				9E239E0316AEA1E80078F339 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9E239E0416AEA1E80078F339 /* Build configuration list for PBXNativeTarget "pvsutil" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9E239E0516AEA1E80078F339 /* Debug */,
+				9E239E0616AEA1E80078F339 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 9E239DF716AEA1E80078F339 /* Project object */;
+}

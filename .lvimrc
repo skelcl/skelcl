@@ -1,0 +1,5 @@
+au! BufEnter *.cpp let b:fswitchdst = 'h' | let b:fswitchlocs = '../include/**'
+au! BufEnter *.h let b:fswitchdst = 'cpp,h' | let b:fswitchlocs = 'detail,../../src,../../../src,.' | let b:fswitchfnames = '/$/Def/,/$//'
+au! BufEnter *Def.h let b:fswitchdst = 'h' | let b:fswitchlocs = '.,..' | let b:fswitchfnames = '/Def$//'
+let b:fsnonewfiles = ''
+let g:fsnonewfiles = ''

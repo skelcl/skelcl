@@ -66,7 +66,7 @@ namespace detail {
 template <typename> class Distribution;
 
 template <template <typename> class C, typename T>
-class Distribution< C<T> > {
+class Distribution<C<T>> {
 public:
   ///
   /// \brief Default constructor
@@ -78,10 +78,10 @@ public:
   ///        but arbitrary types stored in the container
   ///
   template <typename U>
-  Distribution(const Distribution< C<U> >& rhs);
+  Distribution(const Distribution<C<U>>& rhs);
 
   template <typename U>
-  Distribution(Distribution< C<U> >&& rhs);
+  Distribution(Distribution<C<U>>&& rhs);
 
   ///
   /// \brief Default destructor
@@ -93,10 +93,10 @@ public:
   ///        but arbitrary types stored in the container
   ///
   template <typename U>
-  Distribution& operator=(const Distribution< C<U> >& rhs);
+  Distribution& operator=(const Distribution<C<U>>& rhs);
 
   template <typename U>
-  Distribution& operator=(Distribution< C<U> >&& rhs);
+  Distribution& operator=(Distribution<C<U>>&& rhs);
 
   static std::shared_ptr<Distribution> Overlap();
 
@@ -201,7 +201,8 @@ public:
   /// \return The number of elements to be stored on the given device
   ///
   virtual size_t sizeForDevice(const C<T>& container,
-                               const std::shared_ptr<detail::Device>& devicePtr) const;
+                               const std::shared_ptr<detail::Device>&
+                                  devicePtr) const;
 
   virtual bool dataExchangeOnDistributionChange(Distribution& newDistribution);
 

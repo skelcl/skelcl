@@ -166,8 +166,8 @@ private:
   struct Level {
     size_t            workGroupSize;
     size_t            workGroupCount;
-    const Vector<T>*  inputPtr;  // just observing not owning, raw pointer is fine
-    const Vector<T>*  outputPtr; // just observing not owning, raw pointer is fine
+    const Vector<T>*  inputPtr; //just observing not owning: raw pointer is fine
+    const Vector<T>*  outputPtr;//just observing not owning: raw pointer is fine
     std::shared_ptr<skelcl::detail::Program> program;
   };
 

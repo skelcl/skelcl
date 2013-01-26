@@ -41,15 +41,16 @@
 
 #include <cstdio>
 
+#include <pvsutil/Logger.h>
+
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/Zip.h>
-#include <SkelCL/detail/Logger.h>
 
 class ZipTest : public ::testing::Test {
 protected:
   ZipTest() {
-//    skelcl::detail::Logger.setLoggingLevel(skelcl::detail::Severity::Debug);
+//    pvsutil::Logger.setLoggingLevel(pvsutil::Severity::Debug);
     skelcl::init(skelcl::nDevices(1));
   };
 
@@ -176,6 +177,32 @@ TEST_F(ZipTest, SimpleZip2D) {
     for(size_t j = 0; j < output.columnCount(); ++j) {
       EXPECT_EQ(matrix_left[i][j] + matrix_right[i][j], output[i][j]);
     }
+  }
+}
+
+TEST_F(ZipTest, VoidAddArgs) {
+  skelcl::Zip<void(float, float)> z("void func(float x, float y, __global float* out)\
+                                 { return out[get_global_id(0)] = x*y; }");
+
+  skelcl::Vector<float> left(10);
+  for (size_t i = 0; i < left.size(); ++i) {
+    left[i] = i * 2.5f;
+  }
+  EXPECT_EQ(10, left.size());
+
+  skelcl::Vector<float> right(10);
+  for (size_t i = 0; i < right.size(); ++i) {
+    right[i] = i * 4.5f;
+  }
+  EXPECT_EQ(10, right.size());
+
+  skelcl::Vector<float> output(10);
+
+  z(left, right, skelcl::out(output));
+
+  EXPECT_EQ(10, output.size());
+  for (size_t i = 0; i < output.size(); ++i) {
+    EXPECT_EQ( left[i]*right[i], output[i]);
   }
 }
 

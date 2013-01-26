@@ -44,8 +44,6 @@
 #include <map>
 #include <memory>
 
-#include <cxxabi.h>
-
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
@@ -53,6 +51,7 @@
 #include <ssedit/TempSourceFile.h>
 
 #include "Device.h"
+#include "Util.h"
 
 namespace skelcl {
 
@@ -101,9 +100,6 @@ private:
   void renameType(const int i, const std::string& name);
 
   template<typename T>
-  std::string typeToString();
-
-  template<typename T>
   void traverseTypes(int i);
 
   template<typename Head, typename Second, typename ...Tail>
@@ -121,22 +117,14 @@ void Program::adjustTypes() {
   traverseTypes<Head, Tail...>(0);
 }
 
-template <typename T>
-std::string Program::typeToString() {
-  char* cName = abi::__cxa_demangle(typeid(T).name(), NULL, NULL, NULL);
-  std::string name(cName);
-  free(cName);
-  return name;
-}
-
 template<typename T>
 void Program::traverseTypes(int i) {
-  renameType(i, typeToString<T>());
+  renameType(i, util::typeToString<T>());
 }
 
 template<typename Head, typename Second, typename... Tail>
 void Program::traverseTypes(int i) {
-  renameType(i, typeToString<Head>());
+  renameType(i, util::typeToString<Head>());
   traverseTypes<Second, Tail...>(++i);
 }
 

@@ -69,11 +69,12 @@ protected:
 
   void prepareAdditionalInput() const;
 
-  template <typename T, template <typename> class ContainerType, typename... Args>
-  void prepareAdditionalInput(Out<ContainerType<T>> outContainer, Args&&... args) const;
+  template <typename T, template <typename> class C, typename... Args>
+  void prepareAdditionalInput(Out<C<T>> outContainer,
+                              Args&&... args) const;
 
-  template <typename T, template <typename> class ContainerType, typename... Args>
-  void prepareAdditionalInput(ContainerType<T>& container, Args&&... args) const;
+  template <typename T, template <typename> class C, typename... Args>
+  void prepareAdditionalInput(C<T>& container, Args&&... args) const;
 
   template <typename T, typename... Args>
   void prepareAdditionalInput(T t, Args&&... args) const;
@@ -83,8 +84,8 @@ protected:
 
   void updateModifiedStatus() const;
 
-  template <typename T, template <typename> class ContainerType, typename... Args>
-  void updateModifiedStatus(Out<ContainerType<T>> outVector, Args&&... args) const;
+  template <typename T, template <typename> class C, typename... Args>
+  void updateModifiedStatus(Out<C<T>> outVector, Args&&... args) const;
 
   template <typename T, typename... Args>
   void updateModifiedStatus(T&& t, Args&&... args) const;
@@ -93,20 +94,20 @@ private:
   size_t _workGroupSize;
 };
 
-template <typename T, template <typename> class ContainerType, typename... Args>
-void Skeleton::prepareAdditionalInput(Out<ContainerType<T>> outContainer,
+template <typename T, template <typename> class C, typename... Args>
+void Skeleton::prepareAdditionalInput(Out<C<T>> outContainer,
                                       Args&&... args) const
 {
-  prepareAdditionalInput( outContainer.container(), std::forward<Args>(args)... );
+  prepareAdditionalInput(outContainer.container(), std::forward<Args>(args)...);
 }
 
-template <typename T, template <typename> class ContainerType, typename... Args>
-void Skeleton::prepareAdditionalInput(ContainerType<T>& container,
+template <typename T, template <typename> class C, typename... Args>
+void Skeleton::prepareAdditionalInput(C<T>& container,
                                       Args&&... args) const
 {
   // set default distribution if required
   if (!container.distribution().isValid()) {
-    container.setDistribution(CopyDistribution< ContainerType<T> >());
+    container.setDistribution(CopyDistribution<C<T>>());
   }
   // create buffers if required
   container.createDeviceBuffers();
@@ -123,8 +124,9 @@ void Skeleton::prepareAdditionalInput(T /*t*/, Args&&... args) const
   prepareAdditionalInput( std::forward<Args>(args)... );
 }
 
-template <typename T, template <typename> class ContainerType, typename... Args>
-void Skeleton::updateModifiedStatus(Out<ContainerType<T>> outContainer, Args&&... args) const
+template <typename T, template <typename> class C, typename... Args>
+void Skeleton::updateModifiedStatus(Out<C<T>> outContainer,
+                                    Args&&... args) const
 {
   outContainer.container().dataOnDeviceModified();
   updateModifiedStatus( std::forward<Args>(args)... );

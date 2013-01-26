@@ -44,23 +44,28 @@
 namespace ssedit {
 
 Typedef::Typedef(const Cursor& cursor, SourceFile& sourceFile)
-  : Entity(cursor, sourceFile) {
+  : Entity(cursor, sourceFile)
+{
 }
 
 Typedef::Typedef(const Typedef& rhs)
-  : Entity(rhs) {
+  : Entity(rhs)
+{
 }
 
-Typedef& Typedef::operator=(const Typedef& rhs) {
+Typedef& Typedef::operator=(const Typedef& rhs)
+{
   Entity::operator=(rhs);
   return *this;
 }
 
-Type Typedef::getType() const {
+Type Typedef::getType() const
+{
   return _cursor.getType();
 }
 
-std::string Typedef::printInfo() {
+std::string Typedef::printInfo()
+{
   std::stringstream sstr;
   SourceLocation::Location start = _cursor.getExtent().getStart();
   SourceLocation::Location end = _cursor.getExtent().getEnd();

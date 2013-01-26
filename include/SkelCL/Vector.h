@@ -62,6 +62,8 @@ namespace detail {
 
   class Sizes {
   public:
+      Sizes() : _sizes() {} // to prevent 'initialization list' error message
+
     void push_back(detail::DeviceBuffer::size_type size) {
       _sizes.push_back(size);
     }
@@ -86,7 +88,8 @@ public:
   typedef typename host_buffer_type::const_reference const_reference;
   typedef typename host_buffer_type::iterator iterator;
   typedef typename host_buffer_type::const_iterator const_iterator;
-  typedef typename host_buffer_type::const_reverse_iterator const_reverse_iterator;
+  typedef typename host_buffer_type::const_reverse_iterator
+          const_reverse_iterator;
   typedef typename host_buffer_type::reverse_iterator reverse_iterator;
   typedef typename host_buffer_type::size_type size_type;
   typedef typename host_buffer_type::difference_type difference_type;
@@ -108,8 +111,8 @@ public:
   ///
   Vector(const size_type size,
          const value_type& value = value_type(),
-         const detail::Distribution< Vector<T> >& distribution
-                                    = detail::Distribution< Vector<T> >());
+         const detail::Distribution<Vector<T>>& distribution
+                                    = detail::Distribution<Vector<T>>());
 
   ///
   /// \brief same semantics as std::vector
@@ -133,7 +136,7 @@ public:
   template <class InputIterator>
   Vector(InputIterator first,
          InputIterator last,
-         const detail::Distribution< Vector<T> >& distribution);
+         const detail::Distribution<Vector<T>>& distribution);
 
   ///
   /// \brief Copy construction
@@ -334,7 +337,7 @@ public:
   /// \return A pointer to the current distribution of the vector, of nullptr
   ///         if no distribution is set
   ///
-  detail::Distribution< Vector<T> >& distribution() const;
+  detail::Distribution<Vector<T>>& distribution() const;
 
   ///
   /// \brief Changes the distribution of the vector
@@ -347,12 +350,15 @@ public:
   ///                     vector
   ///
   template <typename U>
-  void setDistribution(const detail::Distribution< Vector<U> >& distribution) const;
+  void setDistribution(const detail::Distribution<Vector<U>>&
+                          distribution) const;
 
   template <typename U>
-  void setDistribution(const std::unique_ptr<detail::Distribution< Vector<U> > >& newDistribution) const;
+  void setDistribution(const std::unique_ptr<detail::Distribution<Vector<U>>>&
+                          newDistribution) const;
 
-  void setDistribution(std::unique_ptr<detail::Distribution< Vector<T> > >&& newDistribution) const;
+  void setDistribution(std::unique_ptr<detail::Distribution<Vector<T>>>&&
+                          newDistribution) const;
 
   ///
   /// \brief Create buffers on the devices involved in the current distribution
@@ -443,6 +449,9 @@ public:
   ///
   const detail::DeviceBuffer& deviceBuffer(const detail::Device& device) const;
 
+  void replaceDeviceBuffer(detail::DeviceBuffer&& deviceBuffer,
+                           const detail::Device& device);
+
   host_buffer_type& hostBuffer() const;
 
   static std::string deviceFunctions();
@@ -465,14 +474,15 @@ private:
   ///
   std::string getDebugInfo() const;
 
-          size_type                                               _size;
+          size_type                                   _size;
   mutable
-    std::unique_ptr< detail::Distribution< Vector<T> > >          _distribution;
-  mutable bool                                                    _hostBufferUpToDate;
-  mutable bool                                                    _deviceBuffersUpToDate;
-  mutable host_buffer_type                                        _hostBuffer;
+    std::unique_ptr<detail::Distribution<Vector<T>>>  _distribution;
+  mutable bool                                        _hostBufferUpToDate;
+  mutable bool                                        _deviceBuffersUpToDate;
+  mutable host_buffer_type                            _hostBuffer;
   // _deviceBuffers empty => buffers not created yet
-  mutable std::map<detail::Device::id_type, detail::DeviceBuffer> _deviceBuffers;
+  mutable std::map< detail::Device::id_type,
+                    detail::DeviceBuffer >            _deviceBuffers;
 };
 
 } // namespace skelcl

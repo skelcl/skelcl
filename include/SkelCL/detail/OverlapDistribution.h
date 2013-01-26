@@ -56,7 +56,7 @@ template <typename> class OverlapDistribution;
 
 // Vector version
 template <typename T>
-class OverlapDistribution< Vector<T> > : public Distribution< Vector<T> > {
+class OverlapDistribution<Vector<T>> : public Distribution<Vector<T>> {
 public:
   OverlapDistribution( Vector<T>::size_type overlapRadius = 1,
                        Padding padding = Padding::NEUTRAL,
@@ -64,7 +64,7 @@ public:
                        const DeviceList& deviceList = globalDeviceList );
 
   template <typename U>
-  OverlapDistribution( const OverlapDistribution< Vector<U> >&rhs );
+  OverlapDistribution( const OverlapDistribution<Vector<U>>&rhs );
 
   ~OverlapDistribution();
 
@@ -77,7 +77,8 @@ public:
   size_t sizeForDevice(const Vector<T>& container,
                        const detail::Device::id_type id) const;
 
-  bool dataExchangeOnDistributionChange(Distribution< Vector<T> >& newDistribution);
+  bool dataExchangeOnDistributionChange(Distribution<Vector<T>>&
+                                            newDistribution);
 
   typename Vector<T>::size_type& overlapRadius() const;
 
@@ -86,7 +87,7 @@ public:
   T& neutralElement() const;
 
 private:
-  bool doCompare(const Distribution< Vector<T> >& rhs) const;
+  bool doCompare(const Distribution<Vector<T>>& rhs) const;
 
   Vector<T>::size_type            _overlapRadius;
   Padding                         _padding;
@@ -95,7 +96,7 @@ private:
 
 // Matrix version
 template <typename T>
-class OverlapDistribution< Matrix<T> > : public Distribution< Matrix<T> > {
+class OverlapDistribution<Matrix<T>> : public Distribution<Matrix<T>> {
 public:
   OverlapDistribution( Matrix<T>::size_type::size_type overlapRadius = 1,
                        Padding padding = Padding::NEUTRAL,
@@ -103,7 +104,7 @@ public:
                        const DeviceList& deviceList = globalDeviceList );
 
   template <typename U>
-  OverlapDistribution( const OverlapDistribution< Matrix<U> >&rhs );
+  OverlapDistribution( const OverlapDistribution<Matrix<U>>&rhs );
 
   ~OverlapDistribution();
 
@@ -116,7 +117,8 @@ public:
   size_t sizeForDevice(const Matrix<T>& container,
                        const detail::Device::id_type id) const;
 
-  bool dataExchangeOnDistributionChange(Distribution< Matrix<T> >& newDistribution);
+  bool dataExchangeOnDistributionChange(Distribution<Matrix<T>>&
+                                            newDistribution);
 
   typename Matrix<T>::size_type::size_type& overlapRadius() const;
 
@@ -125,7 +127,7 @@ public:
   T& neutralElement() const;
 
 private:
-  bool doCompare(const Distribution< Matrix<T> >& rhs) const;
+  bool doCompare(const Distribution<Matrix<T>>& rhs) const;
 
   Matrix<T>::size_type::size_type _overlapRadius;
   Padding                         _padding;

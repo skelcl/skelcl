@@ -52,12 +52,13 @@ namespace detail {
 template <typename> class SingleDistribution;
 
 template <template <typename> class C, typename T>
-class SingleDistribution< C<T> > : public Distribution< C<T> > {
+class SingleDistribution<C<T>> : public Distribution<C<T>> {
 public:
-  SingleDistribution(std::shared_ptr<Device> device = detail::globalDeviceList.front());
+  SingleDistribution(std::shared_ptr<Device>
+                          device = detail::globalDeviceList.front());
 
   template <typename U>
-  SingleDistribution( const SingleDistribution< C<U> >& rhs);
+  SingleDistribution( const SingleDistribution<C<U>>& rhs);
 
   ~SingleDistribution();
 
@@ -72,10 +73,10 @@ public:
   size_t sizeForDevice(const C<T>& container,
                        const std::shared_ptr<detail::Device>& devicePtr) const;
 
-  bool dataExchangeOnDistributionChange(Distribution< C<T> >& newDistribution);
+  bool dataExchangeOnDistributionChange(Distribution<C<T>>& newDistribution);
 
 private:
-  bool doCompare(const Distribution< C<T> >& rhs) const;
+  bool doCompare(const Distribution<C<T>>& rhs) const;
 };
 
 namespace single_distribution_helper {

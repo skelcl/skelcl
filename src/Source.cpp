@@ -37,12 +37,14 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
+#include <iostream>
+
 #include <istream>
 #include <string>
 
-#include "SkelCL/Source.h"
+#include <pvsutil/Assert.h>
 
-#include "SkelCL/detail/Assert.h"
+#include "SkelCL/Source.h"
 
 namespace skelcl {
 
@@ -85,4 +87,50 @@ Source::operator std::string() const
   return _source;
 }
 
+void Source::prefix(const std::string& source)
+{
+  _source.insert(0, source + "\n");
+}
+
+void Source::append(const std::string& source)
+{
+  _source.append("\n" + source);
+}
+
+namespace detail {
+
+CommonDefinitions::CommonDefinitions()
+  : _source(" ")
+{
+}
+
+CommonDefinitions& CommonDefinitions::instance()
+{
+  static CommonDefinitions instance;
+  return instance;
+}
+
+void CommonDefinitions::prefix(const std::string& source)
+{
+  CommonDefinitions::instance()._source.prefix(source);
+}
+
+void CommonDefinitions::append(const std::string& source)
+{
+  CommonDefinitions::instance()._source.append(source);
+}
+
+const Source& CommonDefinitions::getSource()
+{
+  return CommonDefinitions::instance()._source;
+}
+
+RegisterCommonDefinition::RegisterCommonDefinition(const char* definition)
+{
+  CommonDefinitions::prefix(definition);
+}
+
+} // namespace detail
+
 } // namespace skelcl
+

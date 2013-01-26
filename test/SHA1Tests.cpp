@@ -39,13 +39,14 @@
 
 #include <string>
 
-#include <SkelCL/detail/Logger.h>
+#include <pvsutil/Logger.h>
+
 #include <SkelCL/detail/Util.h>
 
 class SHA1Test : public ::testing::Test {
 protected:
   SHA1Test() {
-    skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+    pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
   };
 
   ~SHA1Test() {

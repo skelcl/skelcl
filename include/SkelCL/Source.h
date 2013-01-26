@@ -42,6 +42,7 @@
 
 #include <istream>
 #include <string>
+#include <sstream>
 
 namespace skelcl {
 
@@ -96,10 +97,54 @@ public:
   ///
   operator std::string() const;
 
+  void prefix(const std::string& source);
+
+  void append(const std::string& source);
+
 private:
   /// string used to store the source code
   std::string _source;
 };
+
+namespace detail {
+
+class CommonDefinitions {
+public:
+  static CommonDefinitions& instance();
+
+  static void prefix(const std::string& source);
+
+  static void append(const std::string& source);
+
+  static const Source& getSource();
+
+  CommonDefinitions(const CommonDefinitions&) = delete;
+  CommonDefinitions& operator=(const CommonDefinitions&) = delete;
+
+private:
+  CommonDefinitions();
+
+  Source _source;
+};
+
+class RegisterCommonDefinition {
+public:
+  RegisterCommonDefinition(const char* definition);
+};
+
+class RegisterCommonMacroDefinition {
+public:
+  template <typename T>
+  RegisterCommonMacroDefinition(const char* name,
+                                T&& value)
+  {
+    std::stringstream ss;
+    ss << "#define " << name << " " << value;
+    CommonDefinitions::prefix(ss.str());
+  }
+};
+
+} // namespace detail
 
 } // namespace skelcl
 

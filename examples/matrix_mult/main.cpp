@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2011-2012 The SkelCL Team as listed in CREDITS.txt          *
+ * Copyright (c) 2011-2013 The SkelCL Team as listed in CREDITS.txt          *
  * http://skelcl.uni-muenster.de                                             *
  *                                                                           *
  * This file is part of SkelCL.                                              *
@@ -30,69 +30,66 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
+
 ///
-/// \file Assert.cpp
-///
-/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+/// \author Sebastian Albers <s.albers@uni-muenster.de>
 ///
 
-#include <cstdarg>
 #include <cstdio>
-#include <memory>
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
+#include <vector>
 
-#include "SkelCL/detail/Assert.h"
+#include <pvsutil/Logger.h>
 
-#include "SkelCL/detail/Logger.h"
+#include <SkelCL/SkelCL.h>
+#include <SkelCL/Vector.h>
+#include <SkelCL/AllPairs.h>
+#include <SkelCL/Zip.h>
+#include <SkelCL/Reduce.h>
 
-namespace skelcl {
+using namespace skelcl;
 
-namespace detail {
-
-void ASSERT_IMPL(const char* file,
-                 const int   line,
-                 const bool  expression,
-                 const char* expressionString)
+template <typename ForwardIterator>
+void init(ForwardIterator begin, ForwardIterator end)
 {
-  if (!expression) {
-    defaultLogger.log(Logger::Severity::Error, file, line,
-                      "Assertion `", expressionString,
-                      "' failed.");
-    abort();
+  srand( (unsigned)time(0) );
+  while (begin != end) {
+    *begin = (int) ( ( (float)rand()/(float)RAND_MAX ) * 125 );
+    ++begin;
   }
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-
-void ASSERT_IMPL(const char* file,
-                 const int   line,
-                 const bool  expression,
-                 const char* expressionString,
-                 const char* formatString, ...)
-{
-  if (!expression) {
-    va_list args;
-    va_start(args, formatString);
-    auto needed = vsnprintf(NULL, 0, formatString, args) + 1;
-    ASSERT(needed > 0);
-    {
-      std::unique_ptr<char[]> buffer(new char[needed]);
-
-      vsnprintf(&buffer[0], static_cast<size_t>(needed), formatString, args);
-
-      defaultLogger.log(Logger::Severity::Error, file, line,
-                        "Assertion `", expressionString, "' failed. ",
-                        &buffer[0]);
-    }
-    va_end(args);
-    abort();
-  }
+// multiply two matrices
+void matrixMult(const int rowCountA, const int columnCountA, const int columnCountB) {
+  
+  const int rowCountB = columnCountA;
+  LOG_INFO("started: multiplication of matrices A (", rowCountA, " x ", columnCountA, ") and B (",
+           rowCountB, " x ", columnCountB, ")");
+  
+  // initialize skeletons
+  Zip<float(float, float)> zip("float func(float x, float y){ return x*y; }");
+  Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
+  AllPairs<float(float, float)> allpairs(reduce, zip);
+  
+  std::vector<float> vectorA(rowCountA * columnCountA);
+  std::vector<float> vectorB(rowCountB * columnCountB);
+  
+  init(vectorA.begin(), vectorA.end());
+  init(vectorB.begin(), vectorB.end());
+  
+  Matrix<float> matrixA(vectorA, columnCountA);
+  Matrix<float> matrixB(vectorB, columnCountB);
+  
+  Matrix<float> output = allpairs(matrixA, matrixB);
+  LOG_INFO("finished: matrix C (", output.rowCount(), " x ", output.columnCount(), ") calculated");
 }
 
-#pragma GCC diagnostic pop
-
-} // namespace detail
-
-} // namespace skelcl
-
+int main()
+{
+//  pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
+  init(skelcl::nDevices(1)); // initialize SkelCL
+  matrixMult(1024, 512, 2048);
+  return 0;
+}

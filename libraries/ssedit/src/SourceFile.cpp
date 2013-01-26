@@ -45,6 +45,8 @@
 
 #include <clang-c/Index.h>
 
+#include <pvsutil/Logger.h>
+
 #include "ssedit/SourceFile.h"
 #include "ssedit/DeltaTree.h"
 #include "ssedit/Function.h"
@@ -76,18 +78,11 @@ void addGlobalAddressSpaceModifier(std::string* paramToken)
   // should be sufficient enough (ignoring e.g. comments)
 
   if (   paramToken->find("__global") == std::string::npos
-      && paramToken->find("global")   == std::string::npos ) {
+      && paramToken->find(  "global") == std::string::npos ) {
     // if global modifier cannot be found look for local modifier
-    auto pos      = paramToken->find("__local");
-    size_t length = 7; // length of __local
-    if (pos == std::string::npos) {
-      pos    = paramToken->find("local");
-      length = 5; // length of local
-    }
-
-    if (pos != std::string::npos) { // local modifier found => replace
-      paramToken->replace(pos, length, "__global");
-    } else { // local modifer also not found => add global modifer
+    if (   paramToken->find("__local") == std::string::npos
+        && paramToken->find(  "local") == std::string::npos ) {
+      // local modifier also not found => assume global modifier
       paramToken->insert(0, "__global ");
     }
   }
@@ -241,7 +236,8 @@ void SourceFile::commitReplaceType(Typedef& tdef,
 }
 
 
-void SourceFile::commitAppendParameter(Function& func, Parameter& param)
+void SourceFile::commitAppendParameter(Function& func,
+                                       const std::string& paramAsString)
 {
   if (!func.isValid()) {
     return;
@@ -256,6 +252,20 @@ void SourceFile::commitAppendParameter(Function& func, Parameter& param)
 
   SourceLocation insertLoc    = clang_getLocationForOffset( _tu.get(), _file,
                                   offset + size );
+
+
+
+  _deltaTree.insertDelta( Delta(SourceRange(insertLoc, insertLoc),
+                                "," + paramAsString,
+                                Delta::INSERT) );
+}
+
+
+void SourceFile::commitAppendParameter(Function& func, Parameter& param)
+{
+  if (!func.isValid()) {
+    return;
+  }
 
   SourceRange paramRange = param.getCursor().getExtent();
 
@@ -277,9 +287,7 @@ void SourceFile::commitAppendParameter(Function& func, Parameter& param)
     ::addGlobalAddressSpaceModifier(&paramToken);
   }
 
-  _deltaTree.insertDelta( Delta(SourceRange(insertLoc, insertLoc),
-                                "," + paramToken,
-                                Delta::INSERT) );
+  commitAppendParameter(func, paramToken);
 }
 
 
@@ -303,6 +311,27 @@ void SourceFile::commitAppendArgument(CallExpression& callExpression,
 
   _deltaTree.insertDelta( Delta(SourceRange(insertLoc, insertLoc),
                                 paramToken,
+                                Delta::INSERT) );
+}
+
+
+void SourceFile::commitInsertSourceAtFunctionBegin(Function& func,
+                                                   const std::string& source)
+{
+  if (!func.isValid()) {
+    return;
+  }
+
+  auto functionBody = func.getFunctionBody();
+
+  SourceRange range = functionBody.getExtent();
+  SourceLocation insertLoc( clang_getLocationForOffset(
+                                          _tu.get(), _file,
+                                          range.getStart().offset+1
+                                                      )
+                          );
+  _deltaTree.insertDelta( Delta(SourceRange(insertLoc, insertLoc),
+                                source,
                                 Delta::INSERT) );
 }
 

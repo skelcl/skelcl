@@ -57,10 +57,13 @@ public:
 
   const std::vector<Parameter>& getParameters() const;
 
+  const Cursor& getFunctionBody() const;
+
   Type getResultType() const;
 
 private:
   std::vector<Parameter> _parameters;
+  Cursor                 _functionBody;
 };
 
 } // namespace ssedit

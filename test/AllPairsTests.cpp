@@ -41,19 +41,20 @@
 #include <cstdlib>
 #include <vector>
 
+#include <pvsutil/Logger.h>
+
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/AllPairs.h>
 #include <SkelCL/Zip.h>
 #include <SkelCL/Reduce.h>
-#include <SkelCL/detail/Logger.h>
 
 void testAllPairsWithMatrices(const unsigned int, const unsigned int, const unsigned int);
 
 class AllPairsTest : public ::testing::Test {
 protected:
     AllPairsTest() {
-        //skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::DebugInfo);
+        //pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
         skelcl::init(skelcl::nDevices(1));
 
         srand(1);
@@ -169,7 +170,7 @@ TEST_F(AllPairsTest, AdditionalArguments) {
     }
 }
 
-// Tests alternative kernel-constructor
+// Tests alternative kernel-constructor. The alternative kernel is the one which does take a string as an argument.
 TEST_F(AllPairsTest, AlternativeKernelConstructor) {
     skelcl::AllPairs<float(float, float)> allpairs("float func(lmatrix_t *row, rmatrix_t *col, const unsigned int dim){return 1;}");
 }
@@ -222,10 +223,10 @@ TEST_F(AllPairsTest, AlternativeKernel) {
 // Tests alternative kernel with additional arguments
 TEST_F(AllPairsTest, AltKernelAddArguments) {
     skelcl::AllPairs<float(float, float)> allpairs("float func(lmatrix_t *row, rmatrix_t *col, const unsigned int dim, int start) {" \
-                                                    "float res = start;" \
-                                                    "for (int i = 0; i < dim; ++i) {" \
-                                                    "  res += getElementFromRow(row, i) * getElementFromColumn(col, i); }" \
-                                                    "return res; }");
+                                                   "float res = start;" \
+                                                   "for (int i = 0; i < dim; ++i) {" \
+                                                   "  res += getElementFromRow(row, i) * getElementFromColumn(col, i); }" \
+                                                   "return res; }");
 
     const unsigned int height = 10;
     const unsigned int dim = 55;

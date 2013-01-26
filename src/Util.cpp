@@ -108,6 +108,7 @@ size_t devideAndAlign(size_t i, size_t j, size_t a)
 
 size_t ceilToMultipleOf(size_t i, size_t j)
 {
+  if (i == 0) return j;
   size_t r = i % j;
   if (r == 0)
    return i;

@@ -48,22 +48,24 @@
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include <pvsutil/Assert.h>
+#include <pvsutil/Logger.h>
+
 #include <ssedit/Function.h>
 #include <ssedit/TempSourceFile.h>
 #include <ssedit/Typedef.h>
 
 #include "SkelCL/detail/Program.h"
 
-#include "SkelCL/detail/Assert.h"
 #include "SkelCL/detail/Device.h"
 #include "SkelCL/detail/DeviceList.h"
-#include "SkelCL/detail/Logger.h"
 #include "SkelCL/detail/Util.h"
 
 namespace {
 
 std::string binaryFilename(const std::string& hash,
-                           const std::shared_ptr<skelcl::detail::Device>& devicePtr)
+                           const std::shared_ptr<skelcl::detail::Device>&
+                                devicePtr)
 {
   std::stringstream filename;
   // escape spaces in device name
@@ -121,6 +123,36 @@ void Program::transferParameters(const std::string& from,
             param != params.end();
           ++param) {
     ASSERT(param->isValid());
+
+    if (param->getType().getKind() == CXType_Typedef) {
+      ssedit::Typedef t(param->getType().getTypeDeclaration(), *_sourceFile);
+      auto pos = t.getName().rfind("_matrix_t");
+      // if the type is a typedef and it's ending with '_matrix_t' ...
+      if ( pos != std::string::npos ) {
+        // extract front part of the tyepdef name
+        std::string typeAsString(t.getName().substr(0, pos));
+        // first add pointer as parameter
+        _sourceFile->commitAppendParameter( toFunc,
+                                            "__global " + typeAsString +
+                                            "* " + param->getName() + "_data" );
+        // then column count of the matrix
+        _sourceFile->commitAppendParameter( toFunc,
+                                            "uint " + param->getName() +
+                                            "_col_count" );
+        // finally add source code to create local variable, which is passed to
+        // the function instead of the actual parameter
+        _sourceFile->commitInsertSourceAtFunctionBegin( toFunc, "\n" +
+            // local create variable
+            t.getName() + " " + param->getName() + ";\n" +
+            // set pointer
+            param->getName()+".data = "+param->getName() + "_data;\n" +
+            // set column count
+            param->getName()+".col_count = "+param->getName() + "_col_count;\n"
+          );
+        continue; // skip 'normal' appending of parameter
+      }
+    }
+
     _sourceFile->commitAppendParameter(toFunc, *param);
   }
 }
@@ -278,17 +310,25 @@ void Program::createProgramsFromSource()
   std::string source( (std::istreambuf_iterator<char>(file)),
                        std::istreambuf_iterator<char>() );
 
-  cl::Program::Sources sources(1, std::make_pair(source.c_str(),
-                                                 source.length()));
-
   // insert programs into _clPrograms
   std::transform( globalDeviceList.begin(), globalDeviceList.end(),
                   std::back_inserter(_clPrograms),
-      [&sources](DeviceList::const_reference devicePtr) {
-        return cl::Program(devicePtr->clContext(), sources);
+      [&source](DeviceList::const_reference devicePtr) -> cl::Program {
+        std::stringstream ss;
+        ss << "#define skelcl_get_device_id() " << devicePtr->id() << "\n";
+
+        std::string s(ss.str());
+        s.append(source);
+
+        LOG_DEBUG_INFO("Create cl::Program for device ", devicePtr->id(),
+                       " with source:\n", s, "\n");
+
+        return cl::Program(devicePtr->clContext(),
+                           cl::Program::Sources(1, std::make_pair(s.c_str(),
+                                                                  s.length()))
+                          );
       });
 
-  LOG_DEBUG_INFO("Create cl::Program with source:\n", source, "\n");
 }
 
 void Program::saveBinary()

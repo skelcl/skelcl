@@ -37,16 +37,17 @@
 
 #include <gtest/gtest.h>
 
+#include <pvsutil/Logger.h>
+
 #include <SkelCL/Distributions.h>
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/IndexMatrix.h>
 #include <SkelCL/Map.h>
-#include <SkelCL/detail/Logger.h>
 
 class IndexMatrixTest : public ::testing::Test {
 protected:
   IndexMatrixTest() {
-    skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+    pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
     skelcl::init(skelcl::nDevices(1));
   };
 

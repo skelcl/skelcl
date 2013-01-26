@@ -32,74 +32,87 @@
  *****************************************************************************/
  
 ///
-/// \file LoggerDef.h
+/// \file Scan.h
 ///
-/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///	\author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef LOGGER_DEF_H_
-#define LOGGER_DEF_H_
+#ifndef SCAN_H_
+#define SCAN_H_
 
-#include <iomanip>
-#include <iostream>
-#include <ostream>
-#include <sstream>
+#include <istream>
 #include <string>
 
-#ifndef NPROFILING
-#include <sys/time.h>
-#endif
-
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-#undef  __CL_ENABLE_EXCEPTIONS
-
-#include "Assert.h"
+#include "detail/Skeleton.h"
+#include "detail/Program.h"
 
 namespace skelcl {
 
-namespace detail {
+class Source;
+template <typename> class Out;
+template <typename> class Vector;
 
-namespace logger_impl {
+template<typename> class Scan;
 
-std::string getErrorString(cl_int err);
+template<typename T>
+class Scan<T(T)> : public detail::Skeleton {
+public:
+  Scan(const Source& source,
+       const std::string& id = "0",
+       const std::string& funcName = std::string("func"));
 
-std::string formatHeader(const Logger& logger,
-                         Logger::Severity::Type severity,
-                         const char*    file,
-                         const int      line);
+  template <typename... Args>
+  Vector<T> operator()(const Vector<T>& input, Args&&... args);
 
-} // namespace logger_impl
+  template <typename... Args>
+  Vector<T>& operator()(Out<Vector<T>> output,
+                        const Vector<T>& input,
+                        Args&&... args);
 
-template <typename... Args>
-void Logger::log(Severity::Type severity,
-                 const char* file, int line,
-                 Args&&... args)
-{
-  if (severity <= _severity) {
-    *_output << logger_impl::formatHeader(*this, severity, file, line);
-    logArgs(*_output, std::forward<Args>(args)...);
-  }
-}
+private:
+  template <typename... Args>
+  void execute(Vector<T>& output,
+               const Vector<T>& input,
+               Args&&... args);
+  
+  unsigned int calculateNumberOfPasses(size_t workGroupSize,
+                                       size_t elements) const;
 
-template <typename... Args>
-void Logger::logArgs(std::ostream& output, const cl::Error& err, Args&&... args)
-{
-  output << "OpenCL error: " << logger_impl::getErrorString(err.err())
-         << " " << err.what();
-  logArgs(output, std::forward<Args>(args)...);
-}
+  std::vector<detail::DeviceBuffer>
+    createImmediateBuffers(unsigned int passes,
+                           unsigned int wgSize,
+                           unsigned int elements,
+                           const detail::Device::ptr_type& devicePtr);
 
-template <typename T, typename... Args>
-void Logger::logArgs(std::ostream& output, T value, Args&&... args)
-{
-  output << value;
-  logArgs(output, std::forward<Args>(args)...);
-}
+  void performScanPasses(unsigned int passes,
+                         unsigned int wgSize,
+                         const detail::Device::ptr_type& devicePtr,
+                         const std::vector<detail::DeviceBuffer>& tmpBuffers,
+                         const detail::DeviceBuffer& inputBuffer,
+                         const detail::DeviceBuffer& outputBuffer);
 
-} // namespace detail
+  void performUniformCombination(unsigned int passes,
+                                 unsigned int wgSize,
+                                 const detail::Device::ptr_type& devicePtr,
+                                 const std::vector<detail::DeviceBuffer>&
+                                    tmpBuffers,
+                                 const detail::DeviceBuffer& outputBuffer);
+
+  void prepareInput(const Vector<T>& input);
+
+  void prepareOutput(Vector<T>& output,
+                     const Vector<T>& input);
+  
+  detail::Program createAndBuildProgram(const std::string& source,
+                                        const std::string& id,
+                                        const std::string& funcName) const;
+
+  const detail::Program _program;
+};
 
 } // namespace skelcl
 
-#endif // LOGGER_DEF_H_
+#include "detail/ScanDef.h"
+
+#endif // Scan_H_
 

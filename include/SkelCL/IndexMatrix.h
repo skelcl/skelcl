@@ -50,6 +50,14 @@
 
 namespace skelcl {
 
+/// 
+/// \brief The IndexMatrix class is a special implementation of a Matrix with
+///        IndexPoints as Elements. The implementation guaranties that no data
+///        is transfered when using this version of the Matrix. OpenCL
+///        functionality (global ids) is used to make the IndexPoints available
+///        on the device. This implementation requires, that the Matrix is const
+///        and can, therefore, not be modified after creation.
+/// 
 typedef const Matrix<IndexPoint> IndexMatrix;
 
 template <>
@@ -62,8 +70,8 @@ public:
   Matrix() = delete;
 
   Matrix(const size_type size,
-         const detail::Distribution< Matrix<IndexPoint> >& distribution
-                                    = detail::Distribution< Matrix<IndexPoint> >());
+         const detail::Distribution<Matrix<IndexPoint>>& distribution
+           = detail::Distribution<Matrix<IndexPoint>>());
   Matrix(const Matrix<IndexPoint>& rhs) = delete;
   Matrix(Matrix<IndexPoint>&& rhs) = delete;
   Matrix<IndexPoint>& operator=(const Matrix<IndexPoint>&) = delete;
@@ -86,7 +94,7 @@ public:
   /// \return A pointer to the current distribution of the vector, of nullptr
   ///         if no distribution is set
   ///
-  detail::Distribution< Matrix<IndexPoint> >& distribution() const;
+  detail::Distribution<Matrix<IndexPoint>>& distribution() const;
 
   ///
   /// \brief Changes the distribution of the vector
@@ -99,12 +107,16 @@ public:
   ///                     vector
   ///
   template <typename U>
-  void setDistribution(const detail::Distribution< Matrix<U> >& distribution) const;
+  void setDistribution(const detail::Distribution<Matrix<U>>&
+                          distribution) const;
 
   template <typename U>
-  void setDistribution(const std::unique_ptr<detail::Distribution< Matrix<U> > >& newDistribution) const;
+  void setDistribution(const std::unique_ptr<detail::Distribution<Matrix<U>>>&
+                          newDistribution) const;
 
-  void setDistribution(std::unique_ptr<detail::Distribution< Matrix<IndexPoint> > >&& newDistribution) const;
+  void
+    setDistribution(std::unique_ptr<detail::Distribution<Matrix<IndexPoint>>>&&
+                          newDistribution) const;
 
   static std::string deviceFunctions();
 
@@ -137,7 +149,7 @@ private:
 
     value_type                                                _maxIndex;
   mutable
-    std::unique_ptr< detail::Distribution< Matrix<IndexPoint> > >  _distribution;
+    std::unique_ptr<detail::Distribution<Matrix<IndexPoint>>> _distribution;
 };
 
 } // namespace skelcl

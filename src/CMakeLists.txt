@@ -8,7 +8,6 @@ link_directories (${SKELCL_COMMON_LIB_DIR})
 
 # set files used to build library
 set (SKELCL_SOURCES
-      Assert.cpp
       Device.cpp
       DeviceBuffer.cpp
       DeviceID.cpp
@@ -16,9 +15,11 @@ set (SKELCL_SOURCES
       DeviceProperties.cpp
       Event.cpp
       Index.cpp
+      IndexMatrix.cpp
+      IndexVector.cpp
       KernelUtil.cpp
       Local.cpp
-      Logger.cpp
+      Map.cpp
       MatrixSize.cpp
       PlatformID.cpp
       Program.cpp
@@ -32,6 +33,7 @@ set (SKELCL_SOURCES
 set (SKELCL_HEADERS
       ../include/SkelCL/AllPairs.h
       ../include/SkelCL/Distributions.h
+      ../include/SkelCL/IndexMatrix.h
       ../include/SkelCL/IndexVector.h
       ../include/SkelCL/SkelCL.h
       ../include/SkelCL/Map.h
@@ -44,7 +46,6 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/AllPairsDef.h
       ../include/SkelCL/detail/AllPairsKernel.cl
       ../include/SkelCL/detail/AllPairsKernel2.cl
-      ../include/SkelCL/detail/Assert.h
       ../include/SkelCL/detail/BlockDistribution.h
       ../include/SkelCL/detail/BlockDistributionDef.h
       ../include/SkelCL/detail/Container.h
@@ -58,10 +59,10 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/DeviceList.h
       ../include/SkelCL/detail/DeviceProperties.h
       ../include/SkelCL/detail/Event.h
+      ../include/SkelCL/detail/IndexMatrixDef.h
       ../include/SkelCL/detail/IndexVectorDef.h
       ../include/SkelCL/detail/KernelUtil.h
-      ../include/SkelCL/detail/Logger.h
-      ../include/SkelCL/detail/LoggerDef.h
+      ../include/SkelCL/detail/Macros.h
       ../include/SkelCL/detail/MapDef.h
       ../include/SkelCL/detail/MapHelper.h
       ../include/SkelCL/detail/MapHelperDef.h

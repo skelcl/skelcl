@@ -41,11 +41,9 @@
 #include <functional>
 #include <ostream>
 
-#include "SkelCL/detail/Logger.h"
+#include "pvsutil/Logger.h"
 
-namespace skelcl {
-
-namespace detail {
+namespace pvsutil {
 
 Logger defaultLogger;
 
@@ -76,7 +74,8 @@ void Logger::setLoggingLevel(Severity::Type severity)
   _severity = severity;
 }
 
-const std::chrono::high_resolution_clock::time_point& Logger::startTimePoint() const
+const std::chrono::high_resolution_clock::time_point&
+  Logger::startTimePoint() const
 {
   return _startTime;
 }
@@ -228,8 +227,10 @@ std::string formatHeader(const Logger& logger,
          << line << " ";
 
 #ifndef NPROFILING
-  auto sinceStart = std::chrono::high_resolution_clock::now() - logger.startTimePoint();
-  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(sinceStart).count();
+  auto sinceStart =   std::chrono::high_resolution_clock::now()
+                    - logger.startTimePoint();
+  using std::chrono::milliseconds; // avoid too long next line
+  auto ms = std::chrono::duration_cast<milliseconds>(sinceStart).count();
   char prevFill = stream.fill('0'); // save fill char
   stream << std::right
          // extract just the 3 last digits of the seconds
@@ -249,7 +250,5 @@ std::string formatHeader(const Logger& logger,
 
 } // namespace logger_impl
 
-} // namespace detail
-
-} // namespacce skelcl
+} // namespacce pvsutil
 

@@ -49,34 +49,36 @@
 #include <utility>
 #include <vector>
 
+#include <pvsutil/Assert.h>
+#include <pvsutil/Logger.h>
+
 #include "../Distributions.h"
 
-#include "Assert.h"
 #include "Device.h"
 #include "DeviceBuffer.h"
 #include "DeviceList.h"
 #include "Distribution.h"
 #include "Event.h"
-#include "Logger.h"
 
 namespace skelcl {
 
 template <typename T>
 Vector<T>::Vector()
   : _size(0),
-    _distribution(new detail::Distribution< Vector<T> >()),
+    _distribution(new detail::Distribution<Vector<T>>()),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(true),
     _hostBuffer(),
     _deviceBuffers()
 {
-  LOG_DEBUG_INFO("Created new Vector object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Vector object (", this, ") with ",
+                 getDebugInfo());
 }
 
 template <typename T>
 Vector<T>::Vector(const size_type size,
                   const value_type& value,
-                  const detail::Distribution< Vector<T> >& distribution)
+                  const detail::Distribution<Vector<T>>& distribution)
   : _size(size),
     _distribution(detail::cloneAndConvert<T>(distribution)),
     _hostBufferUpToDate(true),
@@ -84,27 +86,29 @@ Vector<T>::Vector(const size_type size,
     _hostBuffer(size, value),
     _deviceBuffers()
 {
-  LOG_DEBUG_INFO("Created new Vector object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Vector object (", this, ") with ",
+                 getDebugInfo());
 }
 
 template <typename T>
 template <typename InputIterator>
 Vector<T>::Vector(InputIterator first, InputIterator last)
   : _size(std::distance(first, last)),
-    _distribution(new detail::Distribution< Vector<T> >()),
+    _distribution(new detail::Distribution<Vector<T>>()),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(first, last),
     _deviceBuffers()
 {
-  LOG_DEBUG_INFO("Created new Vector object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Vector object (", this, ") with ",
+                 getDebugInfo());
 }
 
 template <typename T>
 template <typename InputIterator>
 Vector<T>::Vector(InputIterator first,
                   InputIterator last,
-                  const detail::Distribution< Vector<T> >& distribution)
+                  const detail::Distribution<Vector<T>>& distribution)
   : _size(std::distance(first, last)),
     _distribution(detail::cloneAndConvert<T>(distribution)),
     _hostBufferUpToDate(true),
@@ -112,7 +116,8 @@ Vector<T>::Vector(InputIterator first,
     _hostBuffer(first, last),
     _deviceBuffers()
 {
-  LOG_DEBUG_INFO("Created new Vector object (", this, ") with ", getDebugInfo());
+  LOG_DEBUG_INFO("Created new Vector object (", this, ") with ",
+                 getDebugInfo());
 }
 
 template <typename T>
@@ -179,7 +184,8 @@ Vector<T>& Vector<T>::operator=(Vector<T>&& rhs)
 template <typename T>
 Vector<T>::~Vector()
 {
-  LOG_DEBUG_INFO("Vector object (", this, ") with ", getDebugInfo(), " destroyed");
+  LOG_DEBUG_INFO("Vector object (", this, ") with ", getDebugInfo(),
+                 " destroyed");
 }
 
 template <typename T>
@@ -271,7 +277,8 @@ void Vector<T>::resize( Vector<T>::size_type sz, T c )
     _deviceBuffersUpToDate = false;
     _deviceBuffers.clear();
   }
-  LOG_DEBUG_INFO("Vector object (", this, ") resized, now with ", getDebugInfo());
+  LOG_DEBUG_INFO("Vector object (", this, ") resized, now with ",
+                 getDebugInfo());
 }
 
 template <typename T>
@@ -445,7 +452,7 @@ typename Vector<T>::allocator_type Vector<T>::get_allocator() const
 }
 
 template <typename T>
-detail::Distribution< Vector<T> >& Vector<T>::distribution() const
+detail::Distribution<Vector<T>>& Vector<T>::distribution() const
 {
   ASSERT(_distribution != nullptr);
   return *_distribution;
@@ -453,7 +460,8 @@ detail::Distribution< Vector<T> >& Vector<T>::distribution() const
 
 template <typename T>
 template <typename U>
-void Vector<T>::setDistribution(const detail::Distribution< Vector<U> >& origDistribution) const
+void Vector<T>::setDistribution(const detail::Distribution<Vector<U>>&
+                                    origDistribution) const
 {
   ASSERT(origDistribution.isValid());
   // convert and set distribution
@@ -462,7 +470,9 @@ void Vector<T>::setDistribution(const detail::Distribution< Vector<U> >& origDis
 
 template <typename T>
 template <typename U>
-void Vector<T>::setDistribution(const std::unique_ptr<detail::Distribution< Vector<U> > >& origDistribution) const
+void Vector<T>::setDistribution(
+        const std::unique_ptr<detail::Distribution<Vector<U>>>& origDistribution
+                               ) const
 {
   ASSERT(origDistribution != nullptr);
   ASSERT(origDistribution->isValid());
@@ -471,7 +481,9 @@ void Vector<T>::setDistribution(const std::unique_ptr<detail::Distribution< Vect
 }
 
 template <typename T>
-void Vector<T>::setDistribution(std::unique_ptr<detail::Distribution< Vector<T> > >&& newDistribution) const
+void Vector<T>::setDistribution(
+        std::unique_ptr<detail::Distribution<Vector<T>>>&& newDistribution
+                               ) const
 {
   ASSERT(newDistribution != nullptr);
   ASSERT(newDistribution->isValid());
@@ -487,8 +499,8 @@ void Vector<T>::setDistribution(std::unique_ptr<detail::Distribution< Vector<T> 
   _distribution = std::move(newDistribution);
   ASSERT(_distribution->isValid());
 
-  LOG_DEBUG_INFO("Vector object (", this, ") assigned new distribution, now with ",
-                 getDebugInfo());
+  LOG_DEBUG_INFO("Vector object (", this,
+                 ") assigned new distribution, now with ", getDebugInfo());
 }
 
 template <typename T>
@@ -609,6 +621,13 @@ const detail::DeviceBuffer&
   Vector<T>::deviceBuffer(const detail::Device& device) const
 {
   return _deviceBuffers[device.id()];
+}
+
+template <typename T>
+void Vector<T>::replaceDeviceBuffer(detail::DeviceBuffer&& deviceBuffer,
+                                    const detail::Device& device)
+{
+  _deviceBuffers[device.id()] = std::move(deviceBuffer);
 }
 
 template <typename T>

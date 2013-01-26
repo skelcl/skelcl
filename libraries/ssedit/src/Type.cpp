@@ -47,27 +47,33 @@
 namespace ssedit {
 
 Type::Type()
-  : _type() {
+  : _type()
+{
 }
 
 Type::Type(CXType type)
-  : _type(type) {
+  : _type(type)
+{
 }
 
 Type::Type(const Type& rhs)
-  : _type(rhs._type) {
+  : _type(rhs._type)
+{
 }
 
-Type& Type::operator=(const Type& rhs) {
+Type& Type::operator=(const Type& rhs)
+{
   _type = rhs._type;
   return *this;
 }
 
-CXTypeKind Type::getKind() {
+CXTypeKind Type::getKind()
+{
   return _type.kind;
 }
 
-std::string Type::getKindSpelling() {
+std::string Type::getKindSpelling()
+{
   CXString cxSpelling = clang_getTypeKindSpelling(_type.kind);
   std::string spelling = clang_getCString(cxSpelling);
   clang_disposeString(cxSpelling);
@@ -75,7 +81,8 @@ std::string Type::getKindSpelling() {
 }
 
 /*
-std::string Type::getDisplayName() {
+std::string Type::getDisplayName()
+{
   if(getKind() != CXType_Unexposed) {
     if(!isPointer()) {
       if(isPOD() || getKind() == CXType_Void) {
@@ -102,39 +109,48 @@ std::string Type::getDisplayName() {
 }
 */
 
-bool Type::isPointer() {
+bool Type::isPointer()
+{
 	return (_type.kind == CXType_Pointer);
 }
 
-bool Type::isConstantQualified() {
+bool Type::isConstantQualified()
+{
 	return clang_isConstQualifiedType(_type);
 }
 
-bool Type::isPOD() {
+bool Type::isPOD()
+{
 	return clang_isPODType(_type);
 }
 
-Type Type::getPointeeType() {
+Type Type::getPointeeType()
+{
 	return clang_getPointeeType(_type);
 }
 
-Type Type::getResultType() {
+Type Type::getResultType()
+{
 	return clang_getResultType(_type);
 }
 
-Type Type::getCanonicalType() {
+Type Type::getCanonicalType()
+{
 	return clang_getCanonicalType(_type);
 }
 
-Cursor Type::getTypeDeclaration() {
+Cursor Type::getTypeDeclaration()
+{
 	return Cursor(clang_getTypeDeclaration(_type));
 }
 
-CXType Type::getCXType() {
+CXType Type::getCXType()
+{
   return _type;
 }
 
-bool Type::isValid() {
+bool Type::isValid()
+{
   return (_type.kind != CXType_Invalid);
 }
 

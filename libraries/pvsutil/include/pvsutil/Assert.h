@@ -32,110 +32,85 @@
  *****************************************************************************/
  
 ///
-/// \file Logger.h
+/// \file Assert.h
 ///
-/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///	\author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef LOGGER_H_
-#define LOGGER_H_
-
-#include <chrono>
-#include <ostream>
-
-#define __CL_ENABLE_EXCEPTIONS
-#ifdef __APPLE__
-#  include "../../CL/cl.hpp"
-#else
-#  include <CL/cl.hpp>
-#endif
-#undef  __CL_ENABLE_EXCEPTIONS
-
-namespace skelcl {
-
-namespace detail {
-
-class Logger {
-public:
-  struct Severity {
-    enum Type {
-      Error = 0,
-      Warning,
-      Info,
-      Debug,
-      DebugInfo
-    };
-  };
-
-  Logger();
-
-  Logger(std::ostream& output, Severity::Type severity);
-
-  void setOutput(std::ostream& output);
-
-  void setLoggingLevel(Severity::Type severity);
-
-  template <typename... Args>
-  void log(Severity::Type severity, const char* file, int line,
-           Args&&... args);
-
-  const std::chrono::high_resolution_clock::time_point& startTimePoint() const;
-
-private:
-  void logArgs(std::ostream& output);
-
-  template <typename... Args>
-  void logArgs(std::ostream& output, const cl::Error& err, Args&&... args);
-
-  template <typename T, typename... Args>
-  void logArgs(std::ostream& output, T value, Args&&... args);
-
-  std::chrono::high_resolution_clock::time_point  _startTime;
-  Severity::Type                                  _severity;
-  std::ostream*                                   _output;
-};
-
-#define LOG(severity, ...)\
-  skelcl::detail::defaultLogger.log(severity, __FILE__, __LINE__,\
-                                    __VA_ARGS__)
-
-#define LOG_ERROR(...)\
-  LOG(skelcl::detail::Logger::Severity::Error, __VA_ARGS__)
-
-#define ABORT_WITH_ERROR(err)\
-  LOG_ERROR(err); abort()
+#ifndef ASSERT_H_
+#define ASSERT_H_
 
 #ifdef NDEBUG
 
-#define LOG_WARNING(...)    (void(0))
-#define LOG_INFO(...)       (void(0))
-#define LOG_DEBUG(...)      (void(0))
-#define LOG_DEBUG_INFO(...) (void(0))
+#define ASSERT(e) (void(0))
+#define ASSERT_MESSAGE(e, ...) (void(0))
+#define ONLY_IN_DEBUG(e) (void(0))
 
 #else  // DEBUG
 
-#define LOG_WARNING(...)\
-  LOG(skelcl::detail::Logger::Severity::Warning, __VA_ARGS__)
+#define ASSERT(e)\
+  pvsutil::assert_impl::ASSERT_IMPL(__FILE__, __LINE__, e, #e)
 
-#define LOG_INFO(...)\
-  LOG(skelcl::detail::Logger::Severity::Info, __VA_ARGS__)
+#define ASSERT_MESSAGE(e, ...)\
+  pvsutil::assert_impl::ASSERT_IMPL(__FILE__, __LINE__, e, #e, __VA_ARGS__)
 
-#define LOG_DEBUG(...)\
-  LOG(skelcl::detail::Logger::Severity::Debug, __VA_ARGS__)
-
-#define LOG_DEBUG_INFO(...)\
-  LOG(skelcl::detail::Logger::Severity::DebugInfo, __VA_ARGS__)
+#define ONLY_IN_DEBUG(e) e
 
 #endif // NDEBUG
 
-// Default logger connected per default to std::clog
-extern Logger defaultLogger;
+namespace pvsutil {
 
-} // namespace detail
+namespace assert_impl {
 
-} // namespace skelcl
+///
+/// \brief If expression evaluates to false an error message is printed and the
+///        execution is aborted. If expression evaluates to true the function
+///        call has no effect.
+///
+/// \param file A string naming the file the functions was called in. Used as
+///             part of the printed the error message.
+///
+///        line An integer naming the line the functions was called in. Used as
+///             part of the printed the error message.
+///
+///        expression The expression to be evaluated.
+///
+///        expressionString The expression as a string to be printed as part of
+///                         the error message
+///
+void ASSERT_IMPL(const char* file,
+                 const int   line,
+                 const bool  expression,
+                 const char* expressionString);
 
-#include "LoggerDef.h"
+///
+/// \brief If expression evaluates to false an error message is printed and the
+///        execution is aborted. If expression evaluates to true the function
+///        call has no effect.
+///
+/// \param file A string naming the file the functions was called in. Used as
+///             part of the printed the error message.
+///
+///        line An integer naming the line the functions was called in. Used as
+///             part of the printed the error message.
+///
+///        expression The expression to be evaluated.
+///
+///        expressionString The expression as a string to be printed as part of
+///                         the error message
+///
+///        formatString A formated String to be printed as part of the error
+///                     message. The String is evaluated by vsnprintf.
+///
+void ASSERT_IMPL(const char* file,
+                 const int   line,
+                 const bool  expression,
+                 const char* expressionString,
+                 const char* formatString, ...);
 
-#endif // LOGGER_H_
+} // namespace assert_impl
+
+} // namespace pvsutil
+
+#endif // ASSERT_H_
 

@@ -41,18 +41,24 @@
 
 namespace ssedit {
 
-Parameter::Parameter(const Cursor& cursor, SourceFile& sourceFile) : Entity(cursor, sourceFile) {
+Parameter::Parameter(const Cursor& cursor, SourceFile& sourceFile)
+  : Entity(cursor, sourceFile)
+{
 }
 
-Parameter::Parameter(const Parameter& rhs) : Entity(rhs) {
+Parameter::Parameter(const Parameter& rhs)
+  : Entity(rhs)
+{
 }
 
-Parameter& Parameter::operator=(const Parameter& rhs) {
+Parameter& Parameter::operator=(const Parameter& rhs)
+{
   Entity::operator=(rhs);
   return *this;
 }
 
-Type Parameter::getType() const {
+Type Parameter::getType() const
+{
   return _cursor.getType();
 }
 
