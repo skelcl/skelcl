@@ -35,14 +35,14 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <gtest/gtest.h>
-
 #include <pvsutil/Logger.h>
 
 #include <SkelCL/Distributions.h>
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/IndexMatrix.h>
 #include <SkelCL/Map.h>
+
+#include "Test.h"
 
 class IndexMatrixTest : public ::testing::Test {
 protected:

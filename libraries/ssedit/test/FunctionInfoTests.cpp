@@ -31,8 +31,6 @@
  *                                                                           *
  *****************************************************************************/
 
-// testing framework header
-#include <gtest/gtest.h>
 // std header
 #include <fstream>
 #include <iostream>
@@ -41,6 +39,8 @@
 #include <ssedit/SourceFile.h>
 #include <ssedit/Function.h>
 #include <ssedit/Type.h>
+
+#include "Test.h"
 
 class FunctionInfoTest : public ::testing::Test {
 protected:

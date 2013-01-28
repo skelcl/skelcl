@@ -35,8 +35,6 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <gtest/gtest.h>
-
 #include <fstream>
 
 #include <pvsutil/Logger.h>
@@ -44,6 +42,8 @@
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/Reduce.h>
+
+#include "Test.h"
 
 class ReduceTest : public ::testing::Test {
 protected:
