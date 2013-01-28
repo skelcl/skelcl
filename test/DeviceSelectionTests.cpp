@@ -35,12 +35,12 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <gtest/gtest.h>
-
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/detail/Device.h>
 #include <SkelCL/detail/DeviceProperties.h>
 #include <SkelCL/detail/DeviceList.h>
+
+#include "Test.h"
 
 class DeviceSelectionTest : public ::testing::Test {
 protected:

@@ -35,8 +35,6 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <gtest/gtest.h>
-
 #include <fstream>
 
 #include <cstdio>
@@ -46,6 +44,8 @@
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
 #include <SkelCL/Scan.h>
+
+#include "Test.h"
 
 class ScanTest : public ::testing::Test {
 protected:

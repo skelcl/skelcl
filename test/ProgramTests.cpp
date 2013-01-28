@@ -35,8 +35,6 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <gtest/gtest.h>
-
 #include <iostream>
 #include <iterator>
 #include <fstream>
@@ -47,6 +45,8 @@
 
 #include <SkelCL/detail/Program.h>
 #include <SkelCL/detail/Util.h>
+
+#include "Test.h"
 
 class ProgramTest : public ::testing::Test {
 protected:
