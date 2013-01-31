@@ -37,6 +37,8 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
+#include <iostream>
+
 #include <istream>
 #include <string>
 
@@ -85,6 +87,11 @@ Source::operator std::string() const
   return _source;
 }
 
+void Source::prefix(const std::string& source)
+{
+  _source.insert(0, source + "\n");
+}
+
 void Source::append(const std::string& source)
 {
   _source.append("\n" + source);
@@ -103,6 +110,11 @@ CommonDefinitions& CommonDefinitions::instance()
   return instance;
 }
 
+void CommonDefinitions::prefix(const std::string& source)
+{
+  CommonDefinitions::instance()._source.prefix(source);
+}
+
 void CommonDefinitions::append(const std::string& source)
 {
   CommonDefinitions::instance()._source.append(source);
@@ -111,6 +123,11 @@ void CommonDefinitions::append(const std::string& source)
 const Source& CommonDefinitions::getSource()
 {
   return CommonDefinitions::instance()._source;
+}
+
+RegisterCommonDefinition::RegisterCommonDefinition(const char* definition)
+{
+  CommonDefinitions::prefix(definition);
 }
 
 } // namespace detail

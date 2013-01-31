@@ -159,7 +159,11 @@ DeviceBuffer& DeviceBuffer::operator=(DeviceBuffer&& rhs)
 
 DeviceBuffer::~DeviceBuffer()
 {
-  LOG_DEBUG_INFO("DeviceBuffer object (", this, ") destroyed");
+  if (_size == 0) {
+    LOG_DEBUG_INFO("Empty DeviceBuffer object (", this, ") destroyed");
+  } else {
+    LOG_DEBUG_INFO("DeviceBuffer object (", this, ") destroyed");
+  }
   if (_buffer() != nullptr) {
     auto refCount = _buffer.getInfo<CL_MEM_REFERENCE_COUNT>();
     if (refCount > 1) {

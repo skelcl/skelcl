@@ -31,27 +31,61 @@
  *                                                                           *
  *****************************************************************************/
 
-#include <clang-c/Index.h>
+///
+/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///
 
-#include <fstream>
-#include <string>
+#ifndef MACRO_H_
+#define MACRO_H_
 
-struct TranslationUnit {
-  TranslationUnit(const std::string& source)
-    : _fileName("tmpSource.c"), _index(), _tu() {
-    std::ofstream tmpFile(_fileName, std::ios_base::trunc);
-    tmpFile.write(source.c_str(), source.size());
+#define CONCATENATE_IMPL(s1, s2) s1##s2
+#define CONCATENATE(s1, s2) CONCATENATE_IMPL(s1, s2)
 
-    _index = clang_createIndex(0, 0);
-    _tu = clang_parseTranslationUnit(_index, _fileName.c_str(), NULL, 0, NULL, 0, CXTranslationUnit_None);
-  };
+#define VA_NARGS_IMPL(_1, _2, _3, _4, _5, _6, _7, _8, _9, N, ...) N
+#define VA_NARGS(...) VA_NARGS_IMPL(__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1)
 
-  ~TranslationUnit() {
-    remove(_fileName.c_str());
-  };
+#ifdef __COUNTER__
+#define ANONYMOUS_VARIABLE \
+  CONCATENATE(anonymous, __COUNTER__)
+#else
+#define ANONYMOUS_VARIABLE \
+  CONCATENATE(anonymous, __LINE__)
+#endif
 
-  std::string _fileName;
-  CXIndex _index;
-  CXTranslationUnit _tu;
-};
+#define SKELCL_COMMON_DEFINITION(definition) \
+  definition \
+  skelcl::detail::RegisterCommonDefinition ANONYMOUS_VARIABLE(#definition);
+
+#define SKELCL_ADD_DEFINE(define) \
+  skelcl::detail::RegisterCommonMacroDefinition \
+    ANONYMOUS_VARIABLE(#define, define);
+
+#define FULLY_EXPANDED(count, ...) \
+  SKELCL_ADD_DEFINE_##count(__VA_ARGS__)
+
+#define SEMI_EXPANDED(count, ...) \
+  FULLY_EXPANDED(count, __VA_ARGS__)
+
+#define SKELCL_ADD_DEFINES(...) \
+  SEMI_EXPANDED(VA_NARGS(__VA_ARGS__), __VA_ARGS__)
+
+#define SKELCL_ADD_DEFINE_1(a) SKELCL_ADD_DEFINE(a)
+#define SKELCL_ADD_DEFINE_2(a,b) \
+  SKELCL_ADD_DEFINE_1(a) SKELCL_ADD_DEFINE(b)
+#define SKELCL_ADD_DEFINE_3(a,b,c) \
+  SKELCL_ADD_DEFINE_2(a,b) SKELCL_ADD_DEFINE(c)
+#define SKELCL_ADD_DEFINE_4(a,b,c,d) \
+  SKELCL_ADD_DEFINE_3(a,b,c) SKELCL_ADD_DEFINE(d)
+#define SKELCL_ADD_DEFINE_5(a,b,c,d,e) \
+  SKELCL_ADD_DEFINE_4(a,b,c,d) SKELCL_ADD_DEFINE(e)
+#define SKELCL_ADD_DEFINE_6(a,b,c,d,e,f) \
+  SKELCL_ADD_DEFINE_5(a,b,c,d,e) SKELCL_ADD_DEFINE(f)
+#define SKELCL_ADD_DEFINE_7(a,b,c,d,e,f,g) \
+  SKELCL_ADD_DEFINE_6(a,b,c,d,e,f) SKELCL_ADD_DEFINE(g)
+#define SKELCL_ADD_DEFINE_8(a,b,c,d,e,f,g,h) \
+  SKELCL_ADD_DEFINE_7(a,b,c,d,e,f,g) SKELCL_ADD_DEFINE(h)
+#define SKELCL_ADD_DEFINE_9(a,b,c,d,e,f,g,h,i) \
+  SKELCL_ADD_DEFINE_8(a,b,c,d,e,f,g,h) SKELCL_ADD_DEFINE(i)
+
+#endif // MACRO_H_
 

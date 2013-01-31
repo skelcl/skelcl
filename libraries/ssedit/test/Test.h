@@ -30,101 +30,39 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
+ 
+///
+/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///
 
-// standard header
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
+
+#include <gtest/gtest.h>
+
+#pragma GCC diagnostic pop
+
+#include <clang-c/Index.h>
+
 #include <fstream>
 #include <string>
-#include <cstdio>
-// ssedit header
-#include <ssedit/Cursor.h>
-#include <ssedit/Type.h>
 
-#include "Test.h"
+struct TranslationUnit {
+  TranslationUnit(const std::string& source)
+    : _fileName("tmpSource.c"), _index(), _tu() {
+    std::ofstream tmpFile(_fileName, std::ios_base::trunc);
+    tmpFile.write(source.c_str(), source.size());
 
-class CursorTest : public ::testing::Test
-{
-protected:
-  CursorTest() : _tu("int main() { return 0; }")
-  {
+    _index = clang_createIndex(0, 0);
+    _tu = clang_parseTranslationUnit(_index, _fileName.c_str(), NULL, 0, NULL, 0, CXTranslationUnit_None);
   };
-  TranslationUnit _tu;
+
+  ~TranslationUnit() {
+    remove(_fileName.c_str());
+  };
+
+  std::string _fileName;
+  CXIndex _index;
+  CXTranslationUnit _tu;
 };
-
-TEST_F(CursorTest, DefaultConstructor)
-{
-  ssedit::Cursor cursor;
-
-  EXPECT_TRUE(cursor.isNullCursor());
-  EXPECT_TRUE(cursor.isOfKind(CXCursor_FirstInvalid));
-}
-
-TEST_F(CursorTest, CXTranslationUnitConstructor)
-{
-  ssedit::Cursor cursor(_tu._tu);
-
-  EXPECT_FALSE(cursor.isNullCursor());
-  EXPECT_TRUE(cursor.isOfKind(CXCursor_TranslationUnit));
-}
-
-TEST_F(CursorTest, CopyConstructor)
-{
-  ssedit::Cursor cursor(_tu._tu);
-  ssedit::Cursor copy(cursor);
-
-  EXPECT_TRUE(clang_equalCursors(cursor.getCXCursor(),
-                                 copy.getCXCursor()));
-}
-
-TEST_F(CursorTest, AssignementOperator)
-{
-  ssedit::Cursor cursor;
-  ssedit::Cursor second(_tu._tu);
-  cursor = second;
-
-  EXPECT_FALSE(cursor.isNullCursor());
-  EXPECT_TRUE(clang_equalCursors(cursor.getCXCursor(),
-                                 second.getCXCursor()));
-}
-
-TEST_F(CursorTest, getType)
-{
-//  ssedit::Cursor nullCursor;
-//  EXPECT_EQ(std::string(), nullCursor.getType().getKindSpelling());
-}
-
-TEST_F(CursorTest, setResultType)
-{
-}
-
-TEST_F(CursorTest, Referenced)
-{
-}
-
-TEST_F(CursorTest, getExtent)
-{
-}
-
-TEST_F(CursorTest, getLocation)
-{
-}
-
-TEST_F(CursorTest, findFunctionCursor)
-{
-}
-
-TEST_F(CursorTest, findTypedefCursor)
-{
-}
-
-TEST_F(CursorTest, gatherChildren)
-{
-}
-
-TEST_F(CursorTest, Spelling)
-{
-}
-
-TEST_F(CursorTest, Kind)
-{
-}
 

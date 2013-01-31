@@ -35,10 +35,10 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <gtest/gtest.h>
-
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/detail/DeviceList.h>
+
+#include "Test.h"
 
 class DeviceListTest : public ::testing::Test {
 protected:

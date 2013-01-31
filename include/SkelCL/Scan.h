@@ -30,101 +30,89 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
+ 
+///
+/// \file Scan.h
+///
+///	\author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///
 
-// standard header
-#include <fstream>
+#ifndef SCAN_H_
+#define SCAN_H_
+
+#include <istream>
 #include <string>
-#include <cstdio>
-// ssedit header
-#include <ssedit/Cursor.h>
-#include <ssedit/Type.h>
 
-#include "Test.h"
+#include "detail/Skeleton.h"
+#include "detail/Program.h"
 
-class CursorTest : public ::testing::Test
-{
-protected:
-  CursorTest() : _tu("int main() { return 0; }")
-  {
-  };
-  TranslationUnit _tu;
+namespace skelcl {
+
+class Source;
+template <typename> class Out;
+template <typename> class Vector;
+
+template<typename> class Scan;
+
+template<typename T>
+class Scan<T(T)> : public detail::Skeleton {
+public:
+  Scan(const Source& source,
+       const std::string& id = "0",
+       const std::string& funcName = std::string("func"));
+
+  template <typename... Args>
+  Vector<T> operator()(const Vector<T>& input, Args&&... args);
+
+  template <typename... Args>
+  Vector<T>& operator()(Out<Vector<T>> output,
+                        const Vector<T>& input,
+                        Args&&... args);
+
+private:
+  template <typename... Args>
+  void execute(Vector<T>& output,
+               const Vector<T>& input,
+               Args&&... args);
+  
+  unsigned int calculateNumberOfPasses(size_t workGroupSize,
+                                       size_t elements) const;
+
+  std::vector<detail::DeviceBuffer>
+    createImmediateBuffers(unsigned int passes,
+                           unsigned int wgSize,
+                           unsigned int elements,
+                           const detail::Device::ptr_type& devicePtr);
+
+  void performScanPasses(unsigned int passes,
+                         unsigned int wgSize,
+                         const detail::Device::ptr_type& devicePtr,
+                         const std::vector<detail::DeviceBuffer>& tmpBuffers,
+                         const detail::DeviceBuffer& inputBuffer,
+                         const detail::DeviceBuffer& outputBuffer);
+
+  void performUniformCombination(unsigned int passes,
+                                 unsigned int wgSize,
+                                 const detail::Device::ptr_type& devicePtr,
+                                 const std::vector<detail::DeviceBuffer>&
+                                    tmpBuffers,
+                                 const detail::DeviceBuffer& outputBuffer);
+
+  void prepareInput(const Vector<T>& input);
+
+  void prepareOutput(Vector<T>& output,
+                     const Vector<T>& input);
+  
+  detail::Program createAndBuildProgram(const std::string& source,
+                                        const std::string& id,
+                                        const std::string& funcName) const;
+
+  const detail::Program _program;
 };
 
-TEST_F(CursorTest, DefaultConstructor)
-{
-  ssedit::Cursor cursor;
+} // namespace skelcl
 
-  EXPECT_TRUE(cursor.isNullCursor());
-  EXPECT_TRUE(cursor.isOfKind(CXCursor_FirstInvalid));
-}
+#include "detail/ScanDef.h"
 
-TEST_F(CursorTest, CXTranslationUnitConstructor)
-{
-  ssedit::Cursor cursor(_tu._tu);
-
-  EXPECT_FALSE(cursor.isNullCursor());
-  EXPECT_TRUE(cursor.isOfKind(CXCursor_TranslationUnit));
-}
-
-TEST_F(CursorTest, CopyConstructor)
-{
-  ssedit::Cursor cursor(_tu._tu);
-  ssedit::Cursor copy(cursor);
-
-  EXPECT_TRUE(clang_equalCursors(cursor.getCXCursor(),
-                                 copy.getCXCursor()));
-}
-
-TEST_F(CursorTest, AssignementOperator)
-{
-  ssedit::Cursor cursor;
-  ssedit::Cursor second(_tu._tu);
-  cursor = second;
-
-  EXPECT_FALSE(cursor.isNullCursor());
-  EXPECT_TRUE(clang_equalCursors(cursor.getCXCursor(),
-                                 second.getCXCursor()));
-}
-
-TEST_F(CursorTest, getType)
-{
-//  ssedit::Cursor nullCursor;
-//  EXPECT_EQ(std::string(), nullCursor.getType().getKindSpelling());
-}
-
-TEST_F(CursorTest, setResultType)
-{
-}
-
-TEST_F(CursorTest, Referenced)
-{
-}
-
-TEST_F(CursorTest, getExtent)
-{
-}
-
-TEST_F(CursorTest, getLocation)
-{
-}
-
-TEST_F(CursorTest, findFunctionCursor)
-{
-}
-
-TEST_F(CursorTest, findTypedefCursor)
-{
-}
-
-TEST_F(CursorTest, gatherChildren)
-{
-}
-
-TEST_F(CursorTest, Spelling)
-{
-}
-
-TEST_F(CursorTest, Kind)
-{
-}
+#endif // Scan_H_
 

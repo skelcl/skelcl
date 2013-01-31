@@ -46,17 +46,15 @@
 #include <SkelCL/IndexMatrix.h>
 #include <SkelCL/Map.h>
 
-typedef struct {
-  unsigned char r;
-  unsigned char g;
-  unsigned char b;
-} Pixel;
+SKELCL_COMMON_DEFINITION(
+typedef struct {    \
+  unsigned char r;  \
+  unsigned char g;  \
+  unsigned char b;  \
+} Pixel;            \
+)
 
 #define ITERATIONS 100
-
-#define COLOR_R(n) ((n & 63) << 2)
-#define COLOR_G(n) ((n << 3) & 255)
-#define COLOR_B(n) ((n >> 8) & 255)
 
 #define WIDTH 4096
 #define HEIGHT 3072
@@ -64,7 +62,14 @@ typedef struct {
 #define CENTER_X -0.73
 #define CENTER_Y -0.16
 #define ZOOM 27615
+SKELCL_ADD_DEFINE(ITERATIONS)
+SKELCL_ADD_DEFINE(WIDTH)
+SKELCL_ADD_DEFINE(HEIGHT)
+SKELCL_ADD_DEFINE(CENTER_X)
+SKELCL_ADD_DEFINE(CENTER_Y)
+SKELCL_ADD_DEFINE(ZOOM)
 
+//SKELCL_ADD_DEFINES(ITERATIONS, WIDTH, HEIGHT, CENTER_X, CENTER_Y, ZOOM)
 
 using namespace skelcl;
 
@@ -106,7 +111,7 @@ void mandelbrot()
 
 int main()
 {
-  //pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
+  pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
   skelcl::init(skelcl::nDevices(2));
   mandelbrot();
   return 0;

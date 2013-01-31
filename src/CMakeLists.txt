@@ -62,6 +62,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/IndexMatrixDef.h
       ../include/SkelCL/detail/IndexVectorDef.h
       ../include/SkelCL/detail/KernelUtil.h
+      ../include/SkelCL/detail/Macros.h
       ../include/SkelCL/detail/MapDef.h
       ../include/SkelCL/detail/MapHelper.h
       ../include/SkelCL/detail/MapHelperDef.h

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2011-2012 The SkelCL Team as listed in CREDITS.txt          *
+ * Copyright (c) 2011-2013 The SkelCL Team as listed in CREDITS.txt          *
  * http://skelcl.uni-muenster.de                                             *
  *                                                                           *
  * This file is part of SkelCL.                                              *
@@ -31,100 +31,32 @@
  *                                                                           *
  *****************************************************************************/
 
-// standard header
-#include <fstream>
-#include <string>
-#include <cstdio>
-// ssedit header
-#include <ssedit/Cursor.h>
-#include <ssedit/Type.h>
+///
+/// \file Timer.cpp
+///
+/// \author Sebastian Albers <s.albers@uni-muenster.de>
+///
 
-#include "Test.h"
+#include <chrono>
 
-class CursorTest : public ::testing::Test
-{
-protected:
-  CursorTest() : _tu("int main() { return 0; }")
-  {
-  };
-  TranslationUnit _tu;
-};
+#include "pvsutil/Timer.h"
 
-TEST_F(CursorTest, DefaultConstructor)
-{
-  ssedit::Cursor cursor;
-
-  EXPECT_TRUE(cursor.isNullCursor());
-  EXPECT_TRUE(cursor.isOfKind(CXCursor_FirstInvalid));
-}
-
-TEST_F(CursorTest, CXTranslationUnitConstructor)
-{
-  ssedit::Cursor cursor(_tu._tu);
-
-  EXPECT_FALSE(cursor.isNullCursor());
-  EXPECT_TRUE(cursor.isOfKind(CXCursor_TranslationUnit));
-}
-
-TEST_F(CursorTest, CopyConstructor)
-{
-  ssedit::Cursor cursor(_tu._tu);
-  ssedit::Cursor copy(cursor);
-
-  EXPECT_TRUE(clang_equalCursors(cursor.getCXCursor(),
-                                 copy.getCXCursor()));
-}
-
-TEST_F(CursorTest, AssignementOperator)
-{
-  ssedit::Cursor cursor;
-  ssedit::Cursor second(_tu._tu);
-  cursor = second;
-
-  EXPECT_FALSE(cursor.isNullCursor());
-  EXPECT_TRUE(clang_equalCursors(cursor.getCXCursor(),
-                                 second.getCXCursor()));
-}
-
-TEST_F(CursorTest, getType)
-{
-//  ssedit::Cursor nullCursor;
-//  EXPECT_EQ(std::string(), nullCursor.getType().getKindSpelling());
-}
-
-TEST_F(CursorTest, setResultType)
+namespace pvsutil {
+  
+Timer::Timer()
+  : _startTime(std::chrono::high_resolution_clock::now())
 {
 }
 
-TEST_F(CursorTest, Referenced)
+void Timer::restart()
 {
+  _startTime = std::chrono::high_resolution_clock::now();
 }
-
-TEST_F(CursorTest, getExtent)
-{
+  
+Timer::time_type Timer::stop() {
+  auto sinceStart =   std::chrono::high_resolution_clock::now() - _startTime;
+  using std::chrono::milliseconds; // avoid too long next line
+  return std::chrono::duration_cast<milliseconds>(sinceStart).count();
 }
-
-TEST_F(CursorTest, getLocation)
-{
-}
-
-TEST_F(CursorTest, findFunctionCursor)
-{
-}
-
-TEST_F(CursorTest, findTypedefCursor)
-{
-}
-
-TEST_F(CursorTest, gatherChildren)
-{
-}
-
-TEST_F(CursorTest, Spelling)
-{
-}
-
-TEST_F(CursorTest, Kind)
-{
-}
-
+  
+} // namespace pvsutil

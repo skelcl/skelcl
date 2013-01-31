@@ -99,20 +99,18 @@ private:
 #define ABORT_WITH_ERROR(err)\
   LOG_ERROR(err); abort()
 
-#ifdef NDEBUG
-
-#define LOG_WARNING(...)    (void(0))
-#define LOG_INFO(...)       (void(0))
-#define LOG_DEBUG(...)      (void(0))
-#define LOG_DEBUG_INFO(...) (void(0))
-
-#else  // DEBUG
-
 #define LOG_WARNING(...)\
   LOG(pvsutil::Logger::Severity::Warning, __VA_ARGS__)
 
 #define LOG_INFO(...)\
   LOG(pvsutil::Logger::Severity::Info, __VA_ARGS__)
+
+#ifdef NDEBUG
+
+#define LOG_DEBUG(...)      (void(0))
+#define LOG_DEBUG_INFO(...) (void(0))
+
+#else  // DEBUG
 
 #define LOG_DEBUG(...)\
   LOG(pvsutil::Logger::Severity::Debug, __VA_ARGS__)

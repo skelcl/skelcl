@@ -31,100 +31,76 @@
  *                                                                           *
  *****************************************************************************/
 
-// standard header
+///
+/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///
+
 #include <fstream>
-#include <string>
+
 #include <cstdio>
-// ssedit header
-#include <ssedit/Cursor.h>
-#include <ssedit/Type.h>
+
+#include <pvsutil/Logger.h>
+
+#include <SkelCL/SkelCL.h>
+#include <SkelCL/Vector.h>
+#include <SkelCL/Scan.h>
 
 #include "Test.h"
 
-class CursorTest : public ::testing::Test
-{
+class ScanTest : public ::testing::Test {
 protected:
-  CursorTest() : _tu("int main() { return 0; }")
-  {
+  ScanTest() {
+    pvsutil::defaultLogger.setLoggingLevel(
+        pvsutil::Logger::Severity::DebugInfo );
+
+    skelcl::init(skelcl::nDevices(1));
   };
-  TranslationUnit _tu;
+
+  ~ScanTest() {
+    skelcl::terminate();
+  };
 };
 
-TEST_F(CursorTest, DefaultConstructor)
-{
-  ssedit::Cursor cursor;
-
-  EXPECT_TRUE(cursor.isNullCursor());
-  EXPECT_TRUE(cursor.isOfKind(CXCursor_FirstInvalid));
+TEST_F(ScanTest, CreateScanWithString) {
+  skelcl::Scan<float(float)> s{ "float func(float x, float y){ return x+y; }",
+                                "0.0f" };
 }
 
-TEST_F(CursorTest, CXTranslationUnitConstructor)
-{
-  ssedit::Cursor cursor(_tu._tu);
+TEST_F(ScanTest, SimpleScan) {
+  skelcl::Scan<int(int)> s{ "int func(int x, int y){ return x+y; }" };
 
-  EXPECT_FALSE(cursor.isNullCursor());
-  EXPECT_TRUE(cursor.isOfKind(CXCursor_TranslationUnit));
+  skelcl::Vector<int> input(1024);
+  for (size_t i = 0; i < input.size(); ++i) {
+    input[i] = 1;
+  }
+  EXPECT_EQ(1024, input.size());
+
+  skelcl::Vector<int> output = s(input);
+
+  input.dataOnDeviceModified();
+
+  EXPECT_EQ(1024, output.size());
+  for (size_t i = 0; i < output.size(); ++i) {
+    EXPECT_EQ(i, output[i]);
+  }
 }
 
-TEST_F(CursorTest, CopyConstructor)
-{
-  ssedit::Cursor cursor(_tu._tu);
-  ssedit::Cursor copy(cursor);
+TEST_F(ScanTest, SmallScan) {
+  skelcl::Scan<int(int)> s{ "int func(int x, int y){ return x+y; }" };
 
-  EXPECT_TRUE(clang_equalCursors(cursor.getCXCursor(),
-                                 copy.getCXCursor()));
-}
+  skelcl::Vector<int> input(10);
+  for (size_t i = 0; i < input.size(); ++i) {
+    input[i] = 1;
+  }
+  EXPECT_EQ(10, input.size());
 
-TEST_F(CursorTest, AssignementOperator)
-{
-  ssedit::Cursor cursor;
-  ssedit::Cursor second(_tu._tu);
-  cursor = second;
+  skelcl::Vector<int> output = s(input);
 
-  EXPECT_FALSE(cursor.isNullCursor());
-  EXPECT_TRUE(clang_equalCursors(cursor.getCXCursor(),
-                                 second.getCXCursor()));
-}
+  input.dataOnDeviceModified();
 
-TEST_F(CursorTest, getType)
-{
-//  ssedit::Cursor nullCursor;
-//  EXPECT_EQ(std::string(), nullCursor.getType().getKindSpelling());
-}
-
-TEST_F(CursorTest, setResultType)
-{
-}
-
-TEST_F(CursorTest, Referenced)
-{
-}
-
-TEST_F(CursorTest, getExtent)
-{
-}
-
-TEST_F(CursorTest, getLocation)
-{
-}
-
-TEST_F(CursorTest, findFunctionCursor)
-{
-}
-
-TEST_F(CursorTest, findTypedefCursor)
-{
-}
-
-TEST_F(CursorTest, gatherChildren)
-{
-}
-
-TEST_F(CursorTest, Spelling)
-{
-}
-
-TEST_F(CursorTest, Kind)
-{
+  EXPECT_EQ(10, output.size());
+  for (size_t i = 0; i < output.size(); ++i) {
+    EXPECT_EQ(i, output[i]);
+  }
 }
 
