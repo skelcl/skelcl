@@ -43,10 +43,6 @@ typedef float SCL_TYPE_0;
 typedef float SCL_TYPE_1;
 typedef float SCL_TYPE_2;
 
-#define R 8
-#define C 32
-#define SUBTILES 16
-#define DS 64
 
 __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
                            const __global SCL_TYPE_1* N,

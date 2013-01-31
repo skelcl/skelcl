@@ -62,6 +62,7 @@ namespace detail {
 
   class Sizes {
   public:
+    Sizes() : _sizes() {} // prevent error msg
     void push_back(detail::DeviceBuffer::size_type size) {
       _sizes.push_back(size);
     }

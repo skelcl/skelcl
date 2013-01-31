@@ -252,6 +252,14 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     // zip user source
     s.append(zSource);
 
+    s.append("\n");
+
+    // allpairs parameters
+    s.append("#define C ").append(std::to_string(_C)).append("\n");
+    s.append("#define R ").append(std::to_string(_R)).append("\n");
+    s.append("#define SUBTILES ").append(std::to_string(_S)).append("\n");
+    s.append("#define DS 64");
+
     // allpairs skeleton source
     s.append(
       #include "AllPairsKernel.cl"
