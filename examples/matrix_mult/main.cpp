@@ -53,6 +53,8 @@
 
 using namespace skelcl;
 
+const double epsilon = 1e-12;
+
 template <typename ForwardIterator>
 void init(ForwardIterator begin, ForwardIterator end)
 {
@@ -63,8 +65,16 @@ void init(ForwardIterator begin, ForwardIterator end)
   }
 }
 
+template<typename T>
+bool isEqual(T lhs, T rhs) {
+  return fabs(lhs - rhs) < epsilon;
+}
+
+
 // multiply two matrices
-double matrixMult(const int rowCountA, const int columnCountA, const int columnCountB, const int checkResult) {
+template<typename T>
+double matrixMult(const int rowCountA, const int columnCountA, const int columnCountB, const int checkResult,
+                  const std::string& zipFunc, const std::string& reduceFunc) {
   
   const int rowCountB = columnCountA;
   LOG_INFO("started: multiplication of matrices A (", rowCountA, " x ", columnCountA, ") and B (",
@@ -73,17 +83,17 @@ double matrixMult(const int rowCountA, const int columnCountA, const int columnC
   pvsutil::Timer timer;
 
   // initialize skeletons
-  Zip<float(float, float)> zip("float func(float x, float y){ return x*y; }");
-  Reduce<float(float)> reduce("float func(float x, float y){ return x+y; }");
-  AllPairs<float(float, float)> allpairs(reduce, zip);
+  Zip<T(T, T)> zip(zipFunc);
+  Reduce<T(T)> reduce(reduceFunc);
+  AllPairs<T(T, T)> allpairs(reduce, zip);
   
-  Matrix<float> left( {rowCountA, columnCountA} );
-  Matrix<float> right( {rowCountB, columnCountB} );
+  Matrix<T> left( {rowCountA, columnCountA} );
+  Matrix<T> right( {rowCountB, columnCountB} );
   
   init(left.begin(), left.end());
   init(right.begin(), right.end());
   
-  Matrix<float> output = allpairs(left, right);
+  Matrix<T> output = allpairs(left, right);
 
   double elapsedTime = timer.stop();
   LOG_INFO("finished: matrix C (", output.rowCount(), " x ", output.columnCount(), ") calculated, ",
@@ -93,11 +103,11 @@ double matrixMult(const int rowCountA, const int columnCountA, const int columnC
     unsigned int deviations = 0;
     for (size_t i = 0; i < output.rowCount(); ++i) {
       for (size_t j = 0; j < output.columnCount(); ++j) {
-        float gold = 0;
+        T gold = 0;
         for (size_t k = 0; k < left.columnCount(); ++k) {
           gold += left[i][k] * right[k][j];
         }
-        if (output[i][j] != gold)
+        if (!isEqual(output[i][j], gold))
           ++deviations;
       }
     }
@@ -112,9 +122,25 @@ double matrixMult(const int rowCountA, const int columnCountA, const int columnC
   return elapsedTime;
 }
 
+double matrixMultFloat(const int rowCountA, const int columnCountA, const int columnCountB,
+                       const int checkResult) {
+  std::string zipFunc = "float func(float x, float y){ return x*y; }";
+  std::string reduceFunc = "float func(float x, float y){ return x+y; }";
+  return matrixMult<float>(rowCountA, columnCountA, columnCountB, checkResult, zipFunc, reduceFunc);
+}
+
+
+/*double matrixMultDouble(const int rowCountA, const int columnCountA, const int columnCountB,
+                        const int checkResult) {
+  std::string zipFunc = "double func(double x, double y){ return x*y; }";
+  std::string reduceFunc = "double func(double x, double y){ return x+y; }";
+  return matrixMult<double>(rowCountA, columnCountA, columnCountB, checkResult, zipFunc, reduceFunc);
+}*/
+
 int main(int argc, char* argv[])
 {
 //  pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
+  pvsutil::defaultLogger.setOutput(std::cout);
 
   if (argc < 5 || argc > 8) {
     std::cout << "usage: matrix_mult <row_count_A> <column_count_A> <column_count_B>"
@@ -160,7 +186,7 @@ int main(int argc, char* argv[])
   init(nDevices(deviceCount).deviceType(deviceType)); // initialize SkelCL
   double totalTime = 0.0;
   for (int i = 0; i < repetitions; i++) {
-    totalTime += matrixMult(rowCountA, columnCountA, columnCountB, checkResult);
+    totalTime += matrixMultFloat(rowCountA, columnCountA, columnCountB, checkResult);
   }
   double avgTime = totalTime / repetitions;
   LOG_INFO("sizes: ", rowCountA, ", ", columnCountA, ", ", columnCountB, "; ",
