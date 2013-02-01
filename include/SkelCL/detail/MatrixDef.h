@@ -69,7 +69,8 @@ namespace skelcl {
 template <typename T>
 RegisterDeviceFunctions<T>::RegisterDeviceFunctions()
 {
-  detail::CommonDefinitions::append(Matrix<T>::deviceFunctions());
+  detail::CommonDefinitions::append(Matrix<T>::deviceFunctions(),
+      detail::CommonDefinitions::Level::GENERATED_DEFINITION);
 }
 
 

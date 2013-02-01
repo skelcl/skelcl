@@ -114,10 +114,6 @@
 #include "SkelCL/detail/Macros.h"
 #include "SkelCL/detail/PlatformID.h"
 
-
-#define SKELCL_COMMON_DEFINES(arg, ...) \
-  skelcl::detail::CommonDefinitions::prefix("#define " + ##arg + " " + arg);
-
 namespace skelcl {
 
 typedef detail::Device::Type device_type;
