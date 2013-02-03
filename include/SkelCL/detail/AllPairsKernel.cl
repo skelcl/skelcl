@@ -72,6 +72,7 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
                 Nl[(i - ii) * R + l_row - roffset][l_col] = N[(i * R + l_row) * width + col]; 
 
         for (int s = 0; s < SUBTILES; ++s) {
+            if ((row + s * R >= height) && (row - R + s * R >= height)) break;
             SCL_TYPE_2 result;
             if ((row + s * R < height) && (col < width))
                 result = P[(row + s * R) * width + col];
@@ -107,6 +108,7 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
                 Nl[(i - ii) * R + l_row - roffset][l_col] = N[(i * R + l_row) * width + col]; 
 
         for (int s = 0; s < SUBTILES; ++s) {
+            if ((row + s * R >= height) && (row - R + s * R >= height)) break;
             SCL_TYPE_2 result;
             if ((row + s * R < height) && (col < width))
                 result = P[(row + s * R) * width + col];

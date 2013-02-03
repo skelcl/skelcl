@@ -81,7 +81,7 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const 
       _funcReduce(reduce.func()),
       _funcZip(zip.func()),
       _idReduce(reduce.id()),
-      _isSpecial(true), _C(32), _R(8), _S(16) // must match AllPairsKernel.cl values!
+      _isSpecial(true), _C(32), _R(8), _S(16) // parameters
 {
     LOG_DEBUG("Create new AllPairs object (", this, ")");
 }
