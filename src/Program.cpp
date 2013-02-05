@@ -312,7 +312,7 @@ void Program::createProgramsFromSource()
 
   // TODO: remove when libclang is able to parse OpenCL C code
   auto endOfFix = source.find("/* OpenCL fix end */");
-  source.erase( source.cbegin(), source.cbegin()+endOfFix );
+  source.erase( 0, endOfFix );
 
   // insert programs into _clPrograms
   std::transform( globalDeviceList.begin(), globalDeviceList.end(),

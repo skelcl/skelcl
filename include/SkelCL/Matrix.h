@@ -82,9 +82,9 @@ private:
 };
 
 template <typename T>
-class RegisterDeviceFunctions {
+class RegisterMatrixDeviceFunctions {
 public:
-  RegisterDeviceFunctions();
+  RegisterMatrixDeviceFunctions();
 };
 
 template <typename T>
@@ -297,7 +297,7 @@ private:
   std::string getDebugInfo() const;
 
 
-  static RegisterDeviceFunctions<T> registerDeviceFunctions;
+  static RegisterMatrixDeviceFunctions<T> registerMatrixDeviceFunctions;
 
           MatrixSize                                  _size;
   mutable
@@ -311,7 +311,7 @@ private:
 };
 
 template <typename T>
-RegisterDeviceFunctions<T> Matrix<T>::registerDeviceFunctions;
+RegisterMatrixDeviceFunctions<T> Matrix<T>::registerMatrixDeviceFunctions;
 
 } // namespace skelcl
 

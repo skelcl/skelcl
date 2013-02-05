@@ -52,8 +52,56 @@ std::string createTmpFile(const std::string& content,
   { // TODO: remove when libclang is able to parse OpenCL C code
     std::string openCLFix("\
 /* OpenCL fix start */\n\
+#define char2 char\n\
+#define char3 char\n\
+#define char4 char\n\
+#define char8 char\n\
+#define char16 char\n\
+#define uchar2 uchar\n\
+#define uchar3 uchar\n\
+#define uchar4 uchar\n\
+#define uchar8 uchar\n\
+#define uchar16 uchar\n\
+#define short2 short\n\
+#define short3 short\n\
+#define short4 short\n\
+#define short8 short\n\
+#define short16 short\n\
+#define ushort2 ushort\n\
+#define ushort3 ushort\n\
+#define ushort4 ushort\n\
+#define ushort8 ushort\n\
+#define ushort16 ushort\n\
+#define int2 int\n\
+#define int3 int\n\
+#define int4 int\n\
+#define int8 int\n\
+#define int16 int\n\
+#define uint2 uint\n\
+#define uint3 uint\n\
+#define uint4 uint\n\
+#define uint8 uint\n\
+#define uint16 uint\n\
+#define long2 long\n\
+#define long3 long\n\
+#define long4 long\n\
+#define long8 long\n\
+#define long16 long\n\
+#define ulong2 ulong\n\
+#define ulong3 ulong\n\
+#define ulong4 ulong\n\
+#define ulong8 ulong\n\
+#define ulong16 ulong\n\
+#define float2 float\n\
+#define float3 float\n\
 #define float4 float\n\
+#define float8 float\n\
 #define float16 float\n\
+#define double2 double\n\
+#define double3 double\n\
+#define double4 double\n\
+#define double8 double\n\
+#define double16 double\n\
 /* OpenCL fix end */\n");
     tmpFile.write(openCLFix.c_str(), static_cast<long>(openCLFix.size()));
   }

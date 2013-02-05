@@ -53,14 +53,23 @@
 #include <pvsutil/Logger.h>
 
 #include "../Distributions.h"
+#include "../Source.h"
 
 #include "Device.h"
 #include "DeviceBuffer.h"
 #include "DeviceList.h"
 #include "Distribution.h"
 #include "Event.h"
+#include "Util.h"
 
 namespace skelcl {
+
+template <typename T>
+RegisterVectorDeviceFunctions<T>::RegisterVectorDeviceFunctions()
+{
+  detail::CommonDefinitions::append(Vector<T>::deviceFunctions(),
+      detail::CommonDefinitions::Level::GENERATED_DEFINITION);
+}
 
 template <typename T>
 Vector<T>::Vector()
@@ -71,6 +80,7 @@ Vector<T>::Vector()
     _hostBuffer(),
     _deviceBuffers()
 {
+  (void)registerVectorDeviceFunctions;
   LOG_DEBUG_INFO("Created new Vector object (", this, ") with ",
                  getDebugInfo());
 }
@@ -86,6 +96,7 @@ Vector<T>::Vector(const size_type size,
     _hostBuffer(size, value),
     _deviceBuffers()
 {
+  (void)registerVectorDeviceFunctions;
   LOG_DEBUG_INFO("Created new Vector object (", this, ") with ",
                  getDebugInfo());
 }
@@ -100,6 +111,7 @@ Vector<T>::Vector(InputIterator first, InputIterator last)
     _hostBuffer(first, last),
     _deviceBuffers()
 {
+  (void)registerVectorDeviceFunctions;
   LOG_DEBUG_INFO("Created new Vector object (", this, ") with ",
                  getDebugInfo());
 }
@@ -116,6 +128,7 @@ Vector<T>::Vector(InputIterator first,
     _hostBuffer(first, last),
     _deviceBuffers()
 {
+  (void)registerVectorDeviceFunctions;
   LOG_DEBUG_INFO("Created new Vector object (", this, ") with ",
                  getDebugInfo());
 }
@@ -129,6 +142,7 @@ Vector<T>::Vector(const Vector<T>& rhs)
     _hostBuffer(rhs._hostBuffer),
     _deviceBuffers(rhs._deviceBuffers)
 {
+  (void)registerVectorDeviceFunctions;
   LOG_DEBUG_INFO("Created new Vector object (", this, ") by copying (", &rhs,
                  ") with ", getDebugInfo());
 }
@@ -142,6 +156,7 @@ Vector<T>::Vector(Vector<T>&& rhs)
     _hostBuffer(std::move(rhs._hostBuffer)),
     _deviceBuffers(std::move(rhs._deviceBuffers))
 {
+  (void)registerVectorDeviceFunctions;
   rhs._size = 0;
   rhs._hostBufferUpToDate = false;
   rhs._deviceBuffersUpToDate = false;
@@ -639,7 +654,15 @@ typename Vector<T>::host_buffer_type& Vector<T>::hostBuffer() const
 template <typename T>
 std::string Vector<T>::deviceFunctions()
 {
-  return std::string();
+  std::string type = detail::util::typeToString<T>();
+  std::stringstream s;
+
+  // found "double" => enable double
+  if (type.find("double") != std::string::npos) {
+    s << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
+  }
+
+  return s.str();
 }
 
 template <typename T>

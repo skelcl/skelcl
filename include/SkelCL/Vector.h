@@ -76,6 +76,12 @@ namespace detail {
 } // namespace detail
 
 template <typename T>
+class RegisterVectorDeviceFunctions {
+public:
+  RegisterVectorDeviceFunctions();
+};
+
+template <typename T>
 class Vector {
 public:
   typedef std::vector<T> host_buffer_type;
@@ -472,6 +478,8 @@ private:
   ///
   std::string getDebugInfo() const;
 
+  static RegisterVectorDeviceFunctions<T> registerVectorDeviceFunctions;
+
           size_type                                   _size;
   mutable
     std::unique_ptr<detail::Distribution<Vector<T>>>  _distribution;
@@ -482,6 +490,9 @@ private:
   mutable std::map< detail::Device::id_type,
                     detail::DeviceBuffer >            _deviceBuffers;
 };
+
+template <typename T>
+RegisterVectorDeviceFunctions<T> Vector<T>::registerVectorDeviceFunctions;
 
 } // namespace skelcl
 

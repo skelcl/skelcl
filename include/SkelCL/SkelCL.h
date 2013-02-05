@@ -113,6 +113,7 @@
 #include "SkelCL/detail/DeviceProperties.h"
 #include "SkelCL/detail/Macros.h"
 #include "SkelCL/detail/PlatformID.h"
+#include "SkelCL/detail/Types.h"
 
 namespace skelcl {
 

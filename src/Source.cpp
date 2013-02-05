@@ -128,12 +128,13 @@ Source CommonDefinitions::getSource()
 RegisterCommonDefinition::RegisterCommonDefinition(const char* definition,
                                                    CommonDefinitions::Level l)
 {
+  // if definition contains the string "double" enable double
+  if (std::string(definition).find("double") != std::string::npos) {
+    CommonDefinitions::append("#pragma OPENCL EXTENSION cl_khr_fp64 : enable",
+                              CommonDefinitions::PRAGMA);
+  }
   CommonDefinitions::append(definition, l);
 }
-
-// register common definitions included in every kernel
-RegisterCommonDefinition def("#pragma OPENCL EXTENSION cl_khr_fp64 : enable",
-                             CommonDefinitions::PRAGMA);
 
 } // namespace detail
 

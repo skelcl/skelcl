@@ -67,7 +67,7 @@
 namespace skelcl {
 
 template <typename T>
-RegisterDeviceFunctions<T>::RegisterDeviceFunctions()
+RegisterMatrixDeviceFunctions<T>::RegisterMatrixDeviceFunctions()
 {
   detail::CommonDefinitions::append(Matrix<T>::deviceFunctions(),
       detail::CommonDefinitions::Level::GENERATED_DEFINITION);
@@ -83,7 +83,7 @@ Matrix<T>::Matrix()
     _hostBuffer(),
     _deviceBuffers()
 {
-  (void)registerDeviceFunctions;
+  (void)registerMatrixDeviceFunctions;
   LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
       getDebugInfo());
 }
@@ -99,7 +99,7 @@ Matrix<T>::Matrix(const size_type size,
     _hostBuffer( _size.elemCount(), value ),
     _deviceBuffers()
 {
-  (void)registerDeviceFunctions;
+  (void)registerMatrixDeviceFunctions;
   LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
       getDebugInfo());
 }
@@ -115,7 +115,7 @@ Matrix<T>::Matrix(const std::vector<T>& vector,
     _hostBuffer(vector),
     _deviceBuffers()
 {
-  (void)registerDeviceFunctions;
+  (void)registerMatrixDeviceFunctions;
   auto rowCount = vector.size() / columnCount;
   if (vector.size() % columnCount == 0) {
     _size = { rowCount, columnCount };
@@ -138,7 +138,7 @@ Matrix<T>::Matrix(const std::vector<T>& vector,
     _hostBuffer(vector),
     _deviceBuffers()
 {
-  (void)registerDeviceFunctions;
+  (void)registerMatrixDeviceFunctions;
   _hostBuffer.resize(size.elemCount());
   LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
       getDebugInfo());
@@ -182,7 +182,7 @@ Matrix<T>::Matrix(InputIterator first, InputIterator last,
     _hostBuffer(),
     _deviceBuffers()
 {
-  (void)registerDeviceFunctions;
+  (void)registerMatrixDeviceFunctions;
   auto size = std::distance(first, last);
   auto rowCount = size / columnCount;
   if (size % columnCount == 0) {
@@ -208,7 +208,7 @@ Matrix<T>::Matrix(InputIterator first, InputIterator last,
     _hostBuffer(first, last),
     _deviceBuffers()
 {
-  (void)registerDeviceFunctions;
+  (void)registerMatrixDeviceFunctions;
   _hostBuffer.resize(size.elemCount());
   LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
       getDebugInfo());
@@ -223,7 +223,7 @@ Matrix<T>::Matrix(Matrix<T>&& rhs)
     _hostBuffer(std::move(rhs._hostBuffer)),
     _deviceBuffers(std::move(rhs._deviceBuffers))
 {
-  (void)registerDeviceFunctions;
+  (void)registerMatrixDeviceFunctions;
   _size = {0, 0};
   _hostBuffer.clear();
 
@@ -834,8 +834,13 @@ template <typename T>
 std::string Matrix<T>::deviceFunctions()
 {
   std::string type = detail::util::typeToString<T>();
-
   std::stringstream s;
+
+  // found "double" => enable double
+  if (type.find("double") != std::string::npos) {
+    s << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
+  }
+
   s << "#ifndef " << type << "_MATRIX_T\n"
     << "typedef struct {\n"
     << "  __global " << type << "* data;\n"

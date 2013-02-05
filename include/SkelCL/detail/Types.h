@@ -30,66 +30,128 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
-///
-/// \file Util.h
+
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#include <string>
-
-#include <cxxabi.h>
-
-#ifndef UTILITIES_H_
-#define UTILITIES_H_
+#ifndef TYPES_H_
+#define TYPES_H_
 
 namespace skelcl {
 
-namespace detail {
+#define _DEF_TYPE_2(type, name) \
+  typedef struct {\
+    type s0;\
+    type s1;\
+  } name##2;
 
-namespace util {
+#define _DEF_TYPE_4(type, name) \
+  typedef struct {\
+    type s0;\
+    type s1;\
+    type s2;\
+    type s3;\
+  } name##4;
 
-#if 0
-#ifdef __APPLE__
-std::string getResourcePath(const std::string& name,
-                            const std::string& extension);
-#endif
-#endif
+#define _DEF_TYPE_8(type, name) \
+  typedef struct {\
+    type s0;\
+    type s1;\
+    type s2;\
+    type s3;\
+    type s4;\
+    type s5;\
+    type s6;\
+    type s7;\
+  } name##8;
 
-std::string envVarValue(const std::string& envVar);
+#define _DEF_TYPE_16(type, name) \
+  typedef struct {\
+    type s0;\
+    type s1;\
+    type s2;\
+    type s3;\
+    type s4;\
+    type s5;\
+    type s6;\
+    type s7;\
+    type s8;\
+    type s9;\
+    type sa;\
+    type sb;\
+    type sc;\
+    type sd;\
+    type se;\
+    type sf;\
+  } name##16;
 
-std::string hash(const std::string& text);
+_DEF_TYPE_2(char, char);
+_DEF_TYPE_4(char, char);
+typedef char4 char3;
+_DEF_TYPE_8(char, char);
+_DEF_TYPE_16(char, char);
 
-size_t devideAndRoundUp(size_t i, size_t j);
+_DEF_TYPE_2(unsigned char, uchar);
+_DEF_TYPE_4(unsigned char, uchar);
+typedef uchar4 uchar3;
+_DEF_TYPE_8(unsigned char, uchar);
+_DEF_TYPE_16(unsigned char, uchar);
 
-size_t devideAndAlign(size_t i, size_t j, size_t a);
+_DEF_TYPE_2(short, short);
+_DEF_TYPE_4(short, short);
+typedef short4 short3;
+_DEF_TYPE_8(short, short);
+_DEF_TYPE_16(short, short);
 
-size_t ceilToMultipleOf(size_t i, size_t j);
+_DEF_TYPE_2(unsigned short, ushort);
+_DEF_TYPE_4(unsigned short, ushort);
+typedef ushort4 ushort3;
+_DEF_TYPE_8(unsigned short, ushort);
+_DEF_TYPE_16(unsigned short, ushort);
 
-bool isPowerOfTwo(size_t n);
+_DEF_TYPE_2(int, int);
+_DEF_TYPE_4(int, int);
+typedef int4 int3;
+_DEF_TYPE_8(int, int);
+_DEF_TYPE_16(int, int);
 
-int floorPow2(int n);
+_DEF_TYPE_2(unsigned int, uint);
+_DEF_TYPE_4(unsigned int, uint);
+typedef uint4 uint3;
+_DEF_TYPE_8(unsigned int, uint);
+_DEF_TYPE_16(unsigned int, uint);
 
-int ceilPow2(int n);
+_DEF_TYPE_2(long, long);
+_DEF_TYPE_4(long, long);
+typedef long4 long3;
+_DEF_TYPE_8(long, long);
+_DEF_TYPE_16(long, long);
 
-template<typename T>
-std::string typeToString() {
-  char* cName = abi::__cxa_demangle(typeid(T).name(), NULL, NULL, NULL);
-  std::string name(cName);
-  // remove namespaces ...
-  auto namesp = name.rfind(":");
-  if (namesp != std::string::npos) {
-    name.erase(0, namesp+1);
-  }
-  free(cName);
-  return name;
-}
+_DEF_TYPE_2(unsigned long, ulong);
+_DEF_TYPE_4(unsigned long, ulong);
+typedef ulong4 ulong3;
+_DEF_TYPE_8(unsigned long, ulong);
+_DEF_TYPE_16(unsigned long, ulong);
 
-} // namespace util
+_DEF_TYPE_2(float, float);
+_DEF_TYPE_4(float, float);
+typedef float4 float3;
+_DEF_TYPE_8(float, float);
+_DEF_TYPE_16(float, float);
 
-} // namespace detail
+_DEF_TYPE_2(double, double);
+_DEF_TYPE_4(double, double);
+typedef double4 double3;
+_DEF_TYPE_8(double, double);
+_DEF_TYPE_16(double, double);
+
+#undef _DEF_TYPE_2
+#undef _DEF_TYPE_4
+#undef _DEF_TYPE_8
+#undef _DEF_TYPE_16
 
 } // namespace skelcl
 
-#endif // UTILITIES_H_
+#endif // TYPES_H_
+
