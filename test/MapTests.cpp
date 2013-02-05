@@ -362,3 +362,32 @@ TEST_F(MapTest, MapWithLocalMemory) {
   }
 }
 
+typedef struct {
+  float f1;
+  float f2;
+  float f3;
+  float f4;
+} float4;
+
+TEST_F(MapTest, MapFloat4) {
+  skelcl::Map<float4(float4)> m {"float4 func(float4 f) { return -f; }"};
+
+  skelcl::Vector<float4> input(10);
+  for (size_t i = 0; i < input.size(); ++i) {
+    input[i].f1 = 1.0f;
+    input[i].f2 = 2.0f;
+    input[i].f3 = 3.0f;
+    input[i].f4 = 4.0f;
+  }
+
+  skelcl::Vector<float4> output = m(input);
+
+  EXPECT_EQ(input.size(), output.size());
+  for (size_t i = 0; i < output.size(); ++i) {
+    EXPECT_EQ(-input[i].f1, output[i].f1);
+    EXPECT_EQ(-input[i].f2, output[i].f2);
+    EXPECT_EQ(-input[i].f3, output[i].f3);
+    EXPECT_EQ(-input[i].f4, output[i].f4);
+  }
+}
+

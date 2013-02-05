@@ -310,6 +310,10 @@ void Program::createProgramsFromSource()
   std::string source( (std::istreambuf_iterator<char>(file)),
                        std::istreambuf_iterator<char>() );
 
+  // TODO: remove when libclang is able to parse OpenCL C code
+  auto endOfFix = source.find("/* OpenCL fix end */");
+  source.erase( source.cbegin(), source.cbegin()+endOfFix );
+
   // insert programs into _clPrograms
   std::transform( globalDeviceList.begin(), globalDeviceList.end(),
                   std::back_inserter(_clPrograms),
