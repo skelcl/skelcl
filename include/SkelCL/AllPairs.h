@@ -44,6 +44,7 @@
 #include <string>
 
 #include "detail/Skeleton.h"
+#include "detail/Program.h"
 
 namespace skelcl {
 
@@ -51,7 +52,6 @@ template <typename> class Matrix;
 template <typename> class Reduce;
 template <typename> class Zip;
 template <typename> class Out;
-namespace detail { class Program; }
 
 template<typename> class AllPairs;
 
@@ -102,14 +102,12 @@ class AllPairs<Tout(Tleft, Tright)> : public detail::Skeleton {
     private:
     // Ausführen
     template <typename... Args>
-    void execute(const detail::Program& program,
-                 Matrix<Tout>& output,
+    void execute(Matrix<Tout>& output,
                  const Matrix<Tleft>& left,
                  const Matrix<Tright>& right,
                  Args&&... args);
 
     // Programm erstellen
-    detail::Program createAndBuildProgram() const;
     detail::Program createAndBuildProgramSpecial() const;
     detail::Program createAndBuildProgramGeneral() const;
 
@@ -134,10 +132,10 @@ class AllPairs<Tout(Tleft, Tright)> : public detail::Skeleton {
     std::string _funcUser;
 
     // used by both implementations
-    bool _isSpecial;
     unsigned int _C;
     unsigned int _R;
     unsigned int _S;
+    detail::Program _program;
 };
 
 } // namespace skelcl

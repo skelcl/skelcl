@@ -81,7 +81,8 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const 
       _funcReduce(reduce.func()),
       _funcZip(zip.func()),
       _idReduce(reduce.id()),
-      _isSpecial(true), _C(32), _R(8), _S(16) // must match AllPairsKernel.cl values!
+      _C(32), _R(8), _S(16), // must match AllPairsKernel.cl values!
+      _program(createAndBuildProgramSpecial())
 {
     LOG_DEBUG("Create new AllPairs object (", this, ")");
 }
@@ -91,7 +92,8 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::st
     : detail::Skeleton(),
       _srcUser(source),
       _funcUser(func),
-      _isSpecial(false), _C(16), _R(16), _S(1)
+      _C(16), _R(16), _S(1),
+      _program(createAndBuildProgramGeneral())
 {
     LOG_DEBUG("Create new AllPairs object (", this, ")");
 }
@@ -120,15 +122,13 @@ Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > outp
     ASSERT( left.columnCount() == right.rowCount() );
     ASSERT( left.columnCount() > 0 );
 
-    detail::Program program = createAndBuildProgram();
-
     prepareInput(left, right);
 
     prepareAdditionalInput(std::forward<Args>(args)...);
 
     prepareOutput(output.container(), left, right);
 
-    execute(program, output.container(), left, right, std::forward<Args>(args)...);
+    execute(output.container(), left, right, std::forward<Args>(args)...);
 
     updateModifiedStatus(output, std::forward<Args>(args)...);
 
@@ -138,8 +138,7 @@ Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > outp
 // Ausführen
 template<typename Tleft, typename Tright, typename Tout>
 template <typename... Args>
-void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
-                                            Matrix<Tout>& output,
+void AllPairs<Tout(Tleft, Tright)>::execute(Matrix<Tout>& output,
                                             const Matrix<Tleft>& left,
                                             const Matrix<Tright>& right,
                                             Args&&... args)
@@ -163,7 +162,7 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
         LOG_DEBUG("local: ", local[0],",", local[1], " global: ", global[0],",",global[1]);
 
         try {
-            cl::Kernel kernel(program.kernel(*devicePtr, "SCL_ALLPAIRS"));
+            cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_ALLPAIRS"));
 
             kernel.setArg(0, leftBuffer.clBuffer());
             kernel.setArg(1, rightBuffer.clBuffer());
@@ -198,14 +197,6 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
 }
 
 // Programm erstellen
-template<typename Tleft, typename Tright, typename Tout>
-detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
-{
-    if (_isSpecial)
-        return createAndBuildProgramSpecial();
-    return createAndBuildProgramGeneral();
-}
-
 template<typename Tleft, typename Tright, typename Tout>
 detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() const
 {
