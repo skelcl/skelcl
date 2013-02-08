@@ -248,8 +248,8 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     // allpairs parameters
     s.append("#define C ").append(std::to_string(_C)).append("\n");
     s.append("#define R ").append(std::to_string(_R)).append("\n");
-    s.append("#define SUBTILES ").append(std::to_string(_S)).append("\n");
-    s.append("#define DS 64");
+    s.append("#define S ").append(std::to_string(_S)).append("\n");
+    s.append("#define D 64");
 
     // allpairs skeleton source
     s.append(
