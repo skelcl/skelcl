@@ -306,11 +306,11 @@ typedef struct {
     unsigned int column;
 } rmatrix_t;
 
-SCL_TYPE_0 getElementFromRow(lmatrix_t *matrix, const unsigned int element_id) {
+SCL_TYPE_0 getElementFromRow(lmatrix_t* matrix, const unsigned int element_id) {
     return matrix->data[(matrix->row) * matrix->dimension + element_id];
 }
 
-SCL_TYPE_1 getElementFromColumn(rmatrix_t *matrix, const unsigned int element_id) {
+SCL_TYPE_1 getElementFromColumn(rmatrix_t* matrix, const unsigned int element_id) {
     return matrix->data[element_id * (matrix->width) + matrix->column];
 }
 

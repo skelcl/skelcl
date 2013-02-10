@@ -90,10 +90,10 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
                 result = USR_REDUCE(result, USR_ZIP(Ml[l_row][k], Nl[k][l_col]));
             }
 
+            barrier(CLK_LOCAL_MEM_FENCE);
+
             if ((row + s * R < height) && (col < width))
                 P[(row + s * R) * width + col] = result;
-
-            barrier(CLK_GLOBAL_MEM_FENCE);
         } 
     }
     
@@ -126,10 +126,10 @@ __kernel void SCL_ALLPAIRS(const __global SCL_TYPE_0* M,
                 result = USR_REDUCE(result, USR_ZIP(Ml[l_row][k], Nl[k][l_col]));
             }
 
+            barrier(CLK_LOCAL_MEM_FENCE);
+
             if ((row + s * R < height) && (col < width))
                 P[(row + s * R) * width + col] = result;
-
-            barrier(CLK_GLOBAL_MEM_FENCE);
         } 
     }
 }
