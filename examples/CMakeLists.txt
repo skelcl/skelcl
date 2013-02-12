@@ -5,5 +5,6 @@ include_directories (${SKELCL_COMMON_INCLUDE_DIR})
 link_directories (${SKELCL_COMMON_LIB_DIR})
 
 add_subdirectory (mandelbrot)
+add_subdirectory (matrix_mult)
 add_subdirectory (dot_product)
 add_subdirectory (saxpy)

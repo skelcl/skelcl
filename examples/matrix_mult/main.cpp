@@ -74,7 +74,8 @@ bool isEqual(T lhs, T rhs) {
 // multiply two matrices
 template<typename T>
 double matrixMult(const int rowCountA, const int columnCountA, const int columnCountB, const int checkResult,
-                  const std::string& zipFunc, const std::string& reduceFunc) {
+                  const std::string& zipFunc, const std::string& reduceFunc, const std::string& deviceType, 
+                  int deviceCount) {
   
   const int rowCountB = columnCountA;
   LOG_INFO("started: multiplication of matrices A (", rowCountA, " x ", columnCountA, ") and B (",
@@ -93,9 +94,17 @@ double matrixMult(const int rowCountA, const int columnCountA, const int columnC
   init(left.begin(), left.end());
   init(right.begin(), right.end());
   
+  
+  left.copyDataToDevices();
+  right.copyDataToDevices();
+  
   Matrix<T> output = allpairs(left, right);
-
+  
+  output.copyDataToHost();
   double elapsedTime = timer.stop();
+  
+  printf("|||SkelCL_allpairs;%d;%d;%d;%s;%d;%f\n", rowCountA, columnCountA, 
+         columnCountB, deviceType.c_str(), deviceCount, elapsedTime);
   LOG_INFO("finished: matrix C (", output.rowCount(), " x ", output.columnCount(), ") calculated, ",
       "elapsed time: ", elapsedTime, " ms");
 
@@ -123,18 +132,18 @@ double matrixMult(const int rowCountA, const int columnCountA, const int columnC
 }
 
 double matrixMultFloat(const int rowCountA, const int columnCountA, const int columnCountB,
-                       const int checkResult) {
+                       const int checkResult, const std::string& deviceType, int deviceCount) {
   std::string zipFunc = "float func(float x, float y){ return x*y; }";
   std::string reduceFunc = "float func(float x, float y){ return x+y; }";
-  return matrixMult<float>(rowCountA, columnCountA, columnCountB, checkResult, zipFunc, reduceFunc);
+  return matrixMult<float>(rowCountA, columnCountA, columnCountB, checkResult, zipFunc, reduceFunc, deviceType, deviceCount);
 }
 
 
 /*double matrixMultDouble(const int rowCountA, const int columnCountA, const int columnCountB,
-                        const int checkResult) {
+                        const int checkResult, const std::string& deviceType, int deviceCount) {
   std::string zipFunc = "double func(double x, double y){ return x*y; }";
   std::string reduceFunc = "double func(double x, double y){ return x+y; }";
-  return matrixMult<double>(rowCountA, columnCountA, columnCountB, checkResult, zipFunc, reduceFunc);
+  return matrixMult<double>(rowCountA, columnCountA, columnCountB, checkResult, zipFunc, reduceFunc, deviceType, deviceCount);
 }*/
 
 int main(int argc, char* argv[])
@@ -166,8 +175,9 @@ int main(int argc, char* argv[])
     repetitions = atoi(argv[5]);
   }
   device_type deviceType = device_type::ANY;
+  std::string deviceArg = "Any";
   if (argc > 6) {
-    std::string deviceArg = argv[6];
+    deviceArg = argv[6];
     if (deviceArg == "CPU") {
         deviceType = device_type::CPU;
     }
@@ -186,7 +196,7 @@ int main(int argc, char* argv[])
   init(nDevices(deviceCount).deviceType(deviceType)); // initialize SkelCL
   double totalTime = 0.0;
   for (int i = 0; i < repetitions; i++) {
-    totalTime += matrixMultFloat(rowCountA, columnCountA, columnCountB, checkResult);
+    totalTime += matrixMultFloat(rowCountA, columnCountA, columnCountB, checkResult, deviceArg, deviceCount);
   }
   double avgTime = totalTime / repetitions;
   LOG_INFO("sizes: ", rowCountA, ", ", columnCountA, ", ", columnCountB, "; ",
