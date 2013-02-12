@@ -60,6 +60,7 @@
   skelcl::detail::RegisterCommonMacroDefinition \
     ANONYMOUS_VARIABLE(#define, define);
 
+#if 0
 #define FULLY_EXPANDED(count, ...) \
   SKELCL_ADD_DEFINE_##count(__VA_ARGS__)
 
@@ -86,6 +87,7 @@
   SKELCL_ADD_DEFINE_7(a,b,c,d,e,f,g) SKELCL_ADD_DEFINE(h)
 #define SKELCL_ADD_DEFINE_9(a,b,c,d,e,f,g,h,i) \
   SKELCL_ADD_DEFINE_8(a,b,c,d,e,f,g,h) SKELCL_ADD_DEFINE(i)
+#endif
 
 #endif // MACRO_H_
 

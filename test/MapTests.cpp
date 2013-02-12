@@ -362,3 +362,49 @@ TEST_F(MapTest, MapWithLocalMemory) {
   }
 }
 
+TEST_F(MapTest, MapFloat4) {
+  skelcl::Map<skelcl::float4(skelcl::float4)>
+      m {"float4 func(float4 f) { return -f; }"};
+
+  skelcl::Vector<skelcl::float4> input(10);
+  for (size_t i = 0; i < input.size(); ++i) {
+    input[i].s0 = 1.0f;
+    input[i].s1 = 2.0f;
+    input[i].s2 = 3.0f;
+    input[i].s3 = 4.0f;
+  }
+
+  skelcl::Vector<skelcl::float4> output = m(input);
+
+  EXPECT_EQ(input.size(), output.size());
+  for (size_t i = 0; i < output.size(); ++i) {
+    EXPECT_EQ(-input[i].s0, output[i].s0);
+    EXPECT_EQ(-input[i].s1, output[i].s1);
+    EXPECT_EQ(-input[i].s2, output[i].s2);
+    EXPECT_EQ(-input[i].s3, output[i].s3);
+  }
+}
+
+TEST_F(MapTest, MapDouble4) {
+  skelcl::Map<skelcl::double4(skelcl::double4)>
+      m {"double4 func(double4 f) { return -f; }"};
+
+  skelcl::Vector<skelcl::double4> input(10);
+  for (size_t i = 0; i < input.size(); ++i) {
+    input[i].s0 = 1.0;
+    input[i].s1 = 2.0;
+    input[i].s2 = 3.0;
+    input[i].s3 = 4.0;
+  }
+
+  skelcl::Vector<skelcl::double4> output = m(input);
+
+  EXPECT_EQ(input.size(), output.size());
+  for (size_t i = 0; i < output.size(); ++i) {
+    EXPECT_EQ(-input[i].s0, output[i].s0);
+    EXPECT_EQ(-input[i].s1, output[i].s1);
+    EXPECT_EQ(-input[i].s2, output[i].s2);
+    EXPECT_EQ(-input[i].s3, output[i].s3);
+  }
+}
+

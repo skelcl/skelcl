@@ -48,6 +48,11 @@
 
 namespace skelcl {
 
+Source::Source()
+  : _source()
+{
+}
+
 Source::Source(const char* source)
   : _source(source)
 {
@@ -87,11 +92,6 @@ Source::operator std::string() const
   return _source;
 }
 
-void Source::prefix(const std::string& source)
-{
-  _source.insert(0, source + "\n");
-}
-
 void Source::append(const std::string& source)
 {
   _source.append("\n" + source);
@@ -100,7 +100,7 @@ void Source::append(const std::string& source)
 namespace detail {
 
 CommonDefinitions::CommonDefinitions()
-  : _source(" ")
+  : _sources(Level::SIZE)
 {
 }
 
@@ -110,24 +110,30 @@ CommonDefinitions& CommonDefinitions::instance()
   return instance;
 }
 
-void CommonDefinitions::prefix(const std::string& source)
+void CommonDefinitions::append(const std::string& source, Level level)
 {
-  CommonDefinitions::instance()._source.prefix(source);
+  CommonDefinitions::instance()._sources[level].append(source);
 }
 
-void CommonDefinitions::append(const std::string& source)
+Source CommonDefinitions::getSource()
 {
-  CommonDefinitions::instance()._source.append(source);
+  auto& instance = CommonDefinitions::instance();
+  auto s = instance._sources[0];
+  for (unsigned int i = 1; i < Level::SIZE; ++i) {
+    s.append(instance._sources[i]);
+  }
+  return s;
 }
 
-const Source& CommonDefinitions::getSource()
+RegisterCommonDefinition::RegisterCommonDefinition(const char* definition,
+                                                   CommonDefinitions::Level l)
 {
-  return CommonDefinitions::instance()._source;
-}
-
-RegisterCommonDefinition::RegisterCommonDefinition(const char* definition)
-{
-  CommonDefinitions::prefix(definition);
+  // if definition contains the string "double" enable double
+  if (std::string(definition).find("double") != std::string::npos) {
+    CommonDefinitions::append("#pragma OPENCL EXTENSION cl_khr_fp64 : enable",
+                              CommonDefinitions::PRAGMA);
+  }
+  CommonDefinitions::append(definition, l);
 }
 
 } // namespace detail
