@@ -139,21 +139,21 @@ double matrixMultFloat(const int rowCountA, const int columnCountA, const int co
 }
 
 
-/*double matrixMultDouble(const int rowCountA, const int columnCountA, const int columnCountB,
+double matrixMultDouble(const int rowCountA, const int columnCountA, const int columnCountB,
                         const int checkResult, const std::string& deviceType, int deviceCount) {
   std::string zipFunc = "double func(double x, double y){ return x*y; }";
   std::string reduceFunc = "double func(double x, double y){ return x+y; }";
   return matrixMult<double>(rowCountA, columnCountA, columnCountB, checkResult, zipFunc, reduceFunc, deviceType, deviceCount);
-}*/
+}
 
 int main(int argc, char* argv[])
 {
 //  pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
   pvsutil::defaultLogger.setOutput(std::cout);
 
-  if (argc < 5 || argc > 8) {
+  if (argc < 5 || argc > 9) {
     std::cout << "usage: matrix_mult <row_count_A> <column_count_A> <column_count_B>"
-      << " <check_result> <repetitions> <device_type> <device_count>" << std::endl;
+      << " <check_result> <repetitions> <device_type> [<device_count> [<double_precision>]]" << std::endl;
     std::cout << "- row_count_A: row count of left matrix" << std::endl;
     std::cout << "- column_count_A: column count of left matrix / row count"
       << "of right matrix" << std::endl;
@@ -162,6 +162,7 @@ int main(int argc, char* argv[])
     std::cout << "- repetitions: number of repetitions (optional, default: 1)" << std::endl;
     std::cout << "- device_type: ANY, CPU, GPU, ACCELERATOR (optional, default: ANY)" << std::endl;
     std::cout << "- device_count: number of devices (optional, default: 1)" << std::endl;
+    std::cout << "- double_precision: use double precision, 0 or 1 (optional, default: 0)" << std::endl;
     return 1;
   }
 
@@ -192,11 +193,19 @@ int main(int argc, char* argv[])
   if (argc > 7) {
     deviceCount = atoi(argv[7]);
   }
+  bool double_precicsion = false;
+  if (argc > 8) {
+    double_precicsion = atoi(argv[8]);
+  }
 
   init(nDevices(deviceCount).deviceType(deviceType)); // initialize SkelCL
   double totalTime = 0.0;
   for (int i = 0; i < repetitions; i++) {
-    totalTime += matrixMultFloat(rowCountA, columnCountA, columnCountB, checkResult, deviceArg, deviceCount);
+    if (double_precicsion) {
+      totalTime += matrixMultDouble(rowCountA, columnCountA, columnCountB, checkResult, deviceArg, deviceCount);
+    } else {
+      totalTime += matrixMultFloat(rowCountA, columnCountA, columnCountB, checkResult, deviceArg, deviceCount);
+    }
   }
   double avgTime = totalTime / repetitions;
   LOG_INFO("sizes: ", rowCountA, ", ", columnCountA, ", ", columnCountB, "; ",
