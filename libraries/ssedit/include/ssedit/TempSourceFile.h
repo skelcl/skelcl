@@ -52,6 +52,8 @@ public:
 
 	~TempSourceFile();
 
+  void removeOpenCLFix();
+
 private:
   TempSourceFile();
   TempSourceFile& operator=(const TempSourceFile&);

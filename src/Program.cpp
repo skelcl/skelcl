@@ -287,6 +287,11 @@ void Program::createProgramsFromSource()
 {
   ASSERT(_sourceFile !=  nullptr);
   _sourceFile->writeCommittedChanges();
+  auto tempSourceFilePtr = dynamic_cast<ssedit::TempSourceFile*>(
+                                                        _sourceFile.get() );
+  if (tempSourceFilePtr) {
+    tempSourceFilePtr->removeOpenCLFix();
+  }
   // open modified source file
   std::ifstream file(_sourceFile->getFileName());
 #if 0
@@ -309,10 +314,6 @@ void Program::createProgramsFromSource()
   // read content into a string
   std::string source( (std::istreambuf_iterator<char>(file)),
                        std::istreambuf_iterator<char>() );
-
-  // TODO: remove when libclang is able to parse OpenCL C code
-  auto endOfFix = source.find("/* OpenCL fix end */");
-  source.erase( 0, endOfFix );
 
   // insert programs into _clPrograms
   std::transform( globalDeviceList.begin(), globalDeviceList.end(),

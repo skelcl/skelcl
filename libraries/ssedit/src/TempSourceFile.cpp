@@ -40,6 +40,8 @@
 
 #include <cstdio>
 
+#include <pvsutil/Logger.h>
+
 #include "ssedit/TempSourceFile.h"
 #include "ssedit/SourceFile.h"
 
@@ -128,6 +130,24 @@ TempSourceFile::~TempSourceFile()
 {
   // call C function to remove tmp file
   remove(_tmpFileName.c_str());
+}
+
+// TODO: remove when libclang is able to parse OpenCL C code
+void TempSourceFile::removeOpenCLFix()
+{
+  std::string source;
+  {
+    std::ifstream file(_tmpFileName);
+    // read content into a string
+    source.assign( (std::istreambuf_iterator<char>(file)),
+                    std::istreambuf_iterator<char>() );
+  }
+
+  auto endOfFix = source.find("/* OpenCL fix end */");
+  source.erase( 0, endOfFix );
+
+  std::ofstream file(_tmpFileName, std::ios_base::trunc);
+  file.write(source.c_str(), static_cast<long>(source.size()));
 }
 
 } // namespace ssedit
