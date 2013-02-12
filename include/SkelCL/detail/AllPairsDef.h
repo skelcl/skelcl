@@ -211,6 +211,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     auto func = reduceTemp.findFunction(_funcReduce); ASSERT(func.isValid());
     reduceTemp.commitRename(func, "TMP_REDUCE");
     reduceTemp.writeCommittedChanges();
+    reduceTemp.removeOpenCLFix();
 
     std::ifstream rFile(reduceTemp.getFileName());
     std::string rSource( (std::istreambuf_iterator<char>(rFile)),
@@ -222,6 +223,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     func = zipTemp.findFunction(_funcReduce); ASSERT(func.isValid());
     zipTemp.commitRename(func, "TMP_ZIP");
     zipTemp.writeCommittedChanges();
+    zipTemp.removeOpenCLFix();
 
     std::ifstream zFile(zipTemp.getFileName());
     std::string zSource( (std::istreambuf_iterator<char>(zFile)),
