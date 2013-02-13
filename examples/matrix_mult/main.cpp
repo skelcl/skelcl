@@ -85,8 +85,6 @@ double matrixMult(const int rowCountA, const int columnCountA,
   LOG_INFO("started: multiplication of matrices A (", rowCountA, " x ", 
            columnCountA, ") and B (", rowCountB, " x ", columnCountB, ")");
   
-  pvsutil::Timer timer;
-
   // initialize skeletons
   std::string suffix = detail::util::typeToString<T>();
   AllPairs<T(T, T)> *allpairs;
@@ -105,7 +103,9 @@ double matrixMult(const int rowCountA, const int columnCountA,
   
   init(left.begin(), left.end());
   init(right.begin(), right.end());
-  
+ 
+  pvsutil::Timer timer;
+
   Matrix<T> output = (*allpairs)(left, right);
   
   output.copyDataToHost();
