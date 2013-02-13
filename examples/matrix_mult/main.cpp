@@ -51,6 +51,8 @@
 #include <SkelCL/Zip.h>
 #include <SkelCL/Reduce.h>
 
+#include <SkelCL/detail/Util.h>
+
 using namespace skelcl;
 
 const double epsilon = 1e-12;
@@ -73,40 +75,47 @@ bool isEqual(T lhs, T rhs) {
 
 // multiply two matrices
 template<typename T>
-double matrixMult(const int rowCountA, const int columnCountA, const int columnCountB, const int checkResult,
-                  const std::string& zipFunc, const std::string& reduceFunc, const std::string& deviceType, 
+double matrixMult(const int rowCountA, const int columnCountA, 
+                  const int columnCountB, const int checkResult,
+                  const std::string& zipFunc, const std::string& reduceFunc, 
+                  const std::string& func, const std::string& deviceType, 
                   int deviceCount) {
   
   const int rowCountB = columnCountA;
-  LOG_INFO("started: multiplication of matrices A (", rowCountA, " x ", columnCountA, ") and B (",
-           rowCountB, " x ", columnCountB, ")");
+  LOG_INFO("started: multiplication of matrices A (", rowCountA, " x ", 
+           columnCountA, ") and B (", rowCountB, " x ", columnCountB, ")");
   
   pvsutil::Timer timer;
 
   // initialize skeletons
-  Zip<T(T, T)> zip(zipFunc);
-  Reduce<T(T)> reduce(reduceFunc);
-  AllPairs<T(T, T)> allpairs(reduce, zip);
-  
+  std::string suffix = detail::util::typeToString<T>();
+  AllPairs<T(T, T)> *allpairs;
+  if (func.length() == 0) {
+    Zip<T(T, T)> zip(zipFunc);
+    Reduce<T(T)> reduce(reduceFunc);
+    allpairs = new AllPairs<T(T, T)>(reduce, zip);
+    suffix += "_zip-reduce";
+  } else {
+    allpairs = new AllPairs<T(T, T)>(func);
+    suffix += "_alternative";
+  }
+
   Matrix<T> left( {rowCountA, columnCountA} );
   Matrix<T> right( {rowCountB, columnCountB} );
   
   init(left.begin(), left.end());
   init(right.begin(), right.end());
   
-  
-  left.copyDataToDevices();
-  right.copyDataToDevices();
-  
-  Matrix<T> output = allpairs(left, right);
+  Matrix<T> output = (*allpairs)(left, right);
   
   output.copyDataToHost();
   double elapsedTime = timer.stop();
   
-  printf("|||SkelCL_allpairs;%d;%d;%d;%s;%d;%f\n", rowCountA, columnCountA, 
-         columnCountB, deviceType.c_str(), deviceCount, elapsedTime);
-  LOG_INFO("finished: matrix C (", output.rowCount(), " x ", output.columnCount(), ") calculated, ",
-      "elapsed time: ", elapsedTime, " ms");
+  printf("|||SkelCL_allpairs_%s;%d;%d;%d;%s;%d;%f\n", suffix.c_str(), rowCountA, 
+    columnCountA, columnCountB, deviceType.c_str(), deviceCount, elapsedTime);
+  LOG_INFO("finished: matrix C (", output.rowCount(), " x ", 
+           output.columnCount(), ") calculated, ", "elapsed time: ", 
+           elapsedTime, " ms");
 
   if (checkResult) {
     unsigned int deviations = 0;
@@ -128,41 +137,86 @@ double matrixMult(const int rowCountA, const int columnCountA, const int columnC
     }
   }
 
+  delete allpairs;
   return elapsedTime;
 }
 
-double matrixMultFloat(const int rowCountA, const int columnCountA, const int columnCountB,
-                       const int checkResult, const std::string& deviceType, int deviceCount) {
+double matrixMultFloat(const int rowCountA, const int columnCountA, 
+                       const int columnCountB, const int checkResult, 
+                       const std::string& deviceType, int deviceCount) {
   std::string zipFunc = "float func(float x, float y){ return x*y; }";
   std::string reduceFunc = "float func(float x, float y){ return x+y; }";
-  return matrixMult<float>(rowCountA, columnCountA, columnCountB, checkResult, zipFunc, reduceFunc, deviceType, deviceCount);
+  return matrixMult<float>(rowCountA, columnCountA, columnCountB, checkResult, 
+                           zipFunc, reduceFunc, "", deviceType, deviceCount);
 }
 
+double matrixMultFloatAlt(const int rowCountA, const int columnCountA, 
+                          const int columnCountB, const int checkResult, 
+                          const std::string& deviceType, int deviceCount) {
+  std::string func = "float func(lmatrix_t* row, rmatrix_t* col, "\
+                                "const unsigned int dim) {" \
+                        "float res = 0;" \
+                        "for (int i = 0; i < dim; ++i) {" \
+                        "  res += getElementFromRow(row, i) "\
+                               "* getElementFromColumn(col, i); }" \
+                        "return res;" \
+                      "}";
+  return matrixMult<float>(rowCountA, columnCountA, columnCountB, checkResult, 
+                           "", "", func, deviceType, deviceCount);
+}
 
-double matrixMultDouble(const int rowCountA, const int columnCountA, const int columnCountB,
-                        const int checkResult, const std::string& deviceType, int deviceCount) {
+double matrixMultDouble(const int rowCountA, const int columnCountA, 
+                        const int columnCountB, const int checkResult, 
+                        const std::string& deviceType, int deviceCount) {
   std::string zipFunc = "double func(double x, double y){ return x*y; }";
   std::string reduceFunc = "double func(double x, double y){ return x+y; }";
-  return matrixMult<double>(rowCountA, columnCountA, columnCountB, checkResult, zipFunc, reduceFunc, deviceType, deviceCount);
+  return matrixMult<double>(rowCountA, columnCountA, columnCountB, checkResult,
+                            zipFunc, reduceFunc, "", deviceType, deviceCount);
 }
+
+double matrixMultDoubleAlt(const int rowCountA, const int columnCountA, 
+                           const int columnCountB, const int checkResult, 
+                           const std::string& deviceType, int deviceCount) {
+  std::string func = "double func(lmatrix_t* row, rmatrix_t* col, "\
+                                 "const unsigned int dim) {" \
+                        "double res = 0;" \
+                        "for (int i = 0; i < dim; ++i) {" \
+                        "  res += getElementFromRow(row, i) "\
+                               "* getElementFromColumn(col, i); }" \
+                        "return res;" \
+                      "}";
+  return matrixMult<double>(rowCountA, columnCountA, columnCountB, checkResult, 
+                            "", "", func, deviceType, deviceCount);
+}
+
 
 int main(int argc, char* argv[])
 {
-//  pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
+  // pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
   pvsutil::defaultLogger.setOutput(std::cout);
 
-  if (argc < 5 || argc > 9) {
-    std::cout << "usage: matrix_mult <row_count_A> <column_count_A> <column_count_B>"
-      << " <check_result> <repetitions> <device_type> [<device_count> [<double_precision>]]" << std::endl;
-    std::cout << "- row_count_A: row count of left matrix" << std::endl;
-    std::cout << "- column_count_A: column count of left matrix / row count"
-      << "of right matrix" << std::endl;
-    std::cout << "- column_count_B: column count of right matrix" << std::endl;
-    std::cout << "- check_result: 0 = no check, 1 = result is checked" << std::endl;
-    std::cout << "- repetitions: number of repetitions (optional, default: 1)" << std::endl;
-    std::cout << "- device_type: ANY, CPU, GPU, ACCELERATOR (optional, default: ANY)" << std::endl;
-    std::cout << "- device_count: number of devices (optional, default: 1)" << std::endl;
-    std::cout << "- double_precision: use double precision, 0 or 1 (optional, default: 0)" << std::endl;
+  if (argc < 5 || argc > 10) {
+    std::cout << "usage: matrix_mult <row_count_A> <column_count_A> " \
+                                    "<column_count_B>" << std::endl
+      << "                   <check_result> <repetitions> <device_type>" 
+      << std::endl
+      << "                   [[<device_count> [<double_precision>] " \
+                            "[<alt-kernel>]]]" << std::endl
+      << "- row_count_A: row count of left matrix" << std::endl
+      << "- column_count_A: column count of left matrix / row count of right " \
+                          "matrix" << std::endl
+      << "- column_count_B: column count of right matrix" << std::endl
+      << "- check_result: 0 = no check, 1 = result is checked" << std::endl
+      << "- repetitions: number of repetitions (optional, default: 1)" 
+      << std::endl
+      << "- device_type: ANY, CPU, GPU, ACCELERATOR (optional, default: ANY)" 
+      << std::endl
+      << "- device_count: number of devices (optional, default: 1)" << std::endl
+      << "- double_precision: use double precision, 0 or 1 (optional, " \
+                             "default: 0)" << std::endl
+      << "- alt_kernel: use alternative kernel (instead of Zip and Reduce), " \
+                       "0 or 1" << std::endl
+      << "              (optional, default: 0)" << std::endl;
     return 1;
   }
 
@@ -197,14 +251,26 @@ int main(int argc, char* argv[])
   if (argc > 8) {
     double_precicsion = atoi(argv[8]);
   }
+  bool alt_kernel = false;
+  if (argc > 9) {
+    alt_kernel = atoi(argv[9]);
+  }
 
   init(nDevices(deviceCount).deviceType(deviceType)); // initialize SkelCL
   double totalTime = 0.0;
   for (int i = 0; i < repetitions; i++) {
-    if (double_precicsion) {
-      totalTime += matrixMultDouble(rowCountA, columnCountA, columnCountB, checkResult, deviceArg, deviceCount);
-    } else {
-      totalTime += matrixMultFloat(rowCountA, columnCountA, columnCountB, checkResult, deviceArg, deviceCount);
+    if (alt_kernel && double_precicsion) {
+      totalTime += matrixMultDoubleAlt(rowCountA, columnCountA, columnCountB,
+                                       checkResult, deviceArg, deviceCount);
+    } else if (alt_kernel) { // && !double_precicsion
+      totalTime += matrixMultFloatAlt(rowCountA, columnCountA, columnCountB,
+                                      checkResult, deviceArg, deviceCount);
+    } else if (double_precicsion) { // && !alt_kernel
+      totalTime += matrixMultDouble(rowCountA, columnCountA, columnCountB,
+                                    checkResult, deviceArg, deviceCount);
+    } else { // !double_precicsion && !alt_kernel
+      totalTime += matrixMultFloat(rowCountA, columnCountA, columnCountB, 
+                                   checkResult, deviceArg, deviceCount);
     }
   }
   double avgTime = totalTime / repetitions;
