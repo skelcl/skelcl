@@ -151,7 +151,7 @@ void AllPairs<Tout(Tleft, Tright)>::execute(Matrix<Tout>& output,
         auto& leftBuffer   = left.deviceBuffer(*devicePtr);
         auto& rightBuffer  = right.deviceBuffer(*devicePtr);
 
-        cl_uint elements[2]   = { static_cast<cl_uint>(output.rowCount()),
+        cl_uint elements[2]   = { static_cast<cl_uint>(outputBuffer.size() / output.columnCount()),
                                   static_cast<cl_uint>(output.columnCount()) };
         cl_uint local[2]      = {_C, _R}; // C, R
         cl_uint global[2]     = {static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements[1], local[0])),
@@ -251,7 +251,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     s.append("#define C ").append(std::to_string(_C)).append("\n");
     s.append("#define R ").append(std::to_string(_R)).append("\n");
     s.append("#define S ").append(std::to_string(_S)).append("\n");
-    s.append("#define D 64");
+    s.append("#define D 32");
 
     // allpairs skeleton source
     s.append(
