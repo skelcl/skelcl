@@ -86,65 +86,65 @@ namespace skelcl {
     type sf;\
   } name##16
 
-_DEF_TYPE_2(char, char)
-_DEF_TYPE_4(char, char)
+_DEF_TYPE_2(char, char);
+_DEF_TYPE_4(char, char);
 typedef char4 char3;
-_DEF_TYPE_8(char, char)
-_DEF_TYPE_16(char, char)
+_DEF_TYPE_8(char, char);
+_DEF_TYPE_16(char, char);
 
-_DEF_TYPE_2(unsigned char, uchar)
-_DEF_TYPE_4(unsigned char, uchar)
+_DEF_TYPE_2(unsigned char, uchar);
+_DEF_TYPE_4(unsigned char, uchar);
 typedef uchar4 uchar3;
-_DEF_TYPE_8(unsigned char, uchar)
-_DEF_TYPE_16(unsigned char, uchar)
+_DEF_TYPE_8(unsigned char, uchar);
+_DEF_TYPE_16(unsigned char, uchar);
 
-_DEF_TYPE_2(short, short)
-_DEF_TYPE_4(short, short)
+_DEF_TYPE_2(short, short);
+_DEF_TYPE_4(short, short);
 typedef short4 short3;
-_DEF_TYPE_8(short, short)
-_DEF_TYPE_16(short, short)
+_DEF_TYPE_8(short, short);
+_DEF_TYPE_16(short, short);
 
-_DEF_TYPE_2(unsigned short, ushort)
-_DEF_TYPE_4(unsigned short, ushort)
+_DEF_TYPE_2(unsigned short, ushort);
+_DEF_TYPE_4(unsigned short, ushort);
 typedef ushort4 ushort3;
-_DEF_TYPE_8(unsigned short, ushort)
-_DEF_TYPE_16(unsigned short, ushort)
+_DEF_TYPE_8(unsigned short, ushort);
+_DEF_TYPE_16(unsigned short, ushort);
 
-_DEF_TYPE_2(int, int)
-_DEF_TYPE_4(int, int)
+_DEF_TYPE_2(int, int);
+_DEF_TYPE_4(int, int);
 typedef int4 int3;
-_DEF_TYPE_8(int, int)
-_DEF_TYPE_16(int, int)
+_DEF_TYPE_8(int, int);
+_DEF_TYPE_16(int, int);
 
-_DEF_TYPE_2(unsigned int, uint)
-_DEF_TYPE_4(unsigned int, uint)
+_DEF_TYPE_2(unsigned int, uint);
+_DEF_TYPE_4(unsigned int, uint);
 typedef uint4 uint3;
-_DEF_TYPE_8(unsigned int, uint)
-_DEF_TYPE_16(unsigned int, uint)
+_DEF_TYPE_8(unsigned int, uint);
+_DEF_TYPE_16(unsigned int, uint);
 
-_DEF_TYPE_2(long, long)
-_DEF_TYPE_4(long, long)
+_DEF_TYPE_2(long, long);
+_DEF_TYPE_4(long, long);
 typedef long4 long3;
-_DEF_TYPE_8(long, long)
-_DEF_TYPE_16(long, long)
+_DEF_TYPE_8(long, long);
+_DEF_TYPE_16(long, long);
 
-_DEF_TYPE_2(unsigned long, ulong)
-_DEF_TYPE_4(unsigned long, ulong)
+_DEF_TYPE_2(unsigned long, ulong);
+_DEF_TYPE_4(unsigned long, ulong);
 typedef ulong4 ulong3;
-_DEF_TYPE_8(unsigned long, ulong)
-_DEF_TYPE_16(unsigned long, ulong)
+_DEF_TYPE_8(unsigned long, ulong);
+_DEF_TYPE_16(unsigned long, ulong);
 
-_DEF_TYPE_2(float, float)
-_DEF_TYPE_4(float, float)
+_DEF_TYPE_2(float, float);
+_DEF_TYPE_4(float, float);
 typedef float4 float3;
-_DEF_TYPE_8(float, float)
-_DEF_TYPE_16(float, float)
+_DEF_TYPE_8(float, float);
+_DEF_TYPE_16(float, float);
 
-_DEF_TYPE_2(double, double)
-_DEF_TYPE_4(double, double)
+_DEF_TYPE_2(double, double);
+_DEF_TYPE_4(double, double);
 typedef double4 double3;
-_DEF_TYPE_8(double, double)
-_DEF_TYPE_16(double, double)
+_DEF_TYPE_8(double, double);
+_DEF_TYPE_16(double, double);
 
 #undef _DEF_TYPE_2
 #undef _DEF_TYPE_4
