@@ -850,12 +850,12 @@ std::string Matrix<T>::deviceFunctions()
     << "#endif\n\n";
 
   s << "#ifndef MATRIX_GET\n"
-    << "#define get(m, y, x) m.data[(int)(y * m.col_count + x)]\n"
+    << "#define get(m, y, x) m.data[(int)((y) * m.col_count + (x))]\n"
     << "#define MATRIX_GET\n"
     << "#endif\n";
 
   s << "#ifndef MATRIX_SET\n"
-    << "#define set(m, y, x, v) m.data[(int)(y * m.col_count + x)] = v\n"
+    << "#define set(m, y, x, v) m.data[(int)((y) * m.col_count + (x))] = (v)\n"
     << "#define MATRIX_SET\n"
     << "#endif\n";
 

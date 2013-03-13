@@ -69,6 +69,11 @@ void Logger::setOutput(std::ostream& output)
   _output = &output;
 }
 
+std::ostream& Logger::output() const
+{
+  return *_output;
+}
+
 void Logger::setLoggingLevel(Severity::Type severity)
 {
   _severity = severity;

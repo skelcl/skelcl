@@ -44,6 +44,7 @@
 
 #include <pvsutil/Logger.h>
 #include <pvsutil/Timer.h>
+#include <pvsutil/CLArgParser.h>
 
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
@@ -195,86 +196,80 @@ int main(int argc, char* argv[])
   // pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
   pvsutil::defaultLogger.setOutput(std::cout);
 
-  if (argc < 5 || argc > 10) {
-    std::cout << "usage: matrix_mult <row_count_A> <column_count_A> " \
-                                    "<column_count_B>" << std::endl
-      << "                   <check_result> <repetitions> <device_type>" 
-      << std::endl
-      << "                   [[<device_count> [<double_precision>] " \
-                            "[<alt-kernel>]]]" << std::endl
-      << "- row_count_A: row count of left matrix" << std::endl
-      << "- column_count_A: column count of left matrix / row count of right " \
-                          "matrix" << std::endl
-      << "- column_count_B: column count of right matrix" << std::endl
-      << "- check_result: 0 = no check, 1 = result is checked" << std::endl
-      << "- repetitions: number of repetitions (optional, default: 1)" 
-      << std::endl
-      << "- device_type: ANY, CPU, GPU, ACCELERATOR (optional, default: ANY)" 
-      << std::endl
-      << "- device_count: number of devices (optional, default: 1)" << std::endl
-      << "- double_precision: use double precision, 0 or 1 (optional, " \
-                             "default: 0)" << std::endl
-      << "- alt_kernel: use alternative kernel (instead of Zip and Reduce), " \
-                       "0 or 1" << std::endl
-      << "              (optional, default: 0)" << std::endl;
-    return 1;
-  }
+  using namespace pvsutil::cmdline;
+  pvsutil::CLArgParser cmd(Description("Matrix multiplication example in SkelCL"));
 
-  // parse command line arguments
-  int rowCountA = atoi(argv[1]);
-  int columnCountA = atoi(argv[2]);
-  int columnCountB = atoi(argv[3]);
-  int checkResult = atoi(argv[4]);
-  int repetitions = 1;
-  if (argc > 5) {
-    repetitions = atoi(argv[5]);
-  }
-  device_type deviceType = device_type::ANY;
+  auto rowCountA = Arg<int>(Flags(Short('d'), Long("row_count_A")),
+                            Description("Row count of left matrix"));
+
+  auto colCountA = Arg<int>(Flags(Short('m'), Long("col_count_A")),
+                            Description("Column count of left matrix"));
+
+  auto colCountB = Arg<int>(Flags(Short('n'), Long("col_count_B")),
+                            Description("Column count of right matrix"));
+
+  auto checkResult = Arg<bool>(Flags(Short('c'), Long("check_result")),
+                               Description("Check result"),
+                               Default(false));
+
+  auto repetitions = Arg<int>(Flags(Short('r'), Long("repetitions")),
+                              Description("Number of repetitions"),
+                              Default(1));
+
+  auto deviceType = Arg<device_type>(Flags(Long("device_type")),
+                                     Description("Device type: ANY, CPU, GPU, ACCELERATOR"),
+                                     Default(device_type::ANY),
+                                     [](std::string arg) -> device_type {
+                                       if (arg == "ANY") return device_type::ANY;
+                                       if (arg == "CPU") return device_type::CPU;
+                                       if (arg == "GPU") return device_type::CPU;
+                                       if (arg == "ACCELERATOR")
+                                                 return device_type::ACCELERATOR;
+                                       throw std::invalid_argument(
+                                         "Invalid argument (" + arg + ") for device_type.");
+                                     });
+
+  auto deviceCount = Arg<int>(Flags(Long("device_count")),
+                              Description("Device Count"),
+                              Default(1));
+
+  auto useDoublePrecision = Arg<bool>(Flags(Long("use_double")),
+                                      Description("Use double precision for the computation"),
+                                      Default(false));
+
+  auto useAltKernel = Arg<bool>(Flags(Long("alt_kernel")),
+                                Description("Use alternative kernel"),
+                                Default(false));
+
+  cmd.add(&rowCountA, &colCountA, &colCountB, &checkResult, &repetitions,
+          &deviceType, &deviceCount, &useDoublePrecision, &useAltKernel);
+
+  cmd.parse(argc, argv);
+
   std::string deviceArg = "Any";
-  if (argc > 6) {
-    deviceArg = argv[6];
-    if (deviceArg == "CPU") {
-        deviceType = device_type::CPU;
-    }
-    else if (deviceArg == "GPU") {
-        deviceType = device_type::GPU;
-    }
-    else if (deviceArg == "ACCELERATOR") {
-        deviceType = device_type::ACCELERATOR;
-    }
-  }
-  int deviceCount = 1;
-  if (argc > 7) {
-    deviceCount = atoi(argv[7]);
-  }
-  bool double_precicsion = false;
-  if (argc > 8) {
-    double_precicsion = atoi(argv[8]);
-  }
-  bool alt_kernel = false;
-  if (argc > 9) {
-    alt_kernel = atoi(argv[9]);
-  }
+  if (deviceType == device_type::CPU) deviceArg = "CPU";
+  if (deviceType == device_type::GPU) deviceArg = "GPU";
+  if (deviceType == device_type::ACCELERATOR) deviceArg = "ACCELERATOR";
 
   init(nDevices(deviceCount).deviceType(deviceType)); // initialize SkelCL
   double totalTime = 0.0;
   for (int i = 0; i < repetitions; i++) {
-    if (alt_kernel && double_precicsion) {
-      totalTime += matrixMultDoubleAlt(rowCountA, columnCountA, columnCountB,
+    if (useAltKernel && useDoublePrecision) {
+      totalTime += matrixMultDoubleAlt(rowCountA, colCountA, colCountB,
                                        checkResult, deviceArg, deviceCount);
-    } else if (alt_kernel) { // && !double_precicsion
-      totalTime += matrixMultFloatAlt(rowCountA, columnCountA, columnCountB,
+    } else if (useAltKernel) { // && !useDoublePrecision
+      totalTime += matrixMultFloatAlt(rowCountA, colCountA, colCountB,
                                       checkResult, deviceArg, deviceCount);
-    } else if (double_precicsion) { // && !alt_kernel
-      totalTime += matrixMultDouble(rowCountA, columnCountA, columnCountB,
+    } else if (useDoublePrecision) { // && !useAltKernel
+      totalTime += matrixMultDouble(rowCountA, colCountA, colCountB,
                                     checkResult, deviceArg, deviceCount);
-    } else { // !double_precicsion && !alt_kernel
-      totalTime += matrixMultFloat(rowCountA, columnCountA, columnCountB, 
+    } else { // !useDoublePrecision && !useAltKernel
+      totalTime += matrixMultFloat(rowCountA, colCountA, colCountB, 
                                    checkResult, deviceArg, deviceCount);
     }
   }
   double avgTime = totalTime / repetitions;
-  LOG_INFO("sizes: ", rowCountA, ", ", columnCountA, ", ", columnCountB, "; ",
+  LOG_INFO("sizes: ", rowCountA, ", ", colCountA, ", ", colCountB, "; ",
       "average time: ", avgTime, " ms");
 
   return 0;

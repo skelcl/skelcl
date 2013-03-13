@@ -32,103 +32,98 @@
  *****************************************************************************/
  
 ///
-/// \file Logger.h
+/// \file Flags.h
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef LOGGER_H_
-#define LOGGER_H_
+#ifndef FLAGS_H_
+#define FLAGS_H_
 
-#include <chrono>
-#include <ostream>
-
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-#undef  __CL_ENABLE_EXCEPTIONS
+#include <string>
+#include <vector>
 
 namespace pvsutil {
 
-class Logger {
+namespace cmdline {
+
+class Short {
 public:
-  struct Severity {
-    enum Type {
-      Error = 0,
-      Warning,
-      Info,
-      Debug,
-      DebugInfo
-    };
-  };
+  Short(const char c);
 
-  Logger();
+  bool operator<(const Short& rhs) const;
 
-  Logger(std::ostream& output, Severity::Type severity);
-
-  void setOutput(std::ostream& output);
-
-  std::ostream& output() const;
-
-  void setLoggingLevel(Severity::Type severity);
-
-  template <typename... Args>
-  void log(Severity::Type severity, const char* file, int line,
-           Args&&... args);
-
-  const std::chrono::high_resolution_clock::time_point& startTimePoint() const;
-
+  const std::string& getName() const;
 private:
-  void logArgs(std::ostream& output);
-
-  template <typename... Args>
-  void logArgs(std::ostream& output, const cl::Error& err, Args&&... args);
-
-  template <typename T, typename... Args>
-  void logArgs(std::ostream& output, T value, Args&&... args);
-
-  std::chrono::high_resolution_clock::time_point  _startTime;
-  Severity::Type                                  _severity;
-  std::ostream*                                   _output;
+  std::string _name;
 };
 
-#define LOG(severity, ...)\
-  pvsutil::defaultLogger.log(severity, __FILE__, __LINE__,\
-                                    __VA_ARGS__)
+class Long {
+public:
+  Long(const char* name);
+  Long(const std::string& name);
 
-#define LOG_ERROR(...)\
-  LOG(pvsutil::Logger::Severity::Error, __VA_ARGS__)
+  bool operator<(const Long& rhs) const;
 
-#define ABORT_WITH_ERROR(err)\
-  LOG_ERROR(err); abort()
+  const std::string& getName() const;
+private:
+  std::string _name;
+};
 
-#define LOG_WARNING(...)\
-  LOG(pvsutil::Logger::Severity::Warning, __VA_ARGS__)
+class Flags {
+public:
+  template <class... Args>
+  Flags(const Short& shortFlag, Args... args);
 
-#define LOG_INFO(...)\
-  LOG(pvsutil::Logger::Severity::Info, __VA_ARGS__)
+  template <class... Args>
+  Flags(const Long& longFlag, Args... args);
 
-#ifdef NDEBUG
+  const std::vector<Short>& getShortFlags() const;
+  const std::vector<Long>&  getLongFlags()  const;
+private:
+  void init();
 
-#define LOG_DEBUG(...)      (void(0))
-#define LOG_DEBUG_INFO(...) (void(0))
+  template <class... Args>
+  void init(const Short& shortFlag, Args... args);
 
-#else  // DEBUG
+  template <class... Args>
+  void init(const Long& longFlag, Args... args);
 
-#define LOG_DEBUG(...)\
-  LOG(pvsutil::Logger::Severity::Debug, __VA_ARGS__)
+  std::vector<Short> _shortFlags;
+  std::vector<Long>  _longFlags;
+};
 
-#define LOG_DEBUG_INFO(...)\
-  LOG(pvsutil::Logger::Severity::DebugInfo, __VA_ARGS__)
+template <class... Args>
+Flags::Flags(const Short& shortFlag, Args... args)
+  : _shortFlags(), _longFlags()
+{
+  this->init(shortFlag, std::forward<Args>(args)...);
+}
 
-#endif // NDEBUG
+template <class... Args>
+Flags::Flags(const Long& longFlag, Args... args)
+  : _shortFlags(), _longFlags()
+{
+  this->init(longFlag, std::forward<Args>(args)...);
+}
 
-// Default logger connected per default to std::clog
-extern Logger defaultLogger;
+template <class... Args>
+void Flags::init(const Short& shortFlag, Args... args)
+{
+  _shortFlags.push_back(shortFlag);
+  this->init(std::forward<Args>(args)...);
+}
 
+template <class... Args>
+void Flags::init(const Long& longFlag, Args... args)
+{
+  _longFlags.push_back(longFlag);
+  this->init(std::forward<Args>(args)...);
+}
+
+} // namespace cmdline
 
 } // namespace pvsutil
 
-#include "detail/LoggerDef.h"
-
-#endif // LOGGER_H_
+#endif // FLAGS_H_
 

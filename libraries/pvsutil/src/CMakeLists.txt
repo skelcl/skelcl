@@ -9,11 +9,22 @@ include_directories (
 set (PVSUTIL_SOURCES
       ../include/pvsutil/Assert.h
       ../include/pvsutil/Logger.h
+      ../include/pvsutil/CLArgParser.h
       ../include/pvsutil/Timer.h
+      ../include/pvsutil/cmdline/Arg.h
+      ../include/pvsutil/cmdline/Default.h
+      ../include/pvsutil/cmdline/Description.h
+      ../include/pvsutil/cmdline/Flags.h
+      ../include/pvsutil/cmdline/Version.h
       ../include/pvsutil/detail/LoggerDef.h
+      Arg.cpp
       Assert.cpp
+      Description.cpp
+      Flags.cpp
       Logger.cpp
+      CLArgParser.cpp
       Timer.cpp
+      Version.cpp
     )
 
 # specify library target

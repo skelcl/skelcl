@@ -32,103 +32,73 @@
  *****************************************************************************/
  
 ///
-/// \file Logger.h
+/// \file Flags.cpp
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef LOGGER_H_
-#define LOGGER_H_
+#include <string>
 
-#include <chrono>
-#include <ostream>
+#include "pvsutil/Assert.h"
 
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-#undef  __CL_ENABLE_EXCEPTIONS
+#include "pvsutil/cmdline/Flags.h"
 
 namespace pvsutil {
 
-class Logger {
-public:
-  struct Severity {
-    enum Type {
-      Error = 0,
-      Warning,
-      Info,
-      Debug,
-      DebugInfo
-    };
-  };
+namespace cmdline {
 
-  Logger();
+Short::Short(const char c)
+  : _name(1, c)
+{
+}
 
-  Logger(std::ostream& output, Severity::Type severity);
+bool Short::operator<(const Short& rhs) const
+{
+  return _name < rhs._name;
+}
 
-  void setOutput(std::ostream& output);
+const std::string& Short::getName() const
+{
+  return _name;
+}
 
-  std::ostream& output() const;
+Long::Long(const char* name)
+  : _name(name)
+{
+  // ensure no strings are in the flag names
+  ASSERT(_name.find(' ') == std::string::npos);
+}
 
-  void setLoggingLevel(Severity::Type severity);
+Long::Long(const std::string& name)
+  : _name(name)
+{
+}
 
-  template <typename... Args>
-  void log(Severity::Type severity, const char* file, int line,
-           Args&&... args);
+bool Long::operator<(const Long& rhs) const
+{
+  return _name < rhs._name;
+}
 
-  const std::chrono::high_resolution_clock::time_point& startTimePoint() const;
+const std::string& Long::getName() const
+{
+  return _name;
+}
 
-private:
-  void logArgs(std::ostream& output);
+void Flags::init()
+{
+}
 
-  template <typename... Args>
-  void logArgs(std::ostream& output, const cl::Error& err, Args&&... args);
+const std::vector<Short>& Flags::getShortFlags() const
+{
+  return _shortFlags;
+}
 
-  template <typename T, typename... Args>
-  void logArgs(std::ostream& output, T value, Args&&... args);
+const std::vector<Long>& Flags::getLongFlags() const
+{
+  return _longFlags;
+}
 
-  std::chrono::high_resolution_clock::time_point  _startTime;
-  Severity::Type                                  _severity;
-  std::ostream*                                   _output;
-};
-
-#define LOG(severity, ...)\
-  pvsutil::defaultLogger.log(severity, __FILE__, __LINE__,\
-                                    __VA_ARGS__)
-
-#define LOG_ERROR(...)\
-  LOG(pvsutil::Logger::Severity::Error, __VA_ARGS__)
-
-#define ABORT_WITH_ERROR(err)\
-  LOG_ERROR(err); abort()
-
-#define LOG_WARNING(...)\
-  LOG(pvsutil::Logger::Severity::Warning, __VA_ARGS__)
-
-#define LOG_INFO(...)\
-  LOG(pvsutil::Logger::Severity::Info, __VA_ARGS__)
-
-#ifdef NDEBUG
-
-#define LOG_DEBUG(...)      (void(0))
-#define LOG_DEBUG_INFO(...) (void(0))
-
-#else  // DEBUG
-
-#define LOG_DEBUG(...)\
-  LOG(pvsutil::Logger::Severity::Debug, __VA_ARGS__)
-
-#define LOG_DEBUG_INFO(...)\
-  LOG(pvsutil::Logger::Severity::DebugInfo, __VA_ARGS__)
-
-#endif // NDEBUG
-
-// Default logger connected per default to std::clog
-extern Logger defaultLogger;
-
+} // namespace cmdline
 
 } // namespace pvsutil
-
-#include "detail/LoggerDef.h"
-
-#endif // LOGGER_H_
 

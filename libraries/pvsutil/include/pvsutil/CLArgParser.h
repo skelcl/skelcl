@@ -32,103 +32,76 @@
  *****************************************************************************/
  
 ///
-/// \file Logger.h
+/// \file CLArgParser.h
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef LOGGER_H_
-#define LOGGER_H_
+#ifndef CLARGPARSER_H_
+#define CLARGPARSER_H_
 
-#include <chrono>
 #include <ostream>
+#include <string>
+#include <map>
 
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-#undef  __CL_ENABLE_EXCEPTIONS
+#include "Logger.h"
+
+#include "cmdline/Arg.h"
+#include "cmdline/Description.h"
+#include "cmdline/Version.h"
 
 namespace pvsutil {
 
-class Logger {
+class CLArgParser {
 public:
-  struct Severity {
-    enum Type {
-      Error = 0,
-      Warning,
-      Info,
-      Debug,
-      DebugInfo
-    };
-  };
+  CLArgParser(cmdline::Description&& des,
+              cmdline::Version&& ver = cmdline::Version(),
+              Logger& logger = defaultLogger);
 
-  Logger();
+  ~CLArgParser();
 
-  Logger(std::ostream& output, Severity::Type severity);
+  // add multiple Arg<T> to the parser
+  template <class... Args>
+  void add(cmdline::BaseArg* arg, Args... args);
 
-  void setOutput(std::ostream& output);
-
-  std::ostream& output() const;
-
-  void setLoggingLevel(Severity::Type severity);
-
-  template <typename... Args>
-  void log(Severity::Type severity, const char* file, int line,
-           Args&&... args);
-
-  const std::chrono::high_resolution_clock::time_point& startTimePoint() const;
+  void parse(int argc, char** argv);
 
 private:
-  void logArgs(std::ostream& output);
 
-  template <typename... Args>
-  void logArgs(std::ostream& output, const cl::Error& err, Args&&... args);
+  void add();
 
-  template <typename T, typename... Args>
-  void logArgs(std::ostream& output, T value, Args&&... args);
+  void registerArg(cmdline::BaseArg& arg);
 
-  std::chrono::high_resolution_clock::time_point  _startTime;
-  Severity::Type                                  _severity;
-  std::ostream*                                   _output;
+  void printArg(std::ostream& output, cmdline::BaseArg& arg);
+
+  void printDescription();
+  void printHelp();
+  void printVersion();
+
+
+  Logger&                         _logger;
+  cmdline::Description            _description;
+  cmdline::Version                _version;
+
+  cmdline::ArgImpl<bool>          _helpArg;
+  cmdline::ArgImpl<bool>          _versionArg;
+
+  std::map<cmdline::Short,
+           cmdline::BaseArg*>     _shortArgs;
+  std::map<cmdline::Long,
+           cmdline::BaseArg*>     _longArgs;
+  std::vector<cmdline::BaseArg*>  _mandatoryArgs;
+  std::vector<cmdline::BaseArg*>  _args;
 };
 
-#define LOG(severity, ...)\
-  pvsutil::defaultLogger.log(severity, __FILE__, __LINE__,\
-                                    __VA_ARGS__)
-
-#define LOG_ERROR(...)\
-  LOG(pvsutil::Logger::Severity::Error, __VA_ARGS__)
-
-#define ABORT_WITH_ERROR(err)\
-  LOG_ERROR(err); abort()
-
-#define LOG_WARNING(...)\
-  LOG(pvsutil::Logger::Severity::Warning, __VA_ARGS__)
-
-#define LOG_INFO(...)\
-  LOG(pvsutil::Logger::Severity::Info, __VA_ARGS__)
-
-#ifdef NDEBUG
-
-#define LOG_DEBUG(...)      (void(0))
-#define LOG_DEBUG_INFO(...) (void(0))
-
-#else  // DEBUG
-
-#define LOG_DEBUG(...)\
-  LOG(pvsutil::Logger::Severity::Debug, __VA_ARGS__)
-
-#define LOG_DEBUG_INFO(...)\
-  LOG(pvsutil::Logger::Severity::DebugInfo, __VA_ARGS__)
-
-#endif // NDEBUG
-
-// Default logger connected per default to std::clog
-extern Logger defaultLogger;
-
+template <class... Args>
+void CLArgParser::add(cmdline::BaseArg* arg, Args... args)
+{
+  this->registerArg(*arg);
+  add(std::forward<Args>(args)...);
+}
 
 } // namespace pvsutil
 
-#include "detail/LoggerDef.h"
-
-#endif // LOGGER_H_
+#endif // PARSER_H_
 
