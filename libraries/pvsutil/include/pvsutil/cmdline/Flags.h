@@ -30,38 +30,100 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
+ 
+///
+/// \file Flags.h
+///
+/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///
 
-/*
- * TempSourceFile.h
- */
-
-#ifndef TEMPSOURCEFILE_H_
-#define TEMPSOURCEFILE_H_
+#ifndef FLAGS_H_
+#define FLAGS_H_
 
 #include <string>
+#include <vector>
 
-#include "SourceFile.h"
+namespace pvsutil {
 
-namespace ssedit {
+namespace cmdline {
 
-class TempSourceFile : public SourceFile {
+class Short {
 public:
-  TempSourceFile(const std::string& content, const std::string& tmpFileName = ".source.c");
+  Short(const char c);
 
-  TempSourceFile(const TempSourceFile& rhs);
+  bool operator<(const Short& rhs) const;
 
-	~TempSourceFile();
-
-  void removeOpenCLFix();
-
+  const std::string& getName() const;
 private:
-  TempSourceFile();
-  TempSourceFile& operator=(const TempSourceFile&);
-  
-  std::string _tmpFileName;
+  std::string _name;
 };
 
-} // namespace ssedit
+class Long {
+public:
+  Long(const char* name);
+  Long(const std::string& name);
 
-#endif /* TEMPSOURCEFILE_H_ */
+  bool operator<(const Long& rhs) const;
+
+  const std::string& getName() const;
+private:
+  std::string _name;
+};
+
+class Flags {
+public:
+  template <class... Args>
+  Flags(const Short& shortFlag, Args... args);
+
+  template <class... Args>
+  Flags(const Long& longFlag, Args... args);
+
+  const std::vector<Short>& getShortFlags() const;
+  const std::vector<Long>&  getLongFlags()  const;
+private:
+  void init();
+
+  template <class... Args>
+  void init(const Short& shortFlag, Args... args);
+
+  template <class... Args>
+  void init(const Long& longFlag, Args... args);
+
+  std::vector<Short> _shortFlags;
+  std::vector<Long>  _longFlags;
+};
+
+template <class... Args>
+Flags::Flags(const Short& shortFlag, Args... args)
+  : _shortFlags(), _longFlags()
+{
+  this->init(shortFlag, std::forward<Args>(args)...);
+}
+
+template <class... Args>
+Flags::Flags(const Long& longFlag, Args... args)
+  : _shortFlags(), _longFlags()
+{
+  this->init(longFlag, std::forward<Args>(args)...);
+}
+
+template <class... Args>
+void Flags::init(const Short& shortFlag, Args... args)
+{
+  _shortFlags.push_back(shortFlag);
+  this->init(std::forward<Args>(args)...);
+}
+
+template <class... Args>
+void Flags::init(const Long& longFlag, Args... args)
+{
+  _longFlags.push_back(longFlag);
+  this->init(std::forward<Args>(args)...);
+}
+
+} // namespace cmdline
+
+} // namespace pvsutil
+
+#endif // FLAGS_H_
 

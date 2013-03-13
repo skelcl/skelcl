@@ -62,8 +62,7 @@ namespace detail {
 
   class Sizes {
   public:
-      Sizes() : _sizes() {} // to prevent 'initialization list' error message
-
+    Sizes() : _sizes() {} // prevent error msg
     void push_back(detail::DeviceBuffer::size_type size) {
       _sizes.push_back(size);
     }
@@ -76,6 +75,12 @@ namespace detail {
   };
 
 } // namespace detail
+
+template <typename T>
+class RegisterVectorDeviceFunctions {
+public:
+  RegisterVectorDeviceFunctions();
+};
 
 template <typename T>
 class Vector {
@@ -474,6 +479,8 @@ private:
   ///
   std::string getDebugInfo() const;
 
+  static RegisterVectorDeviceFunctions<T> registerVectorDeviceFunctions;
+
           size_type                                   _size;
   mutable
     std::unique_ptr<detail::Distribution<Vector<T>>>  _distribution;
@@ -484,6 +491,9 @@ private:
   mutable std::map< detail::Device::id_type,
                     detail::DeviceBuffer >            _deviceBuffers;
 };
+
+template <typename T>
+RegisterVectorDeviceFunctions<T> Vector<T>::registerVectorDeviceFunctions;
 
 } // namespace skelcl
 

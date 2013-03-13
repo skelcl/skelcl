@@ -43,6 +43,7 @@
 #include <istream>
 #include <string>
 #include <sstream>
+#include <vector>
 
 namespace skelcl {
 
@@ -57,6 +58,8 @@ namespace skelcl {
 ///
 class Source {
 public:
+  Source();
+
   ///
   /// \brief Constructor taking the source code as a string
   ///
@@ -97,8 +100,6 @@ public:
   ///
   operator std::string() const;
 
-  void prefix(const std::string& source);
-
   void append(const std::string& source);
 
 private:
@@ -110,13 +111,18 @@ namespace detail {
 
 class CommonDefinitions {
 public:
+  enum Level : unsigned int {
+    PRAGMA,
+    USER_DEFINITION,
+    GENERATED_DEFINITION,
+    SIZE
+  };
+
   static CommonDefinitions& instance();
 
-  static void prefix(const std::string& source);
+  static void append(const std::string& source, Level level);
 
-  static void append(const std::string& source);
-
-  static const Source& getSource();
+  static Source getSource();
 
   CommonDefinitions(const CommonDefinitions&) = delete;
   CommonDefinitions& operator=(const CommonDefinitions&) = delete;
@@ -124,12 +130,14 @@ public:
 private:
   CommonDefinitions();
 
-  Source _source;
+  std::vector<Source> _sources;
 };
 
 class RegisterCommonDefinition {
 public:
-  RegisterCommonDefinition(const char* definition);
+  RegisterCommonDefinition(const char* definition,
+                           CommonDefinitions::Level level
+                              = CommonDefinitions::Level::USER_DEFINITION);
 };
 
 class RegisterCommonMacroDefinition {
@@ -140,7 +148,8 @@ public:
   {
     std::stringstream ss;
     ss << "#define " << name << " " << value;
-    CommonDefinitions::prefix(ss.str());
+    CommonDefinitions::append(ss.str(),
+                              CommonDefinitions::Level::USER_DEFINITION);
   }
 };
 

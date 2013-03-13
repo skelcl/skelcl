@@ -5,7 +5,7 @@ unamestr=`uname -s`
 if [[ "$unamestr" == 'Darwin' ]]; then
   platform='osx'
 elif [[ "$unamestr" == 'Linux' ]]; then
-  platform= 'ubuntu' #assume ubuntu as linux
+  platform='ubuntu' #assume ubuntu as linux
 fi
 
 if [[ $platform == 'ubuntu' ]]; then
@@ -32,6 +32,7 @@ rm gtest-1.6.0.zip
 
 # symlink gtest (Step 4)
 ln -s ../../gtest libraries/ssedit/libraries/gtest
+ln -s ../../gtest libraries/pvsutil/libraries/gtest
 
 # make build directory (Step 5)
 mkdir build

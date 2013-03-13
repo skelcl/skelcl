@@ -30,28 +30,75 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
+ 
+///
+/// \file Flags.cpp
+///
+/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///
 
-#include <clang-c/Index.h>
-
-#include <fstream>
 #include <string>
 
-struct TranslationUnit {
-  TranslationUnit(const std::string& source)
-    : _fileName("tmpSource.c"), _index(), _tu() {
-    std::ofstream tmpFile(_fileName, std::ios_base::trunc);
-    tmpFile.write(source.c_str(), source.size());
+#include "pvsutil/Assert.h"
 
-    _index = clang_createIndex(0, 0);
-    _tu = clang_parseTranslationUnit(_index, _fileName.c_str(), NULL, 0, NULL, 0, CXTranslationUnit_None);
-  };
+#include "pvsutil/cmdline/Flags.h"
 
-  ~TranslationUnit() {
-    remove(_fileName.c_str());
-  };
+namespace pvsutil {
 
-  std::string _fileName;
-  CXIndex _index;
-  CXTranslationUnit _tu;
-};
+namespace cmdline {
+
+Short::Short(const char c)
+  : _name(1, c)
+{
+}
+
+bool Short::operator<(const Short& rhs) const
+{
+  return _name < rhs._name;
+}
+
+const std::string& Short::getName() const
+{
+  return _name;
+}
+
+Long::Long(const char* name)
+  : _name(name)
+{
+  // ensure no strings are in the flag names
+  ASSERT(_name.find(' ') == std::string::npos);
+}
+
+Long::Long(const std::string& name)
+  : _name(name)
+{
+}
+
+bool Long::operator<(const Long& rhs) const
+{
+  return _name < rhs._name;
+}
+
+const std::string& Long::getName() const
+{
+  return _name;
+}
+
+void Flags::init()
+{
+}
+
+const std::vector<Short>& Flags::getShortFlags() const
+{
+  return _shortFlags;
+}
+
+const std::vector<Long>& Flags::getLongFlags() const
+{
+  return _longFlags;
+}
+
+} // namespace cmdline
+
+} // namespace pvsutil
 

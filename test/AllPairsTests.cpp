@@ -170,14 +170,14 @@ TEST_F(AllPairsTest, AdditionalArguments) {
     }
 }
 
-// Tests alternative kernel-constructor. The alternative kernel is the one which does take a string as an argument.
+// Tests alternative kernel-constructor
 TEST_F(AllPairsTest, AlternativeKernelConstructor) {
-    skelcl::AllPairs<float(float, float)> allpairs("float func(lmatrix_t *row, rmatrix_t *col, const unsigned int dim){return 1;}");
+    skelcl::AllPairs<float(float, float)> allpairs("float func(lmatrix_t* row, rmatrix_t* col, const unsigned int dim){return 1;}");
 }
 
 // Tests alternative kernel
 TEST_F(AllPairsTest, AlternativeKernel) {
-    skelcl::AllPairs<float(float, float)> allpairs("float func(lmatrix_t *row, rmatrix_t *col, const unsigned int dim) {" \
+    skelcl::AllPairs<float(float, float)> allpairs("float func(lmatrix_t* row, rmatrix_t* col, const unsigned int dim) {" \
                                                     "float res = 0;" \
                                                     "for (int i = 0; i < dim; ++i) {" \
                                                     "  res += getElementFromRow(row, i) * getElementFromColumn(col, i); }" \
@@ -222,11 +222,11 @@ TEST_F(AllPairsTest, AlternativeKernel) {
 
 // Tests alternative kernel with additional arguments
 TEST_F(AllPairsTest, AltKernelAddArguments) {
-    skelcl::AllPairs<float(float, float)> allpairs("float func(lmatrix_t *row, rmatrix_t *col, const unsigned int dim, int start) {" \
-                                                   "float res = start;" \
-                                                   "for (int i = 0; i < dim; ++i) {" \
-                                                   "  res += getElementFromRow(row, i) * getElementFromColumn(col, i); }" \
-                                                   "return res; }");
+    skelcl::AllPairs<float(float, float)> allpairs("float func(lmatrix_t* row, rmatrix_t* col, const unsigned int dim, int start) {" \
+                                                    "float res = start;" \
+                                                    "for (int i = 0; i < dim; ++i) {" \
+                                                    "  res += getElementFromRow(row, i) * getElementFromColumn(col, i); }" \
+                                                    "return res; }");
 
     const unsigned int height = 10;
     const unsigned int dim = 55;

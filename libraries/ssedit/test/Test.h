@@ -30,38 +30,39 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
+ 
+///
+/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///
 
-/*
- * TempSourceFile.h
- */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
 
-#ifndef TEMPSOURCEFILE_H_
-#define TEMPSOURCEFILE_H_
+#include <gtest/gtest.h>
 
+#pragma GCC diagnostic pop
+
+#include <clang-c/Index.h>
+
+#include <fstream>
 #include <string>
 
-#include "SourceFile.h"
+struct TranslationUnit {
+  TranslationUnit(const std::string& source)
+    : _fileName("tmpSource.c"), _index(), _tu() {
+    std::ofstream tmpFile(_fileName, std::ios_base::trunc);
+    tmpFile.write(source.c_str(), source.size());
 
-namespace ssedit {
+    _index = clang_createIndex(0, 0);
+    _tu = clang_parseTranslationUnit(_index, _fileName.c_str(), NULL, 0, NULL, 0, CXTranslationUnit_None);
+  };
 
-class TempSourceFile : public SourceFile {
-public:
-  TempSourceFile(const std::string& content, const std::string& tmpFileName = ".source.c");
+  ~TranslationUnit() {
+    remove(_fileName.c_str());
+  };
 
-  TempSourceFile(const TempSourceFile& rhs);
-
-	~TempSourceFile();
-
-  void removeOpenCLFix();
-
-private:
-  TempSourceFile();
-  TempSourceFile& operator=(const TempSourceFile&);
-  
-  std::string _tmpFileName;
+  std::string _fileName;
+  CXIndex _index;
+  CXTranslationUnit _tu;
 };
-
-} // namespace ssedit
-
-#endif /* TEMPSOURCEFILE_H_ */
 

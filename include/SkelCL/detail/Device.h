@@ -331,6 +331,8 @@ public:
   ///
   const cl::Device& clDevice() const;
 
+  bool supportsDouble() const;
+
 private:
   cl::Device        _device;
   cl::Context       _context;

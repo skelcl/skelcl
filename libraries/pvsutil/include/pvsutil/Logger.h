@@ -67,6 +67,8 @@ public:
 
   void setOutput(std::ostream& output);
 
+  std::ostream& output() const;
+
   void setLoggingLevel(Severity::Type severity);
 
   template <typename... Args>

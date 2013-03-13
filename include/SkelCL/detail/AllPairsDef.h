@@ -72,7 +72,7 @@
 
 namespace skelcl {
 
-// Constructor for special case implementation using reduce and zip for allpairs computations
+// Konstruktor
 template<typename Tleft, typename Tright, typename Tout>
 AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip)
     : detail::Skeleton(),
@@ -81,23 +81,24 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const 
       _funcReduce(reduce.func()),
       _funcZip(zip.func()),
       _idReduce(reduce.id()),
-      _isSpecial(true), _C(32), _R(8), _S(16) // must match AllPairsKernel.cl values!
+      _C(32), _R(8), _S(16), // parameters
+      _program(createAndBuildProgramSpecial())
 {
     LOG_DEBUG("Create new AllPairs object (", this, ")");
 }
 
-// Constructor for general case using user defined code as a string for all pairs computations
 template<typename Tleft, typename Tright, typename Tout>
 AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::string& func)
     : detail::Skeleton(),
       _srcUser(source),
       _funcUser(func),
-      _isSpecial(false), _C(16), _R(16), _S(1)
+      _C(16), _R(16), _S(1),
+      _program(createAndBuildProgramGeneral())
 {
     LOG_DEBUG("Create new AllPairs object (", this, ")");
 }
 
-
+// Ausführungsoperator
 template<typename Tleft, typename Tright, typename Tout>
 template <typename... Args>
 Matrix<Tout> AllPairs<Tout(Tleft, Tright)>::operator()(const Matrix<Tleft>& left,
@@ -109,7 +110,7 @@ Matrix<Tout> AllPairs<Tout(Tleft, Tright)>::operator()(const Matrix<Tleft>& left
     return output;
 }
 
-
+// Ausführungsoperator mit Referenz
 template<typename Tleft, typename Tright, typename Tout>
 template <typename... Args>
 Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > output,
@@ -121,26 +122,23 @@ Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > outp
     ASSERT( left.columnCount() == right.rowCount() );
     ASSERT( left.columnCount() > 0 );
 
-    detail::Program program = createAndBuildProgram();
-
     prepareInput(left, right);
 
     prepareAdditionalInput(std::forward<Args>(args)...);
 
     prepareOutput(output.container(), left, right);
 
-    execute(program, output.container(), left, right, std::forward<Args>(args)...);
+    execute(output.container(), left, right, std::forward<Args>(args)...);
 
     updateModifiedStatus(output, std::forward<Args>(args)...);
 
     return output.container();
 }
 
-
+// Ausführen
 template<typename Tleft, typename Tright, typename Tout>
 template <typename... Args>
-void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
-                                            Matrix<Tout>& output,
+void AllPairs<Tout(Tleft, Tright)>::execute(Matrix<Tout>& output,
                                             const Matrix<Tleft>& left,
                                             const Matrix<Tright>& right,
                                             Args&&... args)
@@ -153,7 +151,7 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
         auto& leftBuffer   = left.deviceBuffer(*devicePtr);
         auto& rightBuffer  = right.deviceBuffer(*devicePtr);
 
-        cl_uint elements[2]   = { static_cast<cl_uint>(output.rowCount()),
+        cl_uint elements[2]   = { static_cast<cl_uint>(outputBuffer.size() / output.columnCount()),
                                   static_cast<cl_uint>(output.columnCount()) };
         cl_uint local[2]      = {_C, _R}; // C, R
         cl_uint global[2]     = {static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements[1], local[0])),
@@ -164,7 +162,7 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
         LOG_DEBUG("local: ", local[0],",", local[1], " global: ", global[0],",",global[1]);
 
         try {
-            cl::Kernel kernel(program.kernel(*devicePtr, "SCL_ALLPAIRS"));
+            cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_ALLPAIRS"));
 
             kernel.setArg(0, leftBuffer.clBuffer());
             kernel.setArg(1, rightBuffer.clBuffer());
@@ -198,15 +196,7 @@ void AllPairs<Tout(Tleft, Tright)>::execute(const detail::Program& program,
     LOG_INFO("AllPairs kernel started");
 }
 
-// build program based on used constructor
-template<typename Tleft, typename Tright, typename Tout>
-detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgram() const
-{
-    if (_isSpecial)
-        return createAndBuildProgramSpecial();
-    return createAndBuildProgramGeneral();
-}
-
+// Programm erstellen
 template<typename Tleft, typename Tright, typename Tout>
 detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() const
 {
@@ -221,6 +211,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     auto func = reduceTemp.findFunction(_funcReduce); ASSERT(func.isValid());
     reduceTemp.commitRename(func, "TMP_REDUCE");
     reduceTemp.writeCommittedChanges();
+    reduceTemp.removeOpenCLFix();
 
     std::ifstream rFile(reduceTemp.getFileName());
     std::string rSource( (std::istreambuf_iterator<char>(rFile)),
@@ -232,6 +223,7 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     func = zipTemp.findFunction(_funcReduce); ASSERT(func.isValid());
     zipTemp.commitRename(func, "TMP_ZIP");
     zipTemp.writeCommittedChanges();
+    zipTemp.removeOpenCLFix();
 
     std::ifstream zFile(zipTemp.getFileName());
     std::string zSource( (std::istreambuf_iterator<char>(zFile)),
@@ -253,6 +245,14 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     // zip user source
     s.append(zSource);
 
+    s.append("\n");
+
+    // allpairs parameters
+    s.append("#define C ").append(std::to_string(_C)).append("\n");
+    s.append("#define R ").append(std::to_string(_R)).append("\n");
+    s.append("#define S ").append(std::to_string(_S)).append("\n");
+    s.append("#define D 32");
+
     // allpairs skeleton source
     s.append(
       #include "AllPairsKernel.cl"
@@ -265,9 +265,9 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
                                                          + zSource));
     // modify program
     if (!program.loadBinary()) {
-        program.transferParameters("TMP_REDUCE", 2, "SCL_ALLPAIRS"); // problem: parameters with the same name in reduce and zip
+        program.transferParameters("TMP_REDUCE", 2, "SCL_ALLPAIRS"); // problem: reduce parameter a und zip parameter a
         program.transferArguments("TMP_REDUCE", 2, "USR_REDUCE");
-        program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS"); // order of parameters? reduce first
+        program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS"); // reihenfolge? erst args von reduce dann zip?
         program.transferArguments("TMP_ZIP", 2, "USR_ZIP");
 
         program.renameFunction("TMP_REDUCE", "USR_REDUCE");
@@ -308,11 +308,11 @@ typedef struct {
     unsigned int column;
 } rmatrix_t;
 
-SCL_TYPE_0 getElementFromRow(lmatrix_t *matrix, const unsigned int element_id) {
+SCL_TYPE_0 getElementFromRow(lmatrix_t* matrix, const unsigned int element_id) {
     return matrix->data[(matrix->row) * matrix->dimension + element_id];
 }
 
-SCL_TYPE_1 getElementFromColumn(rmatrix_t *matrix, const unsigned int element_id) {
+SCL_TYPE_1 getElementFromColumn(rmatrix_t* matrix, const unsigned int element_id) {
     return matrix->data[element_id * (matrix->width) + matrix->column];
 }
 
@@ -345,7 +345,7 @@ SCL_TYPE_1 getElementFromColumn(rmatrix_t *matrix, const unsigned int element_id
     return program;
 }
 
-
+// Eingabe vorbereiten
 template<typename Tleft, typename Tright, typename Tout>
 void AllPairs<Tout(Tleft, Tright)>::prepareInput(const Matrix<Tleft>& left,
                                                  const Matrix<Tright>& right)
@@ -412,7 +412,7 @@ void AllPairs<Tout(Tleft, Tright)>::prepareInput(const Matrix<Tleft>& left,
     right.startUpload();
 }
 
-
+// Ausgabe vorbereiten
 template<typename Tleft, typename Tright, typename Tout>
 void AllPairs<Tout(Tleft, Tright)>::prepareOutput(Matrix<Tout>& output,
                                                   const Matrix<Tleft>& left,
@@ -423,7 +423,7 @@ void AllPairs<Tout(Tleft, Tright)>::prepareOutput(Matrix<Tout>& output,
         output.resize(typename Matrix<Tout>::size_type(left.rowCount(), right.columnCount()));
 
     // adopt distribution from left input
-    output.setDistribution(left.distribution()); // correct type (Tout)?
+    output.setDistribution(left.distribution()); // richtiger typ (Tout)?
 
     //create buffers if required
     output.createDeviceBuffers();

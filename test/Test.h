@@ -30,38 +30,15 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
+ 
+///
+/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///
 
-/*
- * TempSourceFile.h
- */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
 
-#ifndef TEMPSOURCEFILE_H_
-#define TEMPSOURCEFILE_H_
+#include <gtest/gtest.h>
 
-#include <string>
-
-#include "SourceFile.h"
-
-namespace ssedit {
-
-class TempSourceFile : public SourceFile {
-public:
-  TempSourceFile(const std::string& content, const std::string& tmpFileName = ".source.c");
-
-  TempSourceFile(const TempSourceFile& rhs);
-
-	~TempSourceFile();
-
-  void removeOpenCLFix();
-
-private:
-  TempSourceFile();
-  TempSourceFile& operator=(const TempSourceFile&);
-  
-  std::string _tmpFileName;
-};
-
-} // namespace ssedit
-
-#endif /* TEMPSOURCEFILE_H_ */
+#pragma GCC diagnostic pop
 

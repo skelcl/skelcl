@@ -31,13 +31,13 @@
  *                                                                           *
  *****************************************************************************/
 
-// testing framework header
-#include <gtest/gtest.h>
 // std header
 #include <fstream>
 #include <cstdio>
 // ssedit header
 #include <ssedit/SourceFile.h>
+
+#include "Test.h"
 
 class OpenSourceFileTest : public ::testing::Test {
 protected:

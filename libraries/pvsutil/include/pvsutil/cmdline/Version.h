@@ -30,38 +30,36 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
+ 
+///
+/// \file Version.h
+///
+/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///
 
-/*
- * TempSourceFile.h
- */
-
-#ifndef TEMPSOURCEFILE_H_
-#define TEMPSOURCEFILE_H_
+#ifndef VERSION_H_
+#define VERSION_H_
 
 #include <string>
 
-#include "SourceFile.h"
+namespace pvsutil {
 
-namespace ssedit {
+namespace cmdline {
 
-class TempSourceFile : public SourceFile {
+class Version {
 public:
-  TempSourceFile(const std::string& content, const std::string& tmpFileName = ".source.c");
+  Version();
+  Version(const char* version);
+  Version(const std::string& version);
 
-  TempSourceFile(const TempSourceFile& rhs);
-
-	~TempSourceFile();
-
-  void removeOpenCLFix();
-
+  std::string& getVersion();
 private:
-  TempSourceFile();
-  TempSourceFile& operator=(const TempSourceFile&);
-  
-  std::string _tmpFileName;
+  std::string _version;
 };
 
-} // namespace ssedit
+} // namespace cmdline
 
-#endif /* TEMPSOURCEFILE_H_ */
+} // namespace pvsutil
+
+#endif // VERSION_H_
 

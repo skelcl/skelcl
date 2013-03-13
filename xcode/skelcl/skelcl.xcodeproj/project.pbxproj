@@ -199,16 +199,10 @@
 		9EA8044D16AEC49700CAA765 /* IndexMatrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA8044C16AEC49700CAA765 /* IndexMatrix.cpp */; };
 		9EA8044F16AEC60100CAA765 /* IndexMatrixDef.h in Headers */ = {isa = PBXBuildFile; fileRef = 9EA8044E16AEC60100CAA765 /* IndexMatrixDef.h */; };
 		9EA8045116AEC68C00CAA765 /* IndexVector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA8045016AEC68C00CAA765 /* IndexVector.cpp */; };
-		9EA8048E16AFF38E00CAA765 /* libpvsutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E239E0C16AEA1E90078F339 /* libpvsutil.dylib */; };
-		9EA8048F16AFF38E00CAA765 /* libskelcl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA657751663AAC200904417 /* libskelcl.dylib */; };
-		9EA8049016AFF38E00CAA765 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658101663AAFD00904417 /* OpenCL.framework */; };
-		9EA8049716AFF39D00CAA765 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EA8048816AFF2D400CAA765 /* main.cpp */; };
-		9EA8049816AFF7A500CAA765 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 		D01C2705166D2F6400D28BCE /* MatrixSize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D01C2704166D2F6400D28BCE /* MatrixSize.cpp */; };
 		D06DFA18166D48CD0007FA44 /* DeviceID.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D06DFA17166D48CD0007FA44 /* DeviceID.cpp */; };
 		D06DFA1A166D48D60007FA44 /* PlatformID.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D06DFA19166D48D60007FA44 /* PlatformID.cpp */; };
 		D0F3033F1682333400F3DA90 /* Map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0F3033E1682333400F3DA90 /* Map.cpp */; };
-		D0F3C9F116712896002EB507 /* libssedit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA658211663AB8900904417 /* libssedit.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -587,15 +581,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
-		9EA8049116AFF38E00CAA765 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -719,13 +704,10 @@
 		9EA8042416AEC0CE00CAA765 /* AllPairsKernel2.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = AllPairsKernel2.cl; sourceTree = "<group>"; };
 		9EA8042516AEC0CE00CAA765 /* AllPairsKernel3.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = AllPairsKernel3.cl; sourceTree = "<group>"; };
 		9EA8042A16AEC12700CAA765 /* AllPairsTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllPairsTests.cpp; sourceTree = "<group>"; };
-		9EA8044716AEC18000CAA765 /* skelcl - AllPairsTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "skelcl - AllPairsTests"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9EA8044716AEC18000CAA765 /* skelcl - DeviceSelectionTests copy */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "skelcl - DeviceSelectionTests copy"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EA8044C16AEC49700CAA765 /* IndexMatrix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IndexMatrix.cpp; sourceTree = "<group>"; };
 		9EA8044E16AEC60100CAA765 /* IndexMatrixDef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IndexMatrixDef.h; sourceTree = "<group>"; };
 		9EA8045016AEC68C00CAA765 /* IndexVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IndexVector.cpp; sourceTree = "<group>"; };
-		9EA8048816AFF2D400CAA765 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = matrix_mult/main.cpp; sourceTree = "<group>"; };
-		9EA8048916AFF2F900CAA765 /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = CMakeLists.txt; path = matrix_mult/CMakeLists.txt; sourceTree = "<group>"; };
-		9EA8049516AFF38E00CAA765 /* matrix_mult */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = matrix_mult; sourceTree = BUILT_PRODUCTS_DIR; };
 		D01C2704166D2F6400D28BCE /* MatrixSize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MatrixSize.cpp; sourceTree = "<group>"; };
 		D06DFA17166D48CD0007FA44 /* DeviceID.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeviceID.cpp; sourceTree = "<group>"; };
 		D06DFA19166D48D60007FA44 /* PlatformID.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PlatformID.cpp; sourceTree = "<group>"; };
@@ -956,18 +938,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		9EA8048D16AFF38E00CAA765 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9EA8049816AFF7A500CAA765 /* libssedit.dylib in Frameworks */,
-				9EA8048E16AFF38E00CAA765 /* libpvsutil.dylib in Frameworks */,
-				D0F3C9F116712896002EB507 /* libssedit.dylib in Frameworks */,
-				9EA8048F16AFF38E00CAA765 /* libskelcl.dylib in Frameworks */,
-				9EA8049016AFF38E00CAA765 /* OpenCL.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -1012,8 +982,7 @@
 				9E0A911D1664B5B600ACD2B4 /* skelcl - ZipTests */,
 				9E0A91461664B7C300ACD2B4 /* mandelbrot */,
 				9E0A91521664B7C700ACD2B4 /* saxpy */,
-				9EA8044716AEC18000CAA765 /* skelcl - AllPairsTests */,
-				9EA8049516AFF38E00CAA765 /* matrix_mult */,
+				9EA8044716AEC18000CAA765 /* skelcl - DeviceSelectionTests copy */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1199,7 +1168,6 @@
 				9EA658791663AE7D00904417 /* CMakeLists.txt */,
 				9EA6587A1663AE7D00904417 /* dot_product */,
 				9EA6587D1663AE7D00904417 /* mandelbrot */,
-				9EA8048716AFF29200CAA765 /* matrix_mult */,
 				9EA658811663AE7D00904417 /* saxpy */,
 			);
 			name = examples;
@@ -1232,15 +1200,6 @@
 				9EA658831663AE7D00904417 /* main.cpp */,
 			);
 			path = saxpy;
-			sourceTree = "<group>";
-		};
-		9EA8048716AFF29200CAA765 /* matrix_mult */ = {
-			isa = PBXGroup;
-			children = (
-				9EA8048916AFF2F900CAA765 /* CMakeLists.txt */,
-				9EA8048816AFF2D400CAA765 /* main.cpp */,
-			);
-			name = matrix_mult;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1648,24 +1607,7 @@
 			);
 			name = "skelcl - AllPairsTests";
 			productName = DeviceSelectionTests;
-			productReference = 9EA8044716AEC18000CAA765 /* skelcl - AllPairsTests */;
-			productType = "com.apple.product-type.tool";
-		};
-		9EA8048A16AFF38E00CAA765 /* matrix_mult */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 9EA8049216AFF38E00CAA765 /* Build configuration list for PBXNativeTarget "matrix_mult" */;
-			buildPhases = (
-				9EA8048B16AFF38E00CAA765 /* Sources */,
-				9EA8048D16AFF38E00CAA765 /* Frameworks */,
-				9EA8049116AFF38E00CAA765 /* CopyFiles */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = matrix_mult;
-			productName = dot_product;
-			productReference = 9EA8049516AFF38E00CAA765 /* matrix_mult */;
+			productReference = 9EA8044716AEC18000CAA765 /* skelcl - DeviceSelectionTests copy */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -1701,7 +1643,6 @@
 			targets = (
 				9EA657741663AAC200904417 /* skelcl */,
 				9EA658871663AE9800904417 /* dot_product */,
-				9EA8048A16AFF38E00CAA765 /* matrix_mult */,
 				9E0A913C1664B7C300ACD2B4 /* mandelbrot */,
 				9E0A91481664B7C700ACD2B4 /* saxpy */,
 				9E0A90341663C27900ACD2B4 /* skelcl - All Tests */,
@@ -2000,14 +1941,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				9EA8044916AEC19800CAA765 /* AllPairsTests.cpp in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		9EA8048B16AFF38E00CAA765 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9EA8049716AFF39D00CAA765 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2554,7 +2487,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/../gtest/build\"",
 				);
-				PRODUCT_NAME = "skelcl - AllPairsTests";
+				PRODUCT_NAME = "skelcl - DeviceSelectionTests copy";
 			};
 			name = Debug;
 		};
@@ -2565,25 +2498,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/../gtest/build\"",
 				);
-				PRODUCT_NAME = "skelcl - AllPairsTests";
-			};
-			name = Release;
-		};
-		9EA8049316AFF38E00CAA765 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				PRODUCT_NAME = matrix_mult;
-			};
-			name = Debug;
-		};
-		9EA8049416AFF38E00CAA765 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = matrix_mult;
+				PRODUCT_NAME = "skelcl - DeviceSelectionTests copy";
 			};
 			name = Release;
 		};
@@ -2766,15 +2681,6 @@
 			buildConfigurations = (
 				9EA8044516AEC18000CAA765 /* Debug */,
 				9EA8044616AEC18000CAA765 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		9EA8049216AFF38E00CAA765 /* Build configuration list for PBXNativeTarget "matrix_mult" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				9EA8049316AFF38E00CAA765 /* Debug */,
-				9EA8049416AFF38E00CAA765 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

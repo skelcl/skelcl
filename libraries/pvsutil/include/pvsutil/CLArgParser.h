@@ -30,38 +30,78 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
+ 
+///
+/// \file CLArgParser.h
+///
+/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///
 
-/*
- * TempSourceFile.h
- */
+#ifndef CLARGPARSER_H_
+#define CLARGPARSER_H_
 
-#ifndef TEMPSOURCEFILE_H_
-#define TEMPSOURCEFILE_H_
-
+#include <ostream>
 #include <string>
+#include <map>
 
-#include "SourceFile.h"
+#include "Logger.h"
 
-namespace ssedit {
+#include "cmdline/Arg.h"
+#include "cmdline/Description.h"
+#include "cmdline/Version.h"
 
-class TempSourceFile : public SourceFile {
+namespace pvsutil {
+
+class CLArgParser {
 public:
-  TempSourceFile(const std::string& content, const std::string& tmpFileName = ".source.c");
+  CLArgParser(cmdline::Description&& des,
+              cmdline::Version&& ver = cmdline::Version(),
+              Logger& logger = defaultLogger);
 
-  TempSourceFile(const TempSourceFile& rhs);
+  ~CLArgParser();
 
-	~TempSourceFile();
+  // add multiple Arg<T> to the parser
+  template <class... Args>
+  void add(cmdline::BaseArg* arg, Args... args);
 
-  void removeOpenCLFix();
+  void parse(int argc, char** argv);
 
 private:
-  TempSourceFile();
-  TempSourceFile& operator=(const TempSourceFile&);
-  
-  std::string _tmpFileName;
+
+  void add();
+
+  void registerArg(cmdline::BaseArg& arg);
+
+  void printArg(std::ostream& output, cmdline::BaseArg& arg);
+
+  void printDescription();
+  void printHelp();
+  void printVersion();
+
+
+  Logger&                         _logger;
+  cmdline::Description            _description;
+  cmdline::Version                _version;
+
+  cmdline::ArgImpl<bool>          _helpArg;
+  cmdline::ArgImpl<bool>          _versionArg;
+
+  std::map<cmdline::Short,
+           cmdline::BaseArg*>     _shortArgs;
+  std::map<cmdline::Long,
+           cmdline::BaseArg*>     _longArgs;
+  std::vector<cmdline::BaseArg*>  _mandatoryArgs;
+  std::vector<cmdline::BaseArg*>  _args;
 };
 
-} // namespace ssedit
+template <class... Args>
+void CLArgParser::add(cmdline::BaseArg* arg, Args... args)
+{
+  this->registerArg(*arg);
+  add(std::forward<Args>(args)...);
+}
 
-#endif /* TEMPSOURCEFILE_H_ */
+} // namespace pvsutil
+
+#endif // PARSER_H_
 

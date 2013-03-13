@@ -31,13 +31,13 @@
  *                                                                           *
  *****************************************************************************/
 
-// testing framework header
-#include <gtest/gtest.h>
 // std header
 #include <string>
 // ssedit header
 #include <ssedit/Entity.h>
 #include <ssedit/Cursor.h>
+
+#include "Test.h"
 
 TEST(EntityTest, CopyConstructor) {
 }

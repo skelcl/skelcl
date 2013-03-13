@@ -31,17 +31,15 @@
  *                                                                           *
  *****************************************************************************/
 
-// testing framework header
-#include <gtest/gtest.h>
 // standard header
 #include <fstream>
 #include <string>
 #include <cstdio>
-// test utilities
-#include "utilities.h"
 // ssedit header
 #include <ssedit/Cursor.h>
 #include <ssedit/Type.h>
+
+#include "Test.h"
 
 class CursorTest : public ::testing::Test
 {

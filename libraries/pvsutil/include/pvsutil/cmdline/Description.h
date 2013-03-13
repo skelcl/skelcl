@@ -30,38 +30,36 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
+ 
+///
+/// \file Description.h
+///
+/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///
 
-/*
- * TempSourceFile.h
- */
-
-#ifndef TEMPSOURCEFILE_H_
-#define TEMPSOURCEFILE_H_
+#ifndef DESCRIPTION_H_
+#define DESCRIPTION_H_
 
 #include <string>
 
-#include "SourceFile.h"
+namespace pvsutil {
 
-namespace ssedit {
+namespace cmdline {
 
-class TempSourceFile : public SourceFile {
+class Description {
 public:
-  TempSourceFile(const std::string& content, const std::string& tmpFileName = ".source.c");
+  Description(const char* description);
+  Description(const std::string& description);
 
-  TempSourceFile(const TempSourceFile& rhs);
-
-	~TempSourceFile();
-
-  void removeOpenCLFix();
-
+  const std::string& getDescription() const;
 private:
-  TempSourceFile();
-  TempSourceFile& operator=(const TempSourceFile&);
-  
-  std::string _tmpFileName;
+  std::string _description;
 };
 
-} // namespace ssedit
+} // namespace cmdline
 
-#endif /* TEMPSOURCEFILE_H_ */
+} // namespace pvsutil
+
+#endif // DESCRIPTION_H_
+
 

@@ -77,6 +77,11 @@ template<typename T>
 std::string typeToString() {
   char* cName = abi::__cxa_demangle(typeid(T).name(), NULL, NULL, NULL);
   std::string name(cName);
+  // remove namespaces ...
+  auto namesp = name.rfind(":");
+  if (namesp != std::string::npos) {
+    name.erase(0, namesp+1);
+  }
   free(cName);
   return name;
 }

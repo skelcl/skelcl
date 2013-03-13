@@ -287,6 +287,11 @@ void Program::createProgramsFromSource()
 {
   ASSERT(_sourceFile !=  nullptr);
   _sourceFile->writeCommittedChanges();
+  auto tempSourceFilePtr = dynamic_cast<ssedit::TempSourceFile*>(
+                                                        _sourceFile.get() );
+  if (tempSourceFilePtr) {
+    tempSourceFilePtr->removeOpenCLFix();
+  }
   // open modified source file
   std::ifstream file(_sourceFile->getFileName());
 #if 0

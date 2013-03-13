@@ -30,38 +30,39 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
+ 
+///
+/// \file Default.h
+///
+/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///
 
-/*
- * TempSourceFile.h
- */
+#ifndef DEFAULT_H_
+#define DEFAULT_H_
 
-#ifndef TEMPSOURCEFILE_H_
-#define TEMPSOURCEFILE_H_
+namespace pvsutil {
 
-#include <string>
+namespace cmdline {
 
-#include "SourceFile.h"
-
-namespace ssedit {
-
-class TempSourceFile : public SourceFile {
+template <typename T>
+class DefaultValue {
 public:
-  TempSourceFile(const std::string& content, const std::string& tmpFileName = ".source.c");
+  DefaultValue(const T& v) : _value(v) {}
 
-  TempSourceFile(const TempSourceFile& rhs);
-
-	~TempSourceFile();
-
-  void removeOpenCLFix();
-
+  const T& getValue() const { return _value; }
 private:
-  TempSourceFile();
-  TempSourceFile& operator=(const TempSourceFile&);
-  
-  std::string _tmpFileName;
+  T _value;
 };
 
-} // namespace ssedit
+template <typename T>
+DefaultValue<T> Default(const T& v)
+{
+  return DefaultValue<T>(v);
+}
 
-#endif /* TEMPSOURCEFILE_H_ */
+} // namespace cmdline
+
+} // namespace pvsutil
+
+#endif // DEFAULT_H_
 

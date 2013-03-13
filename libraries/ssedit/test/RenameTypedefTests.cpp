@@ -31,8 +31,6 @@
  *                                                                           *
  *****************************************************************************/
 
-#include <gtest/gtest.h>
-
 #include <fstream>
 #include <iterator>
 #include <iostream>
@@ -41,6 +39,8 @@
 
 #include <ssedit/SourceFile.h>
 #include <ssedit/Typedef.h>
+
+#include "Test.h"
 
 class RenameTypedefTest : public ::testing::Test {
 protected:

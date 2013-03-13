@@ -31,15 +31,11 @@
  *                                                                           *
  *****************************************************************************/
 
-// testing framework header
-#include <gtest/gtest.h>
-// standard header
-#include <clang-c/Index.h>
-// test utilities
-#include "utilities.h"
 // ssedit header
 #include <ssedit/Type.h>
 #include <ssedit/Cursor.h>
+
+#include "Test.h"
 
 TEST(TypeTest, DefaultConstructor) {
   ssedit::Type type;
