@@ -44,7 +44,7 @@ namespace skelcl {
   typedef struct {\
     type s0;\
     type s1;\
-  } name##2;
+  } name##2
 
 #define _DEF_TYPE_4(type, name) \
   typedef struct {\
@@ -52,7 +52,7 @@ namespace skelcl {
     type s1;\
     type s2;\
     type s3;\
-  } name##4;
+  } name##4
 
 #define _DEF_TYPE_8(type, name) \
   typedef struct {\
@@ -64,7 +64,7 @@ namespace skelcl {
     type s5;\
     type s6;\
     type s7;\
-  } name##8;
+  } name##8
 
 #define _DEF_TYPE_16(type, name) \
   typedef struct {\
@@ -84,7 +84,7 @@ namespace skelcl {
     type sd;\
     type se;\
     type sf;\
-  } name##16;
+  } name##16
 
 _DEF_TYPE_2(char, char)
 _DEF_TYPE_4(char, char)

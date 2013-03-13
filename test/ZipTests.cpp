@@ -60,7 +60,8 @@ protected:
 };
 
 TEST_F(ZipTest, CreateZipWithString) {
-  skelcl::Zip<float(float, float)> m("float func(float x, float y){ return x*y; }");
+  skelcl::Zip<float(float, float)> m(
+      "float func(float x, float y){ return x*y; }");
 }
 
 TEST_F(ZipTest, CreateZipWithFile) {
@@ -77,7 +78,8 @@ TEST_F(ZipTest, CreateZipWithFile) {
 }
 
 TEST_F(ZipTest, SimpleZip) {
-  skelcl::Zip<float(float, float)> z("float func(float x, float y){ return x+y; }");
+  skelcl::Zip<float(float, float)> z(
+      "float func(float x, float y){ return x+y; }");
 
   skelcl::Vector<float> left(10);
   for (size_t i = 0; i < left.size(); ++i) {
@@ -100,8 +102,9 @@ TEST_F(ZipTest, SimpleZip) {
 }
 
 TEST_F(ZipTest, AddArgs) {
-  skelcl::Zip<float(float, float)> z("float func(float x, float y, float add, float add2)\
-                                 { return (x*y)+add+add2; }");
+  skelcl::Zip<float(float, float)> z(
+      "float func(float x, float y, float add, float add2)\
+          { return (x*y)+add+add2; }");
 
   skelcl::Vector<float> left(10);
   for (size_t i = 0; i < left.size(); ++i) {
@@ -127,7 +130,8 @@ TEST_F(ZipTest, AddArgs) {
 }
 
 TEST_F(ZipTest, LeftID) {
-  skelcl::Zip<float(float, float)> z("float func(float x, float y) { return x; }");
+  skelcl::Zip<float(float, float)> z(
+      "float func(float x, float y) { return x; }");
 
   skelcl::Vector<float> left(10);
   left.setDistribution(skelcl::distribution::Block(left));
@@ -181,8 +185,9 @@ TEST_F(ZipTest, SimpleZip2D) {
 }
 
 TEST_F(ZipTest, VoidAddArgs) {
-  skelcl::Zip<void(float, float)> z("void func(float x, float y, __global float* out)\
-                                 { return out[get_global_id(0)] = x*y; }");
+  skelcl::Zip<void(float, float)> z(
+      "void func(float x, float y, __global float* out)\
+          { out[get_global_id(0)] = x*y; }");
 
   skelcl::Vector<float> left(10);
   for (size_t i = 0; i < left.size(); ++i) {

@@ -388,6 +388,12 @@ const cl::Device& Device::clDevice() const
   return _device;
 }
 
+bool Device::supportsDouble() const
+{
+  std::string extensions = _device.getInfo<CL_DEVICE_EXTENSIONS>();
+  return (extensions.find("cl_khr_fp64") != std::string::npos);
+}
+
 } // namespace detail
 
 } // namespace skelcl
