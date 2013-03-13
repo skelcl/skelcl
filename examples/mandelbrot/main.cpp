@@ -40,6 +40,7 @@
 #include <iostream>
 #include <iterator>
 
+#include <pvsutil/CLArgParser.h>
 #include <pvsutil/Logger.h>
 
 #include <SkelCL/SkelCL.h>
@@ -109,10 +110,34 @@ void mandelbrot()
   writePPM(output.begin(), output.end(), "mandelbrot.ppm");
 }
 
-int main()
+int main(int argc, char** argv)
 {
-  pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
-  skelcl::init(skelcl::nDevices(2));
+  using namespace pvsutil::cmdline;
+  pvsutil::CLArgParser cmd(Description("Computation of the mandelbrot set."));
+
+  auto deviceCount = Arg<int>(Flags(Long("device_count")),
+                              Description("Number of devices used by SkelCL."),
+                              Default(2));
+
+  auto deviceType = Arg<device_type>(Flags(Long("device_type")),
+                                     Description("Device type: ANY, CPU, "
+                                                 "GPU, ACCELERATOR"),
+                                     Default(device_type::ANY));
+
+  auto enableLogging = Arg<bool>(Flags(Short('l'), Long("logging"),
+                                       Long("verbose_logging")),
+                                 Description("Enable verbose logging."),
+                                 Default(false));
+
+  cmd.add(&deviceCount, &deviceType, &enableLogging);
+  cmd.parse(argc, argv);
+
+  if (enableLogging) {
+    pvsutil::defaultLogger.setLoggingLevel(
+        pvsutil::Logger::Severity::DebugInfo);
+  }
+
+  skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
   mandelbrot();
   return 0;
 }

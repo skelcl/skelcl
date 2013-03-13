@@ -73,13 +73,12 @@ public:
   const std::vector<Long>&   longFlags() const;
   std::string flagNames() const;
   const std::string& description() const;
-
-  virtual void parse(const std::string& value) = 0;
-
   bool isMandatory() const;
   bool isSet() const;
-  virtual bool hasArgument() const = 0;
 
+  virtual void parse(const std::string& value) = 0;
+  virtual bool hasArgument() const = 0;
+  virtual void printValue(std::ostream& output) const = 0;
 
   virtual ~BaseArg() {};
 protected:
@@ -122,6 +121,16 @@ public:
     _set = true;
   }
 
+  bool hasArgument() const override
+  {
+    return helper::hasArgument<T>::value;
+  }
+
+  void printValue(std::ostream& output) const override
+  {
+    output << std::boolalpha << _value;
+  }
+
   const T& getValue() const
   {
     return _value;
@@ -130,11 +139,6 @@ public:
   operator T() const
   {
     return _value;
-  }
-
-  bool hasArgument() const override
-  {
-    return helper::hasArgument<T>::value;
   }
 
 private:
@@ -146,7 +150,7 @@ class ArgCustomParseFunctionImpl : public BaseArg {
 public:
   ArgCustomParseFunctionImpl(const Flags& flags,
                              const Description& des,
-                             std::function<T(std::string)> parseFunc)
+                             std::function<T(const std::string&)> parseFunc)
     : BaseArg(flags, des, true, false), _value(), _parseFunc(parseFunc)
   {
   }
@@ -154,7 +158,7 @@ public:
   ArgCustomParseFunctionImpl(const Flags& flags,
                              const Description& des,
                              const DefaultValue<T>& defaultValue,
-                             std::function<T(std::string)> parseFunc)
+                             std::function<T(const std::string&)> parseFunc)
     : BaseArg(flags, des, false, true),
       _value(defaultValue.getValue()), _parseFunc(parseFunc)
   {
@@ -164,6 +168,16 @@ public:
   {
     _value = _parseFunc(value);
     _set = true;
+  }
+
+  bool hasArgument() const override
+  {
+    return helper::hasArgument<T>::value;
+  }
+
+  void printValue(std::ostream& output) const override
+  {
+    output << std::boolalpha << _value;
   }
 
   const T& getValue() const
@@ -176,14 +190,9 @@ public:
     return _value;
   }
 
-  bool hasArgument() const override
-  {
-    return helper::hasArgument<T>::value;
-  }
-
 private:
-  T                             _value;
-  std::function<T(std::string)> _parseFunc;
+  T                                     _value;
+  std::function<T(const std::string&)>  _parseFunc;
 };
 
 template <typename T>
@@ -204,7 +213,7 @@ ArgImpl<T> Arg(const Flags& flags,
 template <typename T>
 ArgCustomParseFunctionImpl<T> Arg(const Flags& flags,
                                   const Description& des,
-                                  std::function<T(std::string)> parseFunc)
+                                  std::function<T(const std::string&)> parseFunc)
 {
   return ArgCustomParseFunctionImpl<T>(flags, des, parseFunc);
 }
@@ -213,7 +222,7 @@ template <typename T>
 ArgCustomParseFunctionImpl<T> Arg(const Flags& flags,
                                   const Description& des,
                                   const DefaultValue<T>& defaultValue,
-                                  std::function<T(std::string)> parseFunc)
+                                  std::function<T(const std::string&)> parseFunc)
 {
   return ArgCustomParseFunctionImpl<T>(flags, des, defaultValue, parseFunc);
 }

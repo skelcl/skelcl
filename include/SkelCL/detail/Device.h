@@ -41,6 +41,7 @@
 #define DEVICE_H_
 
 #include <algorithm>
+#include <iostream>
 #include <functional>
 #include <memory>
 #include <string>
@@ -76,7 +77,7 @@ public:
     ACCELERATOR = CL_DEVICE_TYPE_ACCELERATOR,
     DEFAULT     = CL_DEVICE_TYPE_DEFAULT
   };
-
+  
   ///
   /// \brief No default constuction allowed
   ///
@@ -339,6 +340,9 @@ private:
   cl::CommandQueue  _commandQueue;
   id_type           _id;
 };
+
+std::istream& operator>>(std::istream& stream, Device::Type& type);
+std::ostream& operator<<(std::ostream& stream, const Device::Type& type);
 
 template <typename RandomAccessIterator>
 cl::Event Device::enqueueWrite(const DeviceBuffer& buffer,

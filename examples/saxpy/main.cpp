@@ -42,6 +42,7 @@
 #include <algorithm>
 #include <numeric>
 
+#include <pvsutil/CLArgParser.h>
 #include <pvsutil/Logger.h>
 #include <pvsutil/Timer.h>
 
@@ -67,28 +68,60 @@ float fillScalar()
   return ((float)rand()/(float)RAND_MAX) * 125.0f;
 }
 
-int main()
+void saxpy(int size)
 {
-  int SIZE = 1024 * 1024; // 1 MB
-  skelcl::init(); // initialize SkelCL
-
   pvsutil::Timer timer;
   
   // Y <- a * X + Y
   Zip<float(float, float)> saxpy("float func(float x, float y, float a){ return a*x + y; }");
 
-  Vector<float> X(SIZE); fillVector(X.begin(), X.end());
-  Vector<float> Y(SIZE); fillVector(Y.begin(), Y.end());
+  Vector<float> X(size); fillVector(X.begin(), X.end());
+  Vector<float> Y(size); fillVector(Y.begin(), Y.end());
   float a = fillScalar();
 
   Y = saxpy( X, Y, a );
 
   pvsutil::Timer::time_type time = timer.stop();
   
-  std::cout << "Y accumulated: ";
-  std::cout << std::accumulate(Y.begin(), Y.end(), 0.0f) << std::endl;
-  std::cout << "elapsed time: " << time << " ms" << std::endl;
+  LOG_INFO("Y accumulated: ", std::accumulate(Y.begin(), Y.end(), 0.0f) );
+  LOG_INFO("Time: ", time, " ms");
 
+}
+
+int main(int argc, char** argv)
+{
+  using namespace pvsutil::cmdline;
+  pvsutil::CLArgParser cmd(Description("Computation of the mandelbrot set."));
+
+  auto deviceCount = Arg<int>(Flags(Long("device_count")),
+                              Description("Number of devices used by SkelCL."),
+                              Default(2));
+
+  auto deviceType = Arg<device_type>(Flags(Long("device_type")),
+                                     Description("Device type: ANY, CPU, "
+                                                 "GPU, ACCELERATOR"),
+                                     Default(device_type::ANY));
+
+  auto enableLogging = Arg<bool>(Flags(Short('l'), Long("logging"),
+                                       Long("verbose_logging")),
+                                 Description("Enable verbose logging."),
+                                 Default(false));
+
+  auto size = Arg<int>(Flags(Short('n'), Long("size")),
+                       Description("Size of the two vectors used in "
+                                   "the computation."),
+                       Default(1024 * 1024));
+  
+  cmd.add(&deviceCount, &deviceType, &enableLogging, &size);
+  cmd.parse(argc, argv);
+
+  if (enableLogging) {
+    pvsutil::defaultLogger.setLoggingLevel(
+        pvsutil::Logger::Severity::DebugInfo);
+  }
+
+  skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
+  saxpy(size);
   return 0;
 }
 

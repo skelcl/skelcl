@@ -171,6 +171,10 @@ void CLArgParser::printArg(std::ostream& output, cmdline::BaseArg& arg)
   output << "\t[" << arg.flagNames() << "]";
   if (arg.isMandatory()) {
     output << " (mandatory)";
+  } else { // print default
+    output << " (default value: ";
+    arg.printValue(output);
+    output << ")";
   }
   output << "\n\t\t" << arg.description()
          << std::endl << std::endl;
