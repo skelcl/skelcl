@@ -108,7 +108,7 @@ public:
   {
   }
 
-  void parse(const std::string& value) override
+  void parse(const std::string& value)
   {
     std::istringstream is(value);
     is >> std::boolalpha >> _value;
@@ -121,12 +121,12 @@ public:
     _set = true;
   }
 
-  bool hasArgument() const override
+  bool hasArgument() const
   {
     return helper::hasArgument<T>::value;
   }
 
-  void printValue(std::ostream& output) const override
+  void printValue(std::ostream& output) const
   {
     output << std::boolalpha << _value;
   }
@@ -164,18 +164,18 @@ public:
   {
   }
 
-  void parse(const std::string& value) override
+  void parse(const std::string& value)
   {
     _value = _parseFunc(value);
     _set = true;
   }
 
-  bool hasArgument() const override
+  bool hasArgument() const
   {
     return helper::hasArgument<T>::value;
   }
 
-  void printValue(std::ostream& output) const override
+  void printValue(std::ostream& output) const
   {
     output << std::boolalpha << _value;
   }
