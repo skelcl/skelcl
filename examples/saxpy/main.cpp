@@ -52,6 +52,8 @@
 
 using namespace skelcl;
 
+const double epsilon = 1e-12;
+
 template <typename ForwardIterator>
 void fillVector(ForwardIterator begin, ForwardIterator end)
 {
@@ -90,7 +92,7 @@ void saxpy(int size, bool checkResult)
   if (checkResult) {
     int errors = 0;
     for (int i = 0; i < size; ++i) {
-      if ( Y[i] != a * X[i] + Y_orig[i] ) {
+      if ( fabs(Y[i] - (a * X[i] + Y_orig[i])) > epsilon ) {
         errors++;
       }
     }
