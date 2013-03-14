@@ -68,24 +68,37 @@ float fillScalar()
   return ((float)rand()/(float)RAND_MAX) * 125.0f;
 }
 
-void saxpy(int size)
+void saxpy(int size, bool checkResult)
 {
-  pvsutil::Timer timer;
   
   // Y <- a * X + Y
-  Zip<float(float, float)> saxpy("float func(float x, float y, float a){ return a*x + y; }");
+  Zip<float(float, float)> saxpy("float func(float x, float y, float a){"
+                                 "  return a*x + y;"
+                                 "}");
 
   Vector<float> X(size); fillVector(X.begin(), X.end());
   Vector<float> Y(size); fillVector(Y.begin(), Y.end());
   float a = fillScalar();
 
+  Vector<float> Y_orig(Y); // copy Y for verification later
+
+  pvsutil::Timer timer;
   Y = saxpy( X, Y, a );
-
   pvsutil::Timer::time_type time = timer.stop();
-  
-  LOG_INFO("Y accumulated: ", std::accumulate(Y.begin(), Y.end(), 0.0f) );
-  LOG_INFO("Time: ", time, " ms");
 
+  if (checkResult) {
+    int errors = 0;
+    for (int i = 0; i < size; ++i) {
+      if ( Y[i] != a * X[i] + Y_orig[i] ) {
+        errors++;
+      }
+    }
+    if (errors > 0) {
+      LOG_ERROR(errors, " errors detected.");
+    }
+  }
+  
+  LOG_INFO("Time: ", time, " ms");
 }
 
 int main(int argc, char** argv)
@@ -111,8 +124,14 @@ int main(int argc, char** argv)
                        Description("Size of the two vectors used in "
                                    "the computation."),
                        Default(1024 * 1024));
+
+  auto checkResult = Arg<bool>(Flags(Short('c'),
+                                     Long("check"), Long("check_result")),
+                               Description("Check SkelCL computation against "
+                                           "sequential computed version."),
+                               Default(false));
   
-  cmd.add(&deviceCount, &deviceType, &enableLogging, &size);
+  cmd.add(&deviceCount, &deviceType, &enableLogging, &size, &checkResult);
   cmd.parse(argc, argv);
 
   if (enableLogging) {
@@ -121,7 +140,7 @@ int main(int argc, char** argv)
   }
 
   skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
-  saxpy(size);
+  saxpy(size, checkResult);
   return 0;
 }
 

@@ -338,7 +338,7 @@ void Program::createProgramsFromSource()
 
 void Program::saveBinary()
 {
-  if (_hast.empty()) return;
+  if (_hash.empty()) return;
   // don't save binary, expect the user has explicitly requested so
   if (util::envVarValue("SKELCL_SAVE_BINARY") != "YES") return;
 
