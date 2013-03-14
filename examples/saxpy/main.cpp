@@ -84,6 +84,7 @@ void saxpy(int size, bool checkResult)
 
   pvsutil::Timer timer;
   Y = saxpy( X, Y, a );
+  Y.copyDataToHost();
   pvsutil::Timer::time_type time = timer.stop();
 
   if (checkResult) {
