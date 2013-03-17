@@ -338,10 +338,9 @@ void Program::createProgramsFromSource()
 
 void Program::saveBinary()
 {
-  if (   util::envVarValue("SKELCL_SAVE_BINARY") == "NO"
-      || _hash.empty()) {
-    return;
-  }
+  if (_hash.empty()) return;
+  // don't save binary, expect the user has explicitly requested so
+  if (util::envVarValue("SKELCL_SAVE_BINARY") != "YES") return;
 
   for (auto& devicePtr : globalDeviceList) {
     try {

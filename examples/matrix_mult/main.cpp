@@ -39,6 +39,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -197,7 +198,8 @@ int main(int argc, char* argv[])
   pvsutil::defaultLogger.setOutput(std::cout);
 
   using namespace pvsutil::cmdline;
-  pvsutil::CLArgParser cmd(Description("Matrix multiplication example in SkelCL"));
+  pvsutil::CLArgParser cmd(Description("Matrix multiplication example "
+                                       "in SkelCL"));
 
   auto rowCountA = Arg<int>(Flags(Short('d'), Long("row_count_A")),
                             Description("Row count of left matrix"));
@@ -217,24 +219,17 @@ int main(int argc, char* argv[])
                               Default(1));
 
   auto deviceType = Arg<device_type>(Flags(Long("device_type")),
-                                     Description("Device type: ANY, CPU, GPU, ACCELERATOR"),
-                                     Default(device_type::ANY),
-                                     [](std::string arg) -> device_type {
-                                       if (arg == "ANY") return device_type::ANY;
-                                       if (arg == "CPU") return device_type::CPU;
-                                       if (arg == "GPU") return device_type::CPU;
-                                       if (arg == "ACCELERATOR")
-                                                 return device_type::ACCELERATOR;
-                                       throw std::invalid_argument(
-                                         "Invalid argument (" + arg + ") for device_type.");
-                                     });
+                                     Description("Device type: ANY, CPU, "
+                                                 "GPU, ACCELERATOR"),
+                                     Default(device_type::ANY));
 
   auto deviceCount = Arg<int>(Flags(Long("device_count")),
                               Description("Device Count"),
                               Default(1));
 
   auto useDoublePrecision = Arg<bool>(Flags(Long("use_double")),
-                                      Description("Use double precision for the computation"),
+                                      Description("Use double precision for "
+                                                  "the computation"),
                                       Default(false));
 
   auto useAltKernel = Arg<bool>(Flags(Long("alt_kernel")),
@@ -246,10 +241,8 @@ int main(int argc, char* argv[])
 
   cmd.parse(argc, argv);
 
-  std::string deviceArg = "Any";
-  if (deviceType == device_type::CPU) deviceArg = "CPU";
-  if (deviceType == device_type::GPU) deviceArg = "GPU";
-  if (deviceType == device_type::ACCELERATOR) deviceArg = "ACCELERATOR";
+  std::stringstream ss; ss << deviceType;
+  std::string deviceArg(ss.str());
 
   init(nDevices(deviceCount).deviceType(deviceType)); // initialize SkelCL
   double totalTime = 0.0;

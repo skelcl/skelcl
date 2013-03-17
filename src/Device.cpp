@@ -38,6 +38,7 @@
 ///
 
 #include <functional>
+#include <stdexcept>
 #include <sstream>
 #include <string>
 
@@ -392,6 +393,34 @@ bool Device::supportsDouble() const
 {
   std::string extensions = _device.getInfo<CL_DEVICE_EXTENSIONS>();
   return (extensions.find("cl_khr_fp64") != std::string::npos);
+}
+
+std::istream& operator>>(std::istream& stream, Device::Type& type)
+{
+  std::string s;
+  stream >> s;
+
+       if (s == "ALL")         type = Device::Type::ALL;
+  else if (s == "ANY")         type = Device::Type::ANY;
+  else if (s == "CPU")         type = Device::Type::CPU;
+  else if (s == "GPU")         type = Device::Type::GPU;
+  else if (s == "ACCELERATOR") type = Device::Type::ACCELERATOR;
+  else if (s == "DEFAULT")     type = Device::Type::DEFAULT;
+  else throw std::invalid_argument(
+    "Could not parse (" + s + ") as Device::Type.");
+
+  return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const Device::Type& type)
+{
+  if (type == Device::Type::ANY)          return stream << "ANY";
+  if (type == Device::Type::CPU)          return stream << "CPU";
+  if (type == Device::Type::GPU)          return stream << "GPU";
+  if (type == Device::Type::ACCELERATOR)  return stream << "ACCELERATOR";
+  if (type == Device::Type::DEFAULT)      return stream << "DEFAULT";
+
+  throw std::logic_error("This point should never be reached.");
 }
 
 } // namespace detail

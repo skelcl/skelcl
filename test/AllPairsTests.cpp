@@ -35,8 +35,6 @@
 /// \author Malte Friese <malte.friese@uni-muenster.de>
 ///
 
-#include <gtest/gtest.h>
-
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
@@ -48,6 +46,8 @@
 #include <SkelCL/AllPairs.h>
 #include <SkelCL/Zip.h>
 #include <SkelCL/Reduce.h>
+
+#include "Test.h"
 
 void testAllPairsWithMatrices(const unsigned int, const unsigned int, const unsigned int);
 
@@ -265,3 +265,4 @@ TEST_F(AllPairsTest, AltKernelAddArguments) {
         }
     }
 }
+

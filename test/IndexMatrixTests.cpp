@@ -47,7 +47,7 @@
 class IndexMatrixTest : public ::testing::Test {
 protected:
   IndexMatrixTest() {
-    pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
+    //pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
     skelcl::init(skelcl::nDevices(1));
   };
 
@@ -67,9 +67,8 @@ TEST_F(IndexMatrixTest, CreateIndexMatrix) {
 TEST_F(IndexMatrixTest, SimpleVoidMap) {
   skelcl::IndexMatrix index({128, 32});
   skelcl::Map<void(skelcl::IndexPoint)> map(R"(
-#define set(matrix, x, y, value) matrix[(int)(y * matrix##_col_count + x)] = value
 
-void func(IndexPoint ip, __global int* out, uint out_col_count) { set(out, ip.x, ip.y, ip.y+ip.x); }
+void func(IndexPoint ip, int_matrix_t out) { set(out, ip.y, ip.x, ip.y+ip.x); }
 )");
   EXPECT_EQ(128*32, index.size().elemCount());
 
