@@ -155,7 +155,9 @@ void AllPairs<Tout(Tleft, Tright)>::execute(Matrix<Tout>& output,
                                   static_cast<cl_uint>(output.columnCount()) };
         cl_uint local[2]      = {_C, _R}; // C, R
         cl_uint global[2]     = {static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements[1], local[0])),
-                                 static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements[0], local[1]*_S))/_S}; // SUBTILES
+                                 static_cast<cl_uint>(detail::util::ceilToMultipleOf(detail::util::devideAndRoundUp(elements[0], _S), local[1]))};
+                                //static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements[0], local[1]*_S))/_S}; // is the same
+
         cl_uint dimension     = left.columnCount();
 
         LOG_DEBUG("dim: ", dimension, " height: ", elements[0], " width: ",elements[1]);
