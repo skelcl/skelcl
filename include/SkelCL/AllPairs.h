@@ -67,16 +67,16 @@ template<typename> class AllPairs;
 ///         Tout   Type of the output data of the skeleton
 ///
 /// On creation the AllPairs skeleton is customized with either a given reduce and
-/// zip skeleton or with source code that defines a function. The source code function receives
-/// two vectors of the same length and the length as an int. An example is as follows:
+/// zip skeleton or with source code defining a function. The source code function header receives
+/// two vectors of the same length and the length as an integer as follows:
 /// Tout func(lmatrix_t* row, rmatrix_t* col, const unsigned int dim). The i-th element of the
 /// row-vector row of type lmatrix_t can be accessed via the API-Function getElementFromRow(row, i) and the i-th element of
 /// the column-vector col of type rmatrix_t can be accessed via the API-function getElementFromColumn(col, i).
 /// The AllPairs skeleton can then be called by passing two matrix containers.
-/// The AllPairs skeleton will compute the results of all pairs of row vectors from the left matrix
-/// and column vectors from the right matrix and store them in a result matrix.
+/// The AllPairs skeleton will compute the results of all pairs of row-vectors from the left matrix
+/// and column-vectors from the right matrix and store them in a result matrix.
 /// More formally: When M is a matrix of size heigt x dim and N is a matrix of size dim x width
-/// and F is a function that receives a row vector from M and and a column vector from N and calcutes
+/// and F is the customized function that receives a row-vector from M and and a column-vector from N and calcutes
 /// a scalar value.
 /// Then P is the result matrix of size height x width.
 /// Every P[i,j] is the scalar result from F(M_i, N_j), where M_i is
