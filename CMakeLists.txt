@@ -10,6 +10,7 @@ if (${UNIX})
     set (CMAKE_CXX_COMPILER "clang++" CACHE STRING "CXX Compiler.")
     set (CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++ -DGTEST_USE_OWN_TR1_TUPLE=1 -Wall -Wextra"
       CACHE STRING "Flags used by the compiler during all build types.")
+    set (CMAKE_CXX_FLAGS "${COMMON_CXX_FLAGS}" CACHE STRING "Flags")
   else (${APPLE})
     set (CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra"
       CACHE STRING "Flags used by the compiler during all build types.")
@@ -31,6 +32,7 @@ if (NOT TARGET pvsutil)
  add_subdirectory (libraries/pvsutil)
 endif (NOT TARGET pvsutil)
 add_subdirectory (libraries/ssedit)
+add_subdirectory (libraries/ssedit2.0)
 
 # specify options and provide common variables
 option (BUILD_SHARED_LIBS

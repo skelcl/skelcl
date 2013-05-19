@@ -1,3 +1,5 @@
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SSE_CXX_FLAGS}")
+
 # set include dir for all examples
 include_directories ("${PROJECT_SOURCE_DIR}/include")
 

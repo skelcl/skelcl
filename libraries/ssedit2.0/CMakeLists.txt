@@ -8,31 +8,26 @@ endif (${WIN32})
 if (${UNIX})
   if (${APPLE})
     set (CMAKE_CXX_COMPILER "clang++" CACHE STRING "CXX Compiler.")
-    set (CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++ -DGTEST_USE_OWN_TR1_TUPLE=1 -Wall -Wextra"
-      CACHE STRING "Flags used by the compiler during all build types.")
-  else (${APPLE})
-    set (CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra"
-      CACHE STRING "Flags used by the compiler during all build types.")
   endif (${APPLE})
 
   # more restructive flags for compiling the SkelCL code. These flags are added in addition to the above
-  set (SSE_CXX_FLAGS "-Weffc++ -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Werror -pedantic-errors -Wfatal-errors"
-      CACHE STRING "More strict flags used to compile the SSE sources.")
+  set (SSEDIT2.0_CXX_FLAGS "-fno-rtti -Wall -Wextra -Weffc++ -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Werror -pedantic-errors -Wfatal-errors"
+    CACHE STRING "More strict flags used to compile the SSEDIT2.0 sources.")
 endif (${UNIX})
 
 # project name
-project (ssedit)
+project (ssedit2.0)
 
 # specify options and provide common variables
 option (BUILD_SHARED_LIBS
-        "Build shared libraries (DLLs)." ON)
+  "Build shared libraries (DLLs)." ON)
 option (BUILD_TESTS
         "Build all tests automatically with the library." ON)
 
 # libclang dirs
-set (LIBCLANG_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/libraries/libclang/include" CACHE STRING
+set (LLVM_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/libraries/llvm/include" CACHE STRING
      "Include directory of libclang.")
-set (LIBCLANG_LIB_DIR "${PROJECT_SOURCE_DIR}/libraries/libclang/lib" CACHE STRING
+set (LLVM_LIB_DIR "${PROJECT_SOURCE_DIR}/libraries/llvm/lib" CACHE STRING
      "Library directory of libclang.")
 
 # add libraries
@@ -41,18 +36,42 @@ if (NOT TARGET pvsutil)
 endif (NOT TARGET pvsutil)
 
 # skelcl's ssedit common dirs and libraries
-set (SSEDIT_COMMON_INCLUDE_DIR
+set (SSEDIT2.0_COMMON_INCLUDE_DIR
       "${PROJECT_SOURCE_DIR}/include"
       "${PROJECT_SOURCE_DIR}/libraries/pvsutil/include"
-      ${LIBCLANG_INCLUDE_DIR} CACHE INTERNAL
+      "${LLVM_INCLUDE_DIR}" CACHE INTERNAL
      "Common include directories used by ssedit.")
-set (SSEDIT_COMMON_LIBS
-      pvsutil
-      clang CACHE INTERNAL
+set (SSEDIT2.0_COMMON_LIBS
+      clang
+      clangTooling
+      clangRewriteFrontend
+      clangRewriteCore
+      clangFrontendTool
+      clangFrontend
+      clangParse
+      clangSema
+      clangAnalysis
+      clangDriver
+      clangStaticAnalyzerCheckers
+      clangStaticAnalyzerFrontend
+      clangStaticAnalyzerCore
+      clangEdit
+      clangFormat
+      clangSerialization
+      clangASTMatchers
+      clangAST
+      clangLex
+      clangBasic
+      LLVMBitReader
+      LLVMBitWriter
+      LLVMMCParser
+      LLVMMC
+      LLVMCore
+      LLVMSupport
+      CACHE INTERNAL
      "Common libraries used by ssedit.")
-set (SSEDIT_COMMON_LIB_DIR
-      "${PROJECT_BINARY_DIR}/libraries/pvsutil/lib"
-      ${LIBCLANG_LIB_DIR} CACHE INTERNAL
+set (SSEDIT2.0_COMMON_LIB_DIR
+      "${LLVM_LIB_DIR}" CACHE INTERNAL
      "Common library directories used by ssedit.")
 
 # set default build type explicitly to Debug
@@ -62,9 +81,6 @@ endif (NOT CMAKE_BUILD_TYPE)
 
 # add subdirectory to build library
 add_subdirectory (src)
-
-# add subdirectory to build tools
-add_subdirectory (tools)
 
 # build tests
 if (BUILD_TESTS)
