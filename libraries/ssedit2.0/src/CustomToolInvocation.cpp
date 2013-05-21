@@ -27,53 +27,54 @@ using namespace clang;
 
 namespace {
 
-clang::driver::Driver *newDriver(clang::DiagnosticsEngine *Diagnostics,
-                                        const char *BinaryName) {
-  const std::string DefaultOutputName = "a.out";
-  clang::driver::Driver *CompilerDriver = new clang::driver::Driver(
-    BinaryName, llvm::sys::getDefaultTargetTriple(),
-    DefaultOutputName, *Diagnostics);
-  CompilerDriver->setTitle("clang_based_tool");
-  return CompilerDriver;
+clang::driver::Driver* newDriver(clang::DiagnosticsEngine* diagnostics,
+                                 const char* binaryName)
+{
+  const std::string defaultOutputName = "a.out";
+  auto compilerDriver = new clang::driver::Driver(
+    binaryName, llvm::sys::getDefaultTargetTriple(),
+    defaultOutputName, *diagnostics);
+  compilerDriver->setTitle("clang_based_tool");
+  return compilerDriver;
 }
 
-const clang::driver::ArgStringList *getCC1Arguments(
-    clang::DiagnosticsEngine *Diagnostics,
-    clang::driver::Compilation *Compilation) {
+const clang::driver::ArgStringList* getCC1Arguments(
+    clang::DiagnosticsEngine* diagnostics,
+    clang::driver::Compilation* compilation)
+{
   // We expect to get back exactly one Command job, if we didn't something
   // failed. Extract that job from the Compilation.
-  const clang::driver::JobList &Jobs = Compilation->getJobs();
-  if (Jobs.size() != 1 || !isa<clang::driver::Command>(*Jobs.begin())) {
+  auto& jobs = compilation->getJobs();
+  if (jobs.size() != 1 || !isa<clang::driver::Command>(*jobs.begin())) {
     SmallString<256> error_msg;
     llvm::raw_svector_ostream error_stream(error_msg);
-    Compilation->PrintJob(error_stream, Compilation->getJobs(), "; ", true);
-    Diagnostics->Report(clang::diag::err_fe_expected_compiler_job)
+    compilation->PrintJob(error_stream, compilation->getJobs(), "; ", true);
+    diagnostics->Report(clang::diag::err_fe_expected_compiler_job)
         << error_stream.str();
     return NULL;
   }
 
   // The one job we find should be to invoke clang again.
-  const clang::driver::Command *Cmd =
-      cast<clang::driver::Command>(*Jobs.begin());
-  if (StringRef(Cmd->getCreator().getName()) != "clang") {
-    Diagnostics->Report(clang::diag::err_fe_expected_clang_command);
+  auto cmd = cast<clang::driver::Command>(*jobs.begin());
+  if (StringRef(cmd->getCreator().getName()) != "clang") {
+    diagnostics->Report(clang::diag::err_fe_expected_clang_command);
     return NULL;
   }
 
-  return &Cmd->getArguments();
+  return &cmd->getArguments();
 }
 
 /// \brief Returns a clang build invocation initialized from the CC1 flags.
-clang::CompilerInvocation *newInvocation(
-    clang::DiagnosticsEngine *Diagnostics,
-    const clang::driver::ArgStringList &CC1Args) {
+clang::CompilerInvocation* newInvocation(
+    clang::DiagnosticsEngine* diagnostics,
+    const clang::driver::ArgStringList& CC1Args) {
   assert(!CC1Args.empty() && "Must at least contain the program name!");
-  clang::CompilerInvocation *Invocation = new clang::CompilerInvocation;
+  auto invocation = new clang::CompilerInvocation;
   clang::CompilerInvocation::CreateFromArgs(
-      *Invocation, CC1Args.data() + 1, CC1Args.data() + CC1Args.size(),
-      *Diagnostics);
-  Invocation->getFrontendOpts().DisableFree = false;
-  return Invocation;
+      *invocation, CC1Args.data() + 1, CC1Args.data() + CC1Args.size(),
+      *diagnostics);
+  invocation->getFrontendOpts().DisableFree = false;
+  return invocation;
 }
 
 } // namespace
@@ -81,100 +82,99 @@ clang::CompilerInvocation *newInvocation(
 namespace ssedit2 {
 
 CustomToolInvocation::CustomToolInvocation(const std::string& code)
-  : Compiler(),
-    FileName("input.cc"),
-    CommandLine({ "clang-tool",
-                  "-fsyntax-only",
-                  "-x", "cl",
-                  "-Wno-implicit-function-declaration",
-                  FileName }),
-    Files((FileSystemOptions())),
-    FileContent(code)
+  : _compiler(),
+    _fileName("input.cc"),
+    _commandLine({ "clang-tool",
+                   "-fsyntax-only",
+                   "-x", "cl",
+                   _fileName }),
+    _files((FileSystemOptions())),
+    _fileContent(code)
 {
 }
 
 CustomToolInvocation::~CustomToolInvocation()
 {
-  Compiler.resetAndLeakFileManager();
-  Files.clearStatCaches();
+  _compiler.resetAndLeakFileManager();
+  _files.clearStatCaches();
 }
 
 clang::SourceManager& CustomToolInvocation::getSources()
 {
-  return Compiler.getSourceManager();
+  return _compiler.getSourceManager();
 }
 
-bool CustomToolInvocation::run(clang::FrontendAction* action) {
-  std::vector<const char*> Argv;
-  for (int I = 0, E = CommandLine.size(); I != E; ++I)
-    Argv.push_back(CommandLine[I].c_str());
-  const char *const BinaryName = Argv[0];
-  IntrusiveRefCntPtr<DiagnosticOptions> DiagOpts = new DiagnosticOptions();
-  TextDiagnosticPrinter DiagnosticPrinter(
-      llvm::errs(), &*DiagOpts);
-  DiagnosticsEngine Diagnostics(
+bool CustomToolInvocation::run(clang::FrontendAction* action)
+{
+  std::vector<const char*> argv;
+  for (int i = 0, e = _commandLine.size(); i != e; ++i) {
+    argv.push_back(_commandLine[i].c_str());
+  }
+  const char *const binaryName = argv[0];
+  IntrusiveRefCntPtr<DiagnosticOptions> diagOpts = new DiagnosticOptions();
+  //TextDiagnosticPrinter diagnosticPrinter(llvm::errs(), &*diagOpts);
+  DiagnosticsEngine diagnostics(
     IntrusiveRefCntPtr<clang::DiagnosticIDs>(new DiagnosticIDs()),
-    &*DiagOpts, &DiagnosticPrinter, false);
+    &*diagOpts);
 
-  const OwningPtr<clang::driver::Driver> Driver(
-      newDriver(&Diagnostics, BinaryName));
+
+  const OwningPtr<clang::driver::Driver> driver(
+      newDriver(&diagnostics, binaryName));
   // Since the input might only be virtual, don't check whether it exists.
-  Driver->setCheckInputsExist(false);
-  const OwningPtr<clang::driver::Compilation> Compilation(
-      Driver->BuildCompilation(llvm::makeArrayRef(Argv)));
-  const clang::driver::ArgStringList *const CC1Args = getCC1Arguments(
-      &Diagnostics, Compilation.get());
+  driver->setCheckInputsExist(false);
+  const OwningPtr<clang::driver::Compilation> compilation(
+      driver->BuildCompilation(llvm::makeArrayRef(argv)));
+  auto CC1Args = getCC1Arguments(&diagnostics, compilation.get());
   if (CC1Args == NULL) {
     return false;
   }
-  OwningPtr<clang::CompilerInvocation> Invocation(
-      newInvocation(&Diagnostics, *CC1Args));
-  return runInvocation(action, BinaryName, Compilation.get(), Invocation.take());
+  OwningPtr<clang::CompilerInvocation> invocation(
+      newInvocation(&diagnostics, *CC1Args));
+  return runInvocation(action, compilation.get(), invocation.take());
 }
 
 bool CustomToolInvocation::runInvocation(
     clang::FrontendAction* action,
-    const char * /*BinaryName*/,
-    clang::driver::Compilation *Compilation,
-    clang::CompilerInvocation *Invocation) {
+    clang::driver::Compilation* compilation,
+    clang::CompilerInvocation* invocation)
+{
   // Show the invocation, with -v.
-  if (Invocation->getHeaderSearchOpts().Verbose) {
+  if (invocation->getHeaderSearchOpts().Verbose) {
     llvm::errs() << "clang Invocation:\n";
-    Compilation->PrintJob(llvm::errs(), Compilation->getJobs(), "\n", true);
+    compilation->PrintJob(llvm::errs(), compilation->getJobs(), "\n", true);
     llvm::errs() << "\n";
   }
 
   // Create a compiler instance to handle the actual work.
-  Compiler.setInvocation(Invocation);
-  Compiler.setFileManager(&Files);
+  _compiler.setInvocation(invocation);
+  _compiler.setFileManager(&_files);
   // FIXME: What about LangOpts?
 
   // ToolAction can have lifetime requirements for Compiler or its members, and
   // we need to ensure it's deleted earlier than Compiler. So we pass it to an
   // OwningPtr declared after the Compiler variable.
-  OwningPtr<FrontendAction> ScopedToolAction(action);
+  OwningPtr<FrontendAction> scopedToolAction(action);
 
   // Create the compilers actual diagnostics engine.
-  Compiler.createDiagnostics();
-  if (!Compiler.hasDiagnostics())
+  _compiler.createDiagnostics();
+  if (!_compiler.hasDiagnostics())
     return false;
 
-  Compiler.createSourceManager(Files);
-  addFileMappingsTo(Compiler.getSourceManager());
+  _compiler.createSourceManager(_files);
+  addFileMappingsTo(_compiler.getSourceManager());
 
-  const bool Success = Compiler.ExecuteAction(*ScopedToolAction);
+  // suppress all diagnostics
+  _compiler.getDiagnostics().setSuppressAllDiagnostics();
 
-  return Success;
+  return _compiler.ExecuteAction(*scopedToolAction);
 }
 
-void CustomToolInvocation::addFileMappingsTo(SourceManager &Sources) {
+void CustomToolInvocation::addFileMappingsTo(SourceManager& sources) {
   // Inject the code as the given file name into the preprocessor options.
-  const llvm::MemoryBuffer *Input =
-    llvm::MemoryBuffer::getMemBuffer(FileContent);
+  auto input = llvm::MemoryBuffer::getMemBuffer(_fileContent);
   // FIXME: figure out what '0' stands for.
-  const FileEntry *FromFile = Files.getVirtualFile(
-    FileName, Input->getBufferSize(), 0);
-  Sources.overrideFileContents(FromFile, Input);
+  auto fromFile = _files.getVirtualFile(_fileName, input->getBufferSize(), 0);
+  sources.overrideFileContents(fromFile, input);
 }
 
 } // namespace ssedit2

@@ -52,17 +52,18 @@ RefactoringTool::transform(const std::string& code,
   return writeReplacements(rewriter);
 }
 
-RefactoringTool::Replacements& RefactoringTool::replacements() { return _replacements; }
+RefactoringTool::Replacements& RefactoringTool::replacements()
+{
+  return _replacements;
+}
 
 bool RefactoringTool::applyAllReplacements(Replacements &replacements,
-                          clang::Rewriter &rewriter)
+                                           clang::Rewriter &rewriter)
 {
   bool result = true;
-  for (Replacements::const_iterator I = replacements.begin(),
-                                    E = replacements.end();
-       I != E; ++I) {
-    if (I->isApplicable()) {
-      result = I->apply(rewriter) && result;
+  for (auto& r : replacements) {
+    if (r.isApplicable()) {
+      result = r.apply(rewriter) && result;
     } else {
       result = false;
     }
@@ -73,12 +74,13 @@ bool RefactoringTool::applyAllReplacements(Replacements &replacements,
 std::string RefactoringTool::writeReplacements(clang::Rewriter &rewriter)
 {
   std::ostringstream oss;
-  for (clang::Rewriter::buffer_iterator I = rewriter.buffer_begin(),
-                                 E = rewriter.buffer_end();
-                                 I != E; ++I) {
-    llvm::raw_os_ostream Stream(oss);
-    I->second.write(Stream);
-    Stream.flush();
+  for ( auto i  = rewriter.buffer_begin(),
+             e  = rewriter.buffer_end();
+             i != e;
+           ++i ) {
+    llvm::raw_os_ostream stream(oss);
+    i->second.write(stream);
+    stream.flush();
   }
   return oss.str();
 }

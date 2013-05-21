@@ -35,15 +35,14 @@ private:
   void addFileMappingsTo(clang::SourceManager& SourceManager);
 
   bool runInvocation(clang::FrontendAction* action,
-                     const char *BinaryName,
                      clang::driver::Compilation *Compilation,
                      clang::CompilerInvocation *Invocation);
 
-  clang::CompilerInstance Compiler;
-  std::string FileName;
-  std::vector<std::string> CommandLine;
-  clang::FileManager Files;
-  std::string FileContent;
+  clang::CompilerInstance   _compiler;
+  std::string               _fileName;
+  std::vector<std::string>  _commandLine;
+  clang::FileManager        _files;
+  std::string               _fileContent;
 };
 
 } // namespace ssedit2
