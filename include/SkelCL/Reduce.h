@@ -164,6 +164,10 @@ private:
   /// second level reduces this intermediate vector further to a single value.
   ///
   struct Level {
+    Level();
+    Level(const Level& rhs) = delete;
+    Level& operator=(const Level& rhs) = delete;
+
     size_t            workGroupSize;
     size_t            workGroupCount;
     const Vector<T>*  inputPtr; //just observing not owning: raw pointer is fine

@@ -81,6 +81,8 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const 
       _funcReduce(reduce.func()),
       _funcZip(zip.func()),
       _idReduce(reduce.id()),
+      _srcUser(),
+      _funcUser(),
       _C(32), _R(8), _S(16), // parameters
       _program(createAndBuildProgramSpecial())
 {
@@ -90,6 +92,11 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const 
 template<typename Tleft, typename Tright, typename Tout>
 AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::string& func)
     : detail::Skeleton(),
+      _srcReduce(),
+      _srcZip(),
+      _funcReduce(),
+      _funcZip(),
+      _idReduce(),
       _srcUser(source),
       _funcUser(func),
       _C(16), _R(16), _S(1),

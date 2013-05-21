@@ -30,107 +30,96 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
-///
-/// \file Progam.h
-///
-/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
-///
-
-#ifndef PROGRAM_H_
-#define PROGRAM_H_
 
 #include <string>
-#include <map>
-#include <memory>
 
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-#undef  __CL_ENABLE_EXCEPTIONS
+#include "Test.h"
 
-#include <stooling/SourceCode.h>
+using namespace testing;
 
-#include "Device.h"
-#include "Util.h"
-
-namespace skelcl {
-
-namespace detail {
-
-class Program {
-public:
-  Program() = delete;
-
-  Program(const std::string& source, const std::string& hash = "");
-
-  Program(const Program&) = default;
-
-  Program(Program&&);
-
-  Program& operator=(const Program&) = default;
-
-  Program& operator=(Program&&);
-
-  ~Program() = default;
-
-  void transferParameters(const std::string& from,
-                          unsigned indexFrom,
-                          const std::string& to);
-
-  void transferArguments(const std::string& from,
-                         unsigned indexFrom,
-                         const std::string& to);
-
-  void renameFunction(const std::string& from, const std::string& to);
-
-  template<typename Head, typename ...Tail>
-  void adjustTypes();
-
-  bool loadBinary();
-
-  void build();
-
-  cl::Kernel kernel(const Device& device, const std::string& name) const;
-
-private:
-  void createProgramsFromSource();
-
-  void saveBinary();
-
-  void renameType(const int i, const std::string& name);
-
-  template<typename T>
-  void traverseTypes(int i);
-
-  template<typename Head, typename Second, typename ...Tail>
-  void traverseTypes(int i);
-
-  stooling::SourceCode      _source;
-  std::string               _hash;
-  std::vector<cl::Program>  _clPrograms;
+class RenameFunctionTest : public Test
+{
+protected:
+  RenameFunctionTest() {}
 };
 
-// function template definitions
+TEST_F(RenameFunctionTest, RenameEmptyFunctionDeclaration)
+{
+  const char* input = "\
+void foo();\n\
+void baz();\n\
+";
+  stooling::SourceCode s(input);
 
-template<typename Head, typename... Tail>
-void Program::adjustTypes() {
-  traverseTypes<Head, Tail...>(0);
+  s.renameFunction("foo", "bar");
+
+  const char* expectedOutput = "\
+void bar();\n\
+void baz();\n\
+";
+  ASSERT_EQ(expectedOutput, s.code());
 }
 
-template<typename T>
-void Program::traverseTypes(int i) {
-  renameType(i, util::typeToString<T>());
+TEST_F(RenameFunctionTest, RenameFunctionWithArgsDeclaration)
+{
+  const char* input = "\
+void foo(char c, int x);\n\
+void baz();\n\
+";
+  stooling::SourceCode s(input);
+
+  s.renameFunction("foo", "bar");
+
+  const char* expectedOutput = "\
+void bar(char c, int x);\n\
+void baz();\n\
+";
+  ASSERT_EQ(expectedOutput, s.code());
 }
 
-template<typename Head, typename Second, typename... Tail>
-void Program::traverseTypes(int i) {
-  renameType(i, util::typeToString<Head>());
-  traverseTypes<Second, Tail...>(++i);
+TEST_F(RenameFunctionTest, RenameEmptyFunctionUsage)
+{
+  const char* input = "\
+void foo();\n\
+\n\
+void baz() {\n\
+  foo();\n\
+}\
+";
+  stooling::SourceCode s(input);
+
+  s.renameFunction("foo", "bar");
+
+  const char* expectedOutput = "\
+void bar();\n\
+\n\
+void baz() {\n\
+  bar();\n\
+}\
+";
+  ASSERT_EQ(expectedOutput, s.code());
 }
 
-} // namespace detail
+TEST_F(RenameFunctionTest, RenameFunctionWithArgumentsUsage)
+{
+  const char* input = "\
+void foo(int x, float y);\n\
+\n\
+void baz() {\n\
+  foo(5, 4.0f);\n\
+}\
+";
+  stooling::SourceCode s(input);
 
-} // namespace skelcl
+  s.renameFunction("foo", "bar");
 
-#endif // PROGRAM_H_
+  const char* expectedOutput = "\
+void bar(int x, float y);\n\
+\n\
+void baz() {\n\
+  bar(5, 4.0f);\n\
+}\
+";
+  ASSERT_EQ(expectedOutput, s.code());
+}
 

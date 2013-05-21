@@ -48,7 +48,7 @@
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
-#include <ssedit2.0/SourceCode.h>
+#include <stooling/SourceCode.h>
 
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>

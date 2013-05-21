@@ -37,6 +37,7 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Weffc++"
 
 #include <gtest/gtest.h>
 
