@@ -33,7 +33,7 @@
 
 #include <string>
 
-#include <ssedit2.0/Source.h>
+#include <ssedit2.0/SourceCode.h>
 
 #include "Test.h"
 
@@ -57,7 +57,7 @@ void map(int* in, int* out, int elements) {\n\
   }\n\
 }\n\
 ";
-  ssedit2::Source s(input);
+  ssedit2::SourceCode s(input);
 
   s.transferParameters("func", 1, "map");
   s.transferArguments("func", 1, "SCL_FUNC");
@@ -87,7 +87,7 @@ void map(int* out, int elements) {\n\
   }\n\
 }\n\
 ";
-  ssedit2::Source s(input);
+  ssedit2::SourceCode s(input);
 
   s.transferParameters("func", 0, "map");
   s.transferArguments("func", 0, "SCL_FUNC");

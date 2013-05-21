@@ -33,7 +33,7 @@
 
 #include <string>
 
-#include <ssedit2.0/Source.h>
+#include <ssedit2.0/SourceCode.h>
 
 #include "Test.h"
 
@@ -53,7 +53,7 @@ void bar\n\
 );\n\
 void foo(int x, int y);\
 ";
-  ssedit2::Source s(input);
+  ssedit2::SourceCode s(input);
 
   s.transferParameters("foo", 1, "bar");
 
@@ -72,7 +72,7 @@ TEST_F(TransferParametersTest, TransferSingleParameterToFunctionWithParameter)
 void bar(int i);\n\
 void foo(int x, int y);\
 ";
-  ssedit2::Source s(input);
+  ssedit2::SourceCode s(input);
 
   s.transferParameters("foo", 1, "bar");
 
@@ -89,7 +89,7 @@ TEST_F(TransferParametersTest, TransferTwoParametersToFunctionWithParameter)
 void bar(int i);\n\
 void foo(int x, int y, float z);\
 ";
-  ssedit2::Source s(input);
+  ssedit2::SourceCode s(input);
 
   s.transferParameters("foo", 1, "bar");
 
@@ -97,6 +97,100 @@ void foo(int x, int y, float z);\
 void bar(int i, int y, float z);\n\
 void foo(int x, int y, float z);\
 ";
+  ASSERT_EQ(expectedOutput, s.code());
+}
+
+TEST_F(TransferParametersTest, TransferTwoParametersToFunctionWithParameterInOpenCL)
+{
+  const char* input = "\
+void foo(int x, int y, float z);\n\
+__kernel void bar(__global int* i);\
+";
+  ssedit2::SourceCode s(input);
+
+  s.transferParameters("foo", 1, "bar");
+
+  const char* expectedOutput = "\
+void foo(int x, int y, float z);\n\
+__kernel void bar(__global int* i, int y, float z);\
+";
+  ASSERT_EQ(expectedOutput, s.code());
+}
+
+
+TEST_F(TransferParametersTest, ZipTest)
+{
+const char* input = R"(
+#ifndef float_MATRIX_T
+typedef struct {
+  __global float* data;
+  unsigned int col_count;
+} float_matrix_t;
+#define float_MATRIX_T
+#endif
+
+#ifndef MATRIX_GET
+#define get(m, y, x) m.data[(int)((y) * m.col_count + (x))]
+#define MATRIX_GET
+#endif
+#ifndef MATRIX_SET
+#define set(m, y, x, v) m.data[(int)((y) * m.col_count + (x))] = (v)
+#define MATRIX_SET
+#endif
+float func(float x, float y){ return x*y; }
+
+typedef float SCL_TYPE_0;
+typedef float SCL_TYPE_1;
+typedef float SCL_TYPE_2;
+
+__kernel void SCL_ZIP(
+    const __global SCL_TYPE_0*  SCL_LEFT,
+    const __global SCL_TYPE_1*  SCL_RIGHT,
+          __global SCL_TYPE_2*  SCL_OUT,
+    const unsigned int          SCL_ELEMENTS ) {
+  if (get_global_id(0) < SCL_ELEMENTS) {
+    SCL_OUT[get_global_id(0)] = SCL_FUNC(SCL_LEFT[get_global_id(0)],
+                                         SCL_RIGHT[get_global_id(0)]);
+  }
+})";
+  
+  ssedit2::SourceCode s(input);
+
+  s.transferParameters("func", 2, "SCL_ZIP");
+
+  const char* expectedOutput = R"(
+#ifndef float_MATRIX_T
+typedef struct {
+  __global float* data;
+  unsigned int col_count;
+} float_matrix_t;
+#define float_MATRIX_T
+#endif
+
+#ifndef MATRIX_GET
+#define get(m, y, x) m.data[(int)((y) * m.col_count + (x))]
+#define MATRIX_GET
+#endif
+#ifndef MATRIX_SET
+#define set(m, y, x, v) m.data[(int)((y) * m.col_count + (x))] = (v)
+#define MATRIX_SET
+#endif
+float func(float x, float y){ return x*y; }
+
+typedef float SCL_TYPE_0;
+typedef float SCL_TYPE_1;
+typedef float SCL_TYPE_2;
+
+__kernel void SCL_ZIP(
+    const __global SCL_TYPE_0*  SCL_LEFT,
+    const __global SCL_TYPE_1*  SCL_RIGHT,
+          __global SCL_TYPE_2*  SCL_OUT,
+    const unsigned int          SCL_ELEMENTS ) {
+  if (get_global_id(0) < SCL_ELEMENTS) {
+    SCL_OUT[get_global_id(0)] = SCL_FUNC(SCL_LEFT[get_global_id(0)],
+                                         SCL_RIGHT[get_global_id(0)]);
+  }
+})";
   ASSERT_EQ(expectedOutput, s.code());
 }
 

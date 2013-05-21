@@ -102,7 +102,7 @@ void CustomToolInvocation::init(std::vector<std::string>& commandLine,
 }
 
 void CustomToolInvocation::mapVirtualFile(const std::string& FilePath,
-                                          const std::string&Content) {
+                                          const std::string& Content) {
   SmallString<1024> PathStorage;
   llvm::sys::path::native(FilePath, PathStorage);
   MappedFileContents[PathStorage] = Content;
@@ -171,8 +171,7 @@ bool CustomToolInvocation::runInvocation(
 }
 
 void CustomToolInvocation::addFileMappingsTo(SourceManager &Sources) {
-  for (llvm::StringMap<StringRef>::const_iterator
-           It = MappedFileContents.begin(), End = MappedFileContents.end();
+  for (auto It = MappedFileContents.begin(), End = MappedFileContents.end();
        It != End; ++It) {
     // Inject the code as the given file name into the preprocessor options.
     const llvm::MemoryBuffer *Input =

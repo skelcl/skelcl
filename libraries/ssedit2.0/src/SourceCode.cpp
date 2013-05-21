@@ -1,4 +1,4 @@
-#include "ssedit2.0/Source.h"
+#include "ssedit2.0/SourceCode.h"
 
 #define __STDC_LIMIT_MACROS
 #define __STDC_CONSTANT_MACROS
@@ -25,6 +25,7 @@
 #include "TransferParametersCallback.h"
 #include "RenameFunctionCallback.h"
 #include "RenameTypedefCallback.h"
+#include "RedefineTypedefCallback.h"
 
 #include <iostream>
 
@@ -34,17 +35,17 @@ using clang::tooling::newFrontendActionFactory;
 
 namespace ssedit2 {
 
-Source::Source(const std::string& source)
-  : _source(source), _tool(new RefactoringTool())
+SourceCode::SourceCode(const std::string& SourceCode)
+  : _source(SourceCode), _tool(new RefactoringTool())
 {
 }
 
-Source::~Source()
+SourceCode::~SourceCode()
 {
   delete _tool;
 }
 
-void Source::transferParameters(const std::string& from,
+void SourceCode::transferParameters(const std::string& from,
                                 unsigned int startIndex,
                                 const std::string& to)
 {
@@ -57,18 +58,21 @@ void Source::transferParameters(const std::string& from,
       &extractCallback);
 
   _tool->run(_source, newFrontendActionFactory(&parameterFinder));
-  
-  // Then insert the parameters to the declaration of the "to" function
-  ast_matchers::MatchFinder functionFinder;
-  ApplyParametersCallback applyCallback(_tool->replacements(), parameter);
-  functionFinder.addMatcher(
-      functionDecl(hasName(to)).bind("toDecl"),
-      &applyCallback);
 
-  _source = _tool->transform(_source, newFrontendActionFactory(&functionFinder));
+  if (!parameter.empty()) {
+    // Then insert the parameters to the declaration of the "to" function
+    ast_matchers::MatchFinder functionFinder;
+    ApplyParametersCallback applyCallback(_tool->replacements(), parameter);
+    functionFinder.addMatcher(
+        functionDecl(hasName(to)).bind("toDecl"),
+        &applyCallback);
+
+    _source = _tool->transform(_source,
+                               newFrontendActionFactory(&functionFinder));
+  }
 }
 
-void Source::transferArguments(const std::string& from,
+void SourceCode::transferArguments(const std::string& from,
                                unsigned int startIndex,
                                const std::string& to)
 {
@@ -82,17 +86,19 @@ void Source::transferArguments(const std::string& from,
       &extractCallback);
   _tool->run(_source, newFrontendActionFactory(&argumentsFinder));
   
-  // Then insert the arguments to every call of the function "to"
-  ast_matchers::MatchFinder callFinder;
-  ApplyArgumentsCallback applyCallback(_tool->replacements(), arguments);
-  callFinder.addMatcher(
-      callExpr(callee(functionDecl(hasName(to)))).bind("toCall"),
-      &applyCallback);
+  if (!arguments.empty()) {
+    // Then insert the arguments to every call of the function "to"
+    ast_matchers::MatchFinder callFinder;
+    ApplyArgumentsCallback applyCallback(_tool->replacements(), arguments);
+    callFinder.addMatcher(
+        callExpr(callee(functionDecl(hasName(to)))).bind("toCall"),
+        &applyCallback);
 
-  _source = _tool->transform(_source, newFrontendActionFactory(&callFinder));
+    _source = _tool->transform(_source, newFrontendActionFactory(&callFinder));
+  }
 }
 
-void Source::renameFunction(const std::string& from, const std::string& to)
+void SourceCode::renameFunction(const std::string& from, const std::string& to)
 {
   ast_matchers::MatchFinder finder;
   RenameFunctionCallback callback(_tool->replacements(), to);
@@ -108,7 +114,7 @@ void Source::renameFunction(const std::string& from, const std::string& to)
   _source = _tool->transform(_source, newFrontendActionFactory(&finder));
 }
 
-void Source::renameTypedef(const std::string& from, const std::string& to)
+void SourceCode::renameTypedef(const std::string& from, const std::string& to)
 {
   ast_matchers::MatchFinder finder;
   RenameTypedefCallback callback(_tool->replacements(), from, to);
@@ -121,7 +127,21 @@ void Source::renameTypedef(const std::string& from, const std::string& to)
   _source = _tool->transform(_source, newFrontendActionFactory(&finder));
 }
 
-const std::string& Source::code()
+void SourceCode::redefineTypedef(const std::string& typedefName,
+                                 const std::string& newType)
+{
+  ast_matchers::MatchFinder finder;
+  RedefineTypedefCallback callback(_tool->replacements(), typedefName, newType);
+  // match any named declaration
+  // filter further in the callback
+  finder.addMatcher(
+      namedDecl().bind("decl"),
+      &callback);
+
+  _source = _tool->transform(_source, newFrontendActionFactory(&finder));
+}
+
+const std::string& SourceCode::code()
 {
   return _source;
 }

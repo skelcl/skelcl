@@ -48,7 +48,7 @@
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
-#include <ssedit/TempSourceFile.h>
+#include <ssedit2.0/SourceCode.h>
 
 #include "Device.h"
 #include "Util.h"
@@ -105,9 +105,9 @@ private:
   template<typename Head, typename Second, typename ...Tail>
   void traverseTypes(int i);
 
-  std::shared_ptr<ssedit::TempSourceFile> _sourceFile;
-  std::string                             _hash;
-  std::vector<cl::Program>                _clPrograms;
+  ssedit2::SourceCode       _source;
+  std::string               _hash;
+  std::vector<cl::Program>  _clPrograms;
 };
 
 // function template definitions

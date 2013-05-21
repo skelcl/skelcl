@@ -58,10 +58,13 @@ void RefactoringTool::prepareInvocation(const std::string& code,
   // fake file name for the virtual file
   std::string fileName("input.cc");
   // build command to be executed
-  std::vector<std::string> commands;
-  commands.push_back("clang-tool");
-  commands.push_back("-fsyntax-only");
-  commands.push_back(fileName);
+  std::vector<std::string> commands = {
+    "clang-tool",
+    "-fsyntax-only",
+    "-x", "cl", // set OpenCL as language
+    // TODO: find better way to disable diagnostics
+    "-Wno-implicit-function-declaration",
+    fileName };
   // prepare invocation of the compiler
   _invocation.init(commands, action);
   // create virtual file

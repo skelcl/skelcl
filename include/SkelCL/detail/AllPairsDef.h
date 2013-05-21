@@ -52,8 +52,8 @@
 #include <CL/cl.h>
 #undef __CL_ENABLE_EXCEPTIONS
 
-#include <ssedit/TempSourceFile.h>
-#include <ssedit/Function.h>
+//#include <ssedit/TempSourceFile.h>
+//#include <ssedit/Function.h>
 
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
@@ -205,6 +205,8 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     ASSERT_MESSAGE( !_srcZip.empty(),
                     "Tried to create program with empty user zip source." );
 
+#if 0
+    //TODO: Move to ssedit2.0
     // _srcReduce: replace func by TMP_REDUCE
     ssedit::TempSourceFile reduceTemp(_srcReduce);
 
@@ -279,6 +281,8 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     program.build();
 
     return program;
+#endif
+    return detail::Program(std::string(), detail::util::hash(""));
 }
 
 template<typename Tleft, typename Tright, typename Tout>

@@ -33,7 +33,7 @@
 
 #include <string>
 
-#include <ssedit2.0/Source.h>
+#include <ssedit2.0/SourceCode.h>
 
 #include "Test.h"
 
@@ -51,7 +51,7 @@ TEST_F(RenameFunctionTest, RenameEmptyFunctionDeclaration)
 void foo();\n\
 void baz();\n\
 ";
-  ssedit2::Source s(input);
+  ssedit2::SourceCode s(input);
 
   s.renameFunction("foo", "bar");
 
@@ -68,7 +68,7 @@ TEST_F(RenameFunctionTest, RenameFunctionWithArgsDeclaration)
 void foo(char c, int x);\n\
 void baz();\n\
 ";
-  ssedit2::Source s(input);
+  ssedit2::SourceCode s(input);
 
   s.renameFunction("foo", "bar");
 
@@ -88,7 +88,7 @@ void baz() {\n\
   foo();\n\
 }\
 ";
-  ssedit2::Source s(input);
+  ssedit2::SourceCode s(input);
 
   s.renameFunction("foo", "bar");
 
@@ -111,7 +111,7 @@ void baz() {\n\
   foo(5, 4.0f);\n\
 }\
 ";
-  ssedit2::Source s(input);
+  ssedit2::SourceCode s(input);
 
   s.renameFunction("foo", "bar");
 

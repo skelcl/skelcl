@@ -1,5 +1,5 @@
-#ifndef SOURCE_H_
-#define SOURCE_H_
+#ifndef SSEDIT2_SOURCE_CODE_H_
+#define SSEDIT2_SOURCE_CODE_H_
 
 #include <string>
 
@@ -7,11 +7,11 @@ namespace ssedit2 {
 
 class RefactoringTool;
 
-class Source {
+class SourceCode {
 public:
-  Source(const std::string& source);
+  SourceCode(const std::string& SourceCode);
 
-  ~Source();
+  ~SourceCode();
 
   void transferParameters(const std::string& from,
                           unsigned int startIndex,
@@ -25,10 +25,13 @@ public:
 
   void renameTypedef(const std::string& from, const std::string& to);
 
+  void redefineTypedef(const std::string& typedefName,
+                       const std::string& typeName);
+
   const std::string& code();
 
 private:
-  Source();
+  SourceCode();
 
   std::string       _source;
   RefactoringTool*  _tool;
@@ -36,5 +39,5 @@ private:
 
 } // namespace ssedit2
 
-#endif // SOURCE_H_
+#endif // SSEDIT2_SOURCE_CODE_H_
 

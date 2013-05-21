@@ -48,7 +48,8 @@ private:
   clang::FrontendAction* ToolAction; // was smart pointer
   clang::FileManager Files;
   // Maps <file name> -> <file content>.
-  llvm::StringMap<llvm::StringRef> MappedFileContents;
+  //llvm::StringMap<llvm::StringRef> MappedFileContents;
+  llvm::StringMap<std::string> MappedFileContents;
 };
 
 } // namespace ssedit2

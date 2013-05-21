@@ -33,7 +33,7 @@
 
 #include <string>
 
-#include <ssedit2.0/Source.h>
+#include <ssedit2.0/SourceCode.h>
 
 #include "Test.h"
 
@@ -50,7 +50,7 @@ TEST_F(RenameTypedefTest, RenameSingleTypedef)
   const char* input = "\
 typedef int foo;\n\
 ";
-  ssedit2::Source s(input);
+  ssedit2::SourceCode s(input);
 
   s.renameTypedef("foo", "bar");
 
@@ -66,7 +66,7 @@ TEST_F(RenameTypedefTest, RenameMultipleTypedef)
 typedef int foo;\n\
 typedef int baz;\n\
 ";
-  ssedit2::Source s(input);
+  ssedit2::SourceCode s(input);
 
   s.renameTypedef("foo", "bar");
 

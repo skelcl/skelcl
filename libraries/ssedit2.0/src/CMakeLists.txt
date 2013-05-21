@@ -14,9 +14,10 @@ set (SSEDIT2.0_SOURCES
   RefactoringTool.cpp
   RenameFunctionCallback.cpp
   RenameTypedefCallback.cpp
+  RedefineTypedefCallback.cpp
   TransferArgumentsCallback.cpp
   TransferParametersCallback.cpp
-  Source.cpp
+  SourceCode.cpp
     )
 
 # specify library target
