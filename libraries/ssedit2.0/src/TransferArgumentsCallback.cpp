@@ -3,7 +3,6 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wc++11-long-long"
 
 #include <clang/AST/Expr.h>
 #include <clang/AST/ExprCXX.h>

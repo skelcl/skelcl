@@ -3,7 +3,6 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wc++11-long-long"
 
 #include <llvm/Support/raw_os_ostream.h>
 #include <clang/Frontend/CompilerInstance.h>
@@ -15,30 +14,33 @@
 #pragma GCC diagnostic pop
 
 #include <sstream>
+#include <iostream>
 
+#include "CustomToolInvocation.h"
 #include "RefactoringTool.h"
 
 namespace ssedit2 {
 
 RefactoringTool::RefactoringTool() {}
 
+RefactoringTool::~RefactoringTool() {}
+
 void RefactoringTool::run(const std::string& code,
                           clang::tooling::FrontendActionFactory *actionFactory)
 {
-  // prepare invocation
-  prepareInvocation(code, actionFactory->create());
-  // run action
-  _invocation.run();
+  CustomToolInvocation(code).run(actionFactory->create());
 }
 
 std::string
 RefactoringTool::transform(const std::string& code,
                            clang::tooling::FrontendActionFactory *actionFactory)
 {
-  run(code, actionFactory);
+  CustomToolInvocation invocation(code);
+  invocation.run(actionFactory->create());
+
   //create rewriter
   clang::LangOptions defaultLangOptions;
-  clang::Rewriter rewriter(_invocation.getSources(), defaultLangOptions);
+  clang::Rewriter rewriter(invocation.getSources(), defaultLangOptions);
   if (_replacements.empty()) {
     return code;
   }
@@ -51,25 +53,6 @@ RefactoringTool::transform(const std::string& code,
 }
 
 RefactoringTool::Replacements& RefactoringTool::replacements() { return _replacements; }
-
-void RefactoringTool::prepareInvocation(const std::string& code,
-                       clang::FrontendAction* action)
-{
-  // fake file name for the virtual file
-  std::string fileName("input.cc");
-  // build command to be executed
-  std::vector<std::string> commands = {
-    "clang-tool",
-    "-fsyntax-only",
-    "-x", "cl", // set OpenCL as language
-    // TODO: find better way to disable diagnostics
-    "-Wno-implicit-function-declaration",
-    fileName };
-  // prepare invocation of the compiler
-  _invocation.init(commands, action);
-  // create virtual file
-  _invocation.mapVirtualFile(fileName, code);
-}
 
 bool RefactoringTool::applyAllReplacements(Replacements &replacements,
                           clang::Rewriter &rewriter)

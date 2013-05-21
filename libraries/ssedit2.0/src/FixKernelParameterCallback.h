@@ -18,28 +18,34 @@
 
 #include <string>
 
-#ifndef RENAME_TYPEDEF_CALLBACK_H
-#define RENAME_TYPEDEF_CALLBACK_H
+#ifndef FIX_KERNEL_PARAMETER_CALLBACK_H
+#define FIX_KERNEL_PARAMETER_CALLBACK_H
 
 namespace ssedit2 {
 
-class RenameTypedefCallback
+class FixKernelParameterCallback
   : public clang::ast_matchers::MatchFinder::MatchCallback
 {
 public:
-  RenameTypedefCallback(clang::tooling::Replacements& replacements,
-                         const std::string& oldName,
-                         const std::string& newName);
+  FixKernelParameterCallback(clang::tooling::Replacements& replacements);
 
   virtual void run(const clang::ast_matchers::MatchFinder::MatchResult& result);
 
 private:
+  void rewriteParameter(const clang::ParmVarDecl* param,
+                        const std::string& dataType,
+                        const std::string& paramName,
+                        clang::SourceManager& sM);
+
+  void adoptBody(const clang::FunctionDecl* funcDecl,
+                 const std::string& fullType,
+                 const std::string& paramName,
+                 clang::SourceManager& sM);
+
   clang::tooling::Replacements& _replacements;
-  const std::string&            _oldName;
-  const std::string&            _newName;
 };
 
 } // namespace ssedit2
 
-#endif // RENAME_FUNCTION_CALLBACK_H
+#endif // FIX_KERNEL_PARAMETER_CALLBACK_H
 

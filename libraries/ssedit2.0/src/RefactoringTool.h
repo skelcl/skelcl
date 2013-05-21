@@ -3,7 +3,6 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wc++11-long-long"
 
 #include <clang/Frontend/FrontendActions.h>
 #include <clang/Rewrite/Core/Rewriter.h>
@@ -11,8 +10,6 @@
 #include <clang/Tooling/Refactoring.h>
 
 #pragma GCC diagnostic pop
-
-#include "CustomToolInvocation.h"
 
 #ifndef REFACTORING_TOOL_H
 #define REFACTORING_TOOL_H
@@ -23,6 +20,8 @@ class RefactoringTool {
 
 public:
   RefactoringTool();
+
+  ~RefactoringTool();
 
   typedef std::set<clang::tooling::Replacement,
                    clang::tooling::Replacement::Less> Replacements;
@@ -44,7 +43,6 @@ private:
 
   std::string writeReplacements(clang::Rewriter &rewriter);
 
-  CustomToolInvocation      _invocation;
   Replacements              _replacements;
 };
 

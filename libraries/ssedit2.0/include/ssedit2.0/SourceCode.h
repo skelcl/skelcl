@@ -9,8 +9,12 @@ class RefactoringTool;
 
 class SourceCode {
 public:
-  SourceCode(const std::string& SourceCode);
+  SourceCode(const std::string& source);
 
+  SourceCode(SourceCode&& rhs);
+
+  SourceCode& operator=(SourceCode&& rhs);
+  
   ~SourceCode();
 
   void transferParameters(const std::string& from,
@@ -27,6 +31,8 @@ public:
 
   void redefineTypedef(const std::string& typedefName,
                        const std::string& typeName);
+
+  void fixKernelParameter(const std::string& kernel);
 
   const std::string& code();
 

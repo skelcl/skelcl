@@ -3,7 +3,6 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wc++11-long-long"
 
 #include <llvm/Support/Host.h>
 #include <clang/Basic/FileManager.h>
@@ -19,6 +18,9 @@
 #pragma GCC diagnostic pop
 
 #include "CustomToolInvocation.h"
+
+
+#include <iostream>
 
 using namespace llvm;
 using namespace clang;
@@ -78,8 +80,16 @@ clang::CompilerInvocation *newInvocation(
 
 namespace ssedit2 {
 
-CustomToolInvocation::CustomToolInvocation()
-  : Compiler(), CommandLine(), ToolAction(), Files((FileSystemOptions()))
+CustomToolInvocation::CustomToolInvocation(const std::string& code)
+  : Compiler(),
+    FileName("input.cc"),
+    CommandLine({ "clang-tool",
+                  "-fsyntax-only",
+                  "-x", "cl",
+                  "-Wno-implicit-function-declaration",
+                  FileName }),
+    Files((FileSystemOptions())),
+    FileContent(code)
 {
 }
 
@@ -94,21 +104,7 @@ clang::SourceManager& CustomToolInvocation::getSources()
   return Compiler.getSourceManager();
 }
 
-void CustomToolInvocation::init(std::vector<std::string>& commandLine,
-                                clang::FrontendAction *toolAction)
-{
-  CommandLine = commandLine;
-  ToolAction = toolAction;
-}
-
-void CustomToolInvocation::mapVirtualFile(const std::string& FilePath,
-                                          const std::string& Content) {
-  SmallString<1024> PathStorage;
-  llvm::sys::path::native(FilePath, PathStorage);
-  MappedFileContents[PathStorage] = Content;
-}
-
-bool CustomToolInvocation::run() {
+bool CustomToolInvocation::run(clang::FrontendAction* action) {
   std::vector<const char*> Argv;
   for (int I = 0, E = CommandLine.size(); I != E; ++I)
     Argv.push_back(CommandLine[I].c_str());
@@ -133,10 +129,11 @@ bool CustomToolInvocation::run() {
   }
   OwningPtr<clang::CompilerInvocation> Invocation(
       newInvocation(&Diagnostics, *CC1Args));
-  return runInvocation(BinaryName, Compilation.get(), Invocation.take());
+  return runInvocation(action, BinaryName, Compilation.get(), Invocation.take());
 }
 
 bool CustomToolInvocation::runInvocation(
+    clang::FrontendAction* action,
     const char * /*BinaryName*/,
     clang::driver::Compilation *Compilation,
     clang::CompilerInvocation *Invocation) {
@@ -155,7 +152,7 @@ bool CustomToolInvocation::runInvocation(
   // ToolAction can have lifetime requirements for Compiler or its members, and
   // we need to ensure it's deleted earlier than Compiler. So we pass it to an
   // OwningPtr declared after the Compiler variable.
-  OwningPtr<FrontendAction> ScopedToolAction(ToolAction);
+  OwningPtr<FrontendAction> ScopedToolAction(action);
 
   // Create the compilers actual diagnostics engine.
   Compiler.createDiagnostics();
@@ -171,16 +168,13 @@ bool CustomToolInvocation::runInvocation(
 }
 
 void CustomToolInvocation::addFileMappingsTo(SourceManager &Sources) {
-  for (auto It = MappedFileContents.begin(), End = MappedFileContents.end();
-       It != End; ++It) {
-    // Inject the code as the given file name into the preprocessor options.
-    const llvm::MemoryBuffer *Input =
-        llvm::MemoryBuffer::getMemBuffer(It->getValue());
-    // FIXME: figure out what '0' stands for.
-    const FileEntry *FromFile = Files.getVirtualFile(
-        It->getKey(), Input->getBufferSize(), 0);
-    Sources.overrideFileContents(FromFile, Input);
-  }
+  // Inject the code as the given file name into the preprocessor options.
+  const llvm::MemoryBuffer *Input =
+    llvm::MemoryBuffer::getMemBuffer(FileContent);
+  // FIXME: figure out what '0' stands for.
+  const FileEntry *FromFile = Files.getVirtualFile(
+    FileName, Input->getBufferSize(), 0);
+  Sources.overrideFileContents(FromFile, Input);
 }
 
 } // namespace ssedit2

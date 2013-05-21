@@ -5,7 +5,6 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wc++11-long-long"
 
 #include <clang/AST/Expr.h>
 #include <clang/AST/ExprCXX.h>
@@ -26,6 +25,7 @@
 #include "RenameFunctionCallback.h"
 #include "RenameTypedefCallback.h"
 #include "RedefineTypedefCallback.h"
+#include "FixKernelParameterCallback.h"
 
 #include <iostream>
 
@@ -35,9 +35,22 @@ using clang::tooling::newFrontendActionFactory;
 
 namespace ssedit2 {
 
-SourceCode::SourceCode(const std::string& SourceCode)
-  : _source(SourceCode), _tool(new RefactoringTool())
+SourceCode::SourceCode(const std::string& source)
+  : _source(source), _tool(new RefactoringTool())
 {
+}
+
+SourceCode::SourceCode(SourceCode&& rhs)
+  : _source(std::move(rhs._source)), _tool(rhs._tool)
+{
+  rhs._tool = nullptr;
+}
+
+SourceCode& SourceCode::operator=(SourceCode&& rhs)
+{
+  _source = std::move(rhs._source);
+  _tool   = rhs._tool; rhs._tool = nullptr;
+  return *this;
 }
 
 SourceCode::~SourceCode()
@@ -136,6 +149,18 @@ void SourceCode::redefineTypedef(const std::string& typedefName,
   // filter further in the callback
   finder.addMatcher(
       namedDecl().bind("decl"),
+      &callback);
+
+  _source = _tool->transform(_source, newFrontendActionFactory(&finder));
+}
+
+void SourceCode::fixKernelParameter(const std::string& kernel)
+{
+  ast_matchers::MatchFinder finder;
+  FixKernelParameterCallback callback(_tool->replacements());
+  // match function declarations with the name "from"
+  finder.addMatcher(
+      functionDecl(hasName(kernel)).bind("decl"),
       &callback);
 
   _source = _tool->transform(_source, newFrontendActionFactory(&finder));

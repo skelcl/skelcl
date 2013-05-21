@@ -111,6 +111,7 @@ void Program::transferParameters(const std::string& from,
                                  const std::string& to)
 {
   _source.transferParameters(from, indexFrom, to);
+  _source.fixKernelParameter(to);
 }
 
 void Program::transferArguments(const std::string& from,

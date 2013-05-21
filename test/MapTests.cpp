@@ -63,7 +63,7 @@ protected:
 };
 
 TEST_F(MapTest, CreateMapWithString) {
-  skelcl::Map<float(float)> m {"float func(float f){ return -f; }"};
+  skelcl::Map<float(float)> m{"float func(float f){ return -f; }"};
 }
 
 TEST_F(MapTest, CreateMapWithFile) {

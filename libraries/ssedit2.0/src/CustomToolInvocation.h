@@ -3,7 +3,6 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wc++11-long-long"
 
 #include <clang/Basic/FileManager.h>
 #include <clang/Driver/Compilation.h>
@@ -13,6 +12,7 @@
 
 #pragma GCC diagnostic pop
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -23,33 +23,27 @@ namespace ssedit2 {
 
 class CustomToolInvocation {
 public:
-  CustomToolInvocation();
+  CustomToolInvocation(const std::string& code);
 
   ~CustomToolInvocation();
 
-  void init(std::vector<std::string>& CommandLine,
-            clang::FrontendAction *ToolAction);
-
-  void mapVirtualFile(const std::string& FilePath,
-                      const std::string& Content);
-  bool run();
+  bool run(clang::FrontendAction* action);
 
   clang::SourceManager& getSources();
 
 private:
   void addFileMappingsTo(clang::SourceManager& SourceManager);
 
-  bool runInvocation(const char *BinaryName,
+  bool runInvocation(clang::FrontendAction* action,
+                     const char *BinaryName,
                      clang::driver::Compilation *Compilation,
                      clang::CompilerInvocation *Invocation);
 
   clang::CompilerInstance Compiler;
+  std::string FileName;
   std::vector<std::string> CommandLine;
-  clang::FrontendAction* ToolAction; // was smart pointer
   clang::FileManager Files;
-  // Maps <file name> -> <file content>.
-  //llvm::StringMap<llvm::StringRef> MappedFileContents;
-  llvm::StringMap<std::string> MappedFileContents;
+  std::string FileContent;
 };
 
 } // namespace ssedit2
