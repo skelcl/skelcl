@@ -7,6 +7,7 @@
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wsign-promo"
 
+#include <clang/AST/Attr.h>
 #include <clang/AST/Expr.h>
 #include <clang/AST/ExprCXX.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
@@ -42,9 +43,8 @@ void FixKernelParameterCallback::run(
 {
   auto funcDecl = result.Nodes.getDeclAs<FunctionDecl>("decl");
   if (funcDecl) {
-    // TODO: find a better way to check if this is a kernel
-    if (   getText(*result.SourceManager, *funcDecl).find("kernel")
-        == std::string::npos) { return; }
+    // Check if function is an OpenCL kernel
+    if (!funcDecl->hasAttr<OpenCLKernelAttr>()) { return; }
     // search all parameters ...
     for ( auto param  = funcDecl->param_begin(),
                last   = funcDecl->param_end();
