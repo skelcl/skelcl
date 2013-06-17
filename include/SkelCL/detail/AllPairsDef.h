@@ -58,6 +58,8 @@
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
 
+#include <stooling/SourceCode.h>
+
 #include "../Distributions.h"
 #include "../Matrix.h"
 #include "../Reduce.h"
@@ -212,31 +214,13 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     ASSERT_MESSAGE( !_srcZip.empty(),
                     "Tried to create program with empty user zip source." );
 
-#if 0
-    //TODO: Move to ssedit2.0
     // _srcReduce: replace func by TMP_REDUCE
-    ssedit::TempSourceFile reduceTemp(_srcReduce);
-
-    auto func = reduceTemp.findFunction(_funcReduce); ASSERT(func.isValid());
-    reduceTemp.commitRename(func, "TMP_REDUCE");
-    reduceTemp.writeCommittedChanges();
-    reduceTemp.removeOpenCLFix();
-
-    std::ifstream rFile(reduceTemp.getFileName());
-    std::string rSource( (std::istreambuf_iterator<char>(rFile)),
-                         std::istreambuf_iterator<char>() );
+    stooling::SourceCode rSource(_srcReduce);
+    rSource.renameFunction(_funcReduce, "TMP_REDUCE");
 
     // _srcZip: replace func by TMP_ZIP
-    ssedit::TempSourceFile zipTemp(_srcZip);
-
-    func = zipTemp.findFunction(_funcReduce); ASSERT(func.isValid());
-    zipTemp.commitRename(func, "TMP_ZIP");
-    zipTemp.writeCommittedChanges();
-    zipTemp.removeOpenCLFix();
-
-    std::ifstream zFile(zipTemp.getFileName());
-    std::string zSource( (std::istreambuf_iterator<char>(zFile)),
-                         std::istreambuf_iterator<char>() );
+    stooling::SourceCode zSource(_srcZip);
+    zSource.renameFunction(_funcReduce, "TMP_ZIP");
 
     // create program
     std::string s(Matrix<Tout>::deviceFunctions());
@@ -247,12 +231,12 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     s.append("\n");
 
     // reduce user source
-    s.append(rSource);
+    s.append(rSource.code());
 
     s.append("\n");
 
     // zip user source
-    s.append(zSource);
+    s.append(zSource.code());
 
     s.append("\n");
 
@@ -270,13 +254,15 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     auto program = detail::Program(s, detail::util::hash("//AllPairs\n"
                                                          + Matrix<Tout>::deviceFunctions()
                                                          + _idReduce
-                                                         + rSource
-                                                         + zSource));
+                                                         + rSource.code()
+                                                         + zSource.code()));
     // modify program
     if (!program.loadBinary()) {
-        program.transferParameters("TMP_REDUCE", 2, "SCL_ALLPAIRS"); // problem: reduce parameter a und zip parameter a
+        // problem: reduce parameter a und zip parameter a
+        program.transferParameters("TMP_REDUCE", 2, "SCL_ALLPAIRS"); 
         program.transferArguments("TMP_REDUCE", 2, "USR_REDUCE");
-        program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS"); // reihenfolge? erst args von reduce dann zip?
+        // TODO: Order? first args from reduce than zip??
+        program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS");
         program.transferArguments("TMP_ZIP", 2, "USR_ZIP");
 
         program.renameFunction("TMP_REDUCE", "USR_REDUCE");
@@ -288,8 +274,6 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     program.build();
 
     return program;
-#endif
-    return detail::Program(std::string(), detail::util::hash(""));
 }
 
 template<typename Tleft, typename Tright, typename Tout>
