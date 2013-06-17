@@ -55,6 +55,8 @@
 
 namespace {
 
+#ifndef NDEBUG // DEBUG build
+
 std::string printNDRange(const cl::NDRange& range)
 {
   std::stringstream s;
@@ -69,6 +71,8 @@ std::string printNDRange(const cl::NDRange& range)
   s << " }";
   return s.str();
 }
+
+#endif
 
 void invokeCallback(cl_event /*event*/, cl_int status, void * userData)
 {
