@@ -348,6 +348,15 @@ std::shared_ptr<skelcl::detail::Program>
   return program;
 }
 
+template <typename T>
+Reduce<T(T)>::Level::Level()
+  : workGroupSize(),
+    workGroupCount(),
+    inputPtr(),
+    outputPtr(),
+    program()
+{}
+
 } // namespace skelcl
 
 #endif // REDUCE_DEF_H_

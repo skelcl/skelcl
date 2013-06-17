@@ -1,7 +1,0 @@
-Libraries directory for ssedit, part of SkelCL.
-Use copies or symbolic links to make the following libraries available.
-Currently used thirdparty libraries:
-  gtest (version 1.6.0)
-  libclang (version 3.0 or 3.1)
-  pvsutil
-

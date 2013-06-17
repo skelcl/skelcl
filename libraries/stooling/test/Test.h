@@ -32,105 +32,16 @@
  *****************************************************************************/
  
 ///
-/// \file Progam.h
-///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifndef PROGRAM_H_
-#define PROGRAM_H_
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Weffc++"
 
-#include <string>
-#include <map>
-#include <memory>
+#include <gtest/gtest.h>
 
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-#undef  __CL_ENABLE_EXCEPTIONS
+#pragma GCC diagnostic pop
 
 #include <stooling/SourceCode.h>
-
-#include "Device.h"
-#include "Util.h"
-
-namespace skelcl {
-
-namespace detail {
-
-class Program {
-public:
-  Program() = delete;
-
-  Program(const std::string& source, const std::string& hash = "");
-
-  Program(const Program&) = default;
-
-  Program(Program&&);
-
-  Program& operator=(const Program&) = default;
-
-  Program& operator=(Program&&);
-
-  ~Program() = default;
-
-  void transferParameters(const std::string& from,
-                          unsigned indexFrom,
-                          const std::string& to);
-
-  void transferArguments(const std::string& from,
-                         unsigned indexFrom,
-                         const std::string& to);
-
-  void renameFunction(const std::string& from, const std::string& to);
-
-  template<typename Head, typename ...Tail>
-  void adjustTypes();
-
-  bool loadBinary();
-
-  void build();
-
-  cl::Kernel kernel(const Device& device, const std::string& name) const;
-
-private:
-  void createProgramsFromSource();
-
-  void saveBinary();
-
-  void renameType(const int i, const std::string& name);
-
-  template<typename T>
-  void traverseTypes(int i);
-
-  template<typename Head, typename Second, typename ...Tail>
-  void traverseTypes(int i);
-
-  stooling::SourceCode      _source;
-  std::string               _hash;
-  std::vector<cl::Program>  _clPrograms;
-};
-
-// function template definitions
-
-template<typename Head, typename... Tail>
-void Program::adjustTypes() {
-  traverseTypes<Head, Tail...>(0);
-}
-
-template<typename T>
-void Program::traverseTypes(int i) {
-  renameType(i, util::typeToString<T>());
-}
-
-template<typename Head, typename Second, typename... Tail>
-void Program::traverseTypes(int i) {
-  renameType(i, util::typeToString<Head>());
-  traverseTypes<Second, Tail...>(++i);
-}
-
-} // namespace detail
-
-} // namespace skelcl
-
-#endif // PROGRAM_H_
 
