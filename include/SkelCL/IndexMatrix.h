@@ -36,7 +36,6 @@
 ///
 ///	\author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
-
 #ifndef INDEX_MATRIX_H_
 #define INDEX_MATRIX_H_
 
@@ -50,111 +49,122 @@
 
 namespace skelcl {
 
-/// 
+///
 /// \brief The IndexMatrix class is a special implementation of a Matrix with
 ///        IndexPoints as Elements. The implementation guaranties that no data
 ///        is transfered when using this version of the Matrix. OpenCL
 ///        functionality (global ids) is used to make the IndexPoints available
 ///        on the device. This implementation requires, that the Matrix is const
 ///        and can, therefore, not be modified after creation.
-/// 
+///
 typedef const Matrix<IndexPoint> IndexMatrix;
 
-template <>
+template<>
 class Matrix<IndexPoint> {
 public:
-  typedef IndexPoint value_type;
-//  typedef ?? const_iterator;
-  typedef typename skelcl::MatrixSize size_type;
+	typedef IndexPoint value_type;
+	typedef typename skelcl::MatrixSize size_type;
+	typedef std::vector<IndexPoint> host_buffer_type;
+	typedef typename host_buffer_type::const_iterator const_iterator;
+	typedef typename host_buffer_type::iterator iterator;
 
-  Matrix() = delete;
+	  struct coordinate {
+	    typedef size_type::size_type index_type;
 
-  Matrix(const size_type size,
-         const detail::Distribution<Matrix<IndexPoint>>& distribution
-           = detail::Distribution<Matrix<IndexPoint>>());
-  Matrix(const Matrix<IndexPoint>& rhs) = delete;
-  Matrix(Matrix<IndexPoint>&& rhs) = delete;
-  Matrix<IndexPoint>& operator=(const Matrix<IndexPoint>&) = delete;
-  Matrix<IndexPoint>& operator=(Matrix<IndexPoint>&& rhs) = delete;
-  ~Matrix();
+	    index_type rowIndex;
+	    index_type columnIndex;
+	  };
 
-  // matrix interface
+	Matrix() = delete;
 
-//  const_iterator begin() const;
-//  const_iterator end() const;
-  size_type size() const;
-  detail::Sizes sizes() const;
-  value_type operator[]( size_type n ) const;
-  value_type at( size_type n ) const;
-  value_type front() const;
-  value_type back() const;
+	Matrix(const size_type size,
+			const detail::Distribution<Matrix<IndexPoint>>& distribution =
+					detail::Distribution<Matrix<IndexPoint>>());
+	Matrix(const Matrix<IndexPoint>& rhs) = delete;
+	Matrix(Matrix<IndexPoint> && rhs) = delete;
+	Matrix<IndexPoint>& operator=(const Matrix<IndexPoint>&) = delete;
+	Matrix<IndexPoint>& operator=(Matrix<IndexPoint> && rhs) = delete;
+	~Matrix();
 
-  ///
-  /// \brief Returns a pointer to the current distribution of the vector.
-  /// \return A pointer to the current distribution of the vector, of nullptr
-  ///         if no distribution is set
-  ///
-  detail::Distribution<Matrix<IndexPoint>>& distribution() const;
+	IndexPoint operator()(int row, int col);
 
-  ///
-  /// \brief Changes the distribution of the vector
-  ///
-  /// Changing the distribution might lead to data transfer between the host and
-  /// the devices.
-  ///
-  /// \param distribution The new distribution to be set. After this call
-  ///                     distribution is the new selected distribution of the
-  ///                     vector
-  ///
-  template <typename U>
-  void setDistribution(const detail::Distribution<Matrix<U>>&
-                          distribution) const;
+	// matrix interface
 
-  template <typename U>
-  void setDistribution(const std::unique_ptr<detail::Distribution<Matrix<U>>>&
-                          newDistribution) const;
+//	const_iterator begin() const;
+//	const_iterator end() const;
+	size_type size() const;
+	detail::Sizes sizes() const;
+	value_type operator[](size_type n) const;
+	value_type at(size_type n) const;
+	value_type front() const;
+	value_type back() const;
 
-  void
-    setDistribution(std::unique_ptr<detail::Distribution<Matrix<IndexPoint>>>&&
-                          newDistribution) const;
+	///
+	/// \brief Returns a pointer to the current distribution of the vector.
+	/// \return A pointer to the current distribution of the vector, of nullptr
+	///         if no distribution is set
+	///
+	detail::Distribution<Matrix<IndexPoint>>& distribution() const;
 
-  static std::string deviceFunctions();
+	///
+	/// \brief Changes the distribution of the vector
+	///
+	/// Changing the distribution might lead to data transfer between the host and
+	/// the devices.
+	///
+	/// \param distribution The new distribution to be set. After this call
+	///                     distribution is the new selected distribution of the
+	///                     vector
+	///
+	template<typename U>
+	void setDistribution(
+			const detail::Distribution<Matrix<U>>& distribution) const;
 
-  //
-  const detail::DeviceBuffer& deviceBuffer(const detail::Device& device) const;
+	template<typename U>
+	void setDistribution(const std::unique_ptr<detail::Distribution<Matrix<U>>>&
+	newDistribution) const;
 
-  std::vector<IndexPoint>& hostBuffer() const;
+	void
+	setDistribution(std::unique_ptr<detail::Distribution<Matrix<IndexPoint>>>&&
+			newDistribution) const;
 
-  void dataOnDeviceModified() const;
+	static std::string deviceFunctions();
 
-  void dataOnHostModified() const;
+	//
+			const detail::DeviceBuffer& deviceBuffer(const detail::Device& device) const;
 
-private:
-  ///
-  /// \brief Formates information about the current instance into a string,
-  ///        used for Debug purposes
-  ///
-  /// \return A formated string with information about the current instance
-  ///
-  std::string getInfo() const;
+			std::vector<IndexPoint>& hostBuffer() const;
 
-  ///
-  /// \brief Formates even more information about the current instance into a
-  ///        string, as compared to getInfo, used for Debug purposes
-  ///
-  /// \return A formated string with information about the current instance,
-  ///         contains all information from getInfo and more.
-  ///
-  std::string getDebugInfo() const;
+			void dataOnDeviceModified() const;
 
-    value_type                                                _maxIndex;
-  mutable
-    std::unique_ptr<detail::Distribution<Matrix<IndexPoint>>> _distribution;
-};
+			void dataOnHostModified() const;
 
-} // namespace skelcl
+
+		private:
+	///
+	/// \brief Formates information about the current instance into a string,
+	///        used for Debug purposes
+	///
+	/// \return A formated string with information about the current instance
+	///
+			std::string getInfo() const;
+
+	///
+	/// \brief Formates even more information about the current instance into a
+	///        string, as compared to getInfo, used for Debug purposes
+	///
+	/// \return A formated string with information about the current instance,
+	///         contains all information from getInfo and more.
+	///
+			std::string getDebugInfo() const;
+
+			value_type _maxIndex;
+			mutable
+			std::unique_ptr<detail::Distribution<Matrix<IndexPoint>>> _distribution;
+		};
+
+		} // namespace skelcl
 
 #include "detail/IndexMatrixDef.h"
 
 #endif // INDEX_MATRIX_H_
-

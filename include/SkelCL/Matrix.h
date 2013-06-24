@@ -225,6 +225,8 @@ public:
   reference operator()( coordinate c );
   const_reference operator()( coordinate c ) const;
 
+  T operator()(int x, int y);
+
   reference at( coordinate c);
   const_reference at( coordinate c) const;
 
