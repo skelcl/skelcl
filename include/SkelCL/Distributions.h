@@ -44,6 +44,8 @@
 
 #include "detail/Distribution.h"
 #include "detail/BlockDistribution.h"
+#include "detail/OLDistribution.h"
+#include "detail/StencilDistribution.h"
 #include "detail/CopyDistribution.h"
 #include "detail/SingleDistribution.h"
 
@@ -107,6 +109,21 @@ void setBlock( const C<T>& c)
         new skelcl::detail::BlockDistribution<C<T>>() ) );
 }
 
+
+template <template <typename> class C, typename T>
+std::unique_ptr<skelcl::detail::Distribution<C<T>>>
+    OL( const C<T>& /*c*/ )
+{
+  return std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
+            new skelcl::detail::OLDistribution<C<T>>() );
+}
+
+template <template <typename> class C, typename T>
+void setOL( const C<T>& c)
+{
+  c.setDistribution( std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
+        new skelcl::detail::OLDistribution<C<T>>() ) );
+}
 /// 
 /// \brief  Factory function to create a CopyDistribution with the types of the
 ///         given container.
@@ -290,6 +307,20 @@ std::unique_ptr<Distribution<C<T>>>
   if (single != nullptr) {
     return std::unique_ptr<Distribution<C<T>>>(
             new SingleDistribution<C<T>>(*single) );
+  }
+
+  // overlap distribution
+  auto ol = dynamic_cast<const OLDistribution<C<U>>*>(&dist);
+  if (ol != nullptr) {
+    return std::unique_ptr<Distribution<C<T>>>(
+            new OLDistribution<C<T>>(*ol) );
+  }
+
+  // stencil distribution
+  auto stencil = dynamic_cast<const StencilDistribution<C<U>>*>(&dist);
+  if (stencil != nullptr) {
+    return std::unique_ptr<Distribution<C<T>>>(
+            new StencilDistribution<C<T>>(*stencil) );
   }
 
   // default distribution

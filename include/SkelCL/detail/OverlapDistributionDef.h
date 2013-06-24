@@ -350,9 +350,7 @@ size_t
     auto s = matrix.size().rowCount() / _devices.size();
     s += _overlapRadius + _overlapRadius;
     return s * size.columnCount();
-
   } else { // "last" device
-
     auto s = matrix.size().rowCount() / _devices.size();
     s += matrix.size().rowCount() % _devices.size();
     s += _overlapRadius + _overlapRadius;
