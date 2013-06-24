@@ -37,10 +37,13 @@ set (SKELCL_HEADERS
       ../include/SkelCL/IndexVector.h
       ../include/SkelCL/SkelCL.h
       ../include/SkelCL/Map.h
+      ../include/SkelCL/MapOverlap.h
       ../include/SkelCL/Matrix.h
       ../include/SkelCL/Out.h
       ../include/SkelCL/Reduce.h
       ../include/SkelCL/Source.h
+      ../include/SkelCL/Stencil.h
+      ../include/SkelCL/StencilInfo.h
       ../include/SkelCL/Vector.h
       ../include/SkelCL/Zip.h
       ../include/SkelCL/detail/AllPairsDef.h
@@ -66,7 +69,11 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/MapDef.h
       ../include/SkelCL/detail/MapHelper.h
       ../include/SkelCL/detail/MapHelperDef.h
+      ../include/SkelCL/detail/MapOverlapDef.h
+      ../include/SkelCL/detail/MapOverlapKernel.cl
       ../include/SkelCL/detail/MatrixDef.h
+      ../include/SkelCL/detail/OLDistribution.h
+      ../include/SkelCL/detail/OLDistributionDef.h
       ../include/SkelCL/detail/OverlapDistribution.h
       ../include/SkelCL/detail/OverlapDistributionDef.h
       ../include/SkelCL/detail/Padding.h
@@ -78,6 +85,11 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/SingleDistribution.h
       ../include/SkelCL/detail/SingleDistributionDef.h
       ../include/SkelCL/detail/Skeleton.h
+      ../include/SkelCL/detail/StencilDef.h
+      ../include/SkelCL/detail/StencilInfoDef.h
+      ../include/SkelCL/detail/StencilKernel.cl
+      ../include/SkelCL/detail/StencilDistribution.h
+      ../include/SkelCL/detail/StencilDistributionDef.h
       ../include/SkelCL/detail/Util.h
       ../include/SkelCL/detail/VectorDef.h
       ../include/SkelCL/detail/ZipDef.h
