@@ -50,9 +50,11 @@
 #include "cmdline/Description.h"
 #include "cmdline/Version.h"
 
+#include "detail/pvsutilDll.h"
+
 namespace pvsutil {
 
-class CLArgParser {
+class PVSUTIL_API CLArgParser {
 public:
   CLArgParser(cmdline::Description&& des,
               cmdline::Version&& ver = cmdline::Version(),

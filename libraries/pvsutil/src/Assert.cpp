@@ -62,8 +62,12 @@ void ASSERT_IMPL(const char* file,
   }
 }
 
+#ifdef _MSC_VER
+#pragma warning(disable:4996)
+#else
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
 
 void ASSERT_IMPL(const char* file,
                  const int   line,
@@ -90,7 +94,11 @@ void ASSERT_IMPL(const char* file,
   }
 }
 
+#ifdef _MSC_VER
+#pragma warning(default:4996)
+#else
 #pragma GCC diagnostic pop
+#endif
 
 } // namespace assert_impl
 

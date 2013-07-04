@@ -140,6 +140,9 @@
 #ifndef CL_HPP_
 #define CL_HPP_
 
+#ifdef _MSC_VER
+#pragma warning(disable:4290)
+#else
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #pragma GCC diagnostic ignored "-Weffc++"
@@ -148,6 +151,7 @@
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 //#pragma GCC diagnostic ignored "-pedantic"
+#endif
 
 #ifdef _WIN32
 #include <windows.h>
@@ -2976,6 +2980,7 @@ public:
             __ENQUEUE_TASK_ERR);
     }
 
+#if 0
     cl_int enqueueNativeKernel(
         void (*userFptr)(void *),
         std::pair<void*, ::size_t> args,
@@ -3005,6 +3010,7 @@ public:
                 (cl_event*) event),
             __ENQUEUE_NATIVE_KERNEL);
     }
+#endif
 
     cl_int enqueueMarker(Event* event = NULL) const
     {
@@ -4017,6 +4023,10 @@ Event KernelFunctor::operator()(
 
 } // namespace cl
 
+#ifdef _MSC_VER
+#pragma warning(default:4290)
+#else
 #pragma GCC diagnostic pop
+#endif
 
 #endif // CL_HPP_

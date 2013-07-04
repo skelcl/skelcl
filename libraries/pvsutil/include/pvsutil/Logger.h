@@ -47,9 +47,11 @@
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include "detail/pvsutilDll.h"
+
 namespace pvsutil {
 
-class Logger {
+class PVSUTIL_API Logger {
 public:
   struct Severity {
     enum Type {
@@ -122,9 +124,14 @@ private:
 
 #endif // NDEBUG
 
-// Default logger connected per default to std::clog
-extern Logger defaultLogger;
+#if COMPILING_DLL
+    #define DLLEXTERN __declspec(dllexport)
+#else
+    #define DLLEXTERN __declspec(dllimport)
+#endif
 
+// Default logger connected per default to std::clog
+PVSUTIL_API extern Logger defaultLogger;
 
 } // namespace pvsutil
 

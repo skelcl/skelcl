@@ -46,10 +46,6 @@
 #include <sstream>
 #include <string>
 
-#ifndef NPROFILING
-#include <sys/time.h>
-#endif
-
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
