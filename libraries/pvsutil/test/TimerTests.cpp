@@ -53,5 +53,5 @@ TEST_F(TimerTest, FirstTimerTest) {
   std::chrono::milliseconds duration(200);
   std::this_thread::sleep_for( duration );
   EXPECT_LE(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count(),
-            timer.restart());
+            timer.stop());
 }

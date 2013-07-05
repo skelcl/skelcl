@@ -30,6 +30,11 @@ set (PVSUTIL_SOURCES
 # specify library target
 add_library (pvsutil ${PVSUTIL_SOURCES})
 
+# define DLL export Macro
+if (WIN32)
+  set_target_properties(pvsutil PROPERTIES DEFINE_SYMBOL PVSUTIL_EXPORTS)
+endif (WIN32)
+
 # specify install
 if (OS_LINUX)
 	# specify install into directory DESTINATION/lib

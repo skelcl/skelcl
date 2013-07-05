@@ -37,8 +37,12 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
-#ifdef PVSUTIL_EXPORTS
-#define PVSUTIL_API __declspec(dllexport) 
+#ifdef _WIN32
+#  ifdef PVSUTIL_EXPORTS
+#    define PVSUTIL_API __declspec(dllexport) 
+#  else
+#    define PVSUTIL_API __declspec(dllimport) 
+#  endif
 #else
-#define PVSUTIL_API __declspec(dllimport) 
+#  define PVSUTIL_API 
 #endif
