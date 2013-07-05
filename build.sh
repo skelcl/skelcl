@@ -10,18 +10,18 @@ fi
 
 if [[ $platform == 'ubuntu' ]]; then
   # get and extract libclang (Step 2 from the INSTALL file)
-  wget http://llvm.org/releases/3.1/clang+llvm-3.1-x86_64-linux-ubuntu_12.04.tar.gz
-  tar xzf clang+llvm-3.1-x86_64-linux-ubuntu_12.04.tar.gz
-  mv clang+llvm-3.1-x86_64-linux-ubuntu_12.04 libraries/ssedit/libraries/libclang
-  rm clang+llvm-3.1-x86_64-linux-ubuntu_12.04.tar.gz
+  wget http://llvm.org/releases/3.3/clang+llvm-3.3-amd64-Ubuntu-12.04.2.tar.gz
+  tar xzf clang+llvm-3.3-amd64-Ubuntu-12.04.2.tar.gz
+  mv clang+llvm-3.3-amd64-Ubuntu-12.04.2 libraries/stooling/libraries/llvm
+  rm clang+llvm-3.3-amd64-Ubuntu-12.04.2.tar.gz
 fi
 
 if [[ $platform == 'osx' ]]; then
   # get and extract libclang (Step 2 from the INSTALL file)
-  wget http://llvm.org/releases/3.1/clang+llvm-3.1-x86_64-apple-darwin11.tar.gz 
-  tar xzf clang+llvm-3.1-x86_64-apple-darwin11.tar.gz
-  mv clang+llvm-3.1-x86_64-apple-darwin11 libraries/ssedit/libraries/libclang
-  rm clang+llvm-3.1-x86_64-apple-darwin11.tar.gz
+  wget http://llvm.org/releases/3.3/clang+llvm-3.3-x86_64-apple-darwin12.tar.gz
+  tar xzf clang+llvm-3.3-x86_64-apple-darwin12.tar.gz
+  mv clang+llvm-3.3-x86_64-apple-darwin12 libraries/stooling/libraries/llvm
+  rm clang+llvm-3.3-x86_64-apple-darwin12.tar.gz
 fi
 
 # get and extract gtest (Step 3)
@@ -30,19 +30,15 @@ unzip -q gtest-1.6.0.zip
 mv gtest-1.6.0 libraries/gtest
 rm gtest-1.6.0.zip
 
-# symlink gtest (Step 4)
-ln -s ../../gtest libraries/ssedit/libraries/gtest
-ln -s ../../gtest libraries/pvsutil/libraries/gtest
-
-# make build directory (Step 5)
+# make build directory (Step 4)
 mkdir build
 
-# call cmake (Step 6)
+# call cmake (Step 5)
 (cd build; cmake ..)
 
-# call make (Step 7)
+# call make (Step 6)
 (cd build; make -j4)
 
-# call all tests (Step 8)
+# call all tests (Step 7)
 (cd build; make test)
 
