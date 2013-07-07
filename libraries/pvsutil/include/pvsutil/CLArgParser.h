@@ -75,7 +75,11 @@ private:
   void printArg(std::ostream& output, cmdline::BaseArg& arg);
 
   void printDescription();
+
+  [[ noreturn ]]
   void printHelp();
+
+  [[ noreturn ]]
   void printVersion();
 
 

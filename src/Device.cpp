@@ -124,14 +124,18 @@ cl::Event Device::enqueue(const cl::Kernel& kernel,
                           const std::function<void()> callback) const
 {
   ASSERT(global.dimensions() == local.dimensions());
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
   ONLY_IN_DEBUG(
   auto globalSizeIsDivisiableByLocalSize = [&] () -> bool {
     bool isDivisiable = true;
     for (size_t i = 0; i < global.dimensions(); ++i) {
+      // TODO: Figure out why there is a size_t => long conversion here
       if (global[i] % local[i] != 0) { isDivisiable = false; break; }
     }
     return isDivisiable;
   });
+#pragma GCC diagnostic pop
   ASSERT(globalSizeIsDivisiableByLocalSize());
   
   cl::Event event;

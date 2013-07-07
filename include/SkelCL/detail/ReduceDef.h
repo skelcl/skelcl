@@ -196,9 +196,10 @@ void Reduce<T(T)>::execute(const detail::Device& device,
   auto& outputBuffer= level->outputPtr->deviceBuffer(device);
   auto& inputBuffer = level->inputPtr->deviceBuffer(device);
 
-  cl_uint elements  = level->inputPtr->size();
-  cl_uint local     = level->workGroupSize;
-  cl_uint global    = level->workGroupSize * level->workGroupCount;
+  cl_uint elements  = static_cast<cl_uint>( level->inputPtr->size() );
+  cl_uint local     = static_cast<cl_uint>( level->workGroupSize );
+  cl_uint global    = static_cast<cl_uint>( level->workGroupSize
+                                          * level->workGroupCount );
 
   try {
     cl::Kernel kernel(level->program->kernel(device, "SCL_REDUCE"));

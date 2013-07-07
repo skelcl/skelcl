@@ -47,10 +47,10 @@ class SHA1Test : public ::testing::Test {
 protected:
   SHA1Test() {
     pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
-  };
+  }
 
   ~SHA1Test() {
-  };
+  }
 };
 
 TEST_F(SHA1Test, EmptyHash) {

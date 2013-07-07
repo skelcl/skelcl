@@ -52,10 +52,10 @@ class ProgramTest : public ::testing::Test {
 protected:
   ProgramTest() {
     pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
-  };
+  }
 
   ~ProgramTest() {
-  };
+  }
 };
 
 TEST_F(ProgramTest, RenameFunction) {

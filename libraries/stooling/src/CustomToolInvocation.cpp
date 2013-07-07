@@ -5,6 +5,10 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Weffc++"
 #pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wshift-sign-overflow"
 
 #include <llvm/Support/Host.h>
 #include <clang/Basic/FileManager.h>
@@ -109,7 +113,7 @@ clang::SourceManager& CustomToolInvocation::getSources()
 bool CustomToolInvocation::run(clang::FrontendAction* action)
 {
   std::vector<const char*> argv;
-  for (int i = 0, e = _commandLine.size(); i != e; ++i) {
+  for (size_t i = 0, e = _commandLine.size(); i != e; ++i) {
     argv.push_back(_commandLine[i].c_str());
   }
   const char *const binaryName = argv[0];
@@ -175,7 +179,8 @@ void CustomToolInvocation::addFileMappingsTo(SourceManager& sources) {
   // Inject the code as the given file name into the preprocessor options.
   auto input = llvm::MemoryBuffer::getMemBuffer(_fileContent);
   // FIXME: figure out what '0' stands for.
-  auto fromFile = _files.getVirtualFile(_fileName, input->getBufferSize(), 0);
+  auto fromFile = _files.getVirtualFile(_fileName,
+      static_cast<long>(input->getBufferSize()), 0);
   sources.overrideFileContents(fromFile, input);
 }
 

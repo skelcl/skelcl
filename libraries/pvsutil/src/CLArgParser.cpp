@@ -127,6 +127,7 @@ void CLArgParser::parse(int argc, char** argv)
   }
 }
 
+[[ noreturn ]]
 void CLArgParser::printHelp()
 {
   _logger.output() << _description.getDescription() << std::endl << std::endl;
@@ -137,6 +138,7 @@ void CLArgParser::printHelp()
   exit(0);
 }
 
+[[ noreturn ]]
 void CLArgParser::printVersion()
 {
   _logger.output() << "Version: " << _version.getVersion() << std::endl;

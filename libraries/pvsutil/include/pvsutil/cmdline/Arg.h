@@ -80,7 +80,7 @@ public:
   virtual bool hasArgument() const = 0;
   virtual void printValue(std::ostream& output) const = 0;
 
-  virtual ~BaseArg() {};
+  virtual ~BaseArg() {}
 protected:
   BaseArg(const Flags& flags, const Description& des, bool mandatory, bool set);
 

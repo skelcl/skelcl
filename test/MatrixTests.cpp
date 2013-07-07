@@ -48,11 +48,11 @@ protected:
   MatrixTest() {
     pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
     skelcl::init(skelcl::nDevices(1));
-  };
+  }
 
   ~MatrixTest() {
     skelcl::terminate();
-  };
+  }
 };
 
 TEST_F(MatrixTest, CreateEmptyMatrix) {
@@ -77,9 +77,9 @@ TEST_F(MatrixTest, CreateMatrix) {
 
 TEST_F(MatrixTest, CreateMatrixFrom2DVector) {
   std::vector<std::vector<int> > vec(10);
-  for (size_t i = 0; i < 10; ++i) {
+  for (unsigned int i = 0; i < 10; ++i) {
     vec[i].resize(10);
-    for (size_t j = 0; j < 10; ++j) {
+    for (unsigned int j = 0; j < 10; ++j) {
       vec[i][j] = i*j;
     }
   }
