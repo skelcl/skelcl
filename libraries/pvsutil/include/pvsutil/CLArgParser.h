@@ -50,6 +50,16 @@
 #include "cmdline/Description.h"
 #include "cmdline/Version.h"
 
+#ifdef __clang__
+# define NORETURN_ATTRIBUTE [[ noreturn ]]
+#else
+# ifdef __GNUC__
+#   define NORETURN_ATTRIBUTE __attribute__((noreturn))
+# else
+#   define NORETURN
+# endif
+#endif
+
 namespace pvsutil {
 
 class CLArgParser {
@@ -76,10 +86,10 @@ private:
 
   void printDescription();
 
-  [[ noreturn ]]
+  NORETURN_ATTRIBUTE
   void printHelp();
 
-  [[ noreturn ]]
+  NORETURN_ATTRIBUTE
   void printVersion();
 
 

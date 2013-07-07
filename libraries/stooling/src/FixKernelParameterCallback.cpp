@@ -10,10 +10,12 @@
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wswitch-enum"
 #pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wshift-sign-overflow"
 #pragma GCC diagnostic ignored "-Wmissing-noreturn"
 #pragma GCC diagnostic ignored "-Wcast-align"
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wshift-sign-overflow"
 #pragma GCC diagnostic ignored "-Wduplicate-enum"
+#endif
 
 #include <clang/AST/Attr.h>
 #include <clang/AST/Expr.h>

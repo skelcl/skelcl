@@ -78,7 +78,7 @@ bool isEqual(T lhs, T rhs) {
 // multiply two matrices
 template<typename T>
 double matrixMult(const size_t rowCountA, const size_t columnCountA, 
-                  const size_t columnCountB, const int checkResult,
+                  const size_t columnCountB, const bool checkResult,
                   const std::string& zipFunc, const std::string& reduceFunc, 
                   const std::string& func, const std::string& deviceType, 
                   size_t deviceCount) {
@@ -144,7 +144,7 @@ double matrixMult(const size_t rowCountA, const size_t columnCountA,
 }
 
 double matrixMultFloat(const size_t rowCountA, const size_t columnCountA, 
-                       const size_t columnCountB, const int checkResult, 
+                       const size_t columnCountB, const bool checkResult, 
                        const std::string& deviceType, size_t deviceCount) {
   std::string zipFunc = "float func(float x, float y){ return x*y; }";
   std::string reduceFunc = "float func(float x, float y){ return x+y; }";
@@ -153,7 +153,7 @@ double matrixMultFloat(const size_t rowCountA, const size_t columnCountA,
 }
 
 double matrixMultFloatAlt(const size_t rowCountA, const size_t columnCountA, 
-                          const size_t columnCountB, const int checkResult, 
+                          const size_t columnCountB, const bool checkResult, 
                           const std::string& deviceType, size_t deviceCount) {
   std::string func = "float func(lmatrix_t* row, rmatrix_t* col, "\
                                 "const unsigned int dim) {" \
@@ -168,7 +168,7 @@ double matrixMultFloatAlt(const size_t rowCountA, const size_t columnCountA,
 }
 
 double matrixMultDouble(const size_t rowCountA, const size_t columnCountA, 
-                        const size_t columnCountB, const int checkResult, 
+                        const size_t columnCountB, const bool checkResult, 
                         const std::string& deviceType, size_t deviceCount) {
   std::string zipFunc = "double func(double x, double y){ return x*y; }";
   std::string reduceFunc = "double func(double x, double y){ return x+y; }";
@@ -177,7 +177,7 @@ double matrixMultDouble(const size_t rowCountA, const size_t columnCountA,
 }
 
 double matrixMultDoubleAlt(const size_t rowCountA, const size_t columnCountA, 
-                           const size_t columnCountB, const int checkResult, 
+                           const size_t columnCountB, const bool checkResult, 
                            const std::string& deviceType, size_t deviceCount) {
   std::string func = "double func(lmatrix_t* row, rmatrix_t* col, "\
                                  "const unsigned int dim) {" \
