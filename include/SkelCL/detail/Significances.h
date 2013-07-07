@@ -53,12 +53,12 @@ class Significances {
 public:
   typedef float value_type;
 
-  Significances() = default;
+  //Significances() = default;
   Significances(size_t deviceCount);
   Significances(std::initializer_list<value_type> significances);
-  Significances(const Significances&) = default;
-  ~Significances() = default;
-  Significances& operator=(const Significances&) = default;
+  //Significances(const Significances&) = default;
+  //~Significances() = default;
+  //Significances& operator=(const Significances&) = default;
 
   bool operator==(const Significances& rhs) const;
 

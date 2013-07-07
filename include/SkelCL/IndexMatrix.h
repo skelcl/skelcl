@@ -65,17 +65,12 @@ class Matrix<IndexPoint> {
 public:
   typedef IndexPoint value_type;
 //  typedef ?? const_iterator;
-  typedef typename skelcl::MatrixSize size_type;
+  typedef skelcl::MatrixSize size_type;
 
-  Matrix() = delete;
+  Matrix(const size_type size);// ,
+         //const detail::Distribution<Matrix<IndexPoint>>& distribution
+         //  = detail::Distribution<Matrix<IndexPoint>>());
 
-  Matrix(const size_type size,
-         const detail::Distribution<Matrix<IndexPoint>>& distribution
-           = detail::Distribution<Matrix<IndexPoint>>());
-  Matrix(const Matrix<IndexPoint>& rhs) = delete;
-  Matrix(Matrix<IndexPoint>&& rhs) = delete;
-  Matrix<IndexPoint>& operator=(const Matrix<IndexPoint>&) = delete;
-  Matrix<IndexPoint>& operator=(Matrix<IndexPoint>&& rhs) = delete;
   ~Matrix();
 
   // matrix interface
@@ -130,6 +125,12 @@ public:
   void dataOnHostModified() const;
 
 private:
+  Matrix();// = delete;
+  Matrix(const Matrix<IndexPoint>& rhs);// = delete;
+  Matrix(Matrix<IndexPoint> && rhs);// = delete;
+  Matrix<IndexPoint>& operator=(const Matrix<IndexPoint>&);// = delete;
+  Matrix<IndexPoint>& operator=(Matrix<IndexPoint> && rhs);// = delete;
+
   ///
   /// \brief Formates information about the current instance into a string,
   ///        used for Debug purposes

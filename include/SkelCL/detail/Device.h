@@ -77,11 +77,6 @@ public:
     ACCELERATOR = CL_DEVICE_TYPE_ACCELERATOR,
     DEFAULT     = CL_DEVICE_TYPE_DEFAULT
   };
-  
-  ///
-  /// \brief No default constuction allowed
-  ///
-  Device() = delete;
 
   ///
   /// \brief Constructs a new Device object encapsulating the given OpenCL
@@ -99,17 +94,17 @@ public:
   ///
   /// \brief Default copy constructor
   ///
-  Device(const Device&) = default;
+  //Device(const Device&) = default;
 
   ///
   /// \brief Default assignment operator
   ///
-  Device& operator=(const Device&) = default;
+  //Device& operator=(const Device&) = default;
 
   ///
   /// \brief Default destructor
   ///
-  ~Device() = default;
+  //~Device() = default;
 
   ///
   /// \brief Enqueues the execution of an OpenCL kernel object on the device
@@ -335,6 +330,11 @@ public:
   bool supportsDouble() const;
 
 private:
+  ///
+  /// \brief No default constuction allowed
+  ///
+  Device();// = delete;
+
   cl::Device        _device;
   cl::Context       _context;
   cl::CommandQueue  _commandQueue;

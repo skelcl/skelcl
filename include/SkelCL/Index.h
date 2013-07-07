@@ -69,11 +69,11 @@ public:
   /// 
   Index(const index_type index);
   
-  Index(const Index& rhs) = default;
-  Index(Index&& rhs) = default;
-  Index& operator=(const Index& rhs) = default;
-  Index& operator=(Index&& rhs) = default;
-  ~Index() = default;
+  //Index(const Index& rhs) = default;
+  //Index(Index&& rhs) = default;
+  //Index& operator=(const Index& rhs) = default;
+  //Index& operator=(Index&& rhs) = default;
+  //~Index() = default;
 
   /// 
   /// \brief Equality operator. Two Index objects are equal if and only if the
@@ -162,10 +162,10 @@ public:
   ///                   the new IndexPoint.
   /// 
   IndexPoint(IndexPoint&& rhs);
-  IndexPoint(const IndexPoint& rhs) = default;
-  IndexPoint& operator=(const IndexPoint& rhs) = default;
+  //IndexPoint(const IndexPoint& rhs) = default;
+  //IndexPoint& operator=(const IndexPoint& rhs) = default;
   IndexPoint& operator=(IndexPoint&& rhs);
-  ~IndexPoint() = default;
+  //~IndexPoint() = default;
 
   /// 
   /// \brief Equality operator. Two IndexPoint objects are equal if and only if

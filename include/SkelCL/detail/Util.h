@@ -39,7 +39,10 @@
 
 #include <string>
 
+#ifdef _WIN32
+#else
 #include <cxxabi.h>
+#endif
 
 #ifndef UTILITIES_H_
 #define UTILITIES_H_
@@ -75,6 +78,9 @@ int ceilPow2(int n);
 
 template<typename T>
 std::string typeToString() {
+#ifdef _WIN32
+  return std::string(typeid(T).name());
+#else
   char* cName = abi::__cxa_demangle(typeid(T).name(), NULL, NULL, NULL);
   std::string name(cName);
   // remove namespaces ...
@@ -84,6 +90,7 @@ std::string typeToString() {
   }
   free(cName);
   return name;
+#endif
 }
 
 } // namespace util

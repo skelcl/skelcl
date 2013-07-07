@@ -124,11 +124,13 @@ public:
 
   static Source getSource();
 
-  CommonDefinitions(const CommonDefinitions&) = delete;
-  CommonDefinitions& operator=(const CommonDefinitions&) = delete;
 
 private:
-  CommonDefinitions();
+  CommonDefinitions();// = delete;
+
+
+  CommonDefinitions(const CommonDefinitions&);// = delete;
+  CommonDefinitions& operator=(const CommonDefinitions&) ;// = delete;
 
   std::vector<Source> _sources;
 };

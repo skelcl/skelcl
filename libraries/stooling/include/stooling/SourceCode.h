@@ -3,19 +3,17 @@
 
 #include <string>
 
+#include "detail/stoolingDll.h"
+
 namespace stooling {
 
 class RefactoringTool;
 
-class SourceCode {
+class STOOLING_API SourceCode {
 public:
   SourceCode(const std::string& source);
 
-  SourceCode(const SourceCode& rhs) = delete;
-
   SourceCode(SourceCode&& rhs);
-
-  SourceCode& operator=(const SourceCode& rhs) = delete;
 
   SourceCode& operator=(SourceCode&& rhs);
   
@@ -41,7 +39,11 @@ public:
   const std::string& code();
 
 private:
-  SourceCode();
+  SourceCode();// = delete;
+
+  SourceCode(const SourceCode& rhs);// = delete;
+
+  SourceCode& operator=(const SourceCode& rhs);// = delete;
 
   std::string       _source;
   RefactoringTool*  _tool;

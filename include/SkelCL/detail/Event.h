@@ -59,15 +59,15 @@ public:
 
   Event(std::initializer_list<cl::Event> events);
 
-  Event(const Event& rhs) = default;
+  //Event(const Event& rhs) = default;
 
   Event(Event&& rhs);
 
-  Event& operator=(const Event& rhs) = default;
+  //Event& operator=(const Event& rhs) = default;
 
   Event& operator=(Event&& rhs);
 
-  ~Event() = default;
+  //~Event() = default;
 
   void insert(const cl::Event& event);
 
