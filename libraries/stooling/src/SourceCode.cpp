@@ -30,6 +30,7 @@
 #pragma GCC diagnostic pop
 
 #include <string>
+#include <vector>
 
 #include "RefactoringTool.h"
 
@@ -39,6 +40,7 @@
 #include "RenameTypedefCallback.h"
 #include "RedefineTypedefCallback.h"
 #include "FixKernelParameterCallback.h"
+#include "GetParameterTypeNamesCallback.h"
 
 #include <iostream>
 
@@ -179,7 +181,20 @@ void SourceCode::fixKernelParameter(const std::string& kernel)
   _source = _tool->transform(_source, newFrontendActionFactory(&finder));
 }
 
-const std::string& SourceCode::code()
+std::vector<std::string>
+  SourceCode::parameterTypeNames(const std::string& funcName) const
+{
+  ast_matchers::MatchFinder finder;
+  GetParameterTypeNamesCallback callback;
+  finder.addMatcher(
+      functionDecl(hasName(funcName)).bind("decl"),
+      &callback);
+
+  _tool->run(_source, newFrontendActionFactory(&finder));
+  return callback.getParameterTypeNames();
+}
+
+const std::string& SourceCode::code() const
 {
   return _source;
 }

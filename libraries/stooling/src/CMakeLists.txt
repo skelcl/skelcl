@@ -12,6 +12,7 @@ include_directories (
 set (STOOLING_SOURCES
   CustomToolInvocation.cpp
   FixKernelParameterCallback.cpp
+  GetParameterTypeNamesCallback.cpp
   RefactoringTool.cpp
   RenameFunctionCallback.cpp
   RenameTypedefCallback.cpp
