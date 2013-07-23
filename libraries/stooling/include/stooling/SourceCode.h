@@ -12,11 +12,11 @@ class SourceCode {
 public:
   SourceCode(const std::string& source);
 
-  SourceCode(const SourceCode& rhs) = delete;
+  SourceCode(const SourceCode& rhs);
 
   SourceCode(SourceCode&& rhs);
 
-  SourceCode& operator=(const SourceCode& rhs) = delete;
+  SourceCode& operator=(const SourceCode& rhs);
 
   SourceCode& operator=(SourceCode&& rhs);
   

@@ -13,8 +13,10 @@
 #pragma GCC diagnostic ignored "-Wmissing-noreturn"
 #pragma GCC diagnostic ignored "-Wcast-align"
 #ifdef __clang__
-#pragma GCC diagnostic ignored "-Wshift-sign-overflow"
-#pragma GCC diagnostic ignored "-Wduplicate-enum"
+# pragma GCC diagnostic ignored "-Wshift-sign-overflow"
+# if (__clang_major__ >= 3 && __clang_minor__ >= 3)
+#   pragma GCC diagnostic ignored "-Wduplicate-enum"
+# endif
 #endif
 
 #include <clang/AST/Attr.h>
@@ -34,8 +36,9 @@
 #include <string>
 #include <sstream>
 
+#include "stooling/Utilities.h"
+
 #include "FixKernelParameterCallback.h"
-#include "Utilities.h"
 
 using namespace clang;
 using namespace clang::tooling;

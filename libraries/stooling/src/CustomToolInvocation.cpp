@@ -25,7 +25,7 @@
 
 #pragma GCC diagnostic pop
 
-#include "CustomToolInvocation.h"
+#include "stooling/CustomToolInvocation.h"
 
 
 #include <iostream>
@@ -89,16 +89,17 @@ clang::CompilerInvocation* newInvocation(
 
 namespace stooling {
 
-CustomToolInvocation::CustomToolInvocation(const std::string& code)
+CustomToolInvocation::CustomToolInvocation(const std::string& code,
+                                           const std::vector<std::string>& args)
   : _compiler(),
     _fileName("input.cc"),
     _commandLine({ "clang-tool",
-                   "-fsyntax-only",
-                   "-x", "cl",
-                   _fileName }),
+                   "-fsyntax-only" }),
     _files((FileSystemOptions())),
     _fileContent(code)
 {
+  _commandLine.insert(_commandLine.end(), args.begin(), args.end());
+  _commandLine.push_back(_fileName);
 }
 
 CustomToolInvocation::~CustomToolInvocation()
@@ -175,6 +176,11 @@ bool CustomToolInvocation::runInvocation(
   _compiler.getDiagnostics().setSuppressAllDiagnostics();
 
   return _compiler.ExecuteAction(*scopedToolAction);
+}
+
+const std::string& CustomToolInvocation::code() const
+{
+  return _fileContent;
 }
 
 void CustomToolInvocation::addFileMappingsTo(SourceManager& sources) {

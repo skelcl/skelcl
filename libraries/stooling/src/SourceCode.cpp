@@ -15,8 +15,10 @@
 #pragma GCC diagnostic ignored "-Wmissing-noreturn"
 #pragma GCC diagnostic ignored "-Wcast-align"
 #ifdef __clang__
-#pragma GCC diagnostic ignored "-Wshift-sign-overflow"
-#pragma GCC diagnostic ignored "-Wduplicate-enum"
+# pragma GCC diagnostic ignored "-Wshift-sign-overflow"
+# if (__clang_major__ >= 3 && __clang_minor__ >= 3)
+#   pragma GCC diagnostic ignored "-Wduplicate-enum"
+# endif
 #endif
 
 #include <clang/AST/Expr.h>
@@ -32,7 +34,7 @@
 #include <string>
 #include <vector>
 
-#include "RefactoringTool.h"
+#include "stooling/RefactoringTool.h"
 
 #include "TransferArgumentsCallback.h"
 #include "TransferParametersCallback.h"
@@ -55,14 +57,28 @@ SourceCode::SourceCode(const std::string& source)
 {
 }
 
+SourceCode::SourceCode(const SourceCode& rhs)
+  : _source(rhs._source), _tool(new RefactoringTool(*rhs._tool))
+{
+}
+
 SourceCode::SourceCode(SourceCode&& rhs)
   : _source(std::move(rhs._source)), _tool(rhs._tool)
 {
   rhs._tool = nullptr;
 }
 
+SourceCode& SourceCode::operator=(const SourceCode& rhs)
+{
+  if (this == &rhs) return *this;
+  _source = rhs._source;
+  _tool   = new RefactoringTool(*rhs._tool);
+  return *this;
+}
+
 SourceCode& SourceCode::operator=(SourceCode&& rhs)
 {
+  if (this == &rhs) return *this;
   _source = std::move(rhs._source);
   _tool   = rhs._tool; rhs._tool = nullptr;
   return *this;

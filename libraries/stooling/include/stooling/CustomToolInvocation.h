@@ -12,8 +12,10 @@
 #pragma GCC diagnostic ignored "-Wmissing-noreturn"
 #pragma GCC diagnostic ignored "-Wcast-align"
 #ifdef __clang__
-#pragma GCC diagnostic ignored "-Wshift-sign-overflow"
-#pragma GCC diagnostic ignored "-Wduplicate-enum"
+# pragma GCC diagnostic ignored "-Wshift-sign-overflow"
+# if (__clang_major__ >= 3 && __clang_minor__ >= 3)
+#   pragma GCC diagnostic ignored "-Wduplicate-enum"
+# endif
 #endif
 
 #include <clang/Basic/FileManager.h>
@@ -35,13 +37,17 @@ namespace stooling {
 
 class CustomToolInvocation {
 public:
-  CustomToolInvocation(const std::string& code);
+  CustomToolInvocation(const std::string& code,
+                       const std::vector<std::string>& args
+                        = { "-x", "cl" });
 
   ~CustomToolInvocation();
 
   bool run(clang::FrontendAction* action);
 
   clang::SourceManager& getSources();
+
+  const std::string& code() const;
 
 private:
   void addFileMappingsTo(clang::SourceManager& SourceManager);
