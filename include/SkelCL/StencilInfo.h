@@ -31,12 +31,19 @@ public:
 
    const detail::Program& getProgram() const;
 
+   const unsigned int& getTileWidth() const;
+   const unsigned int& getTileHeight() const;
+
+      std::string getDebugInfo() const;
 private:
-   std::string getDebugInfo() const;
+
 
    // Programm erstellen
    detail::Program createAndBuildProgram() const;
 
+   //Größe des Local memory bestimmen
+   unsigned int determineTileWidth() const;
+   unsigned int determineTileHeight() const;
 
     /// Source code as defined by the application developer
     std::string _userSource;
@@ -54,6 +61,9 @@ private:
 
     /// Name of the main function defined in _userSource
     std::string _funcName;
+
+    unsigned int _tile_width;
+    unsigned int _tile_height;
 
     detail::Program _program;
 

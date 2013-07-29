@@ -71,37 +71,30 @@
 
 namespace skelcl {
 
-//Ausgangskonstruktor
-/*template<typename Tin, typename Tout>
-Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int overlap_range,
-		detail::Padding padding, Tin neutral_element, const std::string& func) :
-		detail::Skeleton(), _userSource(source), _overlap_range(overlap_range), _padding(
-				padding), _neutral_element(neutral_element), _funcName(func), _program(
-				createAndBuildProgram()) {
-	LOG_DEBUG("Create new Stencil object (", this, ")");
-}*/
-
-/*template<typename Tin, typename Tout>
-Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int iterations, unsigned int overlap_range,
-        detail::Padding padding, Tin neutral_element, const std::string& func) :
-    detail::Skeleton(), _userSource(source), _iterations(iterations), _overlap_range(overlap_range), _padding(padding),
-        _neutral_element(neutral_element), _funcName(func), _program(createAndBuildProgram()) {
-    LOG_DEBUG("Create new Stencil object (", this, ")");
-}*/
-
+//Konstruktor für Matrix
 template<typename Tin, typename Tout>
 Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
                             detail::Padding padding, Tin neutral_element, const std::string& func):
     detail::Skeleton() {
-    LOG_DEBUG("Create new Stencil object (", this, ")");
+    LOG_DEBUG("Create new Stencil object for Matrix (", this, ")");
     add(source, north, west, south, east, padding, neutral_element, func);
+}
 
+//Konstruktor für Vektor
+template<typename Tin, typename Tout>
+Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int west, unsigned int east,
+                            detail::Padding padding, Tin neutral_element, const std::string& func):
+    detail::Skeleton() {
+    LOG_DEBUG("Create new Stencil object for Vector (", this, ")");
+    add(source, 0, west, 0, east, padding, neutral_element, func);
 }
 
 template<typename Tin, typename Tout>
 void Stencil<Tout(Tin)>::add(const Source& source, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
          detail::Padding padding, Tin neutral_element, const std::string& func){
+    LOG_DEBUG("A");
     StencilInfo<Tout(Tin)> info(source, north, west, south, east, padding, neutral_element, func);
+    LOG_DEBUG("B");
     _stencilInfos.push_back(info);
     LOG_DEBUG("Added Stencil Shape");
 }
@@ -134,6 +127,7 @@ Matrix<Tout>& Stencil<Tout(Tin)>::operator()(unsigned int iterations, Out<Matrix
     updateModifiedStatus(output, std::forward<Args>(args)...);
 
     return output.container();
+
 }
 
 // Ausführen
@@ -143,8 +137,6 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
         Args&&... args) {
     ASSERT(in.distribution().isValid());
     ASSERT(output.rowCount() == in.rowCount() && output.columnCount() == in.columnCount());
-
-    auto& stencilInfo = _stencilInfos.front();
 
     for (auto& devicePtr : in.distribution().devices()) {
         auto& outputBuffer = output.deviceBuffer(*devicePtr);
@@ -163,28 +155,38 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
                 static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount(),
                         local[1]))}; // SUBTILES
 
-        LOG_DEBUG("elements: ", elements, " north: ", stencilInfo.getNorth(), ", south: ", stencilInfo.getSouth());
         LOG_DEBUG("local: ", local[0], ",", local[1], " global: ", global[0],
                 ",", global[1]);
         unsigned int i = 0;
         try {
-            cl::Kernel kernel(stencilInfo.getProgram().kernel(*devicePtr, "SCL_STENCIL"));
+            for(auto& sInfo : _stencilInfos){
+                cl::Kernel kernel(sInfo.getProgram().kernel(*devicePtr, "SCL_STENCIL"));
+                int k = 0;
+                for(i = 0; i<_iterations; i++) {
+                    int j = 0;
+                    if((i+k) % 2 == 0){
+                        kernel.setArg(j++, inputBuffer.clBuffer());
+                        kernel.setArg(j++, outputBuffer.clBuffer());
+                        kernel.setArg(j++, inputBuffer.clBuffer());
+                        kernel.setArg(j++, sInfo.getTileWidth()*sInfo.getTileHeight()*sizeof(Tin), NULL);
+                    } else {
+                        kernel.setArg(j++, inputBuffer.clBuffer());
+                        kernel.setArg(j++, inputBuffer.clBuffer());
+                        kernel.setArg(j++, outputBuffer.clBuffer());
+                        kernel.setArg(j++, sInfo.getTileWidth()*sInfo.getTileHeight()*sizeof(Tin), NULL);
+                    }
+                    kernel.setArg(j++, elements);   // elements
+                    kernel.setArg(j++, sInfo.getNorth()); // north
+                    kernel.setArg(j++, sInfo.getWest()); // west
+                    kernel.setArg(j++, sInfo.getSouth()); // south
+                    kernel.setArg(j++, sInfo.getEast()); // east
+                    kernel.setArg(j++, determineLargestNorth());
+                    kernel.setArg(j++, static_cast<cl_uint>(output.columnCount())); // number of columns
 
-            for(i = 0; i<_iterations; i++) {
-                LOG_DEBUG("Iteration ", i);
-                if(i%2==0){
-                    kernel.setArg(0, inputBuffer.clBuffer());
-                    kernel.setArg(1, outputBuffer.clBuffer());
-                    kernel.setArg(2, elements);   // elements
-                    kernel.setArg(3, stencilInfo.getNorth()); // north
-                    kernel.setArg(4, stencilInfo.getWest()); // west
-                    kernel.setArg(5, stencilInfo.getSouth()); // south
-                    kernel.setArg(6, stencilInfo.getEast()); // east
-                    kernel.setArg(7, static_cast<cl_uint>(output.columnCount())); // number of columns
-                    //kernel.setArg(5, _iterations);
-
-                    detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 8,
+                    detail::kernelUtil::setKernelArgs(kernel, *devicePtr, j,
                             std::forward<Args>(args)...);
+
+                    LOG_DEBUG(sInfo.getDebugInfo());
 
                     // keep buffers and arguments alive / mark them as in use
                     auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
@@ -195,30 +197,8 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
                     devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
                         cl::NDRange(local[0], local[1]), cl::NullRange, // offset
                         invokeAfter);
-                } else {
-                    kernel.setArg(1, inputBuffer.clBuffer());
-                    kernel.setArg(0, outputBuffer.clBuffer());
-                    kernel.setArg(2, elements);   // elements
-                    kernel.setArg(3, stencilInfo.getNorth()); // north
-                    kernel.setArg(4, stencilInfo.getWest()); // west
-                    kernel.setArg(5, stencilInfo.getSouth()); // south
-                    kernel.setArg(6, stencilInfo.getEast()); // east
-                    kernel.setArg(7, static_cast<cl_uint>(output.columnCount())); // number of columns
-                    //kernel.setArg(5, _iterations);
-
-                    detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 8,
-                    		std::forward<Args>(args)...);
-
-                    // keep buffers and arguments alive / mark them as in use
-                    auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
-                            inputBuffer.clBuffer(), outputBuffer.clBuffer(), std::forward<Args>(args)...);
-
-                    // after finishing the kernel invoke this function ...
-                    auto invokeAfter = [=] () {(void)keepAlive;};
-                    devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
-                            cl::NDRange(local[0], local[1]), cl::NullRange, // offset
-                            invokeAfter);
-                }
+                    k++;
+                    }
             }
         } catch (cl::Error& err) {
             ABORT_WITH_ERROR(err);
@@ -235,7 +215,7 @@ template<typename Tin, typename Tout>
 void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
     // set distribution
 	auto& stencilInfo = _stencilInfos.front();
-    in.setDistribution(detail::StencilDistribution<Matrix<Tin>>(stencilInfo.getNorth(), stencilInfo.getWest(), stencilInfo.getSouth(), stencilInfo.getEast(),
+    in.setDistribution(detail::StencilDistribution<Matrix<Tin>>(determineLargestNorth(), determineLargestWest(), determineLargestSouth(), determineLargestEast(),
     		stencilInfo.getPadding(), stencilInfo.getNeutralElement()));
 
     // create buffers if required
@@ -243,6 +223,48 @@ void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
 
     // copy data to devices
     in.startUpload();
+}
+
+template<typename Tin, typename Tout>
+unsigned int Stencil<Tout(Tin)>::determineLargestNorth() {
+    unsigned int largestNorth = 0;
+    for(auto& s : _stencilInfos) {
+        if(s.getNorth() > largestNorth){
+            largestNorth = s.getNorth();
+        }
+    }
+    return largestNorth;
+}
+
+template<typename Tin, typename Tout>
+unsigned int Stencil<Tout(Tin)>::determineLargestWest() {
+    unsigned int largestWest = 0;
+    for(auto& s : _stencilInfos){
+        if(s.getWest() > largestWest){
+            largestWest = s.getWest();
+        }
+    }
+    return largestWest;
+}
+template<typename Tin, typename Tout>
+unsigned int Stencil<Tout(Tin)>::determineLargestSouth() {
+    unsigned int largestSouth = 0;
+    for(auto& s : _stencilInfos){
+        if(s.getSouth() > largestSouth){
+            largestSouth = s.getSouth();
+        }
+    }
+    return largestSouth;
+}
+template<typename Tin, typename Tout>
+unsigned int Stencil<Tout(Tin)>::determineLargestEast() {
+    unsigned int largestEast = 0;
+    for(auto& s : _stencilInfos){
+        if(s.getEast() > largestEast){
+            largestEast = s.getEast();
+        }
+    }
+    return largestEast;
 }
 
 // Ausgabe vorbereiten

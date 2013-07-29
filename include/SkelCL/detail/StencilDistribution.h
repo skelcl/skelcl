@@ -114,12 +114,12 @@ namespace stencil_distribution_helper {
 template<typename T>
 size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 		const typename Vector<T>::size_type size, const DeviceList& devices,
-		unsigned int north, unsigned int west, unsigned int south, unsigned int east);
+        unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding);
 
 template<typename T>
 size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 		const typename Matrix<T>::size_type size, const DeviceList& devices,
-		unsigned int north, unsigned int west, unsigned int south, unsigned int east);
+        unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding);
 
 template<typename T>
 void startUpload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east,

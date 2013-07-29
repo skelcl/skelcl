@@ -80,7 +80,7 @@ void StencilDistribution<C<T>>::startUpload(C<T>& container, Event* events) cons
 	LOG_DEBUG("Start Upload");
 	stencil_distribution_helper::startUpload(container, events,
             this->_north, this->_west, this->_south, this->_east, this->_padding, this->_neutral_element,
-			this->_devices);
+            this->_devices);
 }
 
 template<template<typename > class C, typename T>
@@ -94,7 +94,7 @@ template<template<typename > class C, typename T>
 size_t StencilDistribution<C<T>>::sizeForDevice(const C<T>& container,
 		const std::shared_ptr<detail::Device>& devicePtr) const {
 	return stencil_distribution_helper::sizeForDevice<T>(devicePtr, container.size(),
-            this->_devices, this->_north, this->_west, this->_south, this->_east);
+            this->_devices, this->_north, this->_west, this->_south, this->_east, this->_padding);
 }
 
 template<template<typename > class C, typename T>
@@ -160,7 +160,8 @@ namespace stencil_distribution_helper {
 template<typename T>
 size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 		const typename Vector<T>::size_type size, const DeviceList& devices,
-        unsigned int north, unsigned int west, unsigned int south, unsigned int east) {
+        unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding) {
+    if(padding==detail::Padding::NEUTRAL){};
     LOG_DEBUG("Vector Version , north: ", north, " and south: ", south, " are not considered for the size.");
 	auto id = devicePtr->id();
 	if (id < devices.size() - 1) {
@@ -178,13 +179,15 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 template<typename T>
 size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 		const typename Matrix<T>::size_type size, const DeviceList& devices,
-        unsigned int north, unsigned int west, unsigned int south, unsigned int east) {
+        unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding) {
     LOG_DEBUG("Matrix Version, west: ", west, " and east: ", east, " are not considered for the size.");
 	auto id = devicePtr->id();
 	if (id) {
 	};
 	auto s = size.elemCount() / devices.size();
-    s += (north + south) * size.columnCount();
+    if(padding == detail::Padding::NEAREST){
+        s += (north + south) * size.columnCount();
+    }
 	LOG_DEBUG("Size for Device ", s);
 	return s;
 //	auto id = devicePtr->id();
@@ -297,15 +300,16 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north, unsigned 
             }
 		}
 	}
+    auto& firstDevicePtr = devices.front();
 
 	// Upload top padding to first device
-	auto& firstDevicePtr = devices.front();
-	auto event = firstDevicePtr->enqueueWrite(
-			matrix.deviceBuffer(*firstDevicePtr), paddingTop.begin(),
-			paddingTop.size(), 0 /* deviceOffset */);
-	events->insert(event);
-
-	LOG_DEBUG(matrix.deviceBuffer(*firstDevicePtr).size());
+    if(padding == detail::Padding::NEAREST && paddingTop.size() > 0){
+        LOG_DEBUG("Padding top with size: ", paddingTop.size());
+       auto eventTop = firstDevicePtr->enqueueWrite(
+                matrix.deviceBuffer(*firstDevicePtr), paddingTop.begin(),
+                paddingTop.size(), 0 /* deviceOffset */);
+        events->insert(eventTop);
+    }
 
 	size_t hostOffset = 0;
 	size_t deviceOffset = paddingTop.size();
@@ -322,10 +326,9 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north, unsigned 
 		if (i == devSize - 1)
 			size -= paddingBottom.size();
         LOG_DEBUG("Size to upload ", size);
-
-		devicePtr->enqueueWrite(buffer, matrix.hostBuffer().begin(), size,
+        auto eventData = devicePtr->enqueueWrite(buffer, matrix.hostBuffer().begin(), size,
 				deviceOffset, hostOffset);
-		events->insert(event);
+        events->insert(eventData);
 
         hostOffset += size - (north + south) * columnCount;
 
@@ -334,17 +337,20 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north, unsigned 
 		deviceOffset = 0; // after the first device, the device offset is 0
 	}
 
-	// Upload bottom padding at the end of last device
-    auto& lastDevicePtr = devices.back();
-    // calculate offset on the device ...
-    deviceOffset = matrix.deviceBuffer(*lastDevicePtr).size()
-            - paddingBottom.size();
+    if(padding == detail::Padding::NEAREST && paddingBottom.size() > 0){
+        LOG_DEBUG("Padding bottom with size: ", paddingBottom.size());
+        // Upload bottom padding at the end of last device
+        auto& lastDevicePtr = devices.back();
+        // calculate offset on the device ...
+        deviceOffset = matrix.deviceBuffer(*lastDevicePtr).size()
+                - paddingBottom.size();
 
-    LOG_DEBUG("Device Offset: ", deviceOffset);
-    LOG_DEBUG(matrix.deviceBuffer(*lastDevicePtr).size());
-    event = firstDevicePtr->enqueueWrite(matrix.deviceBuffer(*lastDevicePtr),
-            paddingBottom.begin(), paddingBottom.size(), deviceOffset, 0);
-    events->insert(event);
+        LOG_DEBUG("Device Offset: ", deviceOffset);
+        LOG_DEBUG(matrix.deviceBuffer(*lastDevicePtr).size());
+        auto eventBottom = firstDevicePtr->enqueueWrite(matrix.deviceBuffer(*lastDevicePtr),
+                paddingBottom.begin(), paddingBottom.size(), deviceOffset, 0);
+        events->insert(eventBottom);
+    }
 }
 
 template<typename T>
@@ -380,10 +386,11 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int north, unsigne
 	for (auto& devicePtr : devices) {
 		auto& buffer = matrix.deviceBuffer(*devicePtr);
 
-        size_t overlapSize = (north + south) * matrix.size().columnCount();
+        size_t overlapSize = (0 + south) * matrix.size().columnCount();
+        LOG_DEBUG("North: ", north);
         size_t size = buffer.size() - overlapSize;
 
-        size_t deviceOffset = north * matrix.size().columnCount();
+        size_t deviceOffset = 0 * matrix.size().columnCount();
 
 		auto event = devicePtr->enqueueRead(buffer, matrix.hostBuffer().begin(),
                 size, deviceOffset, offset);

@@ -41,6 +41,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/Matrix.h
       ../include/SkelCL/Out.h
       ../include/SkelCL/Reduce.h
+      ../include/SkelCL/Scan.h
       ../include/SkelCL/Source.h
       ../include/SkelCL/Stencil.h
       ../include/SkelCL/StencilInfo.h
@@ -81,6 +82,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/Program.h
       ../include/SkelCL/detail/ReduceDef.h
       ../include/SkelCL/detail/ReduceKernel.cl
+      ../include/SkelCL/detail/ScanDef.h
       ../include/SkelCL/detail/Significances.h
       ../include/SkelCL/detail/SingleDistribution.h
       ../include/SkelCL/detail/SingleDistributionDef.h

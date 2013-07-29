@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
 
 	skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
 
-	Matrix<int> inputImage(img, numcols);
+    Matrix<int> inputImage(img, numcols);
 
     skelcl::MapOverlap<int(int)> s(std::ifstream { "./gauss2D.cl" }, range,
                 detail::Padding::NEUTRAL, 56);

@@ -62,20 +62,9 @@ class Stencil<Tout(Tin)> : public detail::Skeleton {
 public:
     Stencil<Tout(Tin)>(const Source& source, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
                        detail::Padding padding, Tin neutral_element, const std::string& func);
-    //Ausgangskonstruktor
-//	Stencil<Tout(Tin)>(const Source& source,
-//			unsigned int overlap_range = 1, detail::Padding padding =
-//					detail::Padding::NEAREST, Tin neutral_element = Tin(),
-//			const std::string& func = std::string("func"));
 
-//    Stencil<Tout(Tin)>(const Source& source, unsigned int iterations = 1,
-//            unsigned int overlap_range = 1, detail::Padding padding =
-//                    detail::Padding::NEAREST, Tin neutral_element = Tin(),
-//            const std::string& func = std::string("func"));
-
-
-
-
+    Stencil<Tout(Tin)>(const Source& source, unsigned int west, unsigned int east,
+                                detail::Padding padding, Tin neutral_element, const std::string& func);
 
     // Ausführungsoperator
     template<typename ... Args>
@@ -83,7 +72,9 @@ public:
 
     // Ausführungsoperator mit Referenz
     template<typename ... Args>
-    Matrix<Tout>& operator()(unsigned int iterations, Out<Matrix<Tout> > output, const Matrix<Tin>& in,
+    Matrix<Tout>& operator()(unsigned int iterations, Out<Matrix<Tout> > output,
+//                             Out<Matrix<Tout>> tmp,
+                             const Matrix<Tin>& in,
             Args&&... args);
     void add(const Source& source, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
              detail::Padding padding, Tin neutral_element, const std::string& func);
@@ -91,7 +82,14 @@ private:
 
 	// Ausführen
     template<typename ... Args>
-    void execute(Matrix<Tout>& output, const Matrix<Tin>& in, Args&&... args);
+    void execute(Matrix<Tout>& output,
+//                 Matrix<Tout>& tmp,
+                 const Matrix<Tin>& in, Args&&... args);
+
+    unsigned int determineLargestNorth();
+    unsigned int determineLargestWest();
+    unsigned int determineLargestSouth();
+    unsigned int determineLargestEast();
 
     // Eingabe vorbereiten
     void prepareInput(const Matrix<Tin>& in);
