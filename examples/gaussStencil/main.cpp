@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
     /* (KERNEL_SIZE - offset -1) is the CORRECT version */
     for (i = -offset; i <= ((2 * range + 1) - offset - 1); i++) {
         kernelVec[i + offset] = exp(-i * i / (2 * a * a));
-            LOG_DEBUG("kernel ", i+offset, " ", kernelVec[i+offset]);
+            LOG_DEBUG("kernel  ", i+offset, " ", kernelVec[i+offset]);
     }
 
     //Read pgm-File
@@ -143,10 +143,10 @@ int main(int argc, char** argv) {
 
     Matrix<int> inputImage(img, numcols);
 
-    skelcl::Stencil<int(int)> s(std::ifstream { "./gauss2DStencil.cl" }, 3,0,0,0,
+    skelcl::Stencil<int(int)> s(std::ifstream { "./gauss2DStencil.cl" }, 12,0,0,0,
                         detail::Padding::NEUTRAL, 56, "func");
 
-    s.add(std::ifstream { "./gauss2DStencil2.cl" },4,0,0,0,
+    s.add(std::ifstream { "./gauss2DStencil2.cl" },2,0,0,0,
         detail::Padding::NEUTRAL, 200, "func");
         LOG_DEBUG("Adding next");
     s.add(std::ifstream { "./gauss2DStencil3.cl" }, 0,0,0,0,

@@ -140,9 +140,9 @@ int main(int argc, char** argv) {
 
     Matrix<int> inputImage(img, numcols);
 
-    skelcl::MapOverlap<int(int)> s(std::ifstream { "./gauss2D.cl" }, range,
+    skelcl::MapOverlap<int(int)> s(std::ifstream { "./gauss2D.cl" }, 10,
                 detail::Padding::NEUTRAL, 56);
-	Matrix<int> outputImage = s(inputImage, kernelVec, range, numcols);
+    Matrix<int> outputImage = s(inputImage);
 //	Matrix<int>::iterator itr;
     /*for(itr = outputImage.begin(); itr!=outputImage.end(); itr++){
         //if(*itr>255 || *itr<0)
@@ -151,7 +151,6 @@ int main(int argc, char** argv) {
     }*/
     std::cout << "Matrix " << outputImage.columnCount() << " columns and "
             << outputImage.rowCount() << " rows" << std::endl;
-    Matrix<int> outputImage2 = s(outputImage, kernelVec, range, numcols);
 	std::string outFile("out.pgm");
 	if (argc > 2) {
 		std::cout << "Argv[2] " << argv[2] << std::endl;
