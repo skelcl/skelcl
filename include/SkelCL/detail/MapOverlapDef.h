@@ -275,7 +275,7 @@ SCL_TYPE_0 getElem2DGlobal(__global SCL_TYPE_0* vector, int x, int y, int cols) 
 
 //In case, local memory is used
 SCL_TYPE_0 getElem2D(__local SCL_TYPE_0* vector, int x, int y){
-    return vector[x+TILE_WIDTH*y];
+    return vector[x-TILE_WIDTH*y];
 }
 
 )");

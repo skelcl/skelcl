@@ -48,11 +48,6 @@ __kernel void SCL_MAPOVERLAP(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* S
 	const unsigned int row = get_global_id(1);
         const unsigned int l_row = get_local_id(1);
 
-        /*input_matrix_t matrix;
-        matrix.data = SCL_IN+SCL_OVERLAP*SCL_COLS;
-        matrix.row = l_row;
-        matrix.cols = TILE_WIDTH;*/
-
         __local SCL_TYPE_0 SCL_SHARED[TILE_WIDTH][TILE_WIDTH];
 
 	int i,j,k,l,m;
@@ -88,10 +83,6 @@ __kernel void SCL_MAPOVERLAP(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* S
                 }
         }
         barrier(CLK_LOCAL_MEM_FENCE);
-
-        /*if(row<SCL_ELEMENTS/SCL_COLS && col<SCL_COLS) {
-                SCL_OUT[row*SCL_COLS+col+SCL_OVERLAP*SCL_COLS] = USR_FUNC(&matrix);
-        }*/
 
         if(row<SCL_ELEMENTS/SCL_COLS && col<SCL_COLS) {
                 //Working with global mem
