@@ -43,58 +43,25 @@ typedef float SCL_TYPE_0;
 typedef float SCL_TYPE_1;
 
 typedef struct {
-    const __local SCL_TYPE_1* data;
-    unsigned int local_row;
-    unsigned int local_column;
-    unsigned int offset_north;
-    unsigned int offset_west;
+    __local SCL_TYPE_1* data;
+    int local_row;
+    int local_column;
+    int offset_north;
+    int offset_west;
 } input_matrix_t;
 
 /*
  * DeviceFunctions
  */
 
-//In case, global memory is used (has to be specified by the MapOverlap-class. The user cannot choose.
-SCL_TYPE_0 getElem2DGlobal(__global SCL_TYPE_0* vector, int x, int y, int cols) {
-
-	int col = get_global_id(0) % cols;
-
-#ifdef NEUTRAL
-   if((col+x)<0){
-        return NEUTRAL;
-    }
-	//Hier ist nur rechts daneben
-   else if((col+x)>=cols){
-        return NEUTRAL;
-    }
-    //Standardfall
-    return vector[x+y*cols];
-#else
-    if((col+x)<0){
-        return vector[-col+y*cols];
-    }
-	//Hier ist nur rechts daneben
-    else if((col+x)>=cols){
-        return vector[cols-col-1+y*cols];
-    }
-	//Standardfall
-    return vector[x+y*cols];
-#endif
-
-}
-
-//In case, local memory is used
-SCL_TYPE_0 getElem2D(__local SCL_TYPE_0* vector, int x, int y){
-    return vector[x-y*TILE_WIDTH];
-}
 
 //In case, local memory is used
 SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y){
-    unsigned int offsetNorth = matrix->offset_north * TILE_WIDTH;
-    unsigned int currentIndex = matrix->local_row * TILE_WIDTH + matrix->local_column;
-    unsigned int shift = x - y * TILE_WIDTH;
+    int offsetNorth = matrix->offset_north * TILE_WIDTH;
+    int currentIndex = matrix->local_row * TILE_WIDTH + matrix->local_column;
+    int shift = x - y * TILE_WIDTH;
 
-    return matrix->data[offsetNorth + currentIndex + matrix->offset_west + shift];
+    return matrix->data[currentIndex+offsetNorth+shift];
 }
 
 )");

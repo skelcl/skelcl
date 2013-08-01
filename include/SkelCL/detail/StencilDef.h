@@ -148,7 +148,7 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
         LOG_DEBUG("Input Buffer Size: ", inputBuffer.size());
 
         cl_uint elements = static_cast<cl_uint>(output.size().elemCount());
-        cl_uint local[2] = {(cl_uint) sqrt(devicePtr->maxWorkGroupSize()), (cl_uint) local[0] }; // C, R
+        cl_uint local[2] = { (cl_uint) sqrt(devicePtr->maxWorkGroupSize()), (cl_uint)local[0] }; // C, R
         cl_uint global[2] = {
                 static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.columnCount(),
                         local[0])),
@@ -159,17 +159,20 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
                 ",", global[1]);
         unsigned int i = 0;
         try {
-            for(auto& sInfo : _stencilInfos){
-                cl::Kernel kernel(sInfo.getProgram().kernel(*devicePtr, "SCL_STENCIL"));
+            LOG_DEBUG("Stencil Infos Size: ", _stencilInfos.size());
+            for(i = 0; i<_iterations; i++){
                 int k = 0;
-                for(i = 0; i<_iterations; i++) {
+                for(auto& sInfo : _stencilInfos){
+                    cl::Kernel kernel(sInfo.getProgram().kernel(*devicePtr, "SCL_STENCIL"));
                     int j = 0;
                     if((i+k) % 2 == 0){
+                        LOG_DEBUG("Input is temp");
                         kernel.setArg(j++, inputBuffer.clBuffer());
                         kernel.setArg(j++, outputBuffer.clBuffer());
                         kernel.setArg(j++, inputBuffer.clBuffer());
                         kernel.setArg(j++, sInfo.getTileWidth()*sInfo.getTileHeight()*sizeof(Tin), NULL);
                     } else {
+                        LOG_DEBUG("Output is temp");
                         kernel.setArg(j++, inputBuffer.clBuffer());
                         kernel.setArg(j++, inputBuffer.clBuffer());
                         kernel.setArg(j++, outputBuffer.clBuffer());
@@ -198,7 +201,7 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
                         cl::NDRange(local[0], local[1]), cl::NullRange, // offset
                         invokeAfter);
                     k++;
-                    }
+                }
             }
         } catch (cl::Error& err) {
             ABORT_WITH_ERROR(err);
@@ -208,9 +211,6 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
 }
 
 // Eingabe vorbereiten
-//TODO: Hier wird jetzt erst einmal davon ausgegangen, dass nur mit einer StencilShape pro Skelett gearbeitet wird.
-//Sollte das nicht mehr der Fall sein, muss überlegt werden, wie die Distributions gesetzt werden (natürlich eine Distribution für die Eingabematrix, aber
-//in der Distribution prüfen, wie vorgegangen werden soll (größte Stencilshape nur berücksichtigen oder so)...
 template<typename Tin, typename Tout>
 void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
     // set distribution
@@ -281,7 +281,7 @@ void Stencil<Tout(Tin)>::prepareOutput(Matrix<Tout>& output,
     //create buffers if required
     output.createDeviceBuffers();
 
-    output.startUpload();
+    //output.startUpload();
 }
 
 }

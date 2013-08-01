@@ -39,7 +39,7 @@
 
 R"(
 
-__kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_OUT, __global SCL_TYPE_1* SCL_TMP, __local SCL_TYPE_0* SCL_LOCAL_TEMP, const unsigned int SCL_ELEMENTS,
+__kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_OUT, __global SCL_TYPE_1* SCL_TMP, __local SCL_TYPE_1* SCL_LOCAL_TEMP, const unsigned int SCL_ELEMENTS,
                 const unsigned int SCL_NORTH, const unsigned int SCL_WEST, const unsigned int SCL_SOUTH, const unsigned int SCL_EAST, const unsigned int SCL_LARGESTNORTH, const unsigned int SCL_COLS) {
 
 #ifdef NEUTRAL
@@ -63,14 +63,14 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
 
             if(row == 0) {
                 for(m=0;m<SCL_NORTH;m++) {
-                    SCL_LOCAL_TEMP[m*TILE_WIDTH+l_col+SCL_WEST] = 22;
+                    SCL_LOCAL_TEMP[m*TILE_WIDTH+l_col+SCL_WEST] = NEUTRAL;
                 }
                 for(m=SCL_NORTH;m<TILE_HEIGHT;m++){
-                    SCL_LOCAL_TEMP[m*TILE_WIDTH+l_col+SCL_WEST] = 999;
+                    SCL_LOCAL_TEMP[m*TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(row+m)*SCL_COLS+col-SCL_NORTH*SCL_COLS];
                 }
             } else if(get_group_id(1)==SCL_WORKGROUP-1){
                 for(m=0;m<TILE_HEIGHT-SCL_SOUTH;m++) {
-                        SCL_LOCAL_TEMP[m*TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(row+m)*SCL_COLS+col];
+                        SCL_LOCAL_TEMP[m*TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(row+m)*SCL_COLS+col-SCL_NORTH*SCL_COLS];
                         //SCL_SHARED[m][l_col+SCL_WEST] = SCL_TMP[(row+m)*SCL_COLS+col];
                 }
                 for(m=TILE_HEIGHT-SCL_SOUTH;m<TILE_HEIGHT;m++) {
@@ -80,12 +80,12 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
             } else {
                 //Fill columns of local memory in which the mapped elements reside
                 for(m=0;m<TILE_HEIGHT;m++) {
-                        SCL_LOCAL_TEMP[m*TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(row+m)*SCL_COLS+col];
+                        SCL_LOCAL_TEMP[m*TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(row+m)*SCL_COLS+col-SCL_NORTH*SCL_COLS];
                         //SCL_SHARED[m][l_col+SCL_WEST] = SCL_TMP[(row+m)*SCL_COLS+col];
                 }
             }
             //Fill columns of local memory left of the mapped elements
-            if(l_col<SCL_WEST) {
+            /*if(l_col<SCL_WEST) {
                     for(i=0;i<TILE_HEIGHT;i++) {
                          SCL_LOCAL_TEMP[i*TILE_WIDTH+l_col] = SCL_TMP[(row+i)*SCL_COLS+col-SCL_WEST];
                         //SCL_SHARED[i][l_col] = SCL_TMP[(row+i)*SCL_COLS+col-SCL_WEST];
@@ -108,10 +108,10 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
             //Fill columns of local memory right of the mapped elements when padding elements to the right are needed
             if(col>=SCL_COLS-SCL_EAST) {
                     for(l=0;l<TILE_HEIGHT;l++) {
-                        SCL_LOCAL_TEMP[k*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = NEUTRAL;
+                        SCL_LOCAL_TEMP[l*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = NEUTRAL;
                         //SCL_SHARED[l][l_col+SCL_WEST+SCL_EAST] = NEUTRAL;
                     }
-            }
+            }*/
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -120,9 +120,9 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                 //SCL_OUT[row*SCL_COLS+col+SCL_COLS*SCL_NORTH] = USR_FUNC(&(SCL_TMP[row*SCL_COLS+col+SCL_NORTH*SCL_COLS]));
                 //Working with local mem
                 //SCL_OUT[row*SCL_COLS+col+SCL_NORTH*SCL_COLS] = USR_FUNC(&(SCL_SHARED[l_row+SCL_NORTH][l_col+SCL_WEST]));
-                SCL_OUT[row*SCL_COLS+col+SCL_LARGESTNORTH*SCL_COLS] = USR_FUNC(&Mm);
-
+                SCL_OUT[row*SCL_COLS+col] = USR_FUNC(&Mm);
         }
+        barrier(CLK_GLOBAL_MEM_FENCE);
 
 #else
         const unsigned int col = get_global_id(0);

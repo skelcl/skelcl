@@ -130,11 +130,11 @@ void startUpload(Matrix<T>& vector, Event* events, unsigned int north, unsigned 
                  detail::Padding padding, T neutralElement, detail::DeviceList devices);
 
 template<typename T>
-void startDownload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
+void startDownload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding,
                   detail::DeviceList devices);
 
 template<typename T>
-void startDownload(Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
+void startDownload(Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding,
                    detail::DeviceList devices);
 
 
