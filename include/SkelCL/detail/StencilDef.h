@@ -92,9 +92,7 @@ Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int west, unsigned in
 template<typename Tin, typename Tout>
 void Stencil<Tout(Tin)>::add(const Source& source, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
          detail::Padding padding, Tin neutral_element, const std::string& func){
-    LOG_DEBUG("A");
     StencilInfo<Tout(Tin)> info(source, north, west, south, east, padding, neutral_element, func);
-    LOG_DEBUG("B");
     _stencilInfos.push_back(info);
     LOG_DEBUG("Added Stencil Shape");
 }
@@ -104,6 +102,7 @@ template<typename Tin, typename Tout>
 template<typename ... Args>
 Matrix<Tout> Stencil<Tout(Tin)>::operator()(unsigned int iterations, const Matrix<Tin>& in,
         Args&&... args) {
+    LOG_DEBUG("Create Output Matrix");
     Matrix<Tout> output;
     this->operator()(iterations, out(output), in, std::forward<Args>(args)...);
     return output;
@@ -112,8 +111,17 @@ Matrix<Tout> Stencil<Tout(Tin)>::operator()(unsigned int iterations, const Matri
 // Ausführungsoperator mit Referenz
 template<typename Tin, typename Tout>
 template<typename ... Args>
-Matrix<Tout>& Stencil<Tout(Tin)>::operator()(unsigned int iterations, Out<Matrix<Tout>> output,
-        const Matrix<Tin>& in, Args&&... args) {
+Matrix<Tout>& Stencil<Tout(Tin)>::operator()(unsigned int iterations, Out<Matrix<Tout>> output, const Matrix<Tin>& in, Args&&... args) {
+    LOG_DEBUG("Create temp Matrix");
+    Matrix<Tout> temp;
+    return this->operator()(iterations, output, out(temp), in, std::forward<Args>(args)...);
+}
+
+// Ausführungsoperator mit Referenz
+template<typename Tin, typename Tout>
+template<typename ... Args>
+Matrix<Tout>& Stencil<Tout(Tin)>::operator()(unsigned int iterations, Out<Matrix<Tout>> output, Out<Matrix<Tout>> temp, const Matrix<Tin>& in, Args&&... args) {
+    ASSERT(iterations > 0);
     ASSERT(in.rowCount() > 0);
     ASSERT(in.columnCount() > 0);
     _iterations = iterations;
@@ -122,18 +130,32 @@ Matrix<Tout>& Stencil<Tout(Tin)>::operator()(unsigned int iterations, Out<Matrix
     prepareAdditionalInput(std::forward<Args>(args)...);
 
     prepareOutput(output.container(), in);
+    prepareOutput(temp.container(), in);
 
-    execute(output.container(), in, std::forward<Args>(args)...);
+    //Wann muss die temp-Matrix und wann die reguläre output-Matrix zurückgegeben werden?:
+    //Wird eine gerade Anzahl Iterationen durchgeführt, so muss immer die temp-Matrix benutzt werden.
+    //Bei ungerader Anzahl Iterationen hängt es von der Anzahl der verwendeten Stencil Shapes ab.
+    //Da das Kopieren und Zuweisen von Matrizen hier explizit verboten wurde, wird hier im vorhinein die Ausgabe-Matrix bestimmt.
+    if(_iterations % 2 == 0){
+       execute(temp.container(), output.container(), in, std::forward<Args>(args)...);
+    } else {
+        if((_iterations % 2 == 1) && (_stencilInfos.size() % 2 == 0)){
+            execute(temp.container(), output.container(), in, std::forward<Args>(args)...);
+        } else {
+             execute(output.container(), temp.container(), in, std::forward<Args>(args)...);
+        }
+    }
+
+    updateModifiedStatus(temp, std::forward<Args>(args)...);
     updateModifiedStatus(output, std::forward<Args>(args)...);
 
     return output.container();
-
 }
 
 // Ausführen
 template<typename Tin, typename Tout>
 template<typename... Args>
-void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
+void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const Matrix<Tin>& in,
         Args&&... args) {
     ASSERT(in.distribution().isValid());
     ASSERT(output.rowCount() == in.rowCount() && output.columnCount() == in.columnCount());
@@ -144,6 +166,7 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
         LOG_DEBUG("Output Buffer Size: ", outputBuffer.size());
 
         auto& inputBuffer = in.deviceBuffer(*devicePtr);
+        auto& tempBuffer = temp.deviceBuffer(*devicePtr);
 
         LOG_DEBUG("Input Buffer Size: ", inputBuffer.size());
 
@@ -160,24 +183,27 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
         unsigned int i = 0;
         try {
             LOG_DEBUG("Stencil Infos Size: ", _stencilInfos.size());
+            int k = 1;
             for(i = 0; i<_iterations; i++){
-                int k = 0;
+                k--;
                 for(auto& sInfo : _stencilInfos){
                     cl::Kernel kernel(sInfo.getProgram().kernel(*devicePtr, "SCL_STENCIL"));
                     int j = 0;
-                    if((i+k) % 2 == 0){
-                        LOG_DEBUG("Input is temp");
-                        kernel.setArg(j++, inputBuffer.clBuffer());
+                    kernel.setArg(j++, inputBuffer.clBuffer());
+                    if((i+k)==0){
+                        LOG_DEBUG("First Time, read from Input, Write to Output-Matrix");
                         kernel.setArg(j++, outputBuffer.clBuffer());
                         kernel.setArg(j++, inputBuffer.clBuffer());
-                        kernel.setArg(j++, sInfo.getTileWidth()*sInfo.getTileHeight()*sizeof(Tin), NULL);
-                    } else {
-                        LOG_DEBUG("Output is temp");
-                        kernel.setArg(j++, inputBuffer.clBuffer());
-                        kernel.setArg(j++, inputBuffer.clBuffer());
+                    } else if((i+k) % 2 == 0){
+                        LOG_DEBUG("Write to Output-Matrix");
                         kernel.setArg(j++, outputBuffer.clBuffer());
-                        kernel.setArg(j++, sInfo.getTileWidth()*sInfo.getTileHeight()*sizeof(Tin), NULL);
+                        kernel.setArg(j++, tempBuffer.clBuffer());
+                    } else if((i+k) % 2 == 1){
+                        LOG_DEBUG("Write to Temp-Matrix");
+                        kernel.setArg(j++, tempBuffer.clBuffer());
+                        kernel.setArg(j++, outputBuffer.clBuffer());
                     }
+                    kernel.setArg(j++, sInfo.getTileWidth()*sInfo.getTileHeight()*sizeof(Tin), NULL);
                     kernel.setArg(j++, elements);   // elements
                     kernel.setArg(j++, sInfo.getNorth()); // north
                     kernel.setArg(j++, sInfo.getWest()); // west
@@ -191,9 +217,14 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
 
                     LOG_DEBUG(sInfo.getDebugInfo());
 
+                    auto keepAliveBuffer = outputBuffer.clBuffer();
+                     if((i+k) % 2 == 1){
+                         keepAliveBuffer = tempBuffer.clBuffer();
+                     }
+
                     // keep buffers and arguments alive / mark them as in use
                     auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
-                            inputBuffer.clBuffer(), outputBuffer.clBuffer(), std::forward<Args>(args)...);
+                            inputBuffer.clBuffer(), keepAliveBuffer, std::forward<Args>(args)...);
 
                     // after finishing the kernel invoke this function ...
                     auto invokeAfter = [=] () {(void)keepAlive;};
@@ -280,8 +311,6 @@ void Stencil<Tout(Tin)>::prepareOutput(Matrix<Tout>& output,
 
     //create buffers if required
     output.createDeviceBuffers();
-
-    //output.startUpload();
 }
 
 }

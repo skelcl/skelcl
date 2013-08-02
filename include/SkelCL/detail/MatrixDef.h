@@ -76,7 +76,7 @@ Matrix<T>::Matrix() :
 		_size( { 0, 0 }), _distribution(new detail::Distribution<Matrix<T>>()), _hostBufferUpToDate(
 				true), _deviceBuffersUpToDate(false), _hostBuffer(), _deviceBuffers() {
 	(void) registerMatrixDeviceFunctions;
-	LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+    LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
 			getDebugInfo());
 }
 
@@ -87,7 +87,7 @@ Matrix<T>::Matrix(const size_type size, const value_type& value,
 				true), _deviceBuffersUpToDate(false), _hostBuffer(
 				_size.elemCount(), value), _deviceBuffers() {
 	(void) registerMatrixDeviceFunctions;
-	LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+    LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
 			getDebugInfo());
 }
 
@@ -706,6 +706,7 @@ LOG_DEBUG("SsF");
 LOG_DEBUG("Sdsv");
 	_hostBufferUpToDate = true;
 
+    LOG_DEBUG(this);
     LOG_DEBUG("Started data download from ",
 			_distribution->devices().size(), " devices (", getInfo(), ")");
 

@@ -390,22 +390,22 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int north, unsigne
         for (auto& devicePtr : devices) {
                 auto& buffer = matrix.deviceBuffer(*devicePtr);
 
-        size_t overlapSize = 0;
-        size_t deviceOffset = 0;
-        if(padding == detail::Padding::NEAREST){
-            overlapSize = (north + south) * matrix.size().columnCount();
-            deviceOffset = north * matrix.size().columnCount();
-        }
+            size_t overlapSize = 0;
+            size_t deviceOffset = 0;
+            if(padding == detail::Padding::NEAREST){
+                overlapSize = (north + south) * matrix.size().columnCount();
+                deviceOffset = north * matrix.size().columnCount();
+            }
 
-        LOG_DEBUG("Device OFfset: ", deviceOffset);
-        size_t size = buffer.size() - overlapSize;
-        LOG_DEBUG("Size: ", size);
+            LOG_DEBUG("Device OFfset: ", deviceOffset);
+            size_t size = buffer.size() - overlapSize;
+            LOG_DEBUG("Size: ", size);
 
-        auto event = devicePtr->enqueueRead(buffer, matrix.hostBuffer().begin(),
-        size, deviceOffset, offset);
-        LOG_DEBUG("Read it");
-                offset += size;
-                events->insert(event);
+            auto event = devicePtr->enqueueRead(buffer, matrix.hostBuffer().begin(),
+            size, deviceOffset, offset);
+            LOG_DEBUG("Read it");
+            offset += size;
+            events->insert(event);
         }
 
         // mark data on device as out of date !

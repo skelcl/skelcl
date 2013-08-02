@@ -73,17 +73,23 @@ public:
     // Ausführungsoperator mit Referenz
     template<typename ... Args>
     Matrix<Tout>& operator()(unsigned int iterations, Out<Matrix<Tout> > output,
-//                             Out<Matrix<Tout>> tmp,
-                             const Matrix<Tin>& in,
-            Args&&... args);
+                             const Matrix<Tin>& in, Args&&... args);
+
+    // Fügt dem Stencil-Skelett eine neue Stencil Shape hinzu
     void add(const Source& source, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
              detail::Padding padding, Tin neutral_element, const std::string& func);
 private:
 
+    // Ausführungsoperator mit Referenz weitergeleitet, um die temporäre Matrix vor dem User zu verstecken
+    template<typename ... Args>
+    Matrix<Tout>& operator()(unsigned int iterations, Out<Matrix<Tout> > output,
+                             Out<Matrix<Tout>> temp,
+                             const Matrix<Tin>& in, Args&&... args);
+
 	// Ausführen
     template<typename ... Args>
     void execute(Matrix<Tout>& output,
-//                 Matrix<Tout>& tmp,
+                 Matrix<Tout>& tmp,
                  const Matrix<Tin>& in, Args&&... args);
 
     unsigned int determineLargestNorth();

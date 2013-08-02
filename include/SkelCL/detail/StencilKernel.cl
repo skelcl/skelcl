@@ -85,7 +85,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                 }
             }
             //Fill columns of local memory left of the mapped elements
-            /*if(l_col<SCL_WEST) {
+            if(l_col<SCL_WEST) {
                     for(i=0;i<TILE_HEIGHT;i++) {
                          SCL_LOCAL_TEMP[i*TILE_WIDTH+l_col] = SCL_TMP[(row+i)*SCL_COLS+col-SCL_WEST];
                         //SCL_SHARED[i][l_col] = SCL_TMP[(row+i)*SCL_COLS+col-SCL_WEST];
@@ -111,7 +111,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                         SCL_LOCAL_TEMP[l*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = NEUTRAL;
                         //SCL_SHARED[l][l_col+SCL_WEST+SCL_EAST] = NEUTRAL;
                     }
-            }*/
+            }
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
