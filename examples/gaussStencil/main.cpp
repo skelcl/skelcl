@@ -35,12 +35,9 @@ void writePPM(Matrix<float>& img, const std::string filename) {
 
 void writePPM(Matrix<int>& img, const std::string filename) {
     std::ofstream outputFile(filename.c_str());
-    LOG_DEBUG("Z");
     outputFile << "P2\n" << "#Creator: sbr\n" << img.columnCount() << " "
             << img.rowCount() << "\n255\n";
-    LOG_DEBUG("Y");
     Matrix<int>::iterator itr = img.begin();
-    LOG_DEBUG("x");
     for (itr = img.begin(); itr != img.end(); ++itr) {
         outputFile << *itr << "\n";
     }
@@ -149,8 +146,8 @@ int main(int argc, char** argv) {
     s.add(std::ifstream { "./gauss2DStencil2.cl" },2,0,0,0,
         detail::Padding::NEUTRAL, 200, "func");
         LOG_DEBUG("Adding next");
-    s.add(std::ifstream { "./gauss2DStencil3.cl" }, 0,0,0,0,
-        detail::Padding::NEUTRAL, 1, "func");
+   //s.add(std::ifstream { "./gauss2DStencil3.cl" }, 0,0,0,0,
+   //     detail::Padding::NEUTRAL, 1, "func");
 
     Matrix<int> outputImage = s(1, inputImage);
 //	Matrix<int>::iterator itr;
