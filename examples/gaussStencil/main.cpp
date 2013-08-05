@@ -29,7 +29,7 @@ void writePPM(Matrix<float>& img, const std::string filename) {
     Matrix<float>::iterator itr;
 
     for (itr = img.begin(); itr != img.end(); ++itr) {
-        outputFile << *itr << "\n";
+        outputFile << (int) *itr << "\n";
     }
 }
 
@@ -140,16 +140,16 @@ int main(int argc, char** argv) {
 
     Matrix<int> inputImage(img, numcols);
 
-    skelcl::Stencil<int(int)> s(std::ifstream { "./gauss2DStencil.cl" }, 12,0,0,0,
-                        detail::Padding::NEUTRAL, 56, "func");
+    skelcl::Stencil<int(int)> s(std::ifstream { "./gauss2DStencil.cl" }, 1,1,1,1,
+                        detail::Padding::NEAREST_INITIAL, 255, "func");
 
-    s.add(std::ifstream { "./gauss2DStencil2.cl" },2,0,0,0,
-        detail::Padding::NEUTRAL, 200, "func");
-        LOG_DEBUG("Adding next");
+    //s.add(std::ifstream { "./gauss2DStencil2.cl" },2,0,0,0,
+    //    detail::Padding::NEUTRAL, 200, "func");
+    //    LOG_DEBUG("Adding next");
    //s.add(std::ifstream { "./gauss2DStencil3.cl" }, 0,0,0,0,
    //     detail::Padding::NEUTRAL, 1, "func");
 
-    Matrix<int> outputImage = s(1, inputImage);
+    Matrix<int> outputImage = s(100, inputImage);
 //	Matrix<int>::iterator itr;
     /*for(itr = outputImage.begin(); itr!=outputImage.end(); itr++){
         //if(*itr>255 || *itr<0)
