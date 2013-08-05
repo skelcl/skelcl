@@ -12,6 +12,18 @@ namespace skelcl {
 
 template<typename > class StencilInfo;
 
+///
+/// \class Stencil Info
+///
+/// \brief This class represents a single stencil shape and is solely used by the Stencil skeleton.
+///
+/// As a stencil shape does not only consists of its extents, but also out of information how to treat out-of-bounds
+/// accesses, this class was created. As there is a slight difference between the stencil shape itself, and these
+/// additional information, it is distinguished between a stencil shape and stencil info. A StencilInfo object stores
+/// all necessary information about a stencil shape.
+///
+/// \author Stefan Breuer
+///
 template<typename Tin,
          typename Tout>
 class StencilInfo<Tout(Tin)> {
@@ -37,7 +49,6 @@ public:
       std::string getDebugInfo() const;
 private:
 
-
    // Programm erstellen
    detail::Program createAndBuildProgram() const;
 
@@ -48,6 +59,7 @@ private:
     /// Source code as defined by the application developer
     std::string _userSource;
 
+    /// Specifies the stencil shape
     unsigned int _north;
     unsigned int _west;
     unsigned int _south;

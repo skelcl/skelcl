@@ -55,57 +55,67 @@ template<typename > class StencilInfo;
 
 template<typename > class Stencil;
 
-template<typename Tin,
-         typename Tout>
+template<typename Tin, typename Tout>
 class Stencil<Tout(Tin)> : public detail::Skeleton {
 
 public:
-    Stencil<Tout(Tin)>(const Source& source, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
-                       detail::Padding padding, Tin neutral_element, const std::string& func);
+	Stencil<Tout(Tin)>(const Source& source, unsigned int north,
+			unsigned int west, unsigned int south, unsigned int east,
+			detail::Padding padding, Tin neutral_element,
+			const std::string& func);
 
-    Stencil<Tout(Tin)>(const Source& source, unsigned int west, unsigned int east,
-                                detail::Padding padding, Tin neutral_element, const std::string& func);
+	Stencil<Tout(Tin)>(const Source& source, unsigned int west,
+			unsigned int east, detail::Padding padding, Tin neutral_element,
+			const std::string& func);
 
-    // Ausführungsoperator
-    template<typename ... Args>
-    Matrix<Tout> operator()(unsigned int iterations, const Matrix<Tin>& in, Args&&... args);
+	// Ausführungsoperator
+	template<typename ... Args>
+	Matrix<Tout> operator()(unsigned int iterations, const Matrix<Tin>& in,
+			Args&&... args);
 
-    // Ausführungsoperator mit Referenz
-    template<typename ... Args>
-    Matrix<Tout>& operator()(unsigned int iterations, Out<Matrix<Tout> > output,
-                             const Matrix<Tin>& in, Args&&... args);
+	// Ausführungsoperator mit Referenz
+	template<typename ... Args>
+	Matrix<Tout>& operator()(unsigned int iterations, Out<Matrix<Tout> > output,
+			const Matrix<Tin>& in, Args&&... args);
 
-    // Fügt dem Stencil-Skelett eine neue Stencil Shape hinzu
-    void add(const Source& source, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
-             detail::Padding padding, Tin neutral_element, const std::string& func);
+	// Fügt dem Stencil-Skelett eine neue Stencil Shape hinzu
+	void add(const Source& source, unsigned int north, unsigned int west,
+			unsigned int south, unsigned int east, detail::Padding padding,
+			Tin neutral_element, const std::string& func);
 private:
 
-    // Ausführungsoperator mit Referenz weitergeleitet, um die temporäre Matrix vor dem User zu verstecken
-    template<typename ... Args>
-    Matrix<Tout>& operator()(unsigned int iterations, Out<Matrix<Tout> > output,
-                             Out<Matrix<Tout>> temp,
-                             const Matrix<Tin>& in, Args&&... args);
+	// Ausführungsoperator mit Referenz weitergeleitet, um die temporäre Matrix vor dem User zu verstecken
+	template<typename ... Args>
+	Matrix<Tout>& operator()(unsigned int iterations, Out<Matrix<Tout> > output,
+			Out<Matrix<Tout>> temp, const Matrix<Tin>& in, Args&&... args);
 
 	// Ausführen
-    template<typename ... Args>
-    void execute(Matrix<Tout>& output,
-                 Matrix<Tout>& tmp,
-                 const Matrix<Tin>& in, Args&&... args);
+	template<typename ... Args>
+	void execute(Matrix<Tout>& output, Matrix<Tout>& tmp, const Matrix<Tin>& in,
+			Args&&... args);
 
-    unsigned int determineLargestNorth();
-    unsigned int determineLargestWest();
-    unsigned int determineLargestSouth();
-    unsigned int determineLargestEast();
+	// Ermittelt aus allen hinzugefügten Stencil Shapes das größte Ausmaß in Richtung Norden.
+	unsigned int determineLargestNorth();
 
-    // Eingabe vorbereiten
-    void prepareInput(const Matrix<Tin>& in);
+	// Ermittelt aus allen hinzugefügten Stencil Shapes das größte Ausmaß in Richtung Westen.
+	unsigned int determineLargestWest();
 
-    // Ausgabe vorbereiten
-    void prepareOutput(Matrix<Tout>& output, const Matrix<Tin>& in);
+	// Ermittelt aus allen hinzugefügten Stencil Shapes das größte Ausmaß in Richtung Süden.
+	unsigned int determineLargestSouth();
 
-    std::vector<StencilInfo<Tout(Tin)> > _stencilInfos;
+	// Ermittelt aus allen hinzugefügten Stencil Shapes das größte Ausmaß in Richtung Osten.
+	unsigned int determineLargestEast();
 
-    unsigned int _iterations;
+	// Eingabe vorbereiten
+	void prepareInput(const Matrix<Tin>& in);
+
+	// Ausgabe vorbereiten
+	void prepareOutput(Matrix<Tout>& output, const Matrix<Tin>& in);
+
+	// Hält alle hinzugefügten Stencil Shapes.
+	std::vector<StencilInfo<Tout(Tin)> > _stencilInfos;
+
+	unsigned int _iterations;
 };
 
 } //namespace skelcl

@@ -195,6 +195,9 @@ void startUpload(Vector<T>& vector, Event* events, unsigned int overlapRadius,
 		paddingFront.resize(overlapRadius, neutralElement);
 		paddingBack.resize(overlapRadius, neutralElement);
 		break;
+    case Padding::NEAREST_INITIAL:
+        LOG_ERROR("The MapOverlap skeleton works with the NEAREST and NEUTRAL mode");
+    break;
 	}
 
 	// Upload front paddint to first device

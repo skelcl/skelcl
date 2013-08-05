@@ -122,12 +122,10 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
         unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding);
 
 template<typename T>
-void startUpload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
-                 detail::Padding padding, T neutralElement, detail::DeviceList devices);
+void startUpload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
 
 template<typename T>
-void startUpload(Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
-                 detail::Padding padding, T neutralElement, detail::DeviceList devices);
+void startUpload(Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
 
 template<typename T>
 void startDownload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding,

@@ -79,8 +79,7 @@ void StencilDistribution<C<T>>::startUpload(C<T>& container, Event* events) cons
         ASSERT(events != nullptr);
         LOG_DEBUG("Start Upload");
         stencil_distribution_helper::startUpload(container, events,
-            this->_north, this->_west, this->_south, this->_east, this->_padding, this->_neutral_element,
-            this->_devices);
+            this->_north, this->_west, this->_south, this->_east, this->_devices);
 }
 
 template<template<typename > class C, typename T>
@@ -182,11 +181,13 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
         unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding) {
     LOG_DEBUG("Matrix Version, west: ", west, " and east: ", east, " are not considered for the size.");
     auto id = devicePtr->id();
+    if(north==0 && south ==0){};
     if (id) {
+
     };
     auto s = size.elemCount() / devices.size();
     if(padding == detail::Padding::NEAREST){
-        s += (north + south) * size.columnCount();
+        //s += (north + south) * size.columnCount();
     }
         LOG_DEBUG("Size for Device ", s);
         return s;
@@ -207,32 +208,12 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 
 template<typename T>
 void startUpload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
-                detail::Padding padding, T neutralElement, detail::DeviceList devices) {
+                detail::DeviceList devices) {
         ASSERT(events != nullptr);
     LOG_DEBUG("Vector Version , north: ", north, " and south: ", south, " are not considered for the upload.");
-        std::vector<T> paddingFront;
-        std::vector<T> paddingBack;
-
-        switch (padding) {
-        case Padding::NEAREST:
-        paddingFront.resize(west, vector.front());
-        paddingBack.resize(east, vector.back());
-                break;
-        case Padding::NEUTRAL:
-        paddingFront.resize(west, neutralElement);
-        paddingBack.resize(east, neutralElement);
-                break;
-        }
-
-        // Upload front paddint to first device
-        auto& firstDevicePtr = devices.front();
-        auto event = firstDevicePtr->enqueueWrite(
-                        vector.deviceBuffer(*firstDevicePtr), paddingFront.begin(),
-                        paddingFront.size());
-        events->insert(event);
 
 //  size_t offset       = 0;
-        size_t deviceOffset = paddingFront.size();
+        size_t deviceOffset = 0;
         size_t devSize = devices.size();
         size_t hostOffset = 0; //????
 
@@ -242,32 +223,17 @@ void startUpload(Vector<T>& vector, Event* events, unsigned int north, unsigned 
 
                 auto size = buffer.size();
 
-                if (i == 0)
-                        size -= paddingFront.size();
-                if (i == devSize - 1)
-                        size -= paddingBack.size();
-
-                event = devicePtr->enqueueWrite(buffer, vector.hostBuffer().begin(),
+                auto event = devicePtr->enqueueWrite(buffer, vector.hostBuffer().begin(),
                                 size, deviceOffset, hostOffset);
                 events->insert(event);
 
-        hostOffset += size - (east + west);
+            hostOffset += size - (east + west);
                 deviceOffset = 0; // after the first device, the device offset is 0
         }
-
-        // upload back padding at the end of last device
-        auto& lastDevicePtr = devices.back();
-        // calculate offset on the device ...
-        deviceOffset = vector.deviceBuffer(*lastDevicePtr).size()
-                        - paddingBack.size();
-
-        event = lastDevicePtr->enqueueWrite(vector.deviceBuffer(*lastDevicePtr),
-                        paddingBack.begin(), paddingBack.size(), deviceOffset);
-        events->insert(event);
 }
 template<typename T>
 void startUpload(Matrix<T>& matrix, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
-                detail::Padding padding, T neutralElement, detail::DeviceList devices) {
+               detail::DeviceList devices) {
         ASSERT(events != nullptr);
     LOG_DEBUG("Matrix Version , west: ", west, " and east: ", east, " are not considered for the upload.");
         // some shortcuts ...
@@ -276,13 +242,13 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north, unsigned 
         // create vectors for additional rows
         // initialize with neutral value for SCL_NEUTRAL
         // (override this in differnt case later)
-    std::vector<T> paddingTop(north * columnCount, neutralElement);
-    std::vector<T> paddingBottom(south * columnCount, neutralElement);
+    //std::vector<T> paddingTop(north * columnCount, neutralElement);
+    //std::vector<T> paddingBottom(south * columnCount, neutralElement);
 
         //Matrix<T>::host_buffer_type paddingTop(newSize, neutralElement);
         //Matrix<T>::host_buffer_type paddingBottom(newSize, neutralElement);
 
-        if (padding == detail::Padding::NEAREST) {
+        /*if (padding == detail::Padding::NEAREST) {
             paddingTop.clear();
             paddingBottom.clear();
 
@@ -299,17 +265,17 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north, unsigned 
                     paddingBottom.push_back(valBack);
                 }
             }
-        }
-    auto& firstDevicePtr = devices.front();
+        }*/
+    //auto& firstDevicePtr = devices.front();
 
         // Upload top padding to first device
-    if(padding == detail::Padding::NEAREST && paddingTop.size() > 0){
+    /*if(padding == detail::Padding::NEAREST && paddingTop.size() > 0){
         LOG_DEBUG("Padding top with size: ", paddingTop.size());
        auto eventTop = firstDevicePtr->enqueueWrite(
                 matrix.deviceBuffer(*firstDevicePtr), paddingTop.begin(),
-                paddingTop.size(), 0 /* deviceOffset */);
+                paddingTop.size(), 0);
         events->insert(eventTop);
-    }
+    }*/
 
         size_t hostOffset = 0;
         size_t deviceOffset = 0;
@@ -320,13 +286,13 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north, unsigned 
             auto& buffer = matrix.deviceBuffer(*devicePtr);
 
             auto size = buffer.size();
-            if (padding == detail::Padding::NEAREST) {
+            /*if (padding == detail::Padding::NEAREST) {
                 deviceOffset = paddingTop.size();
                 if (i == 0)
                         size -= paddingTop.size();
                 if (i == devSize - 1)
                         size -= paddingBottom.size();
-            }
+            }*/
             LOG_DEBUG("HostBuffer Size", matrix.hostBuffer().size());
             LOG_DEBUG("Size to upload ", size);
             auto eventData = devicePtr->enqueueWrite(buffer, matrix.hostBuffer().begin(), size,
@@ -340,7 +306,7 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north, unsigned 
             deviceOffset = 0; // after the first device, the device offset is 0
         }
 
-    if(padding == detail::Padding::NEAREST && paddingBottom.size() > 0){
+    /*if(padding == detail::Padding::NEAREST && paddingBottom.size() > 0){
         LOG_DEBUG("Padding bottom with size: ", paddingBottom.size());
         // Upload bottom padding at the end of last device
         auto& lastDevicePtr = devices.back();
@@ -353,7 +319,7 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north, unsigned 
         auto eventBottom = firstDevicePtr->enqueueWrite(matrix.deviceBuffer(*lastDevicePtr),
                 paddingBottom.begin(), paddingBottom.size(), deviceOffset, 0);
         events->insert(eventBottom);
-    }
+    }*/
 }
 
 template<typename T>
@@ -383,19 +349,21 @@ void startDownload(Vector<T>& vector, Event* events, unsigned int north, unsigne
 template<typename T>
 void startDownload(Matrix<T>& matrix, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding,
                 detail::DeviceList devices) {
-        ASSERT(events != nullptr);
+    if(padding==detail::Padding::NEAREST){};
+    if(north==0 && south==0){};
+    ASSERT(events != nullptr);
     LOG_DEBUG("Matrix Version , west: ", west, " and east: ", east, " are not considered for the download.");
         size_t offset = 0;
 
         for (auto& devicePtr : devices) {
-                auto& buffer = matrix.deviceBuffer(*devicePtr);
+            auto& buffer = matrix.deviceBuffer(*devicePtr);
 
             size_t overlapSize = 0;
             size_t deviceOffset = 0;
-            if(padding == detail::Padding::NEAREST){
+            /*if(padding == detail::Padding::NEAREST){
                 overlapSize = (north + south) * matrix.size().columnCount();
                 deviceOffset = north * matrix.size().columnCount();
-            }
+            }*/
 
             LOG_DEBUG("Device OFfset: ", deviceOffset);
             size_t size = buffer.size() - overlapSize;

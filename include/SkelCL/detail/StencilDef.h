@@ -142,7 +142,7 @@ Matrix<Tout>& Stencil<Tout(Tin)>::operator()(unsigned int iterations, Out<Matrix
         if((_iterations % 2 == 1) && (_stencilInfos.size() % 2 == 0)){
             execute(temp.container(), output.container(), in, std::forward<Args>(args)...);
         } else {
-             execute(output.container(), temp.container(), in, std::forward<Args>(args)...);
+            execute(output.container(), temp.container(), in, std::forward<Args>(args)...);
         }
     }
 

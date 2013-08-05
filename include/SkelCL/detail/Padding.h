@@ -36,6 +36,7 @@
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 /// \author Matthiass Buss
+/// \author Stefan Breuer
 ///
 
 #ifndef PADDING_H_
@@ -47,7 +48,8 @@ namespace detail {
 
 enum class Padding {
   NEUTRAL,
-  NEAREST
+  NEAREST,
+  NEAREST_INITIAL
 };
 
 } // namespace detail
