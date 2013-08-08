@@ -125,7 +125,6 @@ int main(int argc, char** argv) {
     /* (KERNEL_SIZE - offset -1) is the CORRECT version */
     for (i = -offset; i <= ((2 * range + 1) - offset - 1); i++) {
         kernelVec[i + offset] = exp(-i * i / (2 * a * a));
-            LOG_DEBUG("kernel  ", i+offset, " ", kernelVec[i+offset]);
     }
 
     //Read pgm-File
@@ -140,16 +139,23 @@ int main(int argc, char** argv) {
 
     Matrix<int> inputImage(img, numcols);
 
-    skelcl::Stencil<int(int)> s(std::ifstream { "./gauss2DStencil.cl" }, 1,1,1,1,
-                        detail::Padding::NEAREST_INITIAL, 255, "func");
+    skelcl::Stencil<int(int)> s(std::ifstream { "./gauss2DStencil3.cl" }, 2,2,2,2,
+                        detail::Padding::NEAREST, 255, "func");
 
-    //s.add(std::ifstream { "./gauss2DStencil2.cl" },2,0,0,0,
-    //    detail::Padding::NEUTRAL, 200, "func");
+    skelcl::Stencil<int(int)> t(std::ifstream { "./gauss2DStencil2.cl" },0,0,0,0,
+                                detail::Padding::NEUTRAL, 0, "func");
+
+    s.add(std::ifstream { "./gauss2DStencil.cl" },1,1,1,1,
+        detail::Padding::NEAREST, 0, "func");
     //    LOG_DEBUG("Adding next");
-   //s.add(std::ifstream { "./gauss2DStencil3.cl" }, 0,0,0,0,
-   //     detail::Padding::NEUTRAL, 1, "func");
+  s.add(std::ifstream { "./gauss2DStencil2.cl" }, 1,1,1,1,
+       detail::Padding::NEAREST, 1, "func");
+  s.add(std::ifstream { "./gauss2DStencil4.cl" }, 0,0,0,0,
+       detail::Padding::NEAREST, 1, "func");
 
-    Matrix<int> outputImage = s(100, inputImage);
+    Matrix<int> outputImage = s(1, inputImage, kernelVec, range);
+    //Matrix<int> outputImage = t(1, inputImage);
+
 //	Matrix<int>::iterator itr;
     /*for(itr = outputImage.begin(); itr!=outputImage.end(); itr++){
         //if(*itr>255 || *itr<0)
@@ -163,7 +169,7 @@ int main(int argc, char** argv) {
         std::cout << "Argv[2] " << argv[2] << std::endl;
         outFile = argv[2];
     }
-LOG_DEBUG("writing");
+    LOG_DEBUG("writing");
    writePPM(outputImage, outFile);
 
     //skelcl::terminate();

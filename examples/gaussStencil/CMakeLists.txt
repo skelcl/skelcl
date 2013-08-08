@@ -9,6 +9,7 @@ target_link_libraries (gaussStencil SkelCL ${SKELCL_COMMON_LIBS})
 configure_file (gauss2DStencil.cl ${CMAKE_CURRENT_BINARY_DIR}/gauss2DStencil.cl)
 configure_file (gauss2DStencil2.cl ${CMAKE_CURRENT_BINARY_DIR}/gauss2DStencil2.cl)
 configure_file (gauss2DStencil3.cl ${CMAKE_CURRENT_BINARY_DIR}/gauss2DStencil3.cl)
+configure_file (gauss2DStencil4.cl ${CMAKE_CURRENT_BINARY_DIR}/gauss2DStencil4.cl)
 configure_file (pgm.pgm ${CMAKE_CURRENT_BINARY_DIR}/pgm.pgm)
 
 

@@ -1,4 +1,29 @@
-int func(input_matrix_t* img)
+int func(input_matrix_t* img, __global float* kernelVec, int range)
 {
-    return (getData(img,0,2));
+    int val = getData(img, 0, 0);
+    if(val <= 27 || (val > 163 && val <= 207) ) {
+        if(val < getData(img, 0, 1) || val < getData(img, 0, -1)){
+            val = 0;
+        }
+        return val;
+    }
+    if((val > 27 && val <= 72) || (val > 207 && val <= 252)) {
+        if(val < getData(img, -1, 1) || val < getData(img, 1, -1)){
+            val = 0;
+        }
+        return val;
+    }
+    if((val > 72 && val <= 117) || (val > 252 && val <= 297)) {
+        if(val < getData(img, -1, 0) || val < getData(img, 1, 0)){
+            val = 0;
+        }
+        return val;
+    }
+    if((val > 117 && val <= 162) || (val > 297 && val <= 359)) {
+        if(val < getData(img, -1, -1) || val < getData(img, 1, 1)){
+            val = 0;
+        }
+        return val;
+    }
+
 }
