@@ -133,8 +133,11 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                     //Device in the middle
                 #endif
 
-
-                if(l_col >= get_local_size(0) - SCL_EAST) {
+                //Diese zweite Abfrage ist eigentlich nicht nötig, aber:
+                //Befindet man sich in der workgroup ganz rechts, greifen die letzten work-items auf nicht definierten Speicher zu und schreibt i.d.R. (AMD APP SDK 2.8.1) dann einen bel.
+                //Wert an die entsprechende Stelle. Für den Algorithmus kein Problem, da dieser Wert dann im nächsten if-Block überschrieben wird.
+                //Auf der pixeldiva und OpenCL 1.1 CUDA führt dies allerdings zum OPENCL-Fehler CL_OUT_OF_RESOURCES.
+                if(l_col >= get_local_size(0) - SCL_EAST && !(col >= SCL_COLS - SCL_EAST)) {
                     for(k = 0; k < TILE_HEIGHT - SCL_SOUTH; k++){
                         SCL_LOCAL_TMP[k*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(row-SCL_NORTH+k)*SCL_COLS+col+SCL_EAST];
                     }
@@ -248,10 +251,10 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
 
                 if(col >= SCL_COLS - SCL_EAST) {
                     for(k = 0; k < SCL_NORTH; k++) {
-                        SCL_LOCAL_TMP[k*TILE_WIDTH+l_col] = SCL_TMP[SCL_COLS-1];
+                        SCL_LOCAL_TMP[k*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[SCL_COLS-1];
                     }
-                    for(k = 0; k < TILE_HEIGHT; k++){
-                        SCL_LOCAL_TMP[(k-SCL_NORTH)*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(k+1)*SCL_COLS-1];
+                    for(k = 0; k < TILE_HEIGHT - SCL_NORTH; k++){
+                        SCL_LOCAL_TMP[(k+SCL_NORTH)*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(k+1)*SCL_COLS-1];
                     }
                 }
             }
@@ -286,8 +289,11 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                     //Device in the middle
                 #endif
 
-
-                if(l_col >= get_local_size(0) - SCL_EAST) {
+                //Diese zweite Abfrage ist eigentlich nicht nötig, aber:
+                //Befindet man sich in der workgroup ganz rechts, greifen die letzten work-items auf nicht definierten Speicher zu und schreibt i.d.R. (AMD APP SDK 2.8.1) dann einen bel.
+                //Wert an die entsprechende Stelle. Für den Algorithmus kein Problem, da dieser Wert dann im nächsten if-Block überschrieben wird.
+                //Auf der pixeldiva und OpenCL 1.1 CUDA führt dies allerdings zum OPENCL-Fehler CL_OUT_OF_RESOURCES.
+                if(l_col >= get_local_size(0) - SCL_EAST && !(col >= SCL_COLS - SCL_EAST)) {
                     for(k = 0; k < TILE_HEIGHT - SCL_SOUTH; k++){
                         SCL_LOCAL_TMP[k*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(row-SCL_NORTH+k)*SCL_COLS+col+SCL_EAST];
                     }
@@ -335,6 +341,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                 }
             }
         }
+
 
         barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -406,8 +413,8 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                     for(k = 0; k < SCL_NORTH; k++) {
                         SCL_LOCAL_TMP[k*TILE_WIDTH+l_col] = SCL_IN[SCL_COLS-1];
                     }
-                    for(k = 0; k < TILE_HEIGHT; k++){
-                        SCL_LOCAL_TMP[(k-SCL_NORTH)*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(k+1)*SCL_COLS-1];
+                    for(k = 0; k < TILE_HEIGHT - SCL_NORTH; k++){
+                        SCL_LOCAL_TMP[(k+SCL_NORTH)*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(k+1)*SCL_COLS-1];
                     }
                 }
             }
@@ -442,13 +449,16 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                     //Device in the middle
                 #endif
 
-
-                if(l_col >= get_local_size(0) - SCL_EAST) {
+                //Diese zweite Abfrage ist eigentlich nicht nötig, aber:
+                //Befindet man sich in der workgroup ganz rechts, greifen die letzten work-items auf nicht definierten Speicher zu und schreibt i.d.R. (AMD APP SDK 2.8.1) dann einen bel.
+                //Wert an die entsprechende Stelle. Für den Algorithmus kein Problem, da dieser Wert dann im nächsten if-Block überschrieben wird.
+                //Auf der pixeldiva und OpenCL 1.1 CUDA führt dies allerdings zum OPENCL-Fehler CL_OUT_OF_RESOURCES.
+                if(l_col >= get_local_size(0) - SCL_EAST && !(col >= SCL_COLS - SCL_EAST)) {
                     for(k = 0; k < TILE_HEIGHT - SCL_SOUTH; k++){
                         SCL_LOCAL_TMP[k*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(row-SCL_NORTH+k)*SCL_COLS+col+SCL_EAST];
                     }
-                    for(j = 0; j < SCL_SOUTH; j++){
-                        SCL_LOCAL_TMP[(j+ TILE_HEIGHT - SCL_SOUTH)*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN[SCL_ELEMENTS-SCL_COLS+col+SCL_EAST];
+                    for(k = 0; k < SCL_SOUTH; k++){
+                        SCL_LOCAL_TMP[(k+ TILE_HEIGHT - SCL_SOUTH)*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN[SCL_ELEMENTS-SCL_COLS+col+SCL_EAST];
                     }
                 }
                 if(col >= SCL_COLS - SCL_EAST) {
