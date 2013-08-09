@@ -44,13 +44,6 @@ namespace skelcl {
 
 namespace detail {
 
-//template<template<typename > class C, typename T>
-//StencilDistribution<C<T>>::StencilDistribution(const unsigned int overlapRadius,
-//        const detail::Padding padding, const T neutral_element,
-//              const DeviceList& deviceList) :
-//        _overlap_radius(overlapRadius), _padding(padding), _neutral_element(neutral_element), Distribution<C<T>>(deviceList) {
-//}
-
 template<template<typename > class C, typename T>
 StencilDistribution<C<T>>::StencilDistribution(const unsigned int north, const unsigned int west, const unsigned int south, const unsigned int east,
                                                const detail::Padding padding, const T neutral_element, const DeviceList& deviceList) :
@@ -77,7 +70,6 @@ bool StencilDistribution<C<T>>::isValid() const {
 template<template<typename > class C, typename T>
 void StencilDistribution<C<T>>::startUpload(C<T>& container, Event* events) const {
         ASSERT(events != nullptr);
-        LOG_DEBUG("Start Upload");
         stencil_distribution_helper::startUpload(container, events,
             this->_north, this->_west, this->_south, this->_east, this->_devices);
 }
@@ -86,14 +78,14 @@ template<template<typename > class C, typename T>
 void StencilDistribution<C<T>>::startDownload(C<T>& container, Event* events) const {
         ASSERT(events != nullptr);
         stencil_distribution_helper::startDownload(container, events,
-            this->_north, this->_west, this->_south, this->_east, this->_padding, this->_devices);
+            this->_north, this->_west, this->_south, this->_east, this->_devices);
 }
 
 template<template<typename > class C, typename T>
 size_t StencilDistribution<C<T>>::sizeForDevice(const C<T>& container,
                 const std::shared_ptr<detail::Device>& devicePtr) const {
         return stencil_distribution_helper::sizeForDevice<T>(devicePtr, container.size(),
-            this->_devices, this->_north, this->_west, this->_south, this->_east, this->_padding);
+            this->_devices, this->_north, this->_west, this->_south, this->_east);
 }
 
 template<template<typename > class C, typename T>
@@ -159,8 +151,7 @@ namespace stencil_distribution_helper {
 template<typename T>
 size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
                 const typename Vector<T>::size_type size, const DeviceList& devices,
-        unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding) {
-    if(padding==detail::Padding::NEUTRAL){};
+        unsigned int north, unsigned int west, unsigned int south, unsigned int east) {
     LOG_DEBUG("Vector Version , north: ", north, " and south: ", south, " are not considered for the size.");
         auto id = devicePtr->id();
         if (id < devices.size() - 1) {
@@ -178,7 +169,7 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 template<typename T>
 size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
                 const typename Matrix<T>::size_type size, const DeviceList& devices,
-        unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding) {
+        unsigned int north, unsigned int west, unsigned int south, unsigned int east) {
     LOG_DEBUG("Matrix Version, west: ", west, " and east: ", east, " are not considered for the size.");
     auto id = devicePtr->id();
     if(north==0 && south ==0){};
@@ -186,10 +177,6 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 
     };
     auto s = size.elemCount() / devices.size();
-    if(padding == detail::Padding::NEAREST){
-        //s += (north + south) * size.columnCount();
-    }
-        LOG_DEBUG("Size for Device ", s);
         return s;
 //      auto id = devicePtr->id();
 //      if (id < devices.size() - 1) {
@@ -209,8 +196,8 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 template<typename T>
 void startUpload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
                 detail::DeviceList devices) {
-        ASSERT(events != nullptr);
-    LOG_DEBUG("Vector Version , north: ", north, " and south: ", south, " are not considered for the upload.");
+    ASSERT(events != nullptr);
+    LOG_DEBUG_INFO("Vector Version , north: ", north, " and south: ", south, " are not considered for the upload.");
 
 //  size_t offset       = 0;
         size_t deviceOffset = 0;
@@ -218,24 +205,24 @@ void startUpload(Vector<T>& vector, Event* events, unsigned int north, unsigned 
         size_t hostOffset = 0; //????
 
         for (size_t i = 0; i < devSize; ++i) {
-                auto& devicePtr = devices[i];
-                auto& buffer = vector.deviceBuffer(*devicePtr);
+            auto& devicePtr = devices[i];
+            auto& buffer = vector.deviceBuffer(*devicePtr);
 
-                auto size = buffer.size();
+            auto size = buffer.size();
 
-                auto event = devicePtr->enqueueWrite(buffer, vector.hostBuffer().begin(),
-                                size, deviceOffset, hostOffset);
-                events->insert(event);
+            auto event = devicePtr->enqueueWrite(buffer, vector.hostBuffer().begin(),
+                            size, deviceOffset, hostOffset);
+            events->insert(event);
 
             hostOffset += size - (east + west);
-                deviceOffset = 0; // after the first device, the device offset is 0
+            deviceOffset = 0; // after the first device, the device offset is 0
         }
 }
 template<typename T>
 void startUpload(Matrix<T>& matrix, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
                detail::DeviceList devices) {
-        ASSERT(events != nullptr);
-    LOG_DEBUG("Matrix Version , west: ", west, " and east: ", east, " are not considered for the upload.");
+    ASSERT(events != nullptr);
+    LOG_DEBUG_INFO("Matrix Version , west: ", west, " and east: ", east, " are not considered for the upload.");
         // some shortcuts ...
         auto columnCount = matrix.size().columnCount();
 
@@ -323,10 +310,9 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north, unsigned 
 }
 
 template<typename T>
-void startDownload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding,
+void startDownload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
                 detail::DeviceList devices) {
-        ASSERT(events != nullptr);
-        if(padding==detail::Padding::NEAREST){};
+    ASSERT(events != nullptr);
     LOG_DEBUG("Vector Version , north: ", north, " and south: ", south, " are not considered for the download.");
         size_t offset = 0;
 
@@ -347,9 +333,8 @@ void startDownload(Vector<T>& vector, Event* events, unsigned int north, unsigne
 }
 
 template<typename T>
-void startDownload(Matrix<T>& matrix, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding,
+void startDownload(Matrix<T>& matrix, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
                 detail::DeviceList devices) {
-    if(padding==detail::Padding::NEAREST){};
     if(north==0 && south==0){};
     ASSERT(events != nullptr);
     LOG_DEBUG("Matrix Version , west: ", west, " and east: ", east, " are not considered for the download.");

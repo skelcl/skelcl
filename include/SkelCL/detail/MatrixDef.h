@@ -220,14 +220,12 @@ Matrix<T>::~Matrix() {
 template<typename T>
 typename Matrix<T>::iterator Matrix<T>::begin() {
 	copyDataToHost();
-    LOG_DEBUG("FFF");
 	return _hostBuffer.begin();
 }
 
 template<typename T>
 typename Matrix<T>::const_iterator Matrix<T>::begin() const {
 	copyDataToHost();
-    LOG_DEBUG("FFD");
 	return _hostBuffer.begin();
 }
 
@@ -669,8 +667,6 @@ detail::Event Matrix<T>::startUpload() const {
 	if (_deviceBuffersUpToDate)
 		return events;
 
-	LOG_DEBUG("Try to Upload a Matrix of Size ", _size.elemCount());
-
 	_distribution->startUpload(const_cast<Matrix<T>&>(*this), &events);
 
 	_deviceBuffersUpToDate = true;
@@ -699,15 +695,11 @@ detail::Event Matrix<T>::startDownload() const {
 
 	if (_hostBufferUpToDate)
 		return events;
-LOG_DEBUG("dF");
 	_hostBuffer.resize(_size.elemCount()); // make enough room to store data
-LOG_DEBUG("SsF");
 	_distribution->startDownload(const_cast<Matrix<T>&>(*this), &events);
-LOG_DEBUG("Sdsv");
 	_hostBufferUpToDate = true;
 
-    LOG_DEBUG(this);
-    LOG_DEBUG("Started data download from ",
+    LOG_DEBUG_INFO("Started data download from ",
 			_distribution->devices().size(), " devices (", getInfo(), ")");
 
 	return events;

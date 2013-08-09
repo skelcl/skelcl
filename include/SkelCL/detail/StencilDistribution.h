@@ -57,9 +57,6 @@ template<typename > class StencilDistribution;
 template<template<typename > class C, typename T>
 class StencilDistribution<C<T>> : public Distribution<C<T>> {
 public:
-//	StencilDistribution(unsigned int overlapRadius = 1, detail::Padding padding = detail::Padding::NEUTRAL, T neutral_element = T(),
-//			const DeviceList& deviceList = globalDeviceList);
-
     StencilDistribution(unsigned int north, unsigned int west, unsigned int south, unsigned int east,
     		detail::Padding padding = detail::Padding::NEUTRAL, T neutral_element = T(), const DeviceList& deviceList = globalDeviceList);
 
@@ -114,12 +111,12 @@ namespace stencil_distribution_helper {
 template<typename T>
 size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 		const typename Vector<T>::size_type size, const DeviceList& devices,
-        unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding);
+        unsigned int north, unsigned int west, unsigned int south, unsigned int east);
 
 template<typename T>
 size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 		const typename Matrix<T>::size_type size, const DeviceList& devices,
-        unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding);
+        unsigned int north, unsigned int west, unsigned int south, unsigned int east);
 
 template<typename T>
 void startUpload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
@@ -128,12 +125,10 @@ template<typename T>
 void startUpload(Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
 
 template<typename T>
-void startDownload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding,
-                  detail::DeviceList devices);
+void startDownload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
 
 template<typename T>
-void startDownload(Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::Padding padding,
-                   detail::DeviceList devices);
+void startDownload(Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
 
 
 

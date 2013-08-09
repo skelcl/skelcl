@@ -8,6 +8,8 @@
 #ifndef STENCILINFO_H_
 #define STENCILINFO_H_
 
+#include <limits.h>
+
 namespace skelcl {
 
 template<typename > class StencilInfo;
@@ -46,13 +48,14 @@ public:
    const unsigned int& getTileWidth() const;
    const unsigned int& getTileHeight() const;
 
-      std::string getDebugInfo() const;
+   std::string getDebugInfo() const;
 private:
 
    // Programm erstellen
    detail::Program createAndBuildProgram() const;
 
    //Größe des Local memory bestimmen
+   unsigned int determineMaxWorkGroupSize() const;
    unsigned int determineTileWidth() const;
    unsigned int determineTileHeight() const;
 

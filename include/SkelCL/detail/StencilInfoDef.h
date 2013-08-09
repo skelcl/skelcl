@@ -18,18 +18,20 @@ StencilInfo<Tout(Tin)>::StencilInfo(const Source& source, unsigned int north,
 				east), _padding(padding), _neutral_element(neutral_element), _funcName(
 				func), _tile_width(determineTileWidth()), _tile_height(
 				determineTileHeight()), _program(createAndBuildProgram()) {
-	LOG_DEBUG("Create new StencilInfo object (", this, ")");
-	LOG_DEBUG(getDebugInfo());
+    LOG_DEBUG_INFO("Create new StencilInfo object (", this, ")");
 }
 
 template<typename Tin, typename Tout>
 detail::Program StencilInfo<Tout(Tin)>::createAndBuildProgram() const {
-//	ASSERT_MESSAGE(!_userSource.empty(),
-//			"Tried to create program with empty user source.");
+    ASSERT_MESSAGE(!_userSource.empty(), "Tried to create program with empty user source.");
 
 	std::stringstream temp;
-	temp << "#define TILE_WIDTH " << _tile_width << std::endl;
+
+    //Define size of local memory
+    temp << "#define TILE_WIDTH " << _tile_width << std::endl;
 	temp << "#define TILE_HEIGHT " << _tile_height << std::endl;
+
+    //Determine the padding mode
 	if (_padding == detail::Padding::NEUTRAL) {
 		temp << "#define NEUTRAL " << _neutral_element << std::endl;
 	} else if (_padding == detail::Padding::NEAREST) {
@@ -37,6 +39,7 @@ detail::Program StencilInfo<Tout(Tin)>::createAndBuildProgram() const {
 	} else if (_padding == detail::Padding::NEAREST_INITIAL) {
 		temp << "#define NEAREST_INITIAL " << 1 << std::endl;
 	}
+
 	// create program
 	std::string s(Matrix<Tout>::deviceFunctions());
 	s.append(temp.str());
@@ -73,7 +76,6 @@ SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y){
 	s.append(
 #include "StencilKernel.cl"
 	);
-	LOG_DEBUG("D");
 	auto program = detail::Program(s,
 			detail::util::hash(
 					"//Stencil\n" + Matrix<Tout>::deviceFunctions()
@@ -90,17 +92,26 @@ SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y){
 }
 
 template<typename Tin, typename Tout>
+unsigned int StencilInfo<Tout(Tin)>::determineMaxWorkGroupSize() const {
+    int maxWorkgroupSize = INT_MAX;
+    for (auto iter  = detail::globalDeviceList.begin();
+              iter != detail::globalDeviceList.end();
+            ++iter) {
+        if(iter->get()->maxWorkGroupSize()<maxWorkgroupSize) {
+            maxWorkgroupSize = iter->get()->maxWorkGroupSize();
+        }
+    }
+    return maxWorkgroupSize;
+}
+
+template<typename Tin, typename Tout>
 unsigned int StencilInfo<Tout(Tin)>::determineTileWidth() const {
-	detail::Device firstDev = *(detail::globalDeviceList.at(0).get());
-	int maxWorkgroupSize = sqrt(firstDev.maxWorkGroupSize());
-	return maxWorkgroupSize + _west + _east;
+    return sqrt(determineMaxWorkGroupSize()) + _west + _east;
 }
 
 template<typename Tin, typename Tout>
 unsigned int StencilInfo<Tout(Tin)>::determineTileHeight() const {
-	detail::Device firstDev = *(detail::globalDeviceList.at(0).get());
-	int maxWorkgroupSize = sqrt(firstDev.maxWorkGroupSize());
-	return maxWorkgroupSize + _south + _north;
+    return sqrt(determineMaxWorkGroupSize()) + _south + _north;
 }
 
 template<typename Tin, typename Tout>
@@ -135,7 +146,6 @@ const Tin& StencilInfo<Tout(Tin)>::getNeutralElement() const {
 
 template<typename Tin, typename Tout>
 const detail::Program& StencilInfo<Tout(Tin)>::getProgram() const {
-	LOG_DEBUG("sinfo", this);
 	return this->_program;
 }
 

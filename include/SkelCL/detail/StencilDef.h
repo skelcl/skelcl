@@ -94,7 +94,6 @@ void Stencil<Tout(Tin)>::add(const Source& source, unsigned int north, unsigned 
          detail::Padding padding, Tin neutral_element, const std::string& func){
     StencilInfo<Tout(Tin)> info(source, north, west, south, east, padding, neutral_element, func);
     _stencilInfos.push_back(info);
-    LOG_DEBUG("Added Stencil Shape");
 }
 
 // Ausführungsoperator
@@ -102,22 +101,20 @@ template<typename Tin, typename Tout>
 template<typename ... Args>
 Matrix<Tout> Stencil<Tout(Tin)>::operator()(unsigned int iterations, const Matrix<Tin>& in,
         Args&&... args) {
-    LOG_DEBUG("Create Output Matrix");
     Matrix<Tout> output;
     this->operator()(iterations, out(output), in, std::forward<Args>(args)...);
     return output;
 }
 
-// Ausführungsoperator mit Referenz
+// Ausführungsoperator mit Referenz. Kapselt User vom Vorhandensein einer temp-Matrix.
 template<typename Tin, typename Tout>
 template<typename ... Args>
 Matrix<Tout>& Stencil<Tout(Tin)>::operator()(unsigned int iterations, Out<Matrix<Tout>> output, const Matrix<Tin>& in, Args&&... args) {
-    LOG_DEBUG("Create temp Matrix");
     Matrix<Tout> temp;
     return this->operator()(iterations, output, out(temp), in, std::forward<Args>(args)...);
 }
 
-// Ausführungsoperator mit Referenz
+// Ausführungsoperator mit Referenz, der zusätzlich noch die temp-Matrix aufnimmt
 template<typename Tin, typename Tout>
 template<typename ... Args>
 Matrix<Tout>& Stencil<Tout(Tin)>::operator()(unsigned int iterations, Out<Matrix<Tout>> output, Out<Matrix<Tout>> temp, const Matrix<Tin>& in, Args&&... args) {
@@ -162,13 +159,8 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
 
     for (auto& devicePtr : in.distribution().devices()) {
         auto& outputBuffer = output.deviceBuffer(*devicePtr);
-
-        LOG_DEBUG("Output Buffer Size: ", outputBuffer.size());
-
         auto& inputBuffer = in.deviceBuffer(*devicePtr);
         auto& tempBuffer = temp.deviceBuffer(*devicePtr);
-
-        LOG_DEBUG("Input Buffer Size: ", inputBuffer.size());
 
         cl_uint elements = static_cast<cl_uint>(output.size().elemCount());
         cl_uint local[2] = { (cl_uint) sqrt(devicePtr->maxWorkGroupSize()), (cl_uint)local[0] }; // C, R
@@ -178,11 +170,9 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                 static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount(),
                         local[1]))}; // SUBTILES
 
-        LOG_DEBUG("local: ", local[0], ",", local[1], " global: ", global[0],
-                ",", global[1]);
+        LOG_DEBUG("local: ", local[0], ",", local[1], " global: ", global[0], ",", global[1]);
         unsigned int i = 0;
         try {
-            LOG_DEBUG("Stencil Infos Size: ", _stencilInfos.size());
             int k = 1;
             for(i = 0; i<_iterations; i++){
                 k--;
@@ -191,36 +181,34 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                     int j = 0;
                     kernel.setArg(j++, inputBuffer.clBuffer());
                     if((i+k)==0){
-                        LOG_DEBUG("First Time, read from Input, Write to Output-Matrix");
+                        //Erste Iteration: Lese von input, schreibe zu Output
                         kernel.setArg(j++, outputBuffer.clBuffer());
                         kernel.setArg(j++, inputBuffer.clBuffer());
                     } else if((i+k) % 2 == 0){
-                        LOG_DEBUG("Write to Output-Matrix");
+                        //"Gerade" Iterationen: Lese von temp, schreibe zu Output
                         kernel.setArg(j++, outputBuffer.clBuffer());
                         kernel.setArg(j++, tempBuffer.clBuffer());
                     } else if((i+k) % 2 == 1){
-                        LOG_DEBUG("Write to Temp-Matrix");
+                        //"Ungerade" Iterationen: Lese von Output, schreibe zu temp. Ist dies die letzte Iteration, muss temp zurückgegeben werden
                         kernel.setArg(j++, tempBuffer.clBuffer());
                         kernel.setArg(j++, outputBuffer.clBuffer());
                     }
-                    kernel.setArg(j++, sInfo.getTileWidth()*sInfo.getTileHeight()*sizeof(Tin), NULL);
+                    kernel.setArg(j++, sInfo.getTileWidth()*sInfo.getTileHeight()*sizeof(Tin), NULL); //Alloziere Local Memory
                     kernel.setArg(j++, elements);   // elements
                     kernel.setArg(j++, sInfo.getNorth()); // north
                     kernel.setArg(j++, sInfo.getWest()); // west
                     kernel.setArg(j++, sInfo.getSouth()); // south
                     kernel.setArg(j++, sInfo.getEast()); // east
-                    kernel.setArg(j++, determineLargestNorth());
                     kernel.setArg(j++, static_cast<cl_uint>(output.columnCount())); // number of columns
 
                     detail::kernelUtil::setKernelArgs(kernel, *devicePtr, j,
                             std::forward<Args>(args)...);
 
-                    LOG_DEBUG(sInfo.getDebugInfo());
-
                     auto keepAliveBuffer = outputBuffer.clBuffer();
-                     if((i+k) % 2 == 1){
-                         keepAliveBuffer = tempBuffer.clBuffer();
-                     }
+                    //Setze keepAlive-Buffer auf den Buffer, der die aktuellesten Daten enthält
+                    if((i+k) % 2 == 1){
+                        keepAliveBuffer = tempBuffer.clBuffer();
+                    }
 
                     // keep buffers and arguments alive / mark them as in use
                     auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,

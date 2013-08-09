@@ -40,7 +40,7 @@
 R"(
 
 __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_OUT, __global SCL_TYPE_1* SCL_TMP, __local SCL_TYPE_1* SCL_LOCAL_TMP, const unsigned int SCL_ELEMENTS,
-                const unsigned int SCL_NORTH, const unsigned int SCL_WEST, const unsigned int SCL_SOUTH, const unsigned int SCL_EAST, const unsigned int SCL_LARGESTNORTH, const unsigned int SCL_COLS) {
+                const unsigned int SCL_NORTH, const unsigned int SCL_WEST, const unsigned int SCL_SOUTH, const unsigned int SCL_EAST, const unsigned int SCL_COLS) {
 
 #ifdef NEUTRAL
         const unsigned int col = get_global_id(0);
