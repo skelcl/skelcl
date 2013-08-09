@@ -139,11 +139,9 @@ int main(int argc, char** argv) {
 
     Matrix<int> inputImage(img, numcols);
 
-    skelcl::Stencil<int(int)> s(std::ifstream { "./gauss2DStencil3.cl" }, 2,2,2,2,
+    skelcl::Stencil<int(int)> s(std::ifstream { "./gauss2DStencil3.cl" }, range,range,range,range,
                         detail::Padding::NEAREST, 255, "func");
 
-    skelcl::Stencil<int(int)> t(std::ifstream { "./gauss2DStencil2.cl" },0,0,0,0,
-                                detail::Padding::NEUTRAL, 0, "func");
 
     s.add(std::ifstream { "./gauss2DStencil.cl" },1,1,1,1,
         detail::Padding::NEAREST, 0, "func");
