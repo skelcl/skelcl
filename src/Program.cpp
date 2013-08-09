@@ -308,7 +308,7 @@ void Program::createProgramsFromSource() {
 				std::string s(ss.str());
 				s.append(source);
 
-				LOG_DEBUG("Create cl::Program for device ", devicePtr->id(),
+                LOG_DEBUG_INFO("Create cl::Program for device ", devicePtr->id(),
 						" with source:\n", s, "\n");
 
 				return cl::Program(devicePtr->clContext(),
