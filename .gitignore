@@ -8,3 +8,6 @@ libraries/ssedit/libraries/libclang
 xcuserdata
 !xcshareddata
 !xcschemes
+.cproject
+.project
+.settings/
