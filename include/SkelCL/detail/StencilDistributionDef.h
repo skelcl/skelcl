@@ -152,7 +152,7 @@ template<typename T>
 size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
                 const typename Vector<T>::size_type size, const DeviceList& devices,
         unsigned int north, unsigned int west, unsigned int south, unsigned int east) {
-    LOG_DEBUG("Vector Version , north: ", north, " and south: ", south, " are not considered for the size.");
+    LOG_DEBUG_INFO("Vector Version , north: ", north, " and south: ", south, " are not considered for the size.");
         auto id = devicePtr->id();
         if (id < devices.size() - 1) {
                 auto s = size / devices.size();
@@ -170,7 +170,7 @@ template<typename T>
 size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
                 const typename Matrix<T>::size_type size, const DeviceList& devices,
         unsigned int north, unsigned int west, unsigned int south, unsigned int east) {
-    LOG_DEBUG("Matrix Version, west: ", west, " and east: ", east, " are not considered for the size.");
+    LOG_DEBUG_INFO("Matrix Version, west: ", west, " and east: ", east, " are not considered for the size.");
     auto id = devicePtr->id();
     if(north==0 && south ==0){};
     if (id) {
@@ -280,8 +280,6 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north, unsigned 
                 if (i == devSize - 1)
                         size -= paddingBottom.size();
             }*/
-            LOG_DEBUG("HostBuffer Size", matrix.hostBuffer().size());
-            LOG_DEBUG("Size to upload ", size);
             auto eventData = devicePtr->enqueueWrite(buffer, matrix.hostBuffer().begin(), size,
                                     deviceOffset, hostOffset);
             events->insert(eventData);
@@ -313,7 +311,7 @@ template<typename T>
 void startDownload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
                 detail::DeviceList devices) {
     ASSERT(events != nullptr);
-    LOG_DEBUG("Vector Version , north: ", north, " and south: ", south, " are not considered for the download.");
+    LOG_DEBUG_INFO("Vector Version , north: ", north, " and south: ", south, " are not considered for the download.");
         size_t offset = 0;
 
         for (auto& devicePtr : devices) {
@@ -337,7 +335,7 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int north, unsigne
                 detail::DeviceList devices) {
     if(north==0 && south==0){};
     ASSERT(events != nullptr);
-    LOG_DEBUG("Matrix Version , west: ", west, " and east: ", east, " are not considered for the download.");
+    LOG_DEBUG_INFO("Matrix Version , west: ", west, " and east: ", east, " are not considered for the download.");
         size_t offset = 0;
 
         for (auto& devicePtr : devices) {
@@ -350,13 +348,10 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int north, unsigne
                 deviceOffset = north * matrix.size().columnCount();
             }*/
 
-            LOG_DEBUG("Device OFfset: ", deviceOffset);
             size_t size = buffer.size() - overlapSize;
-            LOG_DEBUG("Size: ", size);
 
             auto event = devicePtr->enqueueRead(buffer, matrix.hostBuffer().begin(),
             size, deviceOffset, offset);
-            LOG_DEBUG("Read it");
             offset += size;
             events->insert(event);
         }

@@ -624,9 +624,7 @@ newDistribution ) const
 template<typename T>
 void Matrix<T>::createDeviceBuffers() const {
 	// create device buffers only if none have been created so far
-	LOG_DEBUG("Create Device Buffers");
 	if (_deviceBuffers.empty()) {
-		LOG_DEBUG("Device Buffers Empty");
 		forceCreateDeviceBuffers();
 	}
 }
@@ -690,7 +688,6 @@ detail::Event Matrix<T>::startDownload() const {
 	ASSERT(_distribution != nullptr);
 	ASSERT(_distribution->isValid());
 	ASSERT(!_deviceBuffers.empty());
-    LOG_DEBUG("SF");
 	detail::Event events;
 
 	if (_hostBufferUpToDate)

@@ -78,7 +78,7 @@ MapOverlap<Tout(Tin)>::MapOverlap(const Source& source, unsigned int overlap_ran
 		detail::Skeleton(), _userSource(source), _overlap_range(overlap_range), _padding(
 				padding), _neutral_element(neutral_element), _funcName(func), _program(
 				createAndBuildProgram()) {
-	LOG_DEBUG("Create new MapOverlap object (", this, ")");
+    LOG_DEBUG_INFO("Create new MapOverlap object (", this, ")");
 }
 
 // Ausführungsoperator
@@ -130,8 +130,8 @@ void MapOverlap<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
 				static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount(),
 						local[1]))}; // SUBTILES
 
-		LOG_DEBUG("elements: ", elements, " overlap: ", _overlap_range);
-		LOG_DEBUG("local: ", local[0], ",", local[1], " global: ", global[0],
+        LOG_DEBUG_INFO("elements: ", elements, " overlap: ", _overlap_range);
+        LOG_DEBUG_INFO("local: ", local[0], ",", local[1], " global: ", global[0],
 				",", global[1]);
 
 		try {
@@ -275,7 +275,7 @@ SCL_TYPE_0 getElem2DGlobal(__global SCL_TYPE_0* vector, int x, int y, int cols) 
 
 //In case, local memory is used
 SCL_TYPE_0 getElem2D(__local SCL_TYPE_0* vector, int x, int y){
-    return vector[x-TILE_WIDTH*y];
+    return vector[x*TILE_WIDTH+y];
 }
 
 )");

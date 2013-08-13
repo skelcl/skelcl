@@ -40,20 +40,20 @@
 R"(
 
 __kernel void SCL_MAPOVERLAP(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_OUT, const unsigned int SCL_ELEMENTS,
-		const unsigned int SCL_OVERLAP, const unsigned int SCL_COLS) {
+                const unsigned int SCL_OVERLAP, const unsigned int SCL_COLS) {
 
 #ifdef NEUTRAL
-	const unsigned int col = get_global_id(0);
-	const unsigned int l_col = get_local_id(0);
-	const unsigned int row = get_global_id(1);
+        const unsigned int col = get_global_id(0);
+        const unsigned int l_col = get_local_id(0);
+        const unsigned int row = get_global_id(1);
         const unsigned int l_row = get_local_id(1);
 
         __local SCL_TYPE_0 SCL_SHARED[TILE_WIDTH][TILE_WIDTH];
 
-	int i,j,k,l,m;
+        int i,j,k,l,m;
 
-	if(l_row==0) {
-		//Fill columns of local memory in which the mapped elements reside
+        if(l_row==0) {
+                //Fill columns of local memory in which the mapped elements reside
                 for(m=0;m<TILE_WIDTH;m++) {
                         SCL_SHARED[m][l_col+SCL_OVERLAP] = SCL_IN[(row+m)*SCL_COLS+col];
                 }
@@ -61,25 +61,25 @@ __kernel void SCL_MAPOVERLAP(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* S
                 if(l_col<SCL_OVERLAP) {
                         for(i=0;i<TILE_WIDTH;i++) {
                                 SCL_SHARED[i][l_col] = SCL_IN[(row+i)*SCL_COLS+col-SCL_OVERLAP];
-			}
-		}
-		//Fill columns of local memory left of the mapped elements when padding elements to the left are needed
-		if(col<SCL_OVERLAP) {
+                        }
+                }
+                //Fill columns of local memory left of the mapped elements when padding elements to the left are needed
+                if(col<SCL_OVERLAP) {
                         for(j=0;j<TILE_WIDTH;j++) {
                                 SCL_SHARED[j][l_col] = NEUTRAL;
-			}
-		}
-		//Fill columns of local memory right of the mapped elements
-		if(l_col>=get_local_size(0)-SCL_OVERLAP) {
+                        }
+                }
+                //Fill columns of local memory right of the mapped elements
+                if(l_col>=get_local_size(0)-SCL_OVERLAP) {
                         for(k=0;k<TILE_WIDTH;k++) {
                                 SCL_SHARED[k][l_col+SCL_OVERLAP+SCL_OVERLAP] = SCL_IN[(row+k)*SCL_COLS+col+SCL_OVERLAP];
-			}
-		}
-		//Fill columns of local memory right of the mapped elements when padding elements to the right are needed
-		if(col>SCL_COLS-SCL_OVERLAP) {
+                        }
+                }
+                //Fill columns of local memory right of the mapped elements when padding elements to the right are needed
+                if(col>SCL_COLS-SCL_OVERLAP) {
                         for(l=0;l<TILE_WIDTH;l++) {
-				SCL_SHARED[l][l_col+SCL_OVERLAP+SCL_OVERLAP] = NEUTRAL;
-			}
+                                SCL_SHARED[l][l_col+SCL_OVERLAP+SCL_OVERLAP] = NEUTRAL;
+                        }
                 }
         }
         barrier(CLK_LOCAL_MEM_FENCE);
@@ -92,53 +92,53 @@ __kernel void SCL_MAPOVERLAP(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* S
         }
 
 #else
-	const unsigned int col = get_global_id(0);
-	const unsigned int l_col = get_local_id(0);
-	const unsigned int row = get_global_id(1);
-	const unsigned int l_row = get_local_id(1);
+        const unsigned int col = get_global_id(0);
+        const unsigned int l_col = get_local_id(0);
+        const unsigned int row = get_global_id(1);
+        const unsigned int l_row = get_local_id(1);
 
-	__local SCL_TYPE_0 SCL_SHARED[TILE_WIDTH][TILE_WIDTH];
+        __local SCL_TYPE_0 SCL_SHARED[TILE_WIDTH][TILE_WIDTH];
 
-	int i,j,k,l,m;
+        int i,j,k,l,m;
 
-	if(l_row==0) {
-		//Fill columns of local memory in which the mapped elements reside
-		for(m=0;m<TILE_WIDTH;m++) {
+        if(l_row==0) {
+                //Fill columns of local memory in which the mapped elements reside
+                for(m=0;m<TILE_WIDTH;m++) {
                         SCL_SHARED[m][l_col+SCL_OVERLAP] = SCL_IN[(row+m)*SCL_COLS+col];
-		}
-		//Fill columns of local memory left of the mapped elements
-		if(l_col<SCL_OVERLAP) {
-			for(i=0;i<TILE_WIDTH;i++) {
+                }
+                //Fill columns of local memory left of the mapped elements
+                if(l_col<SCL_OVERLAP) {
+                        for(i=0;i<TILE_WIDTH;i++) {
                                 SCL_SHARED[i][l_col] = SCL_IN[(row+i)*SCL_COLS+col-SCL_OVERLAP];
-			}
-		}
-		//Fill columns of local memory left of the mapped elements when padding elements to the left are needed
-		if(col<SCL_OVERLAP) {
-			for(j=0;j<TILE_WIDTH;j++) {
+                        }
+                }
+                //Fill columns of local memory left of the mapped elements when padding elements to the left are needed
+                if(col<SCL_OVERLAP) {
+                        for(j=0;j<TILE_WIDTH;j++) {
                                 SCL_SHARED[j][l_col] = SCL_IN[(row+j)*SCL_COLS];
-			}
-		}
-		//Fill columns of local memory right of the mapped elements
-		if(l_col>=get_local_size(0)-SCL_OVERLAP) {
-			for(k=0;k<TILE_WIDTH;k++) {
+                        }
+                }
+                //Fill columns of local memory right of the mapped elements
+                if(l_col>=get_local_size(0)-SCL_OVERLAP) {
+                        for(k=0;k<TILE_WIDTH;k++) {
                                 SCL_SHARED[k][l_col+SCL_OVERLAP+SCL_OVERLAP] = SCL_IN[(row+k)*SCL_COLS+col+SCL_OVERLAP];
-			}
-		}
-		//Fill columns of local memory right of the mapped elements when padding elements to the right are needed
-		if(col>=SCL_COLS-SCL_OVERLAP) {
-			for(l=0;l<TILE_WIDTH;l++) {
+                        }
+                }
+                //Fill columns of local memory right of the mapped elements when padding elements to the right are needed
+                if(col>=SCL_COLS-SCL_OVERLAP) {
+                        for(l=0;l<TILE_WIDTH;l++) {
                                 SCL_SHARED[l][l_col+SCL_OVERLAP+SCL_OVERLAP] = SCL_IN[(row+l)*SCL_COLS+SCL_COLS-1];
-			}
-		}
+                        }
+                }
 
-	}
-	barrier(CLK_LOCAL_MEM_FENCE);
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
 
         if(row<SCL_ELEMENTS/SCL_COLS && col<SCL_COLS) {
                 //Working with global mem
                 //SCL_OUT[row*SCL_COLS+col+SCL_OVERLAP*SCL_COLS] = USR_FUNC(&(SCL_IN[row*SCL_COLS+col+SCL_OVERLAP*SCL_COLS]));
                  //Working with local mem
-                SCL_OUT[row*SCL_COLS+col++SCL_OVERLAP*SCL_COLS] = USR_FUNC(&(SCL_SHARED[l_row+SCL_OVERLAP][l_col+SCL_OVERLAP]));
+                SCL_OUT[row*SCL_COLS+col] = USR_FUNC(&(SCL_SHARED[l_row+SCL_OVERLAP][l_col+SCL_OVERLAP]));
         }
 #endif
 }

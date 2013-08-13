@@ -70,7 +70,6 @@ bool OLDistribution<C<T>>::isValid() const {
 template<template<typename > class C, typename T>
 void OLDistribution<C<T>>::startUpload(C<T>& container, Event* events) const {
 	ASSERT(events != nullptr);
-	LOG_DEBUG("Start Upload");
 	ol_distribution_helper::startUpload(container, events,
 			this->_overlap_radius, this->_padding, this->_neutral_element,
 			this->_devices);
@@ -162,7 +161,6 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 	};
 	auto s = size.elemCount() / devices.size();
 	s += 2 * overlapRadius * size.columnCount();
-	LOG_DEBUG("Size for Device ", s);
 	return s;
 //	auto id = devicePtr->id();
 //	if (id < devices.size() - 1) {
@@ -281,8 +279,6 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 			paddingTop.size(), 0 /* deviceOffset */);
 	events->insert(event);
 
-	LOG_DEBUG(matrix.deviceBuffer(*firstDevicePtr).size());
-
 	size_t hostOffset = 0;
 	size_t deviceOffset = paddingTop.size();
 	size_t devSize = devices.size();
@@ -297,7 +293,6 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 			size -= paddingTop.size();
 		if (i == devSize - 1)
 			size -= paddingBottom.size();
-		LOG_DEBUG("Size to upload", size);
 
 		devicePtr->enqueueWrite(buffer, matrix.hostBuffer().begin(), size,
 				deviceOffset, hostOffset);
@@ -316,8 +311,6 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
     deviceOffset = matrix.deviceBuffer(*lastDevicePtr).size()
             - paddingBottom.size();
 
-    LOG_DEBUG("Device Offset: ", deviceOffset);
-    LOG_DEBUG(matrix.deviceBuffer(*lastDevicePtr).size());
     event = firstDevicePtr->enqueueWrite(matrix.deviceBuffer(*lastDevicePtr),
             paddingBottom.begin(), paddingBottom.size(), deviceOffset, 0);
     events->insert(event);
@@ -350,7 +343,6 @@ template<typename T>
 void startDownload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 		detail::DeviceList devices) {
 	ASSERT(events != nullptr);
-	LOG_DEBUG("START DOWNLOAd");
 	size_t offset = 0;
 
 	for (auto& devicePtr : devices) {
@@ -362,7 +354,6 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 
 		auto event = devicePtr->enqueueRead(buffer, matrix.hostBuffer().begin(),
                 size, overlapSize, offset);
-        LOG_DEBUG("Read it");
 		offset += size;
 		events->insert(event);
 	}

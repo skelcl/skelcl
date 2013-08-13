@@ -148,7 +148,7 @@ cl::Event Device::enqueue(const cl::Kernel& kernel,
     event.setCallback(CL_COMPLETE, ::invokeCallback, userData);
   }
 
-  LOG_DEBUG("Kernel for device ", _id, " enqueued with global range: ",
+  LOG_DEBUG_INFO("Kernel for device ", _id, " enqueued with global range: ",
                  ::printNDRange(global), ", local: ", ::printNDRange(local),
                  ", offset: ", ::printNDRange(offset));
   return event;

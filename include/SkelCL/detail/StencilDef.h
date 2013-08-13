@@ -76,7 +76,7 @@ template<typename Tin, typename Tout>
 Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
                             detail::Padding padding, Tin neutral_element, const std::string& func):
     detail::Skeleton() {
-    LOG_DEBUG("Create new Stencil object for Matrix (", this, ")");
+    LOG_DEBUG_INFO("Create new Stencil object for Matrix (", this, ")");
     add(source, north, west, south, east, padding, neutral_element, func);
 }
 
@@ -85,7 +85,7 @@ template<typename Tin, typename Tout>
 Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int west, unsigned int east,
                             detail::Padding padding, Tin neutral_element, const std::string& func):
     detail::Skeleton() {
-    LOG_DEBUG("Create new Stencil object for Vector (", this, ")");
+    LOG_DEBUG_INFO("Create new Stencil object for Vector (", this, ")");
     add(source, 0, west, 0, east, padding, neutral_element, func);
 }
 
@@ -170,7 +170,7 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                 static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount(),
                         local[1]))}; // SUBTILES
 
-        LOG_DEBUG("local: ", local[0], ",", local[1], " global: ", global[0], ",", global[1]);
+        LOG_DEBUG_INFO("local: ", local[0], ",", local[1], " global: ", global[0], ",", global[1]);
         unsigned int i = 0;
         try {
             int k = 1;
