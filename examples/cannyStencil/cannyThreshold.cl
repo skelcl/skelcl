@@ -1,4 +1,4 @@
-int func(input_matrix_t* img, __global float* kernelVec, int range)
+float func(input_matrix_t* img, __global float* kernelVec, int range)
 {
     int val = getData(img, 0, 0);
     if(val <= 20) {

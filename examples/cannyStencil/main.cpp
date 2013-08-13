@@ -96,7 +96,7 @@ int readPPM(const std::string inFile, std::vector<float>& img) {
 int main(int argc, char** argv) {
     long long time0;
     long long time1;
-    int range = 15;
+    int range = 2;
     int i;
     using namespace pvsutil::cmdline;
     pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
@@ -146,8 +146,15 @@ int main(int argc, char** argv) {
 
     Matrix<float> inputImage(img, numcols);
 
-    skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" }, range,range,range,range,
+    skelcl::Stencil<float(float)> s(std::ifstream { "./cannyGauss.cl" }, range,range,range,range,
                         detail::Padding::NEAREST, 255, "func");
+
+    s.add(std::ifstream { "./cannySobel.cl" },1,1,1,1,
+        detail::Padding::NEAREST, 0, "func");
+    s.add(std::ifstream { "./cannyNMS.cl" }, 1,1,1,1,
+       detail::Padding::NEAREST, 1, "func");
+    s.add(std::ifstream { "./cannyThreshold.cl" }, 0,0,0,0,
+       detail::Padding::NEAREST, 1, "func");
 
     Matrix<float> outputImage = s(1, inputImage, kernelVec, range);
 

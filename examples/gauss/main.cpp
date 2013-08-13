@@ -20,6 +20,13 @@
 
 using namespace skelcl;
 
+long long get_time() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return (tv.tv_sec * 1000000) + tv.tv_usec;
+}
+
+
 void writePPM(Matrix<float>& img, const std::string filename) {
 	std::ofstream outputFile(filename.c_str());
 
@@ -63,12 +70,10 @@ int readPPM(const std::string inFile, std::vector<int>& img) {
 	std::string inputLine = "";
 
 	// First line : version
-	getline(infile, inputLine);
-	std::cout << "Version : " << inputLine << std::endl;
+    getline(infile, inputLine);
 
 	// Second line : comment
-	getline(infile, inputLine);
-	std::cout << "Comment : " << inputLine << std::endl;
+    getline(infile, inputLine);
 
 	// Continue with a stringstream
 	getline(infile, inputLine);
@@ -76,12 +81,8 @@ int readPPM(const std::string inFile, std::vector<int>& img) {
 	//	// Third line : size
 	ss2 >> numcols >> numrows;
 
-	std::cout << numcols << " columns and " << numrows << " rows" << std::endl;
+    getline(infile, inputLine);
 
-	getline(infile, inputLine);
-	std::cout << "Max Value: " << inputLine << std::endl;
-
-//	std::vector<int> img;
 	int i;
 	while (getline(infile, inputLine)) {
 		std::stringstream ss(inputLine);
@@ -94,7 +95,9 @@ int readPPM(const std::string inFile, std::vector<int>& img) {
 }
 
 int main(int argc, char** argv) {
-    int range = 2;
+    long long time0;
+    long long time1;
+    int range = 10;
 	int i;
 	using namespace pvsutil::cmdline;
     pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
@@ -109,8 +112,6 @@ int main(int argc, char** argv) {
 
 	//calculate the kernel
 	int fwhm = 5;
-//	cl_uint *kernel_size = (cl_uint*) malloc(sizeof(cl_uint));
-//	kernel_size[0] = (cl_uint) 2 * range + 1;
 	int offset = (2 * range + 1) / 2;
 
 	/*
@@ -125,16 +126,22 @@ int main(int argc, char** argv) {
 	/* (KERNEL_SIZE - offset -1) is the CORRECT version */
 	for (i = -offset; i <= ((2 * range + 1) - offset - 1); i++) {
 		kernelVec[i + offset] = exp(-i * i / (2 * a * a));
-            LOG_DEBUG("kernel ", i+offset, " ", kernelVec[i+offset]);
 	}
 
 	//Read pgm-File
-	std::vector<int> img(1);
+    std::vector<int> img(1);
 	std::string inFile("pgm.pgm");
 	if (argc > 1) {
 		inFile = argv[1];
 	}
+    std::string outFile("out.pgm");
+    if (argc > 2) {
+        outFile = argv[2];
+    }
+
 	int numcols = readPPM(inFile, img);
+
+    time0 = get_time();
 
 	skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
 
@@ -142,23 +149,16 @@ int main(int argc, char** argv) {
 
     skelcl::MapOverlap<int(int)> s(std::ifstream { "./gauss2D.cl" }, 10,
                 detail::Padding::NEUTRAL, 56);
-    Matrix<int> outputImage = s(inputImage);
-//	Matrix<int>::iterator itr;
-    /*for(itr = outputImage.begin(); itr!=outputImage.end(); itr++){
-        //if(*itr>255 || *itr<0)
-		std::cout << "VAL: " << *itr << " " << count << std::endl;
-		count++;
-    }*/
-    std::cout << "Matrix " << outputImage.columnCount() << " columns and "
-            << outputImage.rowCount() << " rows" << std::endl;
-	std::string outFile("out.pgm");
-	if (argc > 2) {
-		std::cout << "Argv[2] " << argv[2] << std::endl;
-		outFile = argv[2];
-	}
+    Matrix<int> outputImage = s(inputImage, kernelVec, range);
 
-	writePPM(outputImage, outFile);
+    Matrix<int>::iterator itr = outputImage.begin();
 
-//	skelcl::terminate();
+    //Get time
+    time1=get_time();
+    printf("Total: %.12f\n", (float) (time1-time0) / 1000000);
+
+   writePPM(outputImage, outFile);
+
+    skelcl::terminate();
 
 }

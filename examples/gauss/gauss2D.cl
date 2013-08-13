@@ -1,7 +1,15 @@
-int func(__local float* img)
+int func(__local float* img, __global float* kernelVec, int range)
 {
-unsigned int a = getElem2D(img, -1, 1) + 2*getElem2D(img, -1, 0) + getElem2D(img, -1, -1) - getElem2D(img, 1, 1) - 2*getElem2D(img, 1, 0) - getElem2D(img, 1, -1);
-unsigned int b =  getElem2D(img, -1, 1) + 2*getElem2D(img, 0, 1) + getElem2D(img, 1, 1) - getElem2D(img, -1, -1) - 2*getElem2D(img, 0, -1) - getElem2D(img, 1, -1);
-float c = a*a+b*b;
- return sqrt(c);
+float sum = 0.0;
+float norm = 0.0;
+int i,j;
+for(i=-range; i<range; i++){
+        for(j=-range; j<range;j++){
+                sum += getElem2D(img,i,j) * kernelVec[(i+j)/2+range];
+                norm += kernelVec[(i+j)/2+range];
+
+}
+}
+return sum/norm;
+
 }
