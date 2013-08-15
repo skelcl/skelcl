@@ -96,7 +96,7 @@ int readPPM(const std::string inFile, std::vector<float>& img) {
 int main(int argc, char** argv) {
     long long time0;
     long long time1;
-    int range = 15;
+    int range = 10;
     int i;
     using namespace pvsutil::cmdline;
     pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));

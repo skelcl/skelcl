@@ -134,16 +134,19 @@ void MapOverlap<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
         LOG_DEBUG_INFO("local: ", local[0], ",", local[1], " global: ", global[0],
 				",", global[1]);
 
+        unsigned int tileWidth = sqrt(devicePtr->maxWorkGroupSize()) + 2*_overlap_range+1;
+
 		try {
 			cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_MAPOVERLAP"));
 
 			kernel.setArg(0, inputBuffer.clBuffer());
 			kernel.setArg(1, outputBuffer.clBuffer());
-			kernel.setArg(2, elements);   // elements
-			kernel.setArg(3, _overlap_range); // overlap_range
-			kernel.setArg(4, static_cast<cl_uint>(output.columnCount())); // number of columns
+            kernel.setArg(2, tileWidth*tileWidth*sizeof(Tin), NULL); //Alloziere Local Memory
+            kernel.setArg(3, elements);   // elements
+            kernel.setArg(4, _overlap_range); // overlap_range
+            kernel.setArg(5, static_cast<cl_uint>(output.columnCount())); // number of columns
 
-			detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 5,
+            detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 6,
 					std::forward<Args>(args)...);
 
 			// keep buffers and arguments alive / mark them as in use
@@ -191,15 +194,17 @@ typedef float SCL_TYPE_0;
 typedef float SCL_TYPE_1;
 
 typedef struct {
-    __local SCL_TYPE_0* data;
-    unsigned int row;
-    unsigned int cols;
-} input_matrix_t;
-
-typedef struct {
     const __global SCL_TYPE_1* data;
     unsigned int cols;
 } output_matrix_t;
+
+typedef struct {
+    __local SCL_TYPE_1* data;
+    int local_row;
+    int local_column;
+    int offset_north;
+    int offset_west;
+} input_matrix_t;
 
 /*
  * DeviceFunctions
@@ -274,6 +279,15 @@ SCL_TYPE_0 getElem2DGlobal(__global SCL_TYPE_0* vector, int x, int y, int cols) 
 }
 
 //In case, local memory is used
+SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y){
+    int offsetNorth = matrix->offset_north * TILE_WIDTH;
+    int currentIndex = matrix->local_row * TILE_WIDTH + matrix->local_column;
+    int shift = x - y * TILE_WIDTH;
+
+    return matrix->data[currentIndex+offsetNorth+shift+matrix->offset_west];
+}
+
+//In case, local memory is used
 SCL_TYPE_0 getElem2D(__local SCL_TYPE_0* vector, int x, int y){
     return vector[x*TILE_WIDTH+y];
 }
@@ -302,9 +316,8 @@ SCL_TYPE_0 getElem2D(__local SCL_TYPE_0* vector, int x, int y){
 
 		program.adjustTypes<Tin, Tout>();
 	}
-
 	program.build();
-
+    //Get time
 	return program;
 }
 
