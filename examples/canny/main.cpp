@@ -97,8 +97,12 @@ int main(int argc, char** argv) {
     long long time0;
     long long time1;
     long long time2;
+    long long time3;
     long long time4;
     long long time5;
+    long long time6;
+    long long time8;
+    long long time9;
     int range = 2;
     int i;
     using namespace pvsutil::cmdline;
@@ -148,41 +152,64 @@ int main(int argc, char** argv) {
     skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
 
     Matrix<float> inputImage(img, numcols);
+    Matrix<float> outputImage(img, numcols);
+    Matrix<float> temp(img, numcols);
 
-    skelcl::Stencil<float(float)> s(std::ifstream { "./cannyGauss.cl" }, range,range,range,range,
+    skelcl::MapOverlap<float(float)> m(std::ifstream { "./cannyGauss.cl" }, range,
                         detail::Padding::NEAREST, 255, "func");
-    //Get time
-    time4=get_time();
-    printf("First: %.12f\n", (float) (time4-time0) / 1000000);
-
-    s.add(std::ifstream { "./cannySobel.cl" },1,1,1,1,
-        detail::Padding::NEAREST, 0, "func");
 
     //Get time
-    time5=get_time();
-    printf("Second: %.12f\n", (float) (time5-time4) / 1000000);
+    time8=get_time();
+    printf("First: %.12f\n", (float) (time8-time0) / 1000000);
 
-    s.add(std::ifstream { "./cannyNMS.cl" }, 1,1,1,1,
-       detail::Padding::NEAREST, 1, "func");
-    s.add(std::ifstream { "./cannyThreshold.cl" }, 0,0,0,0,
-       detail::Padding::NEAREST, 1, "func");
+    skelcl::MapOverlap<float(float)> n(std::ifstream { "./cannySobel.cl" }, 1,
+                        detail::Padding::NEAREST, 255, "func");
+
+    //Get time
+    time9=get_time();
+    printf("Second: %.12f\n", (float) (time9-time8) / 1000000);
+
+    skelcl::MapOverlap<float(float)> o(std::ifstream { "./cannyNMS.cl" }, 1,
+                        detail::Padding::NEAREST, 255, "func");
+
+
+    skelcl::MapOverlap<float(float)> p(std::ifstream { "./cannyThreshold.cl" }, 1,
+                        detail::Padding::NEAREST, 255, "func");
 
     //Get time
     time1=get_time();
     printf("Creation: %.12f\n", (float) (time1-time0) / 1000000);
 
-    Matrix<float> outputImage = s(1, inputImage, kernelVec, range);
-
-    std::cout << "Matrix " << outputImage.columnCount() << " columns and "
-            << outputImage.rowCount() << " rows" << std::endl;
-
-    Matrix<float>::iterator itr = outputImage.begin();
+    outputImage = m(inputImage, kernelVec, range);
 
     //Get time
     time2=get_time();
-    printf("Total: %.12f\n", (float) (time2-time0) / 1000000);
+    printf("Gauß: %.12f\n", (float) (time2-time1) / 1000000);
 
-    writePPM(outputImage, outFile);
+    temp = n(outputImage, kernelVec, range);
+
+    //Get time
+    time3=get_time();
+    printf("Sobel: %.12f\n", (float) (time3-time2) / 1000000);
+
+    outputImage = o(temp, kernelVec, range);
+
+    //Get time
+    time4=get_time();
+    printf("NMS: %.12f\n", (float) (time4-time3) / 1000000);
+    temp = p(outputImage, kernelVec, range);
+
+    //Get time
+    time5=get_time();
+    printf("Threshold: %.12f\n", (float) (time5-time4) / 1000000);
+
+    Matrix<float>::iterator itr = temp.begin();
+
+    //Get time
+    time6=get_time();
+    printf("Total: %.12f\n", (float) (time6-time0) / 1000000);
+
+    writePPM(temp, outFile);
 
     skelcl::terminate();
 
