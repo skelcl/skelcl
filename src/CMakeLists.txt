@@ -89,7 +89,9 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/Skeleton.h
       ../include/SkelCL/detail/StencilDef.h
       ../include/SkelCL/detail/StencilInfoDef.h
-      ../include/SkelCL/detail/StencilKernel.cl
+      ../include/SkelCL/detail/StencilKernelNearestInitial.cl
+      ../include/SkelCL/detail/StencilKernelNearest.cl
+      ../include/SkelCL/detail/StencilKernelNeutral.cl
       ../include/SkelCL/detail/StencilDistribution.h
       ../include/SkelCL/detail/StencilDistributionDef.h
       ../include/SkelCL/detail/Util.h

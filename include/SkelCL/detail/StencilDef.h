@@ -171,12 +171,16 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                         local[1]))}; // SUBTILES
 
         LOG_DEBUG_INFO("local: ", local[0], ",", local[1], " global: ", global[0], ",", global[1]);
+        long long time2;
+        long long time3;
         unsigned int i = 0;
         try {
             int k = 1;
             for(i = 0; i<_iterations; i++){
                 k--;
                 for(auto& sInfo : _stencilInfos){
+                //Get time
+                time2=get_time1();
                     cl::Kernel kernel(sInfo.getProgram().kernel(*devicePtr, "SCL_STENCIL"));
                     int j = 0;
                     kernel.setArg(j++, inputBuffer.clBuffer());
@@ -220,6 +224,9 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                         cl::NDRange(local[0], local[1]), cl::NullRange, // offset
                         invokeAfter);
                     k++;
+                    //Get time
+                    time3=get_time1();
+                    printf("All %i: %.12f\n", k, (float) (time3-time2) / 1000000);
                 }
             }
         } catch (cl::Error& err) {
