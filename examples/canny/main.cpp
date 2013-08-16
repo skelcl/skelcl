@@ -162,7 +162,6 @@ int main(int argc, char** argv) {
     skelcl::MapOverlap<float(float)> o(std::ifstream { "./cannyNMS.cl" }, 1,
                         detail::Padding::NEAREST, 255, "func");
 
-
     skelcl::MapOverlap<float(float)> p(std::ifstream { "./cannyThreshold.cl" }, 1,
                         detail::Padding::NEAREST, 255, "func");
 
@@ -199,7 +198,7 @@ int main(int argc, char** argv) {
     time6=get_time();
     printf("Total Total: %.12f\n", (float) (time6-time0) / 1000000);
 
-    writePPM(temp, outFile);
+    writePPM(inputImage, outFile);
 
     skelcl::terminate();
 

@@ -124,7 +124,7 @@ __kernel void SCL_MAPOVERLAP(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* S
         if(l_row==0) {
                 //Fill columns of local memory in which the mapped elements reside
                 for(m=0;m<TILE_WIDTH;m++) {
-                    SCL_SHARED[m*l_col+SCL_OVERLAP] = SCL_IN[(row+m)*SCL_COLS+col];
+                    SCL_SHARED[m*TILE_WIDTH+l_col+SCL_OVERLAP] = SCL_IN[(row+m)*SCL_COLS+col];
                     //SCL_SHARED[m][l_col+SCL_OVERLAP] = SCL_IN[(row+m)*SCL_COLS+col];
                 }
                 //Fill columns of local memory left of the mapped elements
