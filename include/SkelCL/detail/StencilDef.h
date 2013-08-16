@@ -71,6 +71,12 @@
 
 namespace skelcl {
 
+long long get_time1() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return (tv.tv_sec * 1000000) + tv.tv_usec;
+}
+
 //Konstruktor für Matrix
 template<typename Tin, typename Tout>
 Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
@@ -226,7 +232,7 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                     k++;
                     //Get time
                     time3=get_time1();
-                    printf("All %i: %.12f\n", k, (float) (time3-time2) / 1000000);
+                    printf("Total All %i: %.12f\n", k, (float) (time3-time2) / 1000000);
                 }
             }
         } catch (cl::Error& err) {

@@ -91,8 +91,6 @@ public:
 private:
 	bool doCompare(const Distribution<C<T>>& rhs) const;
 
-//	unsigned int _overlap_radius;
-
     unsigned int _north;
 
     unsigned int _west;

@@ -97,8 +97,6 @@ int main(int argc, char** argv) {
     long long time0;
     long long time1;
     long long time2;
-    long long time4;
-    long long time5;
     int range = 2;
     int i;
     using namespace pvsutil::cmdline;
@@ -151,17 +149,8 @@ int main(int argc, char** argv) {
 
     skelcl::Stencil<float(float)> s(std::ifstream { "./cannyGauss.cl" }, range,range,range,range,
                         detail::Padding::NEAREST, 255, "func");
-    //Get time
-    time4=get_time();
-    printf("First: %.12f\n", (float) (time4-time0) / 1000000);
-
     s.add(std::ifstream { "./cannySobel.cl" },1,1,1,1,
-        detail::Padding::NEAREST, 0, "func");
-
-    //Get time
-    time5=get_time();
-    printf("Second: %.12f\n", (float) (time5-time4) / 1000000);
-
+          detail::Padding::NEAREST, 255, "func");
     s.add(std::ifstream { "./cannyNMS.cl" }, 1,1,1,1,
        detail::Padding::NEAREST, 1, "func");
     s.add(std::ifstream { "./cannyThreshold.cl" }, 0,0,0,0,
@@ -169,18 +158,15 @@ int main(int argc, char** argv) {
 
     //Get time
     time1=get_time();
-    printf("Creation: %.12f\n", (float) (time1-time0) / 1000000);
+    printf("Total Creation: %.12f\n", (float) (time1-time0) / 1000000);
 
     Matrix<float> outputImage = s(1, inputImage, kernelVec, range);
-
-    std::cout << "Matrix " << outputImage.columnCount() << " columns and "
-            << outputImage.rowCount() << " rows" << std::endl;
 
     Matrix<float>::iterator itr = outputImage.begin();
 
     //Get time
     time2=get_time();
-    printf("Total: %.12f\n", (float) (time2-time0) / 1000000);
+    printf("Total Total: %.12f\n", (float) (time2-time0) / 1000000);
 
     writePPM(outputImage, outFile);
 

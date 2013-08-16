@@ -101,8 +101,6 @@ int main(int argc, char** argv) {
     long long time4;
     long long time5;
     long long time6;
-    long long time8;
-    long long time9;
     int range = 2;
     int i;
     using namespace pvsutil::cmdline;
@@ -158,16 +156,8 @@ int main(int argc, char** argv) {
     skelcl::MapOverlap<float(float)> m(std::ifstream { "./cannyGauss.cl" }, range,
                         detail::Padding::NEAREST, 255, "func");
 
-    //Get time
-    time8=get_time();
-    printf("First: %.12f\n", (float) (time8-time0) / 1000000);
-
     skelcl::MapOverlap<float(float)> n(std::ifstream { "./cannySobel.cl" }, 1,
                         detail::Padding::NEAREST, 255, "func");
-
-    //Get time
-    time9=get_time();
-    printf("Second: %.12f\n", (float) (time9-time8) / 1000000);
 
     skelcl::MapOverlap<float(float)> o(std::ifstream { "./cannyNMS.cl" }, 1,
                         detail::Padding::NEAREST, 255, "func");
@@ -178,36 +168,36 @@ int main(int argc, char** argv) {
 
     //Get time
     time1=get_time();
-    printf("Creation: %.12f\n", (float) (time1-time0) / 1000000);
+    printf("Total Creation: %.12f\n", (float) (time1-time0) / 1000000);
 
     outputImage = m(inputImage, kernelVec, range);
 
     //Get time
     time2=get_time();
-    printf("Gauß: %.12f\n", (float) (time2-time1) / 1000000);
+    printf("Total Gauß: %.12f\n", (float) (time2-time1) / 1000000);
 
-    temp = n(outputImage, kernelVec, range);
+    inputImage = n(outputImage, kernelVec, range);
 
     //Get time
     time3=get_time();
-    printf("Sobel: %.12f\n", (float) (time3-time2) / 1000000);
+    printf("Total Sobel: %.12f\n", (float) (time3-time2) / 1000000);
 
-    outputImage = o(temp, kernelVec, range);
+    outputImage = o(inputImage, kernelVec, range);
 
     //Get time
     time4=get_time();
-    printf("NMS: %.12f\n", (float) (time4-time3) / 1000000);
-    temp = p(outputImage, kernelVec, range);
+    printf("Total NMS: %.12f\n", (float) (time4-time3) / 1000000);
+    inputImage = p(outputImage, kernelVec, range);
 
     //Get time
     time5=get_time();
-    printf("Threshold: %.12f\n", (float) (time5-time4) / 1000000);
+    printf("Total Threshold: %.12f\n", (float) (time5-time4) / 1000000);
 
-    Matrix<float>::iterator itr = temp.begin();
+    Matrix<float>::iterator itr = inputImage.begin();
 
     //Get time
     time6=get_time();
-    printf("Total: %.12f\n", (float) (time6-time0) / 1000000);
+    printf("Total Total: %.12f\n", (float) (time6-time0) / 1000000);
 
     writePPM(temp, outFile);
 
