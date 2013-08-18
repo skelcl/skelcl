@@ -151,9 +151,6 @@ int main(int argc, char** argv) {
 
     Matrix<float> outputImage = s(1, inputImage, kernelVec, range);
 
-    std::cout << "Matrix " << outputImage.columnCount() << " columns and "
-            << outputImage.rowCount() << " rows" << std::endl;
-
     Matrix<float>::iterator itr = outputImage.begin();
 
     //Get time

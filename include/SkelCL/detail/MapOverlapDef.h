@@ -138,15 +138,15 @@ void MapOverlap<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
 
 		try {
 			cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_MAPOVERLAP"));
+            int j = 0;
+            kernel.setArg(j++, inputBuffer.clBuffer());
+            kernel.setArg(j++, outputBuffer.clBuffer());
+            kernel.setArg(j++, tileWidth*tileWidth*sizeof(Tin), NULL); //Alloziere Local Memory
+            kernel.setArg(j++, elements);   // elements
+            kernel.setArg(j++, _overlap_range); // overlap_range
+            kernel.setArg(j++, static_cast<cl_uint>(output.columnCount())); // number of columns
 
-			kernel.setArg(0, inputBuffer.clBuffer());
-			kernel.setArg(1, outputBuffer.clBuffer());
-            kernel.setArg(2, tileWidth*tileWidth*sizeof(Tin), NULL); //Alloziere Local Memory
-            kernel.setArg(3, elements);   // elements
-            kernel.setArg(4, _overlap_range); // overlap_range
-            kernel.setArg(5, static_cast<cl_uint>(output.columnCount())); // number of columns
-
-            detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 6,
+            detail::kernelUtil::setKernelArgs(kernel, *devicePtr, j++,
 					std::forward<Args>(args)...);
 
 			// keep buffers and arguments alive / mark them as in use

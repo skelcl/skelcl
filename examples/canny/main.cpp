@@ -150,42 +150,40 @@ int main(int argc, char** argv) {
     skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
 
     Matrix<float> inputImage(img, numcols);
-    Matrix<float> outputImage(img, numcols);
-    Matrix<float> temp(img, numcols);
 
     skelcl::MapOverlap<float(float)> m(std::ifstream { "./cannyGauss.cl" }, range,
-                        detail::Padding::NEAREST, 255, "func");
+                        detail::Padding::NEUTRAL, 255, "func");
 
-    skelcl::MapOverlap<float(float)> n(std::ifstream { "./cannySobel.cl" }, 1,
-                        detail::Padding::NEAREST, 255, "func");
-
-    skelcl::MapOverlap<float(float)> o(std::ifstream { "./cannyNMS.cl" }, 1,
-                        detail::Padding::NEAREST, 255, "func");
-
-    skelcl::MapOverlap<float(float)> p(std::ifstream { "./cannyThreshold.cl" }, 1,
-                        detail::Padding::NEAREST, 255, "func");
-
-    //Get time
-    time1=get_time();
-    printf("Total Creation: %.12f\n", (float) (time1-time0) / 1000000);
-
-    outputImage = m(inputImage, kernelVec, range);
+    Matrix<float> outputImage = m(inputImage, kernelVec, range);
+    outputImage.copyDataToHost();
 
     //Get time
     time2=get_time();
-    printf("Total Gauß: %.12f\n", (float) (time2-time1) / 1000000);
+    printf("Total Gauß: %.12f\n", (float) (time2-time0) / 1000000);
+
+    skelcl::MapOverlap<float(float)> n(std::ifstream { "./cannySobel.cl" }, 1,
+                        detail::Padding::NEUTRAL, 0, "func");
 
     inputImage = n(outputImage, kernelVec, range);
+    inputImage.copyDataToHost();
 
     //Get time
     time3=get_time();
     printf("Total Sobel: %.12f\n", (float) (time3-time2) / 1000000);
 
+    skelcl::MapOverlap<float(float)> o(std::ifstream { "./cannyNMS.cl" }, 1,
+                        detail::Padding::NEUTRAL, 0, "func");
+
     outputImage = o(inputImage, kernelVec, range);
+    outputImage.copyDataToHost();
 
     //Get time
     time4=get_time();
     printf("Total NMS: %.12f\n", (float) (time4-time3) / 1000000);
+
+    skelcl::MapOverlap<float(float)> p(std::ifstream { "./cannyThreshold.cl" }, 1,
+                        detail::Padding::NEUTRAL, 255, "func");
+
     inputImage = p(outputImage, kernelVec, range);
 
     //Get time

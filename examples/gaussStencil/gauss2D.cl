@@ -12,6 +12,4 @@ float func(input_matrix_t* img, __global float* kernelVec, int range)
 }
         return sum/norm;
 
-    //return (2*getData(img, 1, 0) + getData(img, 1, 1) + 2*getData(img, 0, 1) + getData(img, -1, 1) + 2*getData(img, -1, 0) + getData(img, -1, -1) + 2*getData(img, 0, -1) + getData(img, 1, -1) + 4*getData(img, 0, 0))/16;
-
 }

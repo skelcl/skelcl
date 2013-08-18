@@ -170,17 +170,17 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                     //Device in the middle
                 #endif
 
-                if(l_col < SCL_WEST) {
+                if(l_col < SCL_WEST && !(col < SCL_WEST)) {
                     for(j = 0; j < TILE_HEIGHT; j++){
                         SCL_LOCAL_TMP[j*TILE_WIDTH+l_col] = SCL_TMP[(j-SCL_NORTH+row)*SCL_COLS+col-SCL_WEST];
                     }
                 }
                 if(col < SCL_WEST) {
                     for(j = 0; j < TILE_HEIGHT; j++){
-                        SCL_LOCAL_TMP[j*TILE_WIDTH+l_col] = SCL_IN[(row-SCL_NORTH+j)*SCL_COLS];;
+                        SCL_LOCAL_TMP[j*TILE_WIDTH+l_col] = SCL_IN[(row-SCL_NORTH+j)*SCL_COLS];
                     }
                 }
-                if(l_col >= get_local_size(0) - SCL_EAST) {
+                if(l_col >= get_local_size(0) - SCL_EAST && !(col >= SCL_COLS - SCL_EAST)) {
                     for(k = 0; k < TILE_HEIGHT; k++){
                         SCL_LOCAL_TMP[k*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(row-SCL_NORTH+k)*SCL_COLS+col+SCL_EAST];
                     }

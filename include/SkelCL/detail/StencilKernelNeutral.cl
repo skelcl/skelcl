@@ -149,6 +149,36 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                         SCL_LOCAL_TMP[k*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = NEUTRAL;
                     }
                 }
+            } else {
+                #if skelcl_get_device_id()==0
+                for(i = 0; i < TILE_HEIGHT; i++) {
+                    SCL_LOCAL_TMP[i*TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(i-SCL_NORTH+row)*SCL_COLS+col];
+                }
+
+                #else
+                    //Device in the middle
+                #endif
+
+                if(l_col < SCL_WEST) {
+                    for(j = 0; j < TILE_HEIGHT; j++){
+                        SCL_LOCAL_TMP[j*TILE_WIDTH+l_col] = SCL_TMP[(j-SCL_NORTH+row)*SCL_COLS+col-SCL_WEST];
+                    }
+                }
+                if(col < SCL_WEST) {
+                    for(j = 0; j < TILE_HEIGHT; j++){
+                        SCL_LOCAL_TMP[j*TILE_WIDTH+l_col] = NEUTRAL;
+                    }
+                }
+                if(l_col >= get_local_size(0) - SCL_EAST) {
+                    for(k = 0; k < TILE_HEIGHT; k++){
+                        SCL_LOCAL_TMP[k*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(row-SCL_NORTH+k)*SCL_COLS+col+SCL_EAST];
+                    }
+                }
+                if(col >= SCL_COLS - SCL_EAST) {
+                    for(k = 0; k < TILE_HEIGHT; k++){
+                        SCL_LOCAL_TMP[k*TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = NEUTRAL;
+                    }
+                }
             }
         }
 

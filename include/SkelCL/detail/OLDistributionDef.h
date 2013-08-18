@@ -252,13 +252,13 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 	// initialize with neutral value for SCL_NEUTRAL
 	// (override this in differnt case later)
 	auto newSize = overlapRadius * columnCount;
-	std::vector<T> paddingTop(newSize, neutralElement);
-	std::vector<T> paddingBottom(newSize, neutralElement);
+    std::vector<T> paddingTop(newSize, neutralElement);
+    std::vector<T> paddingBottom(newSize, neutralElement);
 
 	//Matrix<T>::host_buffer_type paddingTop(newSize, neutralElement);
 	//Matrix<T>::host_buffer_type paddingBottom(newSize, neutralElement);
 
-	if (padding == detail::Padding::NEAREST) {
+    if (padding == detail::Padding::NEAREST) {
 		paddingTop.clear();
 		paddingBottom.clear();
 
@@ -270,7 +270,7 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
                 paddingBottom.push_back(valBack);
             }
 		}
-	}
+    }
 
 	// Upload top padding to first device
 	auto& firstDevicePtr = devices.front();
@@ -336,7 +336,7 @@ void startDownload(Vector<T>& vector, Event* events, unsigned int overlapRadius,
 
 	// mark data on device as out of date !
 	// TODO: find out why? -> ask matthias
-//  matrix.dataOnHostModified();
+  vector.dataOnHostModified();
 }
 
 template<typename T>
@@ -344,7 +344,6 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 		detail::DeviceList devices) {
 	ASSERT(events != nullptr);
 	size_t offset = 0;
-
 	for (auto& devicePtr : devices) {
 		auto& buffer = matrix.deviceBuffer(*devicePtr);
 
@@ -353,14 +352,14 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 		size_t size = buffer.size() - (2 * overlapSize);
 
 		auto event = devicePtr->enqueueRead(buffer, matrix.hostBuffer().begin(),
-                size, overlapSize, offset);
+                size, overlapSize, 2*offset);
 		offset += size;
 		events->insert(event);
 	}
 
 	// mark data on device as out of date !
 	// TODO: find out why? -> ask matthias
-//  matrix.dataOnHostModified();
+  matrix.dataOnHostModified();
 }
 
 } // namespace ol_distribution_helper
