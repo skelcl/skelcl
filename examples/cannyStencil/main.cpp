@@ -150,9 +150,9 @@ int main(int argc, char** argv) {
     skelcl::Stencil<float(float)> s(std::ifstream { "./cannyGauss.cl" }, range,range,range,range,
                         detail::Padding::NEAREST, 255, "func");
     s.add(std::ifstream { "./cannySobel.cl" },1,1,1,1,
-          detail::Padding::NEAREST, 255, "func");
+          detail::Padding::NEUTRAL, 255, "func");
     s.add(std::ifstream { "./cannyNMS.cl" }, 1,1,1,1,
-       detail::Padding::NEAREST, 1, "func");
+       detail::Padding::NEAREST_INITIAL, 1, "func");
     s.add(std::ifstream { "./cannyThreshold.cl" }, 0,0,0,0,
        detail::Padding::NEAREST, 1, "func");
 

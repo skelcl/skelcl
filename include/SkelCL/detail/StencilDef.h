@@ -188,8 +188,8 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                                     local[0])),
                             static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.rowCount(),
                                     local[1]))}; // SUBTILES
-                    LOG_DEBUG("elements: ", elements);
-                    LOG_DEBUG("local: ", local[0], ",", local[1], " global: ", global[0], ",", global[1]);
+                    LOG_DEBUG_INFO("elements: ", elements);
+                    LOG_DEBUG_INFO("local: ", local[0], ",", local[1], " global: ", global[0], ",", global[1]);
                     //Get time
                     time2=get_time1();
                     int j = 0;

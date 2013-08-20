@@ -58,7 +58,7 @@ __kernel void SCL_MAPOVERLAP(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* S
 
         int i,j,k,l,m;
 
-        if(l_row==0 && row<SCL_ELEMENTS/SCL_COLS && col<SCL_COLS) {
+        if(l_row==0) {
                 //Fill columns of local memory in which the mapped elements reside
                 for(m=0;m<SCL_TILE_WIDTH;m++) {
                     SCL_SHARED[m*SCL_TILE_WIDTH+l_col+SCL_OVERLAP] = SCL_IN[(row+m)*SCL_COLS+col];
@@ -86,7 +86,7 @@ __kernel void SCL_MAPOVERLAP(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* S
                         }
                 }
                 //Fill columns of local memory right of the mapped elements when padding elements to the right are needed
-                if(col>SCL_COLS-SCL_OVERLAP) {
+                if(col>=SCL_COLS-SCL_OVERLAP) {
                         for(l=0;l<SCL_TILE_WIDTH;l++) {
                              SCL_SHARED[l*SCL_TILE_WIDTH+l_col+SCL_OVERLAP+SCL_OVERLAP] = NEUTRAL;
                             //SCL_SHARED[l][l_col+SCL_OVERLAP+SCL_OVERLAP] = NEUTRAL;
@@ -147,7 +147,7 @@ __kernel void SCL_MAPOVERLAP(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* S
                         }
                 }
                 //Fill columns of local memory right of the mapped elements when padding elements to the right are needed
-               if(col>SCL_COLS-SCL_OVERLAP) {
+               if(col>=SCL_COLS-SCL_OVERLAP) {
                         for(l=0;l<SCL_TILE_WIDTH;l++) {
                              SCL_SHARED[l*SCL_TILE_WIDTH+l_col+SCL_OVERLAP+SCL_OVERLAP] = SCL_IN[(row+l)*SCL_COLS-1+SCL_COLS];
                         }

@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
     Matrix<float> inputImage(img, numcols);
 
     skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" }, range,range,range,range,
-                        detail::Padding::NEUTRAL, 0, "func");
+                        detail::Padding::NEAREST_INITIAL, 0, "func");
 
     Matrix<float> outputImage = s(1, inputImage, kernelVec, range);
 

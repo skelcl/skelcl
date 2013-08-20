@@ -134,11 +134,9 @@ void MapOverlap<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
                 static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount(),
                         local[1]))};
 
-        LOG_DEBUG("Max Work Groups: ", devicePtr->maxWorkGroups());
-        LOG_DEBUG("Local Mem Size: ", devicePtr->localMemSize());
-            LOG_DEBUG("elements: ", elements, " overlap: ", _overlap_range);
-            LOG_DEBUG("local: ", local[0], ",", local[1], " global: ", global[0],
-                    ",", global[1]);
+        LOG_DEBUG_INFO("elements: ", elements, " overlap: ", _overlap_range);
+        LOG_DEBUG_INFO("local: ", local[0], ",", local[1], " global: ", global[0],
+                ",", global[1]);
 
         unsigned int tileWidth = sqrt(workgroupSize) + 2*_overlap_range+1;
 
