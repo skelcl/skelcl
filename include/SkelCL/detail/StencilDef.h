@@ -169,14 +169,8 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
         auto& tempBuffer = temp.deviceBuffer(*devicePtr);
 
         cl_uint elements = static_cast<cl_uint>(output.size().elemCount());
-        cl_uint local[2] = { (cl_uint) sqrt(devicePtr->maxWorkGroupSize()), (cl_uint)local[0] }; // C, R
-        cl_uint global[2] = {
-                static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.columnCount(),
-                        local[0])),
-                static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount(),
-                        local[1]))}; // SUBTILES
 
-        LOG_DEBUG_INFO("local: ", local[0], ",", local[1], " global: ", global[0], ",", global[1]);
+
         long long time2;
         long long time3;
         unsigned int i = 0;
@@ -185,10 +179,24 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
             for(i = 0; i<_iterations; i++){
                 k--;
                 for(auto& sInfo : _stencilInfos){
-                //Get time
-                time2=get_time1();
                     cl::Kernel kernel(sInfo.getProgram().kernel(*devicePtr, "SCL_STENCIL"));
+
+                    cl_uint workgroupSize = static_cast<cl_uint>(detail::kernelUtil::getWorkGroupSizeToBeUsed(kernel, *devicePtr));
+                    cl_uint local[2] = { static_cast<cl_uint>(sqrt(workgroupSize)), (cl_uint)local[0] }; // C, R
+                    cl_uint global[2] = {
+                            static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.columnCount(),
+                                    local[0])),
+                            static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.rowCount(),
+                                    local[1]))}; // SUBTILES
+                    LOG_DEBUG("elements: ", elements);
+                    LOG_DEBUG("local: ", local[0], ",", local[1], " global: ", global[0], ",", global[1]);
+                    //Get time
+                    time2=get_time1();
                     int j = 0;
+
+                    unsigned int tile_width = sqrt(workgroupSize) + sInfo.getWest() + sInfo.getEast();
+                    unsigned int tile_height = sqrt(workgroupSize) + sInfo.getNorth() + sInfo.getSouth();
+
                     kernel.setArg(j++, inputBuffer.clBuffer());
                     if((i+k)==0){
                         //Erste Iteration: Lese von input, schreibe zu Output
@@ -203,7 +211,9 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                         kernel.setArg(j++, tempBuffer.clBuffer());
                         kernel.setArg(j++, outputBuffer.clBuffer());
                     }
-                    kernel.setArg(j++, sInfo.getTileWidth()*sInfo.getTileHeight()*sizeof(Tin), NULL); //Alloziere Local Memory
+                    kernel.setArg(j++, tile_width*tile_height*sizeof(Tin), NULL); //Alloziere Local Memory
+                    kernel.setArg(j++, tile_width);
+                    kernel.setArg(j++, tile_height);
                     kernel.setArg(j++, elements);   // elements
                     kernel.setArg(j++, sInfo.getNorth()); // north
                     kernel.setArg(j++, sInfo.getWest()); // west

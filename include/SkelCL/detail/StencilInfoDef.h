@@ -16,8 +16,7 @@ StencilInfo<Tout(Tin)>::StencilInfo(const Source& source, unsigned int north,
 		detail::Padding padding, Tin neutral_element, const std::string& func) :
 		_userSource(source), _north(north), _west(west), _south(south), _east(
 				east), _padding(padding), _neutral_element(neutral_element), _funcName(
-				func), _tile_width(determineTileWidth()), _tile_height(
-				determineTileHeight()), _program(createAndBuildProgram()) {
+                func), _program(createAndBuildProgram()) {
     LOG_DEBUG_INFO("Create new StencilInfo object (", this, ")");
 }
 
@@ -28,8 +27,8 @@ detail::Program StencilInfo<Tout(Tin)>::createAndBuildProgram() const {
 	std::stringstream temp;
 
     //Define size of local memory
-    temp << "#define TILE_WIDTH " << _tile_width << std::endl;
-	temp << "#define TILE_HEIGHT " << _tile_height << std::endl;
+    //temp << "#define TILE_WIDTH " << _tile_width << std::endl;
+    //temp << "#define TILE_HEIGHT " << _tile_height << std::endl;
 
     //Determine the padding mode
     switch(_padding) {
@@ -69,13 +68,14 @@ typedef struct {
     int local_column;
     int offset_north;
     int offset_west;
+    int tile_width;
 } input_matrix_t;
 
 //In case, local memory is used
 SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y){
-    int offsetNorth = matrix->offset_north * TILE_WIDTH;
-    int currentIndex = matrix->local_row * TILE_WIDTH + matrix->local_column;
-    int shift = x - y * TILE_WIDTH;
+    int offsetNorth = matrix->offset_north * matrix->tile_width;
+    int currentIndex = matrix->local_row * matrix->tile_width + matrix->local_column;
+    int shift = x - y * matrix->tile_width;
 
     return matrix->data[currentIndex+offsetNorth+shift+matrix->offset_west];
 }
@@ -176,21 +176,10 @@ const detail::Program& StencilInfo<Tout(Tin)>::getProgram() const {
 }
 
 template<typename Tin, typename Tout>
-const unsigned int& StencilInfo<Tout(Tin)>::getTileWidth() const {
-	return this->_tile_width;
-}
-
-template<typename Tin, typename Tout>
-const unsigned int& StencilInfo<Tout(Tin)>::getTileHeight() const {
-	return this->_tile_height;
-}
-
-template<typename Tin, typename Tout>
 std::string StencilInfo<Tout(Tin)>::getDebugInfo() const {
 	std::stringstream s;
 	s << "north: " << _north << ", west: " << _west << ", south: " << _south
-			<< ", east: " << _east << ", tile width: " << _tile_width
-			<< ", tile heigth: " << _tile_height;
+            << ", east: " << _east;
 	return s.str();
 }
 

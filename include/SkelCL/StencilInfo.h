@@ -77,9 +77,6 @@ private:
     /// Name of the main function defined in _userSource
     std::string _funcName;
 
-    unsigned int _tile_width;
-    unsigned int _tile_height;
-
     detail::Program _program;
 
 };

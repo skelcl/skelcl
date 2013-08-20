@@ -51,6 +51,18 @@ void setKernelArgs(cl::Kernel& /*kernel*/,
 {
 }
 
+size_t getKernelGroupSize(cl::Kernel kernel, const Device& device) {
+    size_t datasize = 0;
+    kernel.getWorkGroupInfo(device.clDevice(), CL_KERNEL_WORK_GROUP_SIZE, &datasize);
+    return datasize;
+}
+
+size_t getWorkGroupSizeToBeUsed(cl::Kernel kernel, const Device& device) {
+    size_t kernelMaxWorkgroupSize = getKernelGroupSize(kernel, device);
+    size_t deviceMaxWorkgroupSize = device.maxWorkGroupSize();
+    return kernelMaxWorkgroupSize < deviceMaxWorkgroupSize ? kernelMaxWorkgroupSize : deviceMaxWorkgroupSize;
+}
+
 } // namespace kernelUtil
 
 } // namespace detail

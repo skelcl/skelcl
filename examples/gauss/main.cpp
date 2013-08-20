@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
     Matrix<int> inputImage(img, numcols);
 
     skelcl::MapOverlap<int(int)> s(std::ifstream { "./gauss2D.cl" }, range,
-                detail::Padding::NEUTRAL, 255);
+                detail::Padding::NEUTRAL, 0);
     Matrix<int> outputImage = s(inputImage, kernelVec, range);
 
     Matrix<int>::iterator itr = outputImage.begin();
