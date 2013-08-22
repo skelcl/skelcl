@@ -202,7 +202,7 @@ void startUpload(Vector<T>& vector, Event* events, unsigned int overlapRadius,
 	auto& firstDevicePtr = devices.front();
 	auto event = firstDevicePtr->enqueueWrite(
 			vector.deviceBuffer(*firstDevicePtr), paddingFront.begin(),
-			paddingFront.size());
+            paddingFront.size());
 	events->insert(event);
 
 //  size_t offset       = 0;
@@ -252,18 +252,18 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 	// initialize with neutral value for SCL_NEUTRAL
 	// (override this in differnt case later)
 	auto newSize = overlapRadius * columnCount;
-    std::vector<T> paddingTop(newSize, neutralElement);
-    std::vector<T> paddingBottom(newSize, neutralElement);
+    //std::vector<T> paddingTop(newSize, neutralElement);
+    //std::vector<T> paddingBottom(newSize, neutralElement);
 
-	//Matrix<T>::host_buffer_type paddingTop(newSize, neutralElement);
-	//Matrix<T>::host_buffer_type paddingBottom(newSize, neutralElement);
+    typename Matrix<T>::host_buffer_type paddingTop(newSize, neutralElement);
+    typename Matrix<T>::host_buffer_type paddingBottom(newSize, neutralElement);
 
     if (padding == detail::Padding::NEAREST) {
 		paddingTop.clear();
 		paddingBottom.clear();
 
-		for (unsigned int row = 0; row < overlapRadius; ++row) {
-			for (unsigned int col = 0; col < columnCount; ++col) {
+        for (unsigned int row = 0; row < overlapRadius; row++) {
+            for (unsigned int col = 0; col < columnCount; col++) {
                 T valFront = matrix(row, col);
                 T valBack = matrix(matrix.size().rowCount()-overlapRadius+row, col);
                 paddingTop.push_back(valFront);
@@ -275,8 +275,7 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 	// Upload top padding to first device
 	auto& firstDevicePtr = devices.front();
 	auto event = firstDevicePtr->enqueueWrite(
-			matrix.deviceBuffer(*firstDevicePtr), paddingTop.begin(),
-			paddingTop.size(), 0 /* deviceOffset */);
+            matrix.deviceBuffer(*firstDevicePtr), paddingTop.begin(), paddingTop.size(), 0);
 	events->insert(event);
 
 	size_t hostOffset = 0;
@@ -295,7 +294,7 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 			size -= paddingBottom.size();
 
 		devicePtr->enqueueWrite(buffer, matrix.hostBuffer().begin(), size,
-				deviceOffset, hostOffset);
+                deviceOffset, hostOffset);
 		events->insert(event);
 
 		hostOffset += size - overlapRadius * columnCount;

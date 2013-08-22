@@ -97,7 +97,8 @@ int readPPM(const std::string inFile, std::vector<int>& img) {
 int main(int argc, char** argv) {
     long long time0;
     long long time1;
-    int range = 10;
+    int range = 5;
+    int iterationen = 20;
 	int i;
 	using namespace pvsutil::cmdline;
     pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
@@ -147,17 +148,23 @@ int main(int argc, char** argv) {
 
     Matrix<int> inputImage(img, numcols);
 
-    skelcl::MapOverlap<int(int)> s(std::ifstream { "./gauss2D.cl" }, range,
+    skelcl::MapOverlap<int(int)> s(std::ifstream { "./heat.cl" }, range,
                 detail::Padding::NEUTRAL, 255);
-    Matrix<int> outputImage = s(inputImage, kernelVec, range);
 
-    Matrix<int>::iterator itr = outputImage.begin();
+    for (int iter=0; iter<iterationen; iter++){
+        inputImage = s(inputImage, kernelVec, range);
+        inputImage.copyDataToHost();
+    }
+
+    //Matrix<int> outputImage = s(inputImage, kernelVec, range);
+
+    Matrix<int>::iterator itr = inputImage.begin();
 
     //Get time
     time1=get_time();
     printf("Total: %.12f\n", (float) (time1-time0) / 1000000);
 
-   writePPM(outputImage, outFile);
+    writePPM(inputImage, outFile);
 
     skelcl::terminate();
 
