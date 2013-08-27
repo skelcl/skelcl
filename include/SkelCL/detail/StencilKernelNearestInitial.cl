@@ -82,7 +82,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                     }
                 }
 
-                #if skelcl_get_device_id()==0
+                //#if skelcl_get_device_id()==0
                 for(i = 0; i < SCL_NORTH; i++) {
                     SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[col];
                 }
@@ -100,9 +100,9 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                     }
                 }
 
-                #else
+                //#else
                     //Device in the middle
-                #endif
+                //#endif
 
                 if(col >= SCL_COLS - SCL_EAST) {
                     for(k = 0; k < SCL_NORTH; k++) {
@@ -144,7 +144,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                     }
                 }
 
-                #if skelcl_get_device_id()==0
+                //#if skelcl_get_device_id()==0
                 if(get_group_id(0)<SCL_WORKGROUP_X || (get_group_id(0)==SCL_WORKGROUP_X && SCL_REST_X == 0)){
                     for(i = 0; i < upTo - SCL_SOUTH; i++) {
                         SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(i-SCL_NORTH+row)*SCL_COLS+col];
@@ -162,9 +162,9 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                     SCL_LOCAL_TMP[(i+upTo-SCL_SOUTH)*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[SCL_ELEMENTS-SCL_COLS+col];
                 }
 
-                #else
+                //#else
                     //Device in the middle
-                #endif
+                //#endif
                 if(col >= SCL_COLS - SCL_EAST) {
                     for(k = 0; k < upTo - SCL_SOUTH; k++){
                         SCL_LOCAL_TMP[k*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(row-SCL_NORTH+k+1)*SCL_COLS-1];
@@ -182,7 +182,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                 }
 
             } else {
-                #if skelcl_get_device_id()==0
+                //#if skelcl_get_device_id()==0
                 if(get_group_id(0)<SCL_WORKGROUP_X || (get_group_id(0)==SCL_WORKGROUP_X && SCL_REST_X == 0)) {
                     for(i = 0; i < SCL_TILE_HEIGHT; i++) {
                         SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(i-SCL_NORTH+row)*SCL_COLS+col];
@@ -197,9 +197,9 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                     }
                 }
 
-                #else
+                //#else
                     //Device in the middle
-                #endif
+                //#endif
 
                 if(l_col < SCL_WEST && !(col < SCL_WEST)) {
                     for(j = 0; j < SCL_TILE_HEIGHT; j++){

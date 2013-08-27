@@ -75,8 +75,8 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/MatrixDef.h
       ../include/SkelCL/detail/OLDistribution.h
       ../include/SkelCL/detail/OLDistributionDef.h
-      ../include/SkelCL/detail/OverlapDistribution.h
-      ../include/SkelCL/detail/OverlapDistributionDef.h
+      #../include/SkelCL/detail/OverlapDistribution.h
+      #../include/SkelCL/detail/OverlapDistributionDef.h
       ../include/SkelCL/detail/Padding.h
       ../include/SkelCL/detail/PlatformID.h
       ../include/SkelCL/detail/Program.h

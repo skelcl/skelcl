@@ -159,6 +159,14 @@ cl::Event Device::enqueueWrite(const  DeviceBuffer& buffer,
                                size_t hostOffset) const
 {
   cl::Event event;
+  LOG_DEBUG("Enqueued write buffer for device ", _id,
+                 " (size: ", buffer.sizeInBytes(),
+                 ", clBuffer: ", buffer.clBuffer()(),
+                 ", deviceOffset: 0",
+                 ", hostPointer: ", static_cast<const void*>(
+                                       static_cast<const char*>(hostPointer)
+                                     + (hostOffset * buffer.elemSize()) ),
+                 ", hostOffset: ", hostOffset*buffer.elemSize() ,")");
   try {
     _commandQueue.enqueueWriteBuffer(buffer.clBuffer(),
                                      CL_FALSE,
@@ -193,6 +201,14 @@ cl::Event Device::enqueueWrite(const  DeviceBuffer& buffer,
                                size_t hostOffset) const
 {
   cl::Event event;
+  LOG_DEBUG("Enqueued write buffer for device ", _id,
+                 " (size: ", size * buffer.elemSize(),
+                 ", clBuffer: ", buffer.clBuffer()(),
+                 ", deviceOffset: ", deviceOffset* buffer.elemSize(),
+                 ", hostPointer: ", static_cast<const void*>(
+                                       static_cast<const char*>(hostPointer)
+                                     + (hostOffset * buffer.elemSize()) ),
+                 ", hostOffset: ", hostOffset*buffer.elemSize() ,")");
   try {
     _commandQueue.enqueueWriteBuffer(buffer.clBuffer(),
                                      CL_FALSE,
@@ -225,6 +241,14 @@ cl::Event Device::enqueueRead(const DeviceBuffer& buffer,
                               size_t hostOffset) const
 {
   cl::Event event;
+  LOG_DEBUG("Enqueued read buffer for device ", _id,
+                 " (size: ", buffer.sizeInBytes(),
+                 ", clBuffer: ", buffer.clBuffer()(),
+                 ", deviceOffset: 0",
+                 ", hostPointer: ", static_cast<void*>(
+                                       static_cast<char*const>(hostPointer)
+                                     + (hostOffset * buffer.elemSize()) ),
+                 ", hostOffset: ", hostOffset * buffer.elemSize() ,")");
   try {
     _commandQueue.enqueueReadBuffer(buffer.clBuffer(),
                                     CL_FALSE,
@@ -259,6 +283,14 @@ cl::Event Device::enqueueRead(const DeviceBuffer& buffer,
                               size_t hostOffset) const
 {
   cl::Event event;
+  LOG_DEBUG("Enqueued read buffer for device ", _id,
+                 " (size: ", buffer.sizeInBytes(),
+                 ", clBuffer: ", buffer.clBuffer()(),
+                 ", deviceOffset: ", deviceOffset,
+                 ", hostPointer: ", static_cast<void*>(
+                                       static_cast<char*const>(hostPointer)
+                                     + (hostOffset * buffer.elemSize()) ),
+                 ", hostOffset: ", hostOffset * buffer.elemSize() ,")");
   try {
     _commandQueue.enqueueReadBuffer(buffer.clBuffer(),
                                     CL_FALSE,

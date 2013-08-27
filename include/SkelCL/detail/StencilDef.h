@@ -168,8 +168,7 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
         auto& inputBuffer = in.deviceBuffer(*devicePtr);
         auto& tempBuffer = temp.deviceBuffer(*devicePtr);
 
-        cl_uint elements = static_cast<cl_uint>(output.size().elemCount());
-
+        cl_uint elements = static_cast<cl_uint>(inputBuffer.size());
 
         long long time2;
         long long time3;
@@ -186,17 +185,16 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                     cl_uint global[2] = {
                             static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.columnCount(),
                                     local[0])),
-                            static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.rowCount(),
+                        static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.rowCount(),
                                     local[1]))}; // SUBTILES
-                    LOG_DEBUG_INFO("elements: ", elements);
-                    LOG_DEBUG_INFO("local: ", local[0], ",", local[1], " global: ", global[0], ",", global[1]);
+                    LOG_DEBUG("elements: ", elements);
+                    LOG_DEBUG("local: ", local[0], ",", local[1], " global: ", global[0], ",", global[1]);
                     //Get time
                     time2=get_time1();
                     int j = 0;
 
                     unsigned int tile_width = sqrt(workgroupSize) + sInfo.getWest() + sInfo.getEast();
                     unsigned int tile_height = sqrt(workgroupSize) + sInfo.getNorth() + sInfo.getSouth();
-
                     kernel.setArg(j++, inputBuffer.clBuffer());
                     if((i+k)==0){
                         //Erste Iteration: Lese von input, schreibe zu Output
@@ -258,7 +256,7 @@ void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
     // set distribution
 	auto& stencilInfo = _stencilInfos.front();
     in.setDistribution(detail::StencilDistribution<Matrix<Tin>>(determineLargestNorth(), determineLargestWest(), determineLargestSouth(), determineLargestEast(),
-    		stencilInfo.getPadding(), stencilInfo.getNeutralElement()));
+            stencilInfo.getPadding(), stencilInfo.getNeutralElement()));
 
     // create buffers if required
     in.createDeviceBuffers();

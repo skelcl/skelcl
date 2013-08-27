@@ -98,16 +98,19 @@ int main(int argc, char** argv) {
     long long time0;
     long long time1;
     int range = 10;
+    if(argc > 3) {
+        range = atoi(argv[3]);
+    }
 	int i;
 	using namespace pvsutil::cmdline;
     pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
 
 	auto deviceCount = Arg<int>(Flags(Long("device_count")),
-			Description("Number of devices used by SkelCL."), Default(1));
+            Description("Number of devices used by SkelCL."), Default(2));
 
 	auto deviceType = Arg<device_type>(Flags(Long("device_type")),
 			Description("Device type: ANY, CPU, "
-					"GPU, ACCELERATOR"), Default(device_type::GPU));
+                    "GPU, ACCELERATOR"), Default(device_type::ANY));
 
 
 	//calculate the kernel
