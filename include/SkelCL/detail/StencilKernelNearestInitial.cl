@@ -86,11 +86,11 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                 for(i = 0; i < SCL_NORTH; i++) {
                     SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[col];
                 }
-                if(get_group_id(0)<SCL_WORKGROUP_X || (get_group_id(0)==SCL_WORKGROUP_X && SCL_REST == 0)){
+                if(get_group_id(0)<SCL_WORKGROUP_X || (get_group_id(0)==SCL_WORKGROUP_X && SCL_REST_X == 0)){
                     for(i = 0; i < SCL_TILE_HEIGHT - SCL_NORTH; i++) {
                         SCL_LOCAL_TMP[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[i*SCL_COLS+col];
                     }
-                } else if(get_group_id(0) == SCL_WORKGROUP_X && SCL_REST != 0){
+                } else if(get_group_id(0) == SCL_WORKGROUP_X && SCL_REST_X != 0){
                     for(i = 0; i < SCL_TILE_HEIGHT - SCL_NORTH; i++) {
                         if(col<SCL_COLS){
                             SCL_LOCAL_TMP[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[i*SCL_COLS+col];
@@ -106,7 +106,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
 
                 if(col >= SCL_COLS - SCL_EAST) {
                     for(k = 0; k < SCL_NORTH; k++) {
-                        SCL_LOCAL_TMP[k*SCL_TILE_WIDTH+l_col] = SCL_IN[SCL_COLS-1];
+                        SCL_LOCAL_TMP[k*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN[SCL_COLS-1];
                     }
                     for(k = 0; k < SCL_TILE_HEIGHT - SCL_NORTH; k++){
                         SCL_LOCAL_TMP[(k+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(k+1)*SCL_COLS-1];
@@ -145,11 +145,11 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                 }
 
                 #if skelcl_get_device_id()==0
-                if(get_group_id(0)<SCL_WORKGROUP_X || (get_group_id(0)==SCL_WORKGROUP_X && SCL_REST == 0)){
+                if(get_group_id(0)<SCL_WORKGROUP_X || (get_group_id(0)==SCL_WORKGROUP_X && SCL_REST_X == 0)){
                     for(i = 0; i < upTo - SCL_SOUTH; i++) {
                         SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(i-SCL_NORTH+row)*SCL_COLS+col];
                     }
-                } else if(get_group_id(0) == SCL_WORKGROUP_X && SCL_REST != 0){
+                } else if(get_group_id(0) == SCL_WORKGROUP_X && SCL_REST_X != 0){
                     for(i = 0; i < upTo - SCL_SOUTH; i++) {
                         if(col<SCL_COLS) {
                             SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(i-SCL_NORTH+row)*SCL_COLS+col];
@@ -183,16 +183,16 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
 
             } else {
                 #if skelcl_get_device_id()==0
-                if(get_group_id(0)<SCL_WORKGROUP_X || (get_group_id(0)==SCL_WORKGROUP_X && SCL_REST == 0)) {
+                if(get_group_id(0)<SCL_WORKGROUP_X || (get_group_id(0)==SCL_WORKGROUP_X && SCL_REST_X == 0)) {
                     for(i = 0; i < SCL_TILE_HEIGHT; i++) {
                         SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(i-SCL_NORTH+row)*SCL_COLS+col];
                     }
-                } else if(get_group_id(0) == SCL_WORKGROUP_X && SCL_REST != 0){
+                } else if(get_group_id(0) == SCL_WORKGROUP_X && SCL_REST_X != 0){
                     for(i = 0; i < SCL_TILE_HEIGHT; i++) {
                         if(col<SCL_COLS) {
                             SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(i-SCL_NORTH+row)*SCL_COLS+col];
                         } else {
-                            SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(i+1-SCL_NORTH+row)*SCL_COLS-1];;
+                            SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(i+1-SCL_NORTH+row)*SCL_COLS-1];
                         }
                     }
                 }
