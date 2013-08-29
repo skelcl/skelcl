@@ -157,7 +157,7 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 		const typename Matrix<T>::size_type size, const DeviceList& devices,
 		const unsigned int overlapRadius) {
     auto id = devicePtr->id();
-    if(id == devices.size() - 1){
+         if(id == devices.size() - 1 && devices.size() > 1){
          auto s = size.elemCount() / devices.size();
          s += (size.rowCount() % devices.size()) * size.columnCount();
          s += 2 * overlapRadius * size.columnCount();
@@ -282,17 +282,21 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 
 		auto size = buffer.size();
 
-		if (i == 0)
-			size -= paddingTop.size();
-		if (i == devSize - 1)
+        if (i == 0) {
+            size -= paddingTop.size();
+            LOG_DEBUG("First dev size ", size);
+        }
+        if (i == devSize - 1) {
 			size -= paddingBottom.size();
+            LOG_DEBUG("Last dev size ", size);
+        }
 
-		devicePtr->enqueueWrite(buffer, matrix.hostBuffer().begin(), size,
+        devicePtr->enqueueWrite(buffer, matrix.hostBuffer().begin(), size,
                 deviceOffset, hostOffset);
 		events->insert(event);
         LOG_DEBUG("Uploaded data");
 
-        hostOffset += size;
+        hostOffset += size - paddingTop.size();
 
         if(i == devSize - 1){
             deviceOffset = buffer.size() - paddingBottom.size();
@@ -363,8 +367,8 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 
 		auto event = devicePtr->enqueueRead(buffer, matrix.hostBuffer().begin(),
                 size, overlapSize, offset);
-		events->insert(event);
         offset += size;
+        events->insert(event);
     }
 
 	// mark data on device as out of date !
