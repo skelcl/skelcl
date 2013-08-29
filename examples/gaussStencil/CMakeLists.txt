@@ -7,7 +7,6 @@ target_link_libraries (gaussStencil SkelCL ${SKELCL_COMMON_LIBS})
 
 # copy file along with binary
 configure_file (gauss2D.cl ${CMAKE_CURRENT_BINARY_DIR}/gauss2D.cl)
-configure_file (pgm.pgm ${CMAKE_CURRENT_BINARY_DIR}/pgm.pgm)
 
 
 

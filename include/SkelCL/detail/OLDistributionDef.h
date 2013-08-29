@@ -363,9 +363,9 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 
 		auto event = devicePtr->enqueueRead(buffer, matrix.hostBuffer().begin(),
                 size, overlapSize, offset);
-		offset += size;
 		events->insert(event);
-	}
+        offset += size;
+    }
 
 	// mark data on device as out of date !
 	// TODO: find out why? -> ask matthias

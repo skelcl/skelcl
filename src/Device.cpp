@@ -285,6 +285,7 @@ cl::Event Device::enqueueRead(const DeviceBuffer& buffer,
   cl::Event event;
   LOG_DEBUG("Enqueued read buffer for device ", _id,
                  " (size: ", buffer.sizeInBytes(),
+                 " size to read: ", size,
                  ", clBuffer: ", buffer.clBuffer()(),
                  ", deviceOffset: ", deviceOffset,
                  ", hostPointer: ", static_cast<void*>(
