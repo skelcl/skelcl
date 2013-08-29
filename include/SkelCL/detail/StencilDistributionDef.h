@@ -184,23 +184,23 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 			" are not considered for the size.");
 	auto id = devicePtr->id();
 	if (id == devices.size() - 1 && devices.size() > 1) {
-		auto s = size.elemCount() / devices.size();
+        auto s = (size.rowCount() / devices.size()) * size.columnCount();
         //s += (size.rowCount() % devices.size()) * size.columnCount();
         //s += (north) * size.columnCount();
                               LOG_DEBUG("s ", s);
 		return s;
 	} else if (id == 0 && devices.size() == 1) {
-		auto s = size.elemCount() / devices.size();
+        auto s = (size.rowCount() / devices.size()) * size.columnCount();
                               LOG_DEBUG("t ", s);
 		return s;
 	} else if (id == 0) {
-		auto s = size.elemCount() / devices.size();
+        auto s = size.rowCount() / devices.size() * size.columnCount();
         //s += (size.rowCount() % devices.size()) * size.columnCount();
         //s += south * size.columnCount();
                               LOG_DEBUG("u ", s);
 		return s;
     } else {
-		auto s = size.elemCount() / devices.size();
+        auto s = size.rowCount() / devices.size() * size.columnCount();
         //s += (north + south) * size.columnCount();
                               LOG_DEBUG("v ", s);
 		return s;
