@@ -265,54 +265,48 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 		}
     }
 
-	// Upload top padding to first device
-	auto& firstDevicePtr = devices.front();
-	auto event = firstDevicePtr->enqueueWrite(
-                matrix.deviceBuffer(*firstDevicePtr), paddingTop.begin(), paddingTop.size(), 0, 0);
-	events->insert(event);
-    LOG_DEBUG("Uploaded first padding");
+    auto& firstDevicePtr = devices.front();
+    auto event = firstDevicePtr->enqueueWrite(
+                   matrix.deviceBuffer(*firstDevicePtr),
+                   paddingTop.begin(),
+                   paddingTop.size(),
+                   0 /* deviceOffset */);
+    events->insert(event);
 
-	size_t hostOffset = 0;
-	size_t deviceOffset = paddingTop.size();
-	size_t devSize = devices.size();
+    size_t hostOffset   = 0;
+    size_t deviceOffset = paddingTop.size();
+    size_t devSize      = devices.size();
 
-	for (size_t i = 0; i < devSize; ++i) {
-		auto& devicePtr = devices[i];
-		auto& buffer = matrix.deviceBuffer(*devicePtr);
+    for(size_t i = 0; i < devSize; ++i) {
+      auto& devicePtr = devices[i];
+      auto& buffer    = matrix.deviceBuffer(*devicePtr);
 
-		auto size = buffer.size();
+      auto size = buffer.size();
 
-        if (i == 0) {
-            size -= paddingTop.size();
-            LOG_DEBUG("First dev size ", size);
-        }
-        if (i == devSize - 1) {
-			size -= paddingBottom.size();
-            LOG_DEBUG("Last dev size ", size);
-        }
+      if (i == 0)         size -= paddingTop.size();
+      if (i == devSize-1) size -= paddingBottom.size();
 
-        devicePtr->enqueueWrite(buffer, matrix.hostBuffer().begin(), size,
-                deviceOffset, hostOffset);
-		events->insert(event);
-        LOG_DEBUG("Uploaded data");
+      event = devicePtr->enqueueWrite(buffer,
+                                      matrix.hostBuffer().begin(),
+                                      size,
+                                      deviceOffset,
+                                      hostOffset);
+      events->insert(event);
 
-        hostOffset += size - paddingTop.size();
+      hostOffset += size - overlapRadius * columnCount;
 
-        if(i == devSize - 1){
-            deviceOffset = buffer.size() - paddingBottom.size();
+      if(i == devSize - 1){
+          deviceOffset = buffer.size() - paddingBottom.size();
 
-            event = devicePtr->enqueueWrite(
-                       buffer,
-                       paddingBottom.begin(),
-                       paddingBottom.size(),
-                       deviceOffset,0 );
-            events->insert(event);
-        }
-
-		// offset += (buffer.size()-2*_overlap_radius
-		//            *_size.column_count-deviceoffset);
-		deviceOffset = 0; // after the first device, the device offset is 0
-	}
+          event = devicePtr->enqueueWrite(
+                     buffer,
+                     paddingBottom.begin(),
+                     paddingBottom.size(),
+                     deviceOffset,0 );
+          events->insert(event);
+      }
+          deviceOffset = 0; // after the first device, the device offset is 0
+     }
 
 	// Upload bottom padding at the end of last device
     /*auto& lastDevicePtr = devices.back();
