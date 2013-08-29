@@ -182,12 +182,13 @@ void startUpload(Vector<T>& vector, Event* events, unsigned int overlapRadius,
 		paddingBack.resize(overlapRadius, vector.back());
 		break;
 	case Padding::NEUTRAL:
-		paddingFront.resize(overlapRadius, neutralElement);
-		paddingBack.resize(overlapRadius, neutralElement);
-		break;
+        paddingFront.resize(overlapRadius, neutralElement);
+        paddingBack.resize(overlapRadius, neutralElement);
+        break;
     case Padding::NEAREST_INITIAL:
-        LOG_ERROR("The MapOverlap skeleton works with the NEAREST and NEUTRAL mode");
-    break;
+        paddingFront.resize(overlapRadius, neutralElement);
+        paddingBack.resize(overlapRadius, neutralElement);
+        break;
 	}
 
 	// Upload front paddint to first device
@@ -346,7 +347,7 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 		size_t size = buffer.size() - (2 * overlapSize);
 
 		auto event = devicePtr->enqueueRead(buffer, matrix.hostBuffer().begin(),
-                size, overlapSize, 2*offset);
+                size, overlapSize, offset);
 		offset += size;
 		events->insert(event);
 	}
