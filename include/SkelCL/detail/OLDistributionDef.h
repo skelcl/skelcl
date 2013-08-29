@@ -294,13 +294,28 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 
         hostOffset += size;
 
+        if(i == devSize - 1){
+            deviceOffset = buffer.size() - paddingBottom.size();
+
+            event = devicePtr->enqueueWrite(
+                       buffer,
+                       paddingBottom.begin(),
+                       paddingBottom.size(),
+                       deviceOffset,0 );
+            events->insert(event);
+        }
+
 		// offset += (buffer.size()-2*_overlap_radius
 		//            *_size.column_count-deviceoffset);
 		deviceOffset = 0; // after the first device, the device offset is 0
 	}
 
 	// Upload bottom padding at the end of last device
-    auto& lastDevicePtr = devices.back();
+    /*auto& lastDevicePtr = devices.back();
+cl_context_info datasize = 0;
+lastDevicePtr->clContext().getInfo(CL_CONTEXT_NUM_DEVICES, &datasize);
+    LOG_DEBUG(datasize);
+
     // calculate offset on the device ...
     deviceOffset = matrix.deviceBuffer(*lastDevicePtr).size()
             - paddingBottom.size();
@@ -308,7 +323,7 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
     event = firstDevicePtr->enqueueWrite(matrix.deviceBuffer(*lastDevicePtr),
             paddingBottom.begin(), paddingBottom.size(), deviceOffset, 0);
     LOG_DEBUG("Uploaded last padding");
-    events->insert(event);
+    events->insert(event);*/
 }
 
 template<typename T>

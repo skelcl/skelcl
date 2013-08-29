@@ -243,23 +243,22 @@ void OverlapDistribution<Matrix<T>>::startUpload(Matrix<T>& matrix,
 
     hostOffset += size - _overlapRadius * columnCount;
 
-    // offset += (buffer.size()-2*_overlap_radius
-    //            *_size.column_count-deviceoffset);
-    deviceOffset = 0; // after the first device, the device offset is 0
+    if(i == devSize - 1){
+        deviceOffset = buffer.size() - paddingBottom.size();
+
+        event = devicePtr->enqueueWrite(
+                   buffer,
+                   paddingTop.begin(),
+                   paddingTop.size(),
+                   0,0 );
+        events->insert(event);
+    }
+        deviceOffset = 0; // after the first device, the device offset is 0
    }
 
    // Upload bottom padding at the end of last device
-   auto& lastDevicePtr  = _devices.back();
+   //auto& lastDevicePtr  = _devices.back();
    // calculate offset on the device ...
-   deviceOffset =   matrix.deviceBuffer(lastDevicePtr).size()
-                  - paddingBottom.size();
-
-   event = lastDevicePtr->enqueueWrite(
-              matrix.deviceBuffer(lastDevicePtr),
-              paddingBottom.begin(),
-              paddingBottom.size(),
-              deviceOffset );
-   events->insert(event);
 }
 
 template <typename T>
