@@ -241,7 +241,7 @@ void OverlapDistribution<Matrix<T>>::startUpload(Matrix<T>& matrix,
                                     hostOffset);
     events->insert(event);
 
-    hostOffset += size - _overlapRadius * columnCount;
+    hostOffset += buffer.size() - _overlapRadius * columnCount;
 
     if(i == devSize - 1){
         deviceOffset = buffer.size() - paddingBottom.size();
