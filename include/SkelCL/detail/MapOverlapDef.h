@@ -335,9 +335,9 @@ SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y){
 template<typename Tin, typename Tout>
 void MapOverlap<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
     // set distribution
-    //in.setDistribution(detail::OLDistribution<Matrix<Tin>>(_overlap_range, _padding, _neutral_element));
-    in.setDistribution(detail::StencilDistribution<Matrix<Tin>>(_overlap_range, _overlap_range, _overlap_range, _overlap_range,
-            _padding, _neutral_element));
+    in.setDistribution(detail::OLDistribution<Matrix<Tin>>(_overlap_range, _padding, _neutral_element));
+    //in.setDistribution(detail::StencilDistribution<Matrix<Tin>>(_overlap_range, _overlap_range, _overlap_range, _overlap_range,
+    //        _padding, _neutral_element));
 
     // create buffers if required
     in.createDeviceBuffers();
