@@ -116,6 +116,7 @@ private:
 	std::vector<StencilInfo<Tout(Tin)> > _stencilInfos;
 
 	unsigned int _iterations;
+
 };
 
 } //namespace skelcl
