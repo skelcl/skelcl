@@ -82,7 +82,6 @@ void CopyDistribution<C<T>>::startUpload(C<T>& container,
                                          Event* events) const
 {
   ASSERT(events != nullptr);
-
   for (auto& devicePtr : this->_devices) {
 
     auto& buffer = container.deviceBuffer(*devicePtr);

@@ -255,9 +255,10 @@ template<typename Tin, typename Tout>
 void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
     // set distribution
 	auto& stencilInfo = _stencilInfos.front();
-    //in.setDistribution(detail::OLDistribution<Matrix<Tin>>(determineLargestNorth(), stencilInfo.getPadding(), stencilInfo.getNeutralElement()));
-    in.setDistribution(detail::StencilDistribution<Matrix<Tin>>(determineLargestNorth(), determineLargestWest(), determineLargestSouth(), determineLargestEast(),
-            stencilInfo.getPadding(), stencilInfo.getNeutralElement()));
+
+    detail::StencilDistribution<Matrix<Tin>> dist(determineLargestNorth(), determineLargestWest(), determineLargestSouth(), determineLargestEast(),
+                                                  stencilInfo.getPadding(), stencilInfo.getNeutralElement());
+    in.setDistribution(dist);
 
     // create buffers if required
     in.createDeviceBuffers();

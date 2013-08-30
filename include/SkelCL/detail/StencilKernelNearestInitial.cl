@@ -65,7 +65,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
             const unsigned int SCL_WORKGROUP_X = SCL_COLS / get_local_size(0);
             const unsigned int SCL_REST_X = SCL_COLS % get_local_size(1);
 
-            if(row == 0){
+            if(row == 0 && col<SCL_COLS && row<SCL_ELEMENTS / SCL_COLS){
                 if(col < SCL_WEST) {
                     for(j = 0; j < SCL_NORTH; j++) {
                         SCL_LOCAL_TMP[j*SCL_TILE_WIDTH+l_col] = SCL_IN[0];

@@ -47,6 +47,7 @@ namespace skelcl {
 
 template<typename > class Matrix;
 template<typename > class Vector;
+template<typename > class StencilShare;
 
 namespace detail {
 
@@ -102,6 +103,7 @@ private:
 	detail::Padding _padding;
 
 	T _neutral_element;
+
 };
 
 namespace stencil_distribution_helper {
