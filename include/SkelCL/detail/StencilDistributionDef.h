@@ -80,7 +80,7 @@ void StencilDistribution<C<T>>::startUpload(C<T>& container,
 }
 
 template<template<typename > class C, typename T>
-void StencilDistribution<C<T>>::swap(C<T>& container) const {
+void StencilDistribution<C<T>>::swap(const C<T>& container) const {
     detail::Event events;
     stencil_distribution_helper::swap(container, &events, this->_north,
           this->_west, this->_south, this->_east, this->_devices);
@@ -316,7 +316,7 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north,
 }
 
 template<typename T>
-void swap(Vector<T>& vector, Event* events, unsigned int north, unsigned int west,
+void swap(const Vector<T>& vector, Event* events, unsigned int north, unsigned int west,
           unsigned int south, unsigned int east, detail::DeviceList devices) {
     /*
      *
@@ -351,11 +351,14 @@ void swap(Vector<T>& vector, Event* events, unsigned int north, unsigned int wes
 }
 
 template<typename T>
-void swap(Matrix<T>& matrix, Event* events, unsigned int north, unsigned int west,
+void swap(const Matrix<T>& matrix, Event* events, unsigned int north, unsigned int west,
           unsigned int south, unsigned int east, detail::DeviceList devices){
     LOG_DEBUG_INFO("Matrix Version , west: ", west, " and east: ", east,
             " are not considered for the swap.");
-    std::vector<std::vector<T> > downloadedVectors;
+
+    // create temporary vectors
+    std::vector<std::vector<T>> vs(2*(devices.size() - 1));
+
     LOG_DEBUG("SWAP START");
     size_t devSize = devices.size();
     size_t deviceOffset = 0;
@@ -370,50 +373,55 @@ void swap(Matrix<T>& matrix, Event* events, unsigned int north, unsigned int wes
         auto& buffer = matrix.deviceBuffer(*devicePtr);
 
         if (id == devSize - 1 && devSize > 1) {
-            downloadedVectors.push_back(std::vector<T>());
-            std::vector<T> vec(southOverlap, T());
+            vs[k].resize(southOverlap);
             deviceOffset = northOverlap;
-            auto event = devicePtr->enqueueRead(buffer, vec.begin(), southOverlap, deviceOffset, 0);
+            auto event = devicePtr->enqueueRead(buffer, vs[k].begin(), southOverlap, deviceOffset, 0);
             events->insert(event);
-            downloadedVectors[k] = vec;
+
+            typename std::vector<T>::iterator itr = vs[k].begin();
+            for (itr = vs[k].begin(); itr != vs[k].end(); ++itr) {
+                LOG_DEBUG("vec ", *itr);
+            }
             k++;
-            //downloadedVectors.push_back(vec);
+
         } else if (id == 0 && devSize == 1) {
             LOG_ERROR("It is stupid to call swap when there is only one device");
         } else if (id == 0) {
-            downloadedVectors.push_back(std::vector<T>());
-            std::vector<T> vec(northOverlap, T());
+            vs[k].resize(northOverlap);
             deviceOffset = buffer.size() - southOverlap - northOverlap;
-            auto event = devicePtr->enqueueRead(buffer, vec.begin(), northOverlap, deviceOffset, 0);
+            auto event = devicePtr->enqueueRead(buffer, vs[k].begin(), northOverlap, deviceOffset, 0);
             events->insert(event);
-            downloadedVectors[k] = vec;
             k++;
-            //downloadedVectors.push_back(vec);
         } else {
-            /*std::vector<T> vecNorth(northOverlap, T());
-            std::vector<T> vecSouth(southOverlap, T());
+            vs[k].resize(northOverlap);
             deviceOffset = 0;
-            auto event = devicePtr->enqueueRead(buffer, vecNorth.begin(), vecNorth.size(), deviceOffset, 0);
+            auto event = devicePtr->enqueueRead(buffer, vs[k].begin(), northOverlap, deviceOffset, 0);
             events->insert(event);
+            k++;
+            vs[k].resize(southOverlap);
             deviceOffset = buffer.size() - northOverlap;
-            event = devicePtr->enqueueRead(buffer, vecSouth.begin(), vecSouth.size(), deviceOffset, 0);
+            event = devicePtr->enqueueRead(buffer, vs[k].begin(), southOverlap, deviceOffset, 0);
             events->insert(event);
-            downloadedVectors.push_back(vecNorth);
-            downloadedVectors.push_back(vecSouth);*/
+            k++;
         }
     }
 
-    for(unsigned int i = 0; i<downloadedVectors.size(); i++){
-        LOG_DEBUG("Vector size ", i, " ", downloadedVectors.at(i).size());
+    for(unsigned int i = 0; i<vs.size(); i++){
+        LOG_DEBUG("Vector size ", i, " ", vs[i].size());
+        typename std::vector<T>::iterator itr = vs[i].begin();
+        for (itr = vs[i].begin(); itr != vs[i].end(); ++itr) {
+            if(*itr>0)
+            LOG_DEBUG(*itr);
+        }
     }
 
-    for(unsigned int i = 0; i<downloadedVectors.size()-1; i=i+2) {
+    for(unsigned int i = 0; i<vs.size()-1; i=i+2) {
         LOG_DEBUG(i);
-        std::swap(downloadedVectors.at(i), downloadedVectors.at(i+1));
+        std::swap(vs[i], vs[i+1]);
     }
 
-    for(unsigned int i = 0; i<downloadedVectors.size(); i++){
-        LOG_DEBUG("Vector size ", i, " ", downloadedVectors.at(i).size());
+    for(unsigned int i = 0; i<vs.size(); i++){
+        LOG_DEBUG("Vector size ", i, " ", vs[i].size());
     }
 
     size_t j = 0;
@@ -428,8 +436,8 @@ void swap(Matrix<T>& matrix, Event* events, unsigned int north, unsigned int wes
         if (id == devSize - 1 && devSize > 1) {
             deviceOffset = 0;
             auto event = devicePtr->enqueueWrite(buffer,
-                                               downloadedVectors.at(j).begin(),
-                                               downloadedVectors.at(j).size(),
+                                               vs[j].begin(),
+                                               vs[j].size(),
                                                deviceOffset, 0);
             events->insert(event);
         } else if (id == 0 && devSize == 1) {
@@ -437,23 +445,23 @@ void swap(Matrix<T>& matrix, Event* events, unsigned int north, unsigned int wes
         } else if (id == 0) {
             deviceOffset = buffer.size() - southOverlap;
             auto event = devicePtr->enqueueWrite(buffer,
-                                                 downloadedVectors.at(i).begin(),
+                                                 vs[i].begin(),
                                                  southOverlap,
                                                  deviceOffset, 0);
             events->insert(event);
         } else {
-            /*deviceOffset = 0;
+            deviceOffset = 0;
             auto event = devicePtr->enqueueWrite(buffer,
-                                                 downloadedVectors.at(j).begin(),
-                                                 downloadedVectors.at(j).size(),
+                                                 vs[j].begin(),
+                                                 vs[j].size(),
                                                  deviceOffset, 0);
             events->insert(event);
             deviceOffset = buffer.size() - southOverlap;
             event = devicePtr->enqueueWrite(buffer,
-                                                 downloadedVectors.at(j+1).begin(),
-                                                 downloadedVectors.at(j+1).size(),
+                                                 vs[j+1].begin(),
+                                                 vs[j+1].size(),
                                                  deviceOffset, 0);
-            events->insert(event);*/
+            events->insert(event);
         }
     }
     LOG_DEBUG("SWAP END");

@@ -70,7 +70,7 @@ public:
 
 	void startUpload(C<T>& container, Event* events) const;
 
-    void swap(C<T>& container) const;
+    void swap(const C<T>& container) const;
 
 	void startDownload(C<T>& container, Event* events) const;
 
@@ -127,10 +127,10 @@ template<typename T>
 void startUpload(Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
 
 template<typename T>
-void swap(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
+void swap(const Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
 
 template<typename T>
-void swap(Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
+void swap(const Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
 
 template<typename T>
 void startDownload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
