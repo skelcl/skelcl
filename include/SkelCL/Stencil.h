@@ -106,6 +106,8 @@ private:
 	// Ermittelt aus allen hinzugefügten Stencil Shapes das größte Ausmaß in Richtung Osten.
 	unsigned int determineLargestEast();
 
+    unsigned int determineIterationsBetweenDataSwaps(unsigned int iterLeft);
+
 	// Eingabe vorbereiten
 	void prepareInput(const Matrix<Tin>& in);
 

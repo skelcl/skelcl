@@ -43,14 +43,6 @@ detail::Program StencilInfo<Tout(Tin)>::createAndBuildProgram() const {
     }
     }
 
-    /*if (_padding == detail::Padding::NEUTRAL) {
-		temp << "#define NEUTRAL " << _neutral_element << std::endl;
-	} else if (_padding == detail::Padding::NEAREST) {
-		temp << "#define NEAREST " << 1 << std::endl;
-	} else if (_padding == detail::Padding::NEAREST_INITIAL) {
-		temp << "#define NEAREST_INITIAL " << 1 << std::endl;
-    }*/
-
 	// create program
 	std::string s(Matrix<Tout>::deviceFunctions());
 	s.append(temp.str());

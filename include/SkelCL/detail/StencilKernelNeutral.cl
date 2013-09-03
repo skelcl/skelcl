@@ -56,7 +56,10 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
         Mm.offset_west = SCL_WEST;
         Mm.tile_width = SCL_TILE_WIDTH;
 
+unsigned int offset = 0;
+
         int i,j,k,l,m;
+
 
         if(l_row==0 && row<SCL_ELEMENTS / SCL_COLS) {
             const unsigned int SCL_ROWS = SCL_ELEMENTS / SCL_COLS;
@@ -80,8 +83,6 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                     }
                 }
 
-
-                #if skelcl_get_device_id()==0
                 for(i = 0; i < SCL_NORTH; i++) {
                     SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = NEUTRAL;
                 }
@@ -99,10 +100,6 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                         }
                     }
                 }
-
-                #else
-                    //Device in the middle
-                #endif
 
                 if(col >= SCL_COLS - SCL_EAST) {
                     for(k = 0; k < SCL_TILE_HEIGHT; k++){
@@ -139,8 +136,6 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                     }
                 }
 
-
-                #if skelcl_get_device_id()==0
                 if(get_group_id(0)<SCL_WORKGROUP_X || (get_group_id(0)==SCL_WORKGROUP_X && SCL_REST == 0)){
                     for(i = 0; i < upTo - SCL_SOUTH; i++) {
                         SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(i-SCL_NORTH+row)*SCL_COLS+col];
@@ -159,10 +154,6 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                     SCL_LOCAL_TMP[(i+upTo-SCL_SOUTH)*SCL_TILE_WIDTH+l_col+SCL_WEST] = NEUTRAL;
                 }
 
-                #else
-                    //Device in the middle
-                #endif
-
                 if(col >= SCL_COLS - SCL_EAST) {
                     for(k = 0; k < upTo; k++){
                         SCL_LOCAL_TMP[k*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = NEUTRAL;
@@ -177,7 +168,6 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                 }
 
             } else {
-                #if skelcl_get_device_id()==0
                 if(get_group_id(0)<SCL_WORKGROUP_X || (get_group_id(0)==SCL_WORKGROUP_X && SCL_REST == 0)) {
                     for(i = 0; i < SCL_TILE_HEIGHT; i++) {
                         SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(i-SCL_NORTH+row)*SCL_COLS+col];
@@ -191,10 +181,6 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                         }
                     }
                 }
-
-                #else
-                    //Device in the middle
-                #endif
 
                 if(l_col < SCL_WEST) {
                     for(j = 0; j < SCL_TILE_HEIGHT; j++){
@@ -219,12 +205,14 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
             }
         }
 
+
         barrier(CLK_LOCAL_MEM_FENCE);
 
         if(row<SCL_ELEMENTS/SCL_COLS && col<SCL_COLS) {
-                SCL_OUT[row*SCL_COLS+col] = USR_FUNC(&Mm);
+            SCL_OUT[row*SCL_COLS+col] = USR_FUNC(&Mm);
         }
         barrier(CLK_GLOBAL_MEM_FENCE);
+
 }
 
 )"

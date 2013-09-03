@@ -163,14 +163,25 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
     ASSERT(in.distribution().isValid());
     ASSERT(output.rowCount() == in.rowCount() && output.columnCount() == in.columnCount());
 
+    unsigned int iterationsBetweenSwaps = determineIterationsBetweenDataSwaps(_iterations);
+    unsigned int iterationsAfterSwap = 0;
+
     unsigned int i = 0;
     int k = 1;
     try {
         for(i = 0; i<_iterations; i++){
             k--;
-            if(i==1){
-                (dynamic_cast<detail::StencilDistribution< Matrix<Tin> >*>(&output.distribution()))->swap(output);
+            if(in.distribution().devices().size() != 1 && iterationsAfterSwap==iterationsBetweenSwaps){
+                if((i+k) % 2 == 0){
+                    LOG_DEBUG("TEMP SWAP");
+                    (dynamic_cast<detail::StencilDistribution< Matrix<Tout> >*>(&temp.distribution()))->swap(temp, iterationsBetweenSwaps);
+                } else if ((i+k) % 2 == 1) {
+                    LOG_DEBUG("OUTPUT SWAP");
+                    (dynamic_cast<detail::StencilDistribution< Matrix<Tout> >*>(&output.distribution()))->swap(output, iterationsBetweenSwaps);
+                }
+                iterationsAfterSwap = 0;
             }
+
             for(auto& sInfo : _stencilInfos) {
             long long time2;
             long long time3;
@@ -188,10 +199,18 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                     cl_uint global[2] = {
                             static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.columnCount(),
                                     local[0])),
-                        static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.rowCount(),
+                        static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount() + iterationsBetweenSwaps * determineLargestNorth(),
                                     local[1]))}; // SUBTILES
+                    if(devicePtr->id()==0 && in.distribution().devices().size()>1){
+                        global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount() + iterationsBetweenSwaps * determineLargestNorth(),
+                                                                                        local[1]));
+                    } else if (devicePtr->id()==in.distribution().devices().size()-1 && in.distribution().devices().size()>1) {
+                        global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount() + iterationsBetweenSwaps * determineLargestSouth(),
+                                                                                        local[1]));
+                    }
+
+
                     LOG_DEBUG("device: ", devicePtr->id(), " elements: ", elements);
-                    LOG_DEBUG("local: ", local[0], ",", local[1], " global: ", global[0], ",", global[1]);
                     //Get time
                     time2=get_time1();
                     int j = 0;
@@ -204,11 +223,11 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                         kernel.setArg(j++, outputBuffer.clBuffer());
                         kernel.setArg(j++, inputBuffer.clBuffer());
                     } else if((i+k) % 2 == 0){
-                        //"Gerade" Iterationen: Lese von temp, schreibe zu Output
+                        //"Gerade" Iterationen+StencilShape: Lese von temp, schreibe zu Output
                         kernel.setArg(j++, outputBuffer.clBuffer());
                         kernel.setArg(j++, tempBuffer.clBuffer());
                     } else if((i+k) % 2 == 1){
-                        //"Ungerade" Iterationen: Lese von Output, schreibe zu temp. Ist dies die letzte Iteration, muss temp zurückgegeben werden
+                        //"Ungerade" Iterationen+StencilShape: Lese von Output, schreibe zu temp. Ist dies die letzte Iteration, muss temp zurückgegeben werden
                         kernel.setArg(j++, tempBuffer.clBuffer());
                         kernel.setArg(j++, outputBuffer.clBuffer());
                     }
@@ -237,109 +256,27 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
 
                     // after finishing the kernel invoke this function ...
                     auto invokeAfter = [=] () {(void)keepAlive;};
-                    devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
-                        cl::NDRange(local[0], local[1]), cl::NullRange, // offset
-                        invokeAfter);
-
+                    if(devicePtr->id()==0) {
+                        devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
+                                cl::NDRange(local[0], local[1]), cl::NullRange,
+                            invokeAfter);
+                    } else {
+                        devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
+                                cl::NDRange(local[0], local[1]), cl::NDRange(0, 0),
+                            invokeAfter);
+                    }
                     //Get time
                     time3=get_time1();
                     printf("Total All %i: %.12f\n", k, (float) (time3-time2) / 1000000);
                 }
              k++;
             }
+            iterationsAfterSwap++;
         }
     } catch (cl::Error& err) {
             ABORT_WITH_ERROR(err);
     }
 
-
-    /*for (auto& devicePtr : in.distribution().devices()) {
-        auto& outputBuffer = output.deviceBuffer(*devicePtr);
-        auto& inputBuffer = in.deviceBuffer(*devicePtr);
-        auto& tempBuffer = temp.deviceBuffer(*devicePtr);
-
-        cl_uint elements = static_cast<cl_uint>(inputBuffer.size());
-
-        long long time2;
-        long long time3;
-        unsigned int i = 0;
-        try {
-            int k = 1;
-            for(i = 0; i<_iterations; i++){
-                k--;
-                for(auto& sInfo : _stencilInfos){
-                    if(i==1){
-                        (dynamic_cast<detail::StencilDistribution< Matrix<Tin> >*>(&output.distribution()))->swap(output);
-                    }
-                    cl::Kernel kernel(sInfo.getProgram().kernel(*devicePtr, "SCL_STENCIL"));
-
-                    cl_uint workgroupSize = static_cast<cl_uint>(detail::kernelUtil::getWorkGroupSizeToBeUsed(kernel, *devicePtr));
-                    cl_uint local[2] = { static_cast<cl_uint>(sqrt(workgroupSize)), (cl_uint)local[0] }; // C, R
-                    cl_uint global[2] = {
-                            static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.columnCount(),
-                                    local[0])),
-                        static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.rowCount(),
-                                    local[1]))}; // SUBTILES
-                    LOG_DEBUG("device: ", devicePtr->id(), " elements: ", elements);
-                    LOG_DEBUG("local: ", local[0], ",", local[1], " global: ", global[0], ",", global[1]);
-                    //Get time
-                    time2=get_time1();
-                    int j = 0;
-
-                    unsigned int tile_width = sqrt(workgroupSize) + sInfo.getWest() + sInfo.getEast();
-                    unsigned int tile_height = sqrt(workgroupSize) + sInfo.getNorth() + sInfo.getSouth();
-                    kernel.setArg(j++, inputBuffer.clBuffer());
-                    if((i+k)==0){
-                        //Erste Iteration: Lese von input, schreibe zu Output
-                        kernel.setArg(j++, outputBuffer.clBuffer());
-                        kernel.setArg(j++, inputBuffer.clBuffer());
-                    } else if((i+k) % 2 == 0){
-                        //"Gerade" Iterationen: Lese von temp, schreibe zu Output
-                        kernel.setArg(j++, outputBuffer.clBuffer());
-                        kernel.setArg(j++, tempBuffer.clBuffer());
-                    } else if((i+k) % 2 == 1){
-                        //"Ungerade" Iterationen: Lese von Output, schreibe zu temp. Ist dies die letzte Iteration, muss temp zurückgegeben werden
-                        kernel.setArg(j++, tempBuffer.clBuffer());
-                        kernel.setArg(j++, outputBuffer.clBuffer());
-                    }
-                    kernel.setArg(j++, tile_width*tile_height*sizeof(Tin), NULL); //Alloziere Local Memory
-                    kernel.setArg(j++, tile_width);
-                    kernel.setArg(j++, tile_height);
-                    kernel.setArg(j++, elements);   // elements
-                    kernel.setArg(j++, sInfo.getNorth()); // north
-                    kernel.setArg(j++, sInfo.getWest()); // west
-                    kernel.setArg(j++, sInfo.getSouth()); // south
-                    kernel.setArg(j++, sInfo.getEast()); // east
-                    kernel.setArg(j++, static_cast<cl_uint>(output.columnCount())); // number of columns
-
-                    detail::kernelUtil::setKernelArgs(kernel, *devicePtr, j,
-                            std::forward<Args>(args)...);
-
-                    auto keepAliveBuffer = outputBuffer.clBuffer();
-                    //Setze keepAlive-Buffer auf den Buffer, der die aktuellesten Daten enthält
-                    if((i+k) % 2 == 1){
-                        keepAliveBuffer = tempBuffer.clBuffer();
-                    }
-
-                    // keep buffers and arguments alive / mark them as in use
-                    auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
-                            inputBuffer.clBuffer(), keepAliveBuffer, std::forward<Args>(args)...);
-
-                    // after finishing the kernel invoke this function ...
-                    auto invokeAfter = [=] () {(void)keepAlive;};
-                    devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
-                        cl::NDRange(local[0], local[1]), cl::NullRange, // offset
-                        invokeAfter);
-                    k++;
-                    //Get time
-                    time3=get_time1();
-                    printf("Total All %i: %.12f\n", k, (float) (time3-time2) / 1000000);
-                }
-            }
-        } catch (cl::Error& err) {
-            ABORT_WITH_ERROR(err);
-        }
-    }*/
     LOG_INFO("Stencil kernel started");
 }
 
@@ -350,7 +287,7 @@ void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
 	auto& stencilInfo = _stencilInfos.front();
 
     detail::StencilDistribution<Matrix<Tin>> dist(determineLargestNorth(), determineLargestWest(), determineLargestSouth(), determineLargestEast(),
-                                                  stencilInfo.getPadding(), stencilInfo.getNeutralElement());
+                                                  stencilInfo.getPadding(), stencilInfo.getNeutralElement(), determineIterationsBetweenDataSwaps(_iterations));
     in.setDistribution(dist);
 
     // create buffers if required
@@ -358,6 +295,11 @@ void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
 
     // copy data to devices
     in.startUpload();
+}
+
+template<typename Tin, typename Tout>
+unsigned int Stencil<Tout(Tin)>::determineIterationsBetweenDataSwaps(unsigned int iterLeft) {
+    return 1;
 }
 
 template<typename Tin, typename Tout>

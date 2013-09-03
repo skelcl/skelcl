@@ -59,7 +59,7 @@ template<template<typename > class C, typename T>
 class StencilDistribution<C<T>> : public Distribution<C<T>> {
 public:
     StencilDistribution(unsigned int north, unsigned int west, unsigned int south, unsigned int east,
-    		detail::Padding padding = detail::Padding::NEUTRAL, T neutral_element = T(), const DeviceList& deviceList = globalDeviceList);
+            detail::Padding padding = detail::Padding::NEUTRAL, T neutral_element = T(), unsigned int initialIterationsBeforeFirstSwap = 1, const DeviceList& deviceList = globalDeviceList);
 
 	template<typename U>
 	StencilDistribution(const StencilDistribution<C<U>>& rhs);
@@ -70,7 +70,7 @@ public:
 
 	void startUpload(C<T>& container, Event* events) const;
 
-    void swap(const C<T>& container) const;
+    void swap(const C<T>& container, unsigned int iterations) const;
 
 	void startDownload(C<T>& container, Event* events) const;
 
@@ -106,6 +106,8 @@ private:
 
 	T _neutral_element;
 
+    unsigned int _initialIterationsBeforeFirstSwap;
+
 };
 
 namespace stencil_distribution_helper {
@@ -113,30 +115,30 @@ namespace stencil_distribution_helper {
 template<typename T>
 size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 		const typename Vector<T>::size_type size, const DeviceList& devices,
-        unsigned int north, unsigned int west, unsigned int south, unsigned int east);
+        unsigned int north, unsigned int west, unsigned int south, unsigned int east, unsigned int initialIterationsBeforeFirstSwap);
 
 template<typename T>
 size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 		const typename Matrix<T>::size_type size, const DeviceList& devices,
-        unsigned int north, unsigned int west, unsigned int south, unsigned int east);
+        unsigned int north, unsigned int west, unsigned int south, unsigned int east, unsigned int initialIterationsBeforeFirstSwap);
 
 template<typename T>
-void startUpload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
+void startUpload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, unsigned int initialIterationsBeforeFirstSwap, detail::DeviceList devices);
 
 template<typename T>
-void startUpload(Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
+void startUpload(Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, unsigned int initialIterationsBeforeFirstSwap, detail::DeviceList devices);
 
 template<typename T>
-void swap(const Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
+void swap(const Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, unsigned int iterations, detail::DeviceList devices);
 
 template<typename T>
-void swap(const Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
+void swap(const Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, unsigned int iterations, detail::DeviceList devices);
 
 template<typename T>
-void startDownload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
+void startDownload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, unsigned int initialIterationsBeforeFirstSwap, detail::DeviceList devices);
 
 template<typename T>
-void startDownload(Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, detail::DeviceList devices);
+void startDownload(Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, unsigned int initialIterationsBeforeFirstSwap, detail::DeviceList devices);
 
 
 

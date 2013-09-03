@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
 
     auto deviceType = Arg<device_type>(Flags(Long("device_type")),
             Description("Device type: ANY, CPU, "
-                    "GPU, ACCELERATOR"), Default(device_type::ANY));
+                    "GPU, ACCELERATOR"), Default(device_type::GPU));
 
 
     //calculate the kernel
@@ -149,10 +149,10 @@ int main(int argc, char** argv) {
 
     Matrix<float> inputImage(img, numcols);
 
-    skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" }, 10,range,5,range,
-                        detail::Padding::NEAREST_INITIAL, 0, "func");
+    skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" }, range, range, range,range,
+                        detail::Padding::NEUTRAL, 255, "func");
 
-    Matrix<float> outputImage = s(2, inputImage, kernelVec, 10, 5);
+    Matrix<float> outputImage = s(1, inputImage, kernelVec, range, range);
     //std::cout << outputImage.rowCount() << ", " << outputImage.columnCount() << std::endl;
 
     //Matrix<float>::iterator itr = outputImage.begin();
@@ -163,6 +163,6 @@ int main(int argc, char** argv) {
 
     writePPM(outputImage, outFile);
 
-    skelcl::terminate();
+//    skelcl::terminate();
 
 }
