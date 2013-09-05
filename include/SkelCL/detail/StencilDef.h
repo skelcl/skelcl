@@ -195,7 +195,7 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                     cl::Kernel kernel(sInfo.getProgram().kernel(*devicePtr, "SCL_STENCIL"));
 
                     cl_uint workgroupSize = static_cast<cl_uint>(detail::kernelUtil::getWorkGroupSizeToBeUsed(kernel, *devicePtr));
-                    cl_uint local[2] = { sqrt(workgroupSize),local[0]}; // C, R
+                    cl_uint local[2] = { static_cast<cl_uint>(sqrt(workgroupSize)),static_cast<cl_uint>(local[0])};
                     cl_uint global[2] = {
                             static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.columnCount(),
                                     local[0])),
