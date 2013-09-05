@@ -106,11 +106,11 @@ int main(int argc, char** argv) {
     pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
 
 	auto deviceCount = Arg<int>(Flags(Long("device_count")),
-            Description("Number of devices used by SkelCL."), Default(2));
+            Description("Number of devices used by SkelCL."), Default(1));
 
 	auto deviceType = Arg<device_type>(Flags(Long("device_type")),
 			Description("Device type: ANY, CPU, "
-                    "GPU, ACCELERATOR"), Default(device_type::ANY));
+                    "GPU, ACCELERATOR"), Default(device_type::GPU));
 
 
 	//calculate the kernel

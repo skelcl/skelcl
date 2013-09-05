@@ -96,7 +96,7 @@ int readPPM(const std::string inFile, std::vector<float>& img) {
 int main(int argc, char** argv) {
     long long time0;
     long long time1;
-    int range = 10;
+    int range = 5;
     if(argc > 3) {
         range = atoi(argv[3]);
     }
@@ -149,10 +149,10 @@ int main(int argc, char** argv) {
 
     Matrix<float> inputImage(img, numcols);
 
-    skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" }, range, range, 5,range,
+    skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" }, 2,7,20,11,
                         detail::Padding::NEUTRAL, 255, "func");
 
-    Matrix<float> outputImage = s(1, inputImage, kernelVec, range, 5);
+    Matrix<float> outputImage = s(8, inputImage, kernelVec, 2, 7, 20, 11);
     //std::cout << outputImage.rowCount() << ", " << outputImage.columnCount() << std::endl;
 
     //Matrix<float>::iterator itr = outputImage.begin();
@@ -163,6 +163,6 @@ int main(int argc, char** argv) {
 
     writePPM(outputImage, outFile);
 
-//    skelcl::terminate();
+    skelcl::terminate();
 
 }

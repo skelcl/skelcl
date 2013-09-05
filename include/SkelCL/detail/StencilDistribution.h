@@ -59,7 +59,7 @@ template<template<typename > class C, typename T>
 class StencilDistribution<C<T>> : public Distribution<C<T>> {
 public:
     StencilDistribution(unsigned int north, unsigned int west, unsigned int south, unsigned int east,
-            detail::Padding padding = detail::Padding::NEUTRAL, T neutral_element = T(), unsigned int initialIterationsBeforeFirstSwap = 1, const DeviceList& deviceList = globalDeviceList);
+            unsigned int initialIterationsBeforeFirstSwap = 1, const DeviceList& deviceList = globalDeviceList);
 
 	template<typename U>
 	StencilDistribution(const StencilDistribution<C<U>>& rhs);
@@ -87,10 +87,6 @@ public:
 
     const unsigned int& getEast() const;
 
-	const detail::Padding& getPadding() const;
-
-	const T& getNeutralElement() const;
-
 private:
 	bool doCompare(const Distribution<C<T>>& rhs) const;
 
@@ -101,10 +97,6 @@ private:
     unsigned int _south;
 
     unsigned int _east;
-
-	detail::Padding _padding;
-
-	T _neutral_element;
 
     unsigned int _initialIterationsBeforeFirstSwap;
 

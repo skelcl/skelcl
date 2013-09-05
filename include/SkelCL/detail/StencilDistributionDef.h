@@ -47,10 +47,8 @@ namespace detail {
 template<template<typename > class C, typename T>
 StencilDistribution<C<T>>::StencilDistribution(const unsigned int north,
         const unsigned int west, const unsigned int south,
-        const unsigned int east, const detail::Padding padding,
-        const T neutral_element, const unsigned int initialIterationsBeforeFirstSwap, const DeviceList& deviceList) :
-        _north(north), _west(west), _south(south), _east(east), _padding(
-        padding), _neutral_element(neutral_element), _initialIterationsBeforeFirstSwap(initialIterationsBeforeFirstSwap), Distribution<C<T>>(
+        const unsigned int east, const unsigned int initialIterationsBeforeFirstSwap, const DeviceList& deviceList) :
+        _north(north), _west(west), _south(south), _east(east), _initialIterationsBeforeFirstSwap(initialIterationsBeforeFirstSwap), Distribution<C<T>>(
                 deviceList) {
 
 }
@@ -140,15 +138,6 @@ const unsigned int& StencilDistribution<C<T>>::getEast() const {
     return this->_east;
 }
 
-template<template<typename > class C, typename T>
-const detail::Padding& StencilDistribution<C<T>>::getPadding() const {
-    return this->_padding;
-}
-
-template<template<typename > class C, typename T>
-const T& StencilDistribution<C<T>>::getNeutralElement() const {
-    return this->_neutral_element;
-}
 
 template<template<typename > class C, typename T>
 bool StencilDistribution<C<T>>::doCompare(const Distribution<C<T>>& rhs) const {
@@ -298,11 +287,16 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north,
                                       hostOffset);
       events->insert(event);
 
-      hostOffset += (buffer.size() - (northOverlapWithIter - southOverlapwithIter));
-      if(i==0) hostOffset -= northOverlapWithIter;
+      LOG_DEBUG("Buffer size, ", size);
+      LOG_DEBUG("NortOverlapWithIter, ", northOverlapWithIter);
+      LOG_DEBUG("SouthOverlapWithIter, ", southOverlapwithIter);
+
+      hostOffset += (buffer.size() - northOverlapWithIter - southOverlapwithIter);
 
       deviceOffset = 0; // after the first device, the device offset is 0
      }
+    events->wait();
+
 }
 
 template<typename T>
@@ -491,6 +485,7 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int north,
         detail::DeviceList devices) {
     if(initialIterationsBeforeFirstSwap){};
     ASSERT(events != nullptr);
+    events->wait();
     LOG_DEBUG_INFO("Matrix Version , west: ", west, " and east: ", east,
             " are not considered for the download.");
     size_t offset = 0;
@@ -525,6 +520,7 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int north,
         offset += size;
         events->insert(event);
     }
+    events->wait();
 
 // mark data on device as out of date !
 // TODO: find out why? -> ask matthias

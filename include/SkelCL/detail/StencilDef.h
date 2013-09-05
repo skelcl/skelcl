@@ -195,17 +195,17 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                     cl::Kernel kernel(sInfo.getProgram().kernel(*devicePtr, "SCL_STENCIL"));
 
                     cl_uint workgroupSize = static_cast<cl_uint>(detail::kernelUtil::getWorkGroupSizeToBeUsed(kernel, *devicePtr));
-                    cl_uint local[2] = { static_cast<cl_uint>(sqrt(workgroupSize)), (cl_uint)local[0] }; // C, R
+                    cl_uint local[2] = { sqrt(workgroupSize),local[0]}; // C, R
                     cl_uint global[2] = {
                             static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.columnCount(),
                                     local[0])),
-                        static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount() + iterationsBetweenSwaps * determineLargestNorth(),
+                        static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount(),
                                     local[1]))}; // SUBTILES
                     if(devicePtr->id()==0 && in.distribution().devices().size()>1){
-                        global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount() + iterationsBetweenSwaps * determineLargestNorth(),
+                        global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount() + iterationsBetweenSwaps * determineLargestSouth(),
                                                                                         local[1]));
                     } else if (devicePtr->id()==in.distribution().devices().size()-1 && in.distribution().devices().size()>1) {
-                        global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount() + iterationsBetweenSwaps * determineLargestSouth(),
+                        global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount() + iterationsBetweenSwaps * determineLargestNorth(),
                                                                                         local[1]));
                     }
 
@@ -284,10 +284,8 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
 template<typename Tin, typename Tout>
 void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
     // set distribution
-	auto& stencilInfo = _stencilInfos.front();
-
     detail::StencilDistribution<Matrix<Tin>> dist(determineLargestNorth(), determineLargestWest(), determineLargestSouth(), determineLargestEast(),
-                                                  stencilInfo.getPadding(), stencilInfo.getNeutralElement(), determineIterationsBetweenDataSwaps(_iterations));
+                                                  determineIterationsBetweenDataSwaps(_iterations));
     in.setDistribution(dist);
 
     // create buffers if required
@@ -299,7 +297,10 @@ void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
 
 template<typename Tin, typename Tout>
 unsigned int Stencil<Tout(Tin)>::determineIterationsBetweenDataSwaps(unsigned int iterLeft) {
-    return 1;
+    if(iterLeft<2) {
+        return iterLeft;
+    }
+    return 4;
 }
 
 template<typename Tin, typename Tout>
