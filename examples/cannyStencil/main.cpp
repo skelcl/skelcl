@@ -97,10 +97,9 @@ int main(int argc, char** argv) {
     long long time0;
     long long time1;
     long long time2;
-    int range = 2;
     int i;
     using namespace pvsutil::cmdline;
-    pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
+    pvsutil::CLArgParser cmd(Description("Computation of canny."));
 
     auto deviceCount = Arg<int>(Flags(Long("device_count")),
             Description("Number of devices used by SkelCL."), Default(1));
@@ -109,6 +108,18 @@ int main(int argc, char** argv) {
             Description("Device type: ANY, CPU, "
                     "GPU, ACCELERATOR"), Default(device_type::GPU));
 
+    auto range = Arg<int>(Flags(Long("range")),
+            Description("The range for the Gaussian blur"), Default(5));
+
+    auto inFile = Arg<std::string>(Flags(Long("inFile")),
+                                       Description("Filename of the input file"), Default(std::string("lena.pgm")));
+
+    cmd.add(&deviceCount, &deviceType, &range, &inFile);
+    cmd.parse(argc, argv);
+
+    std::stringstream out("_");
+
+    out << static_cast<std::string>(inFile).substr(0, static_cast<std::string>(inFile).find(".")) << "_or_" << range << "_devs_" << deviceCount << ".pgm";
 
     //calculate the kernel
     int fwhm = 5;
@@ -130,14 +141,6 @@ int main(int argc, char** argv) {
 
     //Read pgm-File
     std::vector<float> img(1);
-    std::string inFile("pgm.pgm");
-    if (argc > 1) {
-        inFile = argv[1];
-    }
-    std::string outFile("out.pgm");
-    if (argc > 2) {
-        outFile = argv[2];
-    }
 
     int numcols = readPPM(inFile, img);
 
@@ -147,7 +150,7 @@ int main(int argc, char** argv) {
 
     Matrix<float> inputImage(img, numcols);
 
-    skelcl::Stencil<float(float)> s(std::ifstream { "./cannyGauss.cl" }, range,range,range,range,
+    skelcl::Stencil<float(float)> s(std::ifstream { "./cannyGauss.cl" }, static_cast<int>(range),static_cast<int>(range),static_cast<int>(range),static_cast<int>(range),
                         detail::Padding::NEAREST, 255, "func");
     s.add(std::ifstream { "./cannySobel.cl" },1,1,1,1,
           detail::Padding::NEUTRAL, 255, "func");
@@ -160,7 +163,7 @@ int main(int argc, char** argv) {
     time1=get_time();
     printf("Total Creation: %.12f\n", (float) (time1-time0) / 1000000);
 
-    Matrix<float> outputImage = s(1, inputImage, kernelVec, range);
+    Matrix<float> outputImage = s(1, inputImage, kernelVec, static_cast<int>(range));
 
     Matrix<float>::iterator itr = outputImage.begin();
 
@@ -168,7 +171,7 @@ int main(int argc, char** argv) {
     time2=get_time();
     printf("Total Total: %.12f\n", (float) (time2-time0) / 1000000);
 
-    writePPM(outputImage, outFile);
+    writePPM(outputImage, out.str());
 
     skelcl::terminate();
 

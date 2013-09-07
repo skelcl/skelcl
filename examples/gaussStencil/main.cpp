@@ -96,21 +96,43 @@ int readPPM(const std::string inFile, std::vector<float>& img) {
 int main(int argc, char** argv) {
     long long time0;
     long long time1;
-    int range = 5;
-    if(argc > 3) {
-        range = atoi(argv[3]);
-    }
     int i;
+
     using namespace pvsutil::cmdline;
     pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
 
     auto deviceCount = Arg<int>(Flags(Long("device_count")),
-            Description("Number of devices used by SkelCL."), Default(2));
+            Description("Number of devices used by SkelCL."), Default(1));
 
     auto deviceType = Arg<device_type>(Flags(Long("device_type")),
             Description("Device type: ANY, CPU, "
                     "GPU, ACCELERATOR"), Default(device_type::GPU));
 
+    auto rangeNorth = Arg<int>(Flags(Long("rangeNorth")),
+            Description("The range in north direction"), Default(5));
+    auto rangeSouth = Arg<int>(Flags(Long("rangeSouth")),
+            Description("The range in south direction"), Default(5));
+    auto rangeEast = Arg<int>(Flags(Long("rangeEast")),
+            Description("The range in east direction"), Default(5));
+    auto rangeWest = Arg<int>(Flags(Long("rangeWest")),
+            Description("The range in west direction"), Default(5));
+    auto iterationen = Arg<int>(Flags(Long("iterationen")),
+                                   Description("The number of iterations"), Default(1));
+
+    auto inFile = Arg<std::string>(Flags(Long("inFile")),
+                                       Description("Filename of the input file"), Default(std::string("lena.pgm")));
+
+    cmd.add(&deviceCount, &deviceType, &rangeNorth, &rangeWest, &rangeSouth, &rangeEast, &inFile, &iterationen);
+    cmd.parse(argc, argv);
+
+    std::stringstream out("_");
+
+    out << static_cast<std::string>(inFile).substr(0, static_cast<std::string>(inFile).find(".")) << "_n_" << rangeNorth << "_w_" << rangeWest
+        << "_s_" << rangeSouth  << "_e_" << rangeEast << "_devs_" << deviceCount << ".pgm";
+
+    int range = rangeNorth > rangeSouth ? rangeNorth :rangeSouth;
+    range = range > rangeEast ? range : rangeEast;
+    range = range > rangeWest ? range : rangeWest;
 
     //calculate the kernel
     int fwhm = 5;
@@ -132,14 +154,6 @@ int main(int argc, char** argv) {
 
     //Read pgm-File
     std::vector<float> img(1);
-    std::string inFile("pgm.pgm");
-    if (argc > 1) {
-        inFile = argv[1];
-    }
-    std::string outFile("out.pgm");
-    if (argc > 2) {
-        outFile = argv[2];
-    }
 
     int numcols = readPPM(inFile, img);
 
@@ -149,11 +163,10 @@ int main(int argc, char** argv) {
 
     Matrix<float> inputImage(img, numcols);
 
-    skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" }, 2,7,20,11,
+    skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" }, static_cast<int>(rangeNorth),static_cast<int>(rangeWest),static_cast<int>(rangeSouth),static_cast<int>(rangeEast),
                         detail::Padding::NEUTRAL, 255, "func");
 
-    Matrix<float> outputImage = s(8, inputImage, kernelVec, 2, 7, 20, 11);
-    //std::cout << outputImage.rowCount() << ", " << outputImage.columnCount() << std::endl;
+    Matrix<float> outputImage = s(iterationen, inputImage, kernelVec, static_cast<int>(rangeNorth),static_cast<int>(rangeWest),static_cast<int>(rangeSouth),static_cast<int>(rangeEast));
 
     //Matrix<float>::iterator itr = outputImage.begin();
 
@@ -161,7 +174,7 @@ int main(int argc, char** argv) {
     time1=get_time();
     printf("Total: %.12f\n", (float) (time1-time0) / 1000000);
 
-    writePPM(outputImage, outFile);
+    writePPM(outputImage, out.str());
 
     skelcl::terminate();
 
