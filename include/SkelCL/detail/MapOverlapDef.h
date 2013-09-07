@@ -99,8 +99,11 @@ Matrix<Tout>& MapOverlap<Tout(Tin)>::operator()(Out<Matrix<Tout>> output,
     ASSERT(in.rowCount() > 0);
     ASSERT(in.columnCount() > 0);
     prepareInput(in);
+
     prepareAdditionalInput(std::forward<Args>(args)...);
+
     prepareOutput(output.container(), in);
+
     execute(output.container(), in, std::forward<Args>(args)...);
     updateModifiedStatus(output, std::forward<Args>(args)...);
 
@@ -114,29 +117,32 @@ void MapOverlap<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
         Args&&... args) {
     ASSERT(in.distribution().isValid());
     ASSERT(output.rowCount() == in.rowCount() && output.columnCount() == in.columnCount());
+
     for (auto& devicePtr : in.distribution().devices()) {
         cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_MAPOVERLAP"));
 
         cl_uint workgroupSize = static_cast<cl_uint>(detail::kernelUtil::getWorkGroupSizeToBeUsed(kernel, *devicePtr));
+
+
         auto& outputBuffer = output.deviceBuffer(*devicePtr);
         auto& inputBuffer = in.deviceBuffer(*devicePtr);
 
-        cl_uint elements = static_cast<cl_uint>(inputBuffer.size());
+        cl_uint elements = static_cast<cl_uint>(output.size().elemCount());
         cl_uint local[2] = { static_cast<cl_uint>(sqrt(workgroupSize)) , local[0] };
         cl_uint global[2] = {
                 static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.columnCount(),
                         local[0])),
                 static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount(),
                         local[1]))};
-        LOG_DEBUG("elements: ", elements, " overlap: ", _overlap_range);
-        LOG_DEBUG("local: ", local[0], ",", local[1], " global: ", global[0],
+
+        LOG_DEBUG_INFO("elements: ", elements, " overlap: ", _overlap_range);
+        LOG_DEBUG_INFO("local: ", local[0], ",", local[1], " global: ", global[0],
                 ",", global[1]);
 
         unsigned int tileWidth = sqrt(workgroupSize) + 2*_overlap_range+1;
 
         try {
             int j = 0;
-            LOG_DEBUG("i");
             kernel.setArg(j++, inputBuffer.clBuffer());
             kernel.setArg(j++, outputBuffer.clBuffer());
             kernel.setArg(j++, tileWidth);
@@ -147,12 +153,14 @@ void MapOverlap<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
 
             detail::kernelUtil::setKernelArgs(kernel, *devicePtr, j++,
                     std::forward<Args>(args)...);
+
             // keep buffers and arguments alive / mark them as in use
             auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
                     inputBuffer.clBuffer(), outputBuffer.clBuffer(), std::forward<Args>(args)...);
+
             // after finishing the kernel invoke this function ...
             auto invokeAfter = [=] () {(void)keepAlive;};
-            devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
+            auto event = devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
                     cl::NDRange(local[0], local[1]), cl::NullRange, // offset
                     invokeAfter);
 
@@ -340,8 +348,10 @@ void MapOverlap<Tout(Tin)>::prepareOutput(Matrix<Tout>& output,
     // set size
     if (output.rowCount() != in.rowCount())
         output.resize(typename Matrix<Tout>::size_type(in.rowCount(), in.columnCount()));
+
     // adopt distribution from in input
     output.setDistribution(in.distribution()); // richtiger typ (Tout)?
+
     //create buffers if required
     output.createDeviceBuffers();
 }
