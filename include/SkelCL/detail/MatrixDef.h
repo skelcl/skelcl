@@ -336,7 +336,7 @@ void Matrix<T>::resize(const size_type& size, T c) {
 	// set size last, to avoid problems, when moving the "old" data around
 	_size = size;
 
-	LOG_DEBUG_INFO("Matrix object (", this, ") resized, now with ",
+    LOG_DEBUG("Matrix object (", this, ") resized, now with ",
 			getDebugInfo());
 }
 

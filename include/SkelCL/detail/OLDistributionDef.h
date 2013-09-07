@@ -161,12 +161,10 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
          auto s = (size.rowCount() / devices.size()) * size.columnCount();
          s += (size.rowCount() % devices.size()) * size.columnCount();
          s += 2 * overlapRadius * size.columnCount();
-     LOG_DEBUG("Last ", s);
          return s;
     } else {
          auto s = (size.rowCount() / devices.size()) * size.columnCount();
          s += 2 * overlapRadius * size.columnCount();
-        LOG_DEBUG("Others ", s);
     return s;
     }
 }
@@ -311,6 +309,8 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
       }
           deviceOffset = 0; // after the first device, the device offset is 0
      }
+
+    LOG_DEBUG("UPLOAD COMPLETED");
 
     // Upload bottom padding at the end of last device
     /*auto& lastDevicePtr = devices.back();

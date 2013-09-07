@@ -97,10 +97,7 @@ int readPPM(const std::string inFile, std::vector<int>& img) {
 int main(int argc, char** argv) {
     long long time0;
     long long time1;
-    int range = 10;
-    if(argc > 3) {
-        range = atoi(argv[3]);
-    }
+
 	int i;
 	using namespace pvsutil::cmdline;
     pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
@@ -112,6 +109,18 @@ int main(int argc, char** argv) {
 			Description("Device type: ANY, CPU, "
                     "GPU, ACCELERATOR"), Default(device_type::GPU));
 
+    auto range = Arg<int>(Flags(Long("range")),
+            Description("The Overlap radius"), Default(5));
+
+    auto inFile = Arg<std::string>(Flags(Long("inFile")),
+                                       Description("Filename of the input file"), Default(std::string("lena.pgm")));
+
+    cmd.add(&deviceCount, &deviceType, &range, &inFile);
+    cmd.parse(argc, argv);
+
+    std::stringstream out("_");
+
+    out << static_cast<std::string>(inFile).substr(0, static_cast<std::string>(inFile).find(".")) << "_" << range << "_devs_" << deviceCount << ".pgm";
 
 	//calculate the kernel
 	int fwhm = 5;
@@ -133,14 +142,6 @@ int main(int argc, char** argv) {
 
 	//Read pgm-File
     std::vector<int> img(1);
-	std::string inFile("pgm.pgm");
-	if (argc > 1) {
-		inFile = argv[1];
-	}
-    std::string outFile("out.pgm");
-    if (argc > 2) {
-        outFile = argv[2];
-    }
 
 	int numcols = readPPM(inFile, img);
 
@@ -150,9 +151,9 @@ int main(int argc, char** argv) {
 
     Matrix<int> inputImage(img, numcols);
 
-    skelcl::MapOverlap<int(int)> s(std::ifstream { "./gauss2D.cl" }, range,
-                detail::Padding::NEUTRAL, 255);
-    Matrix<int> outputImage = s(inputImage, kernelVec, range);
+    skelcl::MapOverlap<int(int)> s(std::ifstream { "./gauss2D.cl" }, static_cast<unsigned int>(range),
+                detail::Padding::NEAREST, 255);
+    Matrix<int> outputImage = s(inputImage, kernelVec, static_cast<unsigned int>(range));
 
     Matrix<int>::iterator itr = outputImage.begin();
 
@@ -160,7 +161,7 @@ int main(int argc, char** argv) {
     time1=get_time();
     printf("Total: %.12f\n", (float) (time1-time0) / 1000000);
 
-   writePPM(outputImage, outFile);
+    writePPM(outputImage, out.str());
 
     skelcl::terminate();
 

@@ -28,132 +28,139 @@ long long get_time() {
 
 
 void writePPM(Matrix<float>& img, const std::string filename) {
-	std::ofstream outputFile(filename.c_str());
+    std::ofstream outputFile(filename.c_str());
 
-	outputFile << "P2\n" << "#Creator: sbr\n" << img.columnCount() << " "
-			<< img.rowCount() << "\n255\n";
+    outputFile << "P2\n" << "#Creator: sbr\n" << img.columnCount() << " "
+            << img.rowCount() << "\n255\n";
 
-	Matrix<float>::iterator itr;
+    Matrix<float>::iterator itr;
 
-	for (itr = img.begin(); itr != img.end(); ++itr) {
-		outputFile << *itr << "\n";
-	}
+    for (itr = img.begin(); itr != img.end(); ++itr) {
+        outputFile << *itr << "\n";
+    }
 }
 
 void writePPM(Matrix<int>& img, const std::string filename) {
-	std::ofstream outputFile(filename.c_str());
-	outputFile << "P2\n" << "#Creator: sbr\n" << img.columnCount() << " "
-			<< img.rowCount() << "\n255\n";
+    std::ofstream outputFile(filename.c_str());
+    outputFile << "P2\n" << "#Creator: sbr\n" << img.columnCount() << " "
+            << img.rowCount() << "\n255\n";
     Matrix<int>::iterator itr = img.begin();
-	for (itr = img.begin(); itr != img.end(); ++itr) {
-		outputFile << *itr << "\n";
-	}
+    for (itr = img.begin(); itr != img.end(); ++itr) {
+        outputFile << *itr << "\n";
+    }
 }
 
 void writePPM(std::vector<float>& img, const std::string filename) {
-	std::ofstream outputFile(filename.c_str());
+    std::ofstream outputFile(filename.c_str());
 
-	outputFile << "P2\n" << "#Creator: sbr\n" << 640 << " " << 400 << "\n255\n";
+    outputFile << "P2\n" << "#Creator: sbr\n" << 640 << " " << 400 << "\n255\n";
 
-	std::vector<float>::iterator itr;
-	for (itr = img.begin(); itr != img.end(); ++itr) {
-		outputFile << *itr << "\n";
-	}
+    std::vector<float>::iterator itr;
+    for (itr = img.begin(); itr != img.end(); ++itr) {
+        outputFile << *itr << "\n";
+    }
 }
 
 int readPPM(const std::string inFile, std::vector<int>& img) {
-	img.clear();
-	int numrows = 0, numcols = 0;
-	std::ifstream infile(inFile);
+    img.clear();
+    int numrows = 0, numcols = 0;
+    std::ifstream infile(inFile);
 
-	std::stringstream ss;
-	std::string inputLine = "";
+    std::stringstream ss;
+    std::string inputLine = "";
 
-	// First line : version
+    // First line : version
     getline(infile, inputLine);
 
-	// Second line : comment
+    // Second line : comment
     getline(infile, inputLine);
 
-	// Continue with a stringstream
-	getline(infile, inputLine);
-	std::stringstream ss2(inputLine);
-	//	// Third line : size
-	ss2 >> numcols >> numrows;
+    // Continue with a stringstream
+    getline(infile, inputLine);
+    std::stringstream ss2(inputLine);
+    //	// Third line : size
+    ss2 >> numcols >> numrows;
 
     getline(infile, inputLine);
 
-	int i;
-	while (getline(infile, inputLine)) {
-		std::stringstream ss(inputLine);
-		ss >> i;
+    int i;
+    while (getline(infile, inputLine)) {
+        std::stringstream ss(inputLine);
+        ss >> i;
         img.push_back(i);
-	}
+    }
 
-	infile.close();
+    infile.close();
     return numcols;
 }
 
 int main(int argc, char** argv) {
     long long time0;
     long long time1;
-    int range = 5;
-    int iterationen = 20;
-	int i;
-	using namespace pvsutil::cmdline;
+    int i;
+    using namespace pvsutil::cmdline;
     pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
 
-	auto deviceCount = Arg<int>(Flags(Long("device_count")),
-			Description("Number of devices used by SkelCL."), Default(1));
+    auto deviceCount = Arg<int>(Flags(Long("device_count")),
+            Description("Number of devices used by SkelCL."), Default(1));
 
-	auto deviceType = Arg<device_type>(Flags(Long("device_type")),
-			Description("Device type: ANY, CPU, "
-					"GPU, ACCELERATOR"), Default(device_type::GPU));
+    auto deviceType = Arg<device_type>(Flags(Long("device_type")),
+            Description("Device type: ANY, CPU, "
+                    "GPU, ACCELERATOR"), Default(device_type::GPU));
+
+    auto range = Arg<int>(Flags(Long("range")),
+            Description("The Overlap radius"), Default(5));
+
+    auto inFile = Arg<std::string>(Flags(Long("inFile")),
+                                       Description("Filename of the input file"), Default(std::string("lena.pgm")));
+
+    auto iterationen = Arg<int>(Flags(Long("iterationen")),
+                                Description("Number of iterations."), Default(1));
 
 
-	//calculate the kernel
-	int fwhm = 5;
-	int offset = (2 * range + 1) / 2;
+    cmd.add(&deviceCount, &deviceType, &range, &inFile, &iterationen);
+    cmd.parse(argc, argv);
 
-	/*
-	 * Given as parameter
-	 * FWHM = 2 sqrt(2 ln2) sigma ~ 2.35 sigma
-	 */
-	float a = (fwhm / 2.354);
+    std::stringstream out("_");
+
+    out << static_cast<std::string>(inFile).substr(0, static_cast<std::string>(inFile).find(".")) << "_" << range << "_devs_" << deviceCount << ".pgm";
+
+    //calculate the kernel
+    int fwhm = 5;
+    int offset = (2 * range + 1) / 2;
+
+    /*
+     * Given as parameter
+     * FWHM = 2 sqrt(2 ln2) sigma ~ 2.35 sigma
+     */
+    float a = (fwhm / 2.354);
 
     skelcl::Vector<float> kernelVec(2*range+1);
 
-	/* set up kernel to weight the pixels */
-	/* (KERNEL_SIZE - offset -1) is the CORRECT version */
-	for (i = -offset; i <= ((2 * range + 1) - offset - 1); i++) {
-		kernelVec[i + offset] = exp(-i * i / (2 * a * a));
-	}
-
-	//Read pgm-File
-    std::vector<int> img(1);
-	std::string inFile("pgm.pgm");
-	if (argc > 1) {
-		inFile = argv[1];
-	}
-    std::string outFile("out.pgm");
-    if (argc > 2) {
-        outFile = argv[2];
+    /* set up kernel to weight the pixels */
+    /* (KERNEL_SIZE - offset -1) is the CORRECT version */
+    for (i = -offset; i <= ((2 * range + 1) - offset - 1); i++) {
+        kernelVec[i + offset] = exp(-i * i / (2 * a * a));
     }
 
-	int numcols = readPPM(inFile, img);
+    //Read pgm-File
+    std::vector<int> img(1);
+
+    int numcols = readPPM(inFile, img);
 
     time0 = get_time();
 
-	skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
+    skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
 
     Matrix<int> inputImage(img, numcols);
 
-    skelcl::MapOverlap<int(int)> s(std::ifstream { "./heat.cl" }, range,
+    skelcl::MapOverlap<int(int)> s(std::ifstream { "./heat.cl" }, static_cast<unsigned int>(range),
                 detail::Padding::NEUTRAL, 255);
 
     for (int iter=0; iter<iterationen; iter++){
-        inputImage = s(inputImage, kernelVec, range);
+        inputImage = s(inputImage, kernelVec, static_cast<unsigned int>(range));
         inputImage.copyDataToHost();
+        inputImage.resize(inputImage.size());
     }
 
     //Matrix<int> outputImage = s(inputImage, kernelVec, range);
@@ -164,7 +171,7 @@ int main(int argc, char** argv) {
     time1=get_time();
     printf("Total: %.12f\n", (float) (time1-time0) / 1000000);
 
-    writePPM(inputImage, outFile);
+    writePPM(inputImage, out.str());
 
     skelcl::terminate();
 

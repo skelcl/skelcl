@@ -101,8 +101,8 @@ int main(int argc, char** argv) {
     long long time4;
     long long time5;
     long long time6;
-    int range = 2;
     int i;
+
     using namespace pvsutil::cmdline;
     pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
 
@@ -112,6 +112,19 @@ int main(int argc, char** argv) {
     auto deviceType = Arg<device_type>(Flags(Long("device_type")),
             Description("Device type: ANY, CPU, "
                     "GPU, ACCELERATOR"), Default(device_type::GPU));
+
+    auto range = Arg<int>(Flags(Long("range")),
+            Description("The Overlap radius"), Default(5));
+
+    auto inFile = Arg<std::string>(Flags(Long("inFile")),
+                                       Description("Filename of the input file"), Default(std::string("lena.pgm")));
+
+    cmd.add(&deviceCount, &deviceType, &range, &inFile);
+    cmd.parse(argc, argv);
+
+    std::stringstream out("_");
+
+    out << static_cast<std::string>(inFile).substr(0, static_cast<std::string>(inFile).find(".")) << "_" << range << "_devs_" << deviceCount << ".pgm";
 
 
     //calculate the kernel
@@ -134,14 +147,6 @@ int main(int argc, char** argv) {
 
     //Read pgm-File
     std::vector<float> img(1);
-    std::string inFile("pgm.pgm");
-    if (argc > 1) {
-        inFile = argv[1];
-    }
-    std::string outFile("out.pgm");
-    if (argc > 2) {
-        outFile = argv[2];
-    }
 
     int numcols = readPPM(inFile, img);
 
@@ -151,10 +156,10 @@ int main(int argc, char** argv) {
 
     Matrix<float> inputImage(img, numcols);
 
-    skelcl::MapOverlap<float(float)> m(std::ifstream { "./cannyGauss.cl" }, range,
+    skelcl::MapOverlap<float(float)> m(std::ifstream { "./cannyGauss.cl" }, static_cast<unsigned int>(range),
                         detail::Padding::NEUTRAL, 255, "func");
 
-    Matrix<float> outputImage = m(inputImage, kernelVec, range);
+    Matrix<float> outputImage = m(inputImage, kernelVec, static_cast<unsigned int>(range));
     outputImage.copyDataToHost();
     outputImage.resize(inputImage.size());
 
@@ -166,7 +171,7 @@ int main(int argc, char** argv) {
     skelcl::MapOverlap<float(float)> n(std::ifstream { "./cannySobel.cl" }, 1,
                         detail::Padding::NEAREST, 0, "func");
 
-    Matrix<float> tempImage = n(outputImage, kernelVec, range);
+    Matrix<float> tempImage = n(outputImage, kernelVec, 1);
     tempImage.copyDataToHost();
     tempImage.resize(inputImage.size());
 
@@ -177,7 +182,7 @@ int main(int argc, char** argv) {
     skelcl::MapOverlap<float(float)> o(std::ifstream { "./cannyNMS.cl" }, 1,
                         detail::Padding::NEUTRAL, 0, "func");
 
-    outputImage = o(tempImage, kernelVec, range);
+    outputImage = o(tempImage, kernelVec, 1);
     outputImage.copyDataToHost();
     outputImage.resize(inputImage.size());
 
@@ -188,7 +193,7 @@ int main(int argc, char** argv) {
     skelcl::MapOverlap<float(float)> p(std::ifstream { "./cannyThreshold.cl" }, 1,
                         detail::Padding::NEAREST, 255, "func");
 
-    tempImage = p(outputImage, kernelVec, range);
+    tempImage = p(outputImage, kernelVec, 1);
 
     //Get time
     time5=get_time();
@@ -200,7 +205,7 @@ int main(int argc, char** argv) {
     time6=get_time();
     printf("Total Total: %.12f\n", (float) (time6-time0) / 1000000);
 
-    writePPM(tempImage, outFile);
+    writePPM(tempImage, out.str());
 
     skelcl::terminate();
 
