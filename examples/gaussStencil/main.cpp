@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
     std::stringstream out("_");
 
     out << static_cast<std::string>(inFile).substr(0, static_cast<std::string>(inFile).find(".")) << "_n_" << rangeNorth << "_w_" << rangeWest
-        << "_s_" << rangeSouth  << "_e_" << rangeEast << "_devs_" << deviceCount << ".pgm";
+        << "_s_" << rangeSouth  << "_e_" << rangeEast << "_iter_" << iterationen << "_iterBS_" << iterationenBetweenSwaps << "_devs_" << deviceCount << ".pgm";
 
     int range = rangeNorth > rangeSouth ? rangeNorth :rangeSouth;
     range = range > rangeEast ? range : rangeEast;
@@ -165,7 +165,7 @@ int main(int argc, char** argv) {
     Matrix<float> inputImage(img, numcols);
 
     skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" }, static_cast<int>(rangeNorth),static_cast<int>(rangeWest),static_cast<int>(rangeSouth),static_cast<int>(rangeEast),
-                        detail::Padding::NEAREST, 255, "func", static_cast<int>(iterationenBetweenSwaps));
+                        detail::Padding::NEUTRAL, 255, "func", static_cast<int>(iterationenBetweenSwaps));
 
     Matrix<float> outputImage = s(iterationen, inputImage, kernelVec, static_cast<int>(rangeNorth),static_cast<int>(rangeWest),static_cast<int>(rangeSouth),static_cast<int>(rangeEast));
 
