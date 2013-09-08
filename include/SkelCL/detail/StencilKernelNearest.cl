@@ -193,15 +193,6 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                     }
                 }
 
-                if(l_col < SCL_WEST) {
-                    for(j = 0; j < SCL_TILE_HEIGHT; j++){
-                        if(row-SCL_NORTH+j<SCL_ROWS){
-                            SCL_LOCAL_TMP[j*SCL_TILE_WIDTH+l_col] = SCL_TMP[(j-SCL_NORTH+row)*SCL_COLS+col-SCL_WEST];
-                        } else {
-                            SCL_LOCAL_TMP[j*SCL_TILE_WIDTH+l_col] = SCL_TMP[SCL_ELEMENTS-SCL_COLS+col-SCL_WEST];
-                        }
-                    }
-                }
                 if(col < SCL_WEST) {
                     for(j = 0; j < SCL_TILE_HEIGHT; j++){
                         if(row-SCL_NORTH+j<SCL_ROWS){
@@ -210,22 +201,29 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                             SCL_LOCAL_TMP[j*SCL_TILE_WIDTH+l_col] = SCL_TMP[SCL_ELEMENTS-SCL_COLS+1];
                         }
                     }
-                }
-                if(l_col >= get_local_size(0) - SCL_EAST) {
-                    for(k = 0; k < SCL_TILE_HEIGHT; k++){
-                        if(row-SCL_NORTH+k<SCL_ROWS){
-                            SCL_LOCAL_TMP[k*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(row-SCL_NORTH+k)*SCL_COLS+col+SCL_EAST];
-                        } else {
-                            SCL_LOCAL_TMP[j*SCL_TILE_WIDTH+l_col] = SCL_TMP[(SCL_ROWS-1)*SCL_COLS+col];
+                } else if(l_col < SCL_WEST) {
+                    for(j = 0; j < SCL_TILE_HEIGHT; j++){
+                        if(row-SCL_NORTH+j<SCL_ROWS){
+                            SCL_LOCAL_TMP[j*SCL_TILE_WIDTH+l_col] = SCL_TMP[(j-SCL_NORTH+row)*SCL_COLS+col-SCL_WEST];
+                        }else {
+                            SCL_LOCAL_TMP[j*SCL_TILE_WIDTH+l_col] = SCL_TMP[SCL_ELEMENTS-SCL_COLS+col-SCL_WEST];
                         }
                     }
                 }
                 if(col >= SCL_COLS - SCL_EAST) {
                     for(k = 0; k < SCL_TILE_HEIGHT; k++){
-                        if(row-SCL_NORTH+j<SCL_ROWS) {
+                        if(row-SCL_NORTH+k<SCL_ROWS) {
                             SCL_LOCAL_TMP[k*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(row-SCL_NORTH+k+1)*SCL_COLS-1];
                         } else {
-                            SCL_LOCAL_TMP[k*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(SCL_ROWS-1)*SCL_COLS+SCL_COLS-1];
+                            SCL_LOCAL_TMP[k*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[SCL_ELEMENTS-1];
+                        }
+                    }
+                } else if(l_col >= get_local_size(0) - SCL_EAST) {
+                    for(k = 0; k < SCL_TILE_HEIGHT; k++){
+                        if(row-SCL_NORTH+k<SCL_ROWS){
+                            SCL_LOCAL_TMP[k*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(row-SCL_NORTH+k)*SCL_COLS+col+SCL_EAST];
+                        } else {
+                            SCL_LOCAL_TMP[k*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[SCL_ELEMENTS-SCL_COLS+col+1+SCL_EAST];
                         }
                     }
                 }
