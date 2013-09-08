@@ -118,11 +118,12 @@ int main(int argc, char** argv) {
             Description("The range in west direction"), Default(5));
     auto iterationen = Arg<int>(Flags(Long("iterationen")),
                                    Description("The number of iterations"), Default(1));
-
+    auto iterationenBetweenSwaps = Arg<int>(Flags(Long("iterationenSwap")),
+                                   Description("The number of iterations between Swaps"), Default(-1));
     auto inFile = Arg<std::string>(Flags(Long("inFile")),
                                        Description("Filename of the input file"), Default(std::string("lena.pgm")));
 
-    cmd.add(&deviceCount, &deviceType, &rangeNorth, &rangeWest, &rangeSouth, &rangeEast, &inFile, &iterationen);
+    cmd.add(&deviceCount, &deviceType, &rangeNorth, &rangeWest, &rangeSouth, &rangeEast, &inFile, &iterationen, &iterationenBetweenSwaps);
     cmd.parse(argc, argv);
 
     std::stringstream out("_");
@@ -164,7 +165,7 @@ int main(int argc, char** argv) {
     Matrix<float> inputImage(img, numcols);
 
     skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" }, static_cast<int>(rangeNorth),static_cast<int>(rangeWest),static_cast<int>(rangeSouth),static_cast<int>(rangeEast),
-                        detail::Padding::NEUTRAL, 255, "func");
+                        detail::Padding::NEAREST, 255, "func", static_cast<int>(iterationenBetweenSwaps));
 
     Matrix<float> outputImage = s(iterationen, inputImage, kernelVec, static_cast<int>(rangeNorth),static_cast<int>(rangeWest),static_cast<int>(rangeSouth),static_cast<int>(rangeEast));
 

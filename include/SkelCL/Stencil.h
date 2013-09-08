@@ -62,11 +62,11 @@ public:
 	Stencil<Tout(Tin)>(const Source& source, unsigned int north,
 			unsigned int west, unsigned int south, unsigned int east,
 			detail::Padding padding, Tin neutral_element,
-			const std::string& func);
+            const std::string& func, int iterBetSwaps=-1);
 
 	Stencil<Tout(Tin)>(const Source& source, unsigned int west,
 			unsigned int east, detail::Padding padding, Tin neutral_element,
-			const std::string& func);
+            const std::string& func, int iterBetSwaps=-1);
 
 	// Ausführungsoperator
 	template<typename ... Args>
@@ -118,6 +118,8 @@ private:
 	std::vector<StencilInfo<Tout(Tin)> > _stencilInfos;
 
 	unsigned int _iterations;
+
+    int _iterBetSwaps;
 
 };
 

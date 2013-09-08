@@ -209,7 +209,7 @@ unsigned int offset = 0;
                         }
                     }
                 }
-                if(col >= SCL_COLS - SCL_EAST) {
+                if(col > SCL_COLS - SCL_EAST) {
                     for(k = 0; k < SCL_TILE_HEIGHT; k++){
                         SCL_LOCAL_TMP[k*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = NEUTRAL;
                     }

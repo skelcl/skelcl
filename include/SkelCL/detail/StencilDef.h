@@ -80,8 +80,8 @@ long long get_time1() {
 //Konstruktor für Matrix
 template<typename Tin, typename Tout>
 Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
-                            detail::Padding padding, Tin neutral_element, const std::string& func):
-    detail::Skeleton() {
+                            detail::Padding padding, Tin neutral_element, const std::string& func, int iterBetSwaps):
+    detail::Skeleton(), _iterBetSwaps(iterBetSwaps) {
     LOG_DEBUG_INFO("Create new Stencil object for Matrix (", this, ")");
     add(source, north, west, south, east, padding, neutral_element, func);
 }
@@ -89,8 +89,8 @@ Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int north, unsigned i
 //Konstruktor für Vektor
 template<typename Tin, typename Tout>
 Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int west, unsigned int east,
-                            detail::Padding padding, Tin neutral_element, const std::string& func):
-    detail::Skeleton() {
+                            detail::Padding padding, Tin neutral_element, const std::string& func, int iterBetSwaps):
+    detail::Skeleton(), _iterBetSwaps(iterBetSwaps) {
     LOG_DEBUG_INFO("Create new Stencil object for Vector (", this, ")");
     add(source, 0, west, 0, east, padding, neutral_element, func);
 }
@@ -141,11 +141,14 @@ Matrix<Tout>& Stencil<Tout(Tin)>::operator()(unsigned int iterations, Out<Matrix
     //Da das Kopieren und Zuweisen von Matrizen hier explizit verboten wurde, wird hier im vorhinein die Ausgabe-Matrix bestimmt.
     if(_iterations % 2 == 0){
        execute(temp.container(), output.container(), in, std::forward<Args>(args)...);
+       LOG_DEBUG("Return temp");
     } else {
         if((_iterations % 2 == 1) && (_stencilInfos.size() % 2 == 0)){
             execute(temp.container(), output.container(), in, std::forward<Args>(args)...);
+            LOG_DEBUG("Return temp");
         } else {
             execute(output.container(), temp.container(), in, std::forward<Args>(args)...);
+            LOG_DEBUG("Return output");
         }
     }
 
@@ -220,14 +223,17 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                     kernel.setArg(j++, inputBuffer.clBuffer());
                     if((i+k)==0){
                         //Erste Iteration: Lese von input, schreibe zu Output
+                        LOG_DEBUG("From input to output");
                         kernel.setArg(j++, outputBuffer.clBuffer());
                         kernel.setArg(j++, inputBuffer.clBuffer());
                     } else if((i+k) % 2 == 0){
                         //"Gerade" Iterationen+StencilShape: Lese von temp, schreibe zu Output
+                        LOG_DEBUG("From temp to output");
                         kernel.setArg(j++, outputBuffer.clBuffer());
                         kernel.setArg(j++, tempBuffer.clBuffer());
                     } else if((i+k) % 2 == 1){
                         //"Ungerade" Iterationen+StencilShape: Lese von Output, schreibe zu temp. Ist dies die letzte Iteration, muss temp zurückgegeben werden
+                        LOG_DEBUG("From output to temp");
                         kernel.setArg(j++, tempBuffer.clBuffer());
                         kernel.setArg(j++, outputBuffer.clBuffer());
                     }
@@ -272,12 +278,13 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
              k++;
             }
             iterationsAfterSwap++;
+            LOG_DEBUG("Stencil kernel ", i, " started");
         }
+
     } catch (cl::Error& err) {
             ABORT_WITH_ERROR(err);
     }
 
-    LOG_INFO("Stencil kernel started");
 }
 
 // Eingabe vorbereiten
@@ -297,10 +304,8 @@ void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
 
 template<typename Tin, typename Tout>
 unsigned int Stencil<Tout(Tin)>::determineIterationsBetweenDataSwaps(unsigned int iterLeft) {
-    if(iterLeft<2) {
-        return iterLeft;
-    }
-    return 4;
+    if(_iterBetSwaps!=-1) return _iterBetSwaps;
+    return 1;
 }
 
 template<typename Tin, typename Tout>

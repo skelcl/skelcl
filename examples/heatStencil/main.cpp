@@ -112,11 +112,13 @@ int main(int argc, char** argv) {
             Description("The range in y direction to one side"), Default(5));
     auto iterationen = Arg<int>(Flags(Long("iterationen")),
                                    Description("The number of iterations"), Default(1));
+    auto iterationenBetweenSwaps = Arg<int>(Flags(Long("iterationenSwap")),
+                                   Description("The number of iterations between Swaps"), Default(-1));
 
     auto inFile = Arg<std::string>(Flags(Long("inFile")),
                                        Description("Filename of the input file"), Default(std::string("lena.pgm")));
 
-    cmd.add(&deviceCount, &deviceType, &range, &inFile, &iterationen);
+    cmd.add(&deviceCount, &deviceType, &range, &inFile, &iterationen, &iterationenBetweenSwaps);
     cmd.parse(argc, argv);
 
     std::stringstream out("_");
@@ -153,7 +155,7 @@ int main(int argc, char** argv) {
     Matrix<float> inputImage(img, numcols);
 
     skelcl::Stencil<float(float)> s(std::ifstream { "./heat.cl" }, static_cast<int>(range),0,static_cast<int>(range),0,
-                        detail::Padding::NEUTRAL, 0, "func");
+                        detail::Padding::NEAREST_INITIAL, 0, "func", static_cast<int>(iterationenBetweenSwaps));
 
     Matrix<float> outputImage = s(iterationen, inputImage, kernelVec, static_cast<int>(range));
 
