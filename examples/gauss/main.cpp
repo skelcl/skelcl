@@ -159,7 +159,8 @@ int main(int argc, char** argv) {
 
     //Get time
     time1=get_time();
-    printf("Total: %.12f\n", (float) (time1-time0) / 1000000);
+    double total_time = time1 - time0;
+     printf("Total time : %.12f\n", (float) (time1-time0) / 1000000);
 
     writePPM(outputImage, out.str());
 

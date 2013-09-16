@@ -70,7 +70,7 @@ void setKernelArgs(cl::Kernel& kernel,
 
 size_t getKernelGroupSize(cl::Kernel kernel, const Device& device);
 
-size_t getWorkGroupSizeToBeUsed(cl::Kernel kernel, const Device& device);
+size_t determineWorkgroupSizeForKernel(cl::Kernel kernel, const Device& device);
 
 // Declarations
 

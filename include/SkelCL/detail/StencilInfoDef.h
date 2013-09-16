@@ -35,12 +35,12 @@ detail::Program StencilInfo<Tout(Tin)>::createAndBuildProgram() const {
     case detail::Padding::NEUTRAL: {
         temp << "#define NEUTRAL " << _neutral_element << std::endl;
     }
-    case detail::Padding::NEAREST: {
+    /*case detail::Padding::NEAREST: {
         temp << "#define NEAREST " << 1 << std::endl;
     }
     case detail::Padding::NEAREST_INITIAL: {
         temp << "#define NEAREST_INITIAL " << 1 << std::endl;
-    }
+    }*/
     }
 
 	// create program

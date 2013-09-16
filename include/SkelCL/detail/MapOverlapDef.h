@@ -121,9 +121,10 @@ void MapOverlap<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
     for (auto& devicePtr : in.distribution().devices()) {
         cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_MAPOVERLAP"));
 
-        cl_uint workgroupSize = static_cast<cl_uint>(detail::kernelUtil::getWorkGroupSizeToBeUsed(kernel, *devicePtr));
+        cl_uint workgroupSize = static_cast<cl_uint>(detail::kernelUtil::determineWorkgroupSizeForKernel(kernel, *devicePtr));
 
-
+        cl_ulong time_start, time_end;
+        double total_time;
         auto& outputBuffer = output.deviceBuffer(*devicePtr);
         auto& inputBuffer = in.deviceBuffer(*devicePtr);
 
@@ -163,6 +164,11 @@ void MapOverlap<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
             auto event = devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
                     cl::NDRange(local[0], local[1]), cl::NullRange, // offset
                     invokeAfter);
+            event.wait();
+            event.getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
+            event.getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
+            total_time = time_end - time_start;
+            printf("Total exec time in milliseconds = %0.3f ms\n", (total_time / 1000000.0) );
 
         } catch (cl::Error& err) {
             ABORT_WITH_ERROR(err);

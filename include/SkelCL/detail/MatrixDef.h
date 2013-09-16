@@ -76,7 +76,7 @@ Matrix<T>::Matrix() :
 		_size( { 0, 0 }), _distribution(new detail::Distribution<Matrix<T>>()), _hostBufferUpToDate(
 				true), _deviceBuffersUpToDate(false), _hostBuffer(), _deviceBuffers() {
 	(void) registerMatrixDeviceFunctions;
-    LOG_DEBUG("Created new Matrix object (", this, ") with ",
+    LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
 			getDebugInfo());
 }
 
@@ -87,7 +87,7 @@ Matrix<T>::Matrix(const size_type size, const value_type& value,
 				true), _deviceBuffersUpToDate(false), _hostBuffer(
 				_size.elemCount(), value), _deviceBuffers() {
 	(void) registerMatrixDeviceFunctions;
-    LOG_DEBUG("Created new Matrix object (", this, ") with ",
+    LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
 			getDebugInfo());
 }
 
@@ -106,7 +106,7 @@ Matrix<T>::Matrix(const std::vector<T>& vector,
 		_size = {rowCount + 1, columnCount};
 		_hostBuffer.resize(_size.elemCount());
 	}
-    LOG_DEBUG("Created new Matrix object (", this, ") with ",
+    LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
 			getDebugInfo());
 }
 
@@ -336,7 +336,7 @@ void Matrix<T>::resize(const size_type& size, T c) {
 	// set size last, to avoid problems, when moving the "old" data around
 	_size = size;
 
-    LOG_DEBUG("Matrix object (", this, ") resized, now with ",
+    LOG_DEBUG_INFO("Matrix object (", this, ") resized, now with ",
 			getDebugInfo());
 }
 
@@ -651,7 +651,7 @@ void Matrix<T>::forceCreateDeviceBuffers() const {
 								/*,mem flags*/)
 				);
 			});
-LOG_DEBUG("Buffer created");
+LOG_DEBUG_INFO("Buffer created");
 }
 
 template<typename T>

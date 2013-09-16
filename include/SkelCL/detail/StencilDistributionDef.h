@@ -186,47 +186,19 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
           auto s = (size.rowCount() / devices.size()) * size.columnCount();
           s += (size.rowCount() % devices.size()) * size.columnCount();
           s += initialIterationsBeforeFirstSwap * north * size.columnCount();
-                                LOG_DEBUG("s ", s);
           return s;
       } else if (id == 0 && devices.size() == 1) {
           auto s = (size.rowCount() / devices.size()) * size.columnCount();
-                                LOG_DEBUG("t ", s);
           return s;
       } else if (id == 0) {
           auto s = (size.rowCount() / devices.size()) * size.columnCount();
           s += initialIterationsBeforeFirstSwap * south * size.columnCount();
-                                LOG_DEBUG("u ", s);
           return s;
       } else {
           auto s = size.rowCount() / devices.size() * size.columnCount();
           s += (initialIterationsBeforeFirstSwap * (north + south)) * size.columnCount();
-                                LOG_DEBUG("v ", s);
           return s;
       }
-
-
-                              /*auto id = devicePtr->id();
-    if (id == devices.size() - 1 && devices.size() > 1) {
-        auto s = (size.rowCount() / devices.size()) * size.columnCount();
-        s += (size.rowCount() % devices.size()) * size.columnCount();
-        //s += (north) * size.columnCount();
-                              LOG_DEBUG("s ", s);
-        return s;
-    } else if (id == 0 && devices.size() == 1) {
-        auto s = (size.rowCount() / devices.size()) * size.columnCount();
-                              LOG_DEBUG("t ", s);
-        return s;
-    } else if (id == 0) {
-        auto s = (size.rowCount() / devices.size()) * size.columnCount();
-        //s += south * size.columnCount();
-                              LOG_DEBUG("u ", s);
-        return s;
-    } else {
-        auto s = size.rowCount() / devices.size() * size.columnCount();
-        //s += (north + south) * size.columnCount();
-                              LOG_DEBUG("v ", s);
-        return s;
-    }*/
 }
 
 template<typename T>
@@ -237,7 +209,6 @@ void startUpload(Vector<T>& vector, Event* events, unsigned int north,
     LOG_DEBUG_INFO("Vector Version , north: ", north, " and south: ", south,
             " are not considered for the upload.");
                               if(initialIterationsBeforeFirstSwap){};
-//  size_t offset       = 0;
     size_t deviceOffset = 0;
     size_t devSize = devices.size();
     size_t hostOffset = 0;
@@ -261,6 +232,8 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north,
         unsigned int west, unsigned int south, unsigned int east, unsigned int initialIterationsBeforeFirstSwap,
         detail::DeviceList devices) {
     ASSERT(events != nullptr);
+    cl_ulong time_start, time_end;
+            double total_time;
     LOG_DEBUG_INFO("Matrix Version , west: ", west, " and east: ", east,
             " are not considered for the upload.");
     if(initialIterationsBeforeFirstSwap){};
@@ -287,11 +260,12 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north,
                                       hostOffset);
       events->insert(event);
 
-      LOG_DEBUG("Buffer size, ", size);
-      LOG_DEBUG("NortOverlapWithIter, ", northOverlapWithIter);
-      LOG_DEBUG("SouthOverlapWithIter, ", southOverlapwithIter);
-
       hostOffset += (buffer.size() - northOverlapWithIter - southOverlapwithIter);
+      event.wait();
+      event.getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
+      event.getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
+      total_time = time_end - time_start;
+      printf("Total upload time in milliseconds = %0.3f ms\n", (total_time / 1000000.0) );
 
       deviceOffset = 0; // after the first device, the device offset is 0
      }
@@ -343,7 +317,6 @@ void swap(const Matrix<T>& matrix, Event* events, unsigned int north, unsigned i
     // create temporary vectors
     std::vector<std::vector<T>> vs(2*(devices.size() - 1));
 
-    LOG_DEBUG("SWAP START");
     size_t devSize = devices.size();
     size_t deviceOffset = 0;
 
@@ -391,23 +364,8 @@ void swap(const Matrix<T>& matrix, Event* events, unsigned int north, unsigned i
     }
     events->wait();
 
-    for(unsigned int i = 0; i<vs.size(); i++){
-        LOG_DEBUG("Vector size ", i, " ", vs[i].size());
-        /*typename std::vector<T>::iterator itr = vs[i].begin();
-        unsigned int j = 0;
-        for (itr = vs[i].begin(); itr != vs[i].end(); ++itr) {
-            LOG_DEBUG(j, " ", *itr);
-            j++;
-        }*/
-    }
-
     for(unsigned int i = 0; i<vs.size()-1; i=i+2) {
-        LOG_DEBUG(i);
         std::swap(vs[i], vs[i+1]);
-    }
-
-    for(unsigned int i = 0; i<vs.size(); i++){
-        LOG_DEBUG("Vector size ", i, " ", vs[i].size());
     }
 
     size_t j = 0;
@@ -451,7 +409,6 @@ void swap(const Matrix<T>& matrix, Event* events, unsigned int north, unsigned i
         }
     }
     events->wait();
-    LOG_DEBUG("SWAP END");
 }
 
 template<typename T>
@@ -485,7 +442,8 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int north,
         detail::DeviceList devices) {
     if(initialIterationsBeforeFirstSwap){};
     ASSERT(events != nullptr);
-    events->wait();
+    cl_ulong time_start, time_end;
+            double total_time;
     LOG_DEBUG_INFO("Matrix Version , west: ", west, " and east: ", east,
             " are not considered for the download.");
     size_t offset = 0;
@@ -519,8 +477,12 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int north,
                 size, deviceOffset, offset);
         offset += size;
         events->insert(event);
+        event.wait();
+        event.getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
+        event.getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
+        total_time = time_end - time_start;
+        printf("Total download time in milliseconds = %0.3f ms\n", (total_time / 1000000.0) );
     }
-    events->wait();
 
 // mark data on device as out of date !
 // TODO: find out why? -> ask matthias

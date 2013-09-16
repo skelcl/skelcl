@@ -165,15 +165,16 @@ int main(int argc, char** argv) {
     Matrix<float> inputImage(img, numcols);
 
     skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" }, static_cast<int>(rangeNorth),static_cast<int>(rangeWest),static_cast<int>(rangeSouth),static_cast<int>(rangeEast),
-                        detail::Padding::NEUTRAL, 255, "func", static_cast<int>(iterationenBetweenSwaps));
+                        detail::Padding::NEAREST, 255, "func", static_cast<int>(iterationenBetweenSwaps));
 
     Matrix<float> outputImage = s(iterationen, inputImage, kernelVec, static_cast<int>(rangeNorth),static_cast<int>(rangeWest),static_cast<int>(rangeSouth),static_cast<int>(rangeEast));
 
-    //Matrix<float>::iterator itr = outputImage.begin();
+    Matrix<float>::iterator itr = outputImage.begin();
 
     //Get time
     time1=get_time();
-    printf("Total: %.12f\n", (float) (time1-time0) / 1000000);
+    double total_time = time1 - time0;
+     printf("Total time : %.12f\n", (float) (time1-time0) / 1000000);
 
     writePPM(outputImage, out.str());
 

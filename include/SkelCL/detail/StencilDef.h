@@ -145,10 +145,8 @@ Matrix<Tout>& Stencil<Tout(Tin)>::operator()(unsigned int iterations, Out<Matrix
     } else {
         if((_iterations % 2 == 1) && (_stencilInfos.size() % 2 == 0)){
             execute(temp.container(), output.container(), in, std::forward<Args>(args)...);
-            LOG_DEBUG("Return temp");
         } else {
             execute(output.container(), temp.container(), in, std::forward<Args>(args)...);
-            LOG_DEBUG("Return output");
         }
     }
 
@@ -165,10 +163,10 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
         Args&&... args) {
     ASSERT(in.distribution().isValid());
     ASSERT(output.rowCount() == in.rowCount() && output.columnCount() == in.columnCount());
-
     unsigned int iterationsBetweenSwaps = determineIterationsBetweenDataSwaps(_iterations);
     unsigned int iterationsAfterSwap = 0;
-
+    cl_ulong time_start, time_end;
+            double total_time;
     unsigned int i = 0;
     int k = 1;
     try {
@@ -186,8 +184,6 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
             }
 
             for(auto& sInfo : _stencilInfos) {
-            long long time2;
-            long long time3;
                 for(auto& devicePtr : in.distribution().devices()) {
                     auto& outputBuffer = output.deviceBuffer(*devicePtr);
                     auto& inputBuffer = in.deviceBuffer(*devicePtr);
@@ -197,7 +193,7 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
 
                     cl::Kernel kernel(sInfo.getProgram().kernel(*devicePtr, "SCL_STENCIL"));
 
-                    cl_uint workgroupSize = static_cast<cl_uint>(detail::kernelUtil::getWorkGroupSizeToBeUsed(kernel, *devicePtr));
+                    cl_uint workgroupSize = static_cast<cl_uint>(detail::kernelUtil::determineWorkgroupSizeForKernel(kernel, *devicePtr));
                     cl_uint local[2] = { static_cast<cl_uint>(sqrt(workgroupSize)),static_cast<cl_uint>(local[0])};
                     cl_uint global[2] = {
                             static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.columnCount(),
@@ -212,10 +208,8 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                                                                                         local[1]));
                     }
 
-
-                    LOG_DEBUG("device: ", devicePtr->id(), " elements: ", elements);
+                    LOG_DEBUG_INFO("device: ", devicePtr->id(), " elements: ", elements);
                     //Get time
-                    time2=get_time1();
                     int j = 0;
 
                     unsigned int tile_width = sqrt(workgroupSize) + sInfo.getWest() + sInfo.getEast();
@@ -223,17 +217,14 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                     kernel.setArg(j++, inputBuffer.clBuffer());
                     if((i+k)==0){
                         //Erste Iteration: Lese von input, schreibe zu Output
-                        LOG_DEBUG("From input to output");
                         kernel.setArg(j++, outputBuffer.clBuffer());
                         kernel.setArg(j++, inputBuffer.clBuffer());
                     } else if((i+k) % 2 == 0){
                         //"Gerade" Iterationen+StencilShape: Lese von temp, schreibe zu Output
-                        LOG_DEBUG("From temp to output");
                         kernel.setArg(j++, outputBuffer.clBuffer());
                         kernel.setArg(j++, tempBuffer.clBuffer());
                     } else if((i+k) % 2 == 1){
                         //"Ungerade" Iterationen+StencilShape: Lese von Output, schreibe zu temp. Ist dies die letzte Iteration, muss temp zurückgegeben werden
-                        LOG_DEBUG("From output to temp");
                         kernel.setArg(j++, tempBuffer.clBuffer());
                         kernel.setArg(j++, outputBuffer.clBuffer());
                     }
@@ -262,23 +253,21 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
 
                     // after finishing the kernel invoke this function ...
                     auto invokeAfter = [=] () {(void)keepAlive;};
-                    if(devicePtr->id()==0) {
-                        devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
+
+                     auto event =  devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
                                 cl::NDRange(local[0], local[1]), cl::NullRange,
                             invokeAfter);
-                    } else {
-                        devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
-                                cl::NDRange(local[0], local[1]), cl::NDRange(0, 0),
-                            invokeAfter);
-                    }
-                    //Get time
-                    time3=get_time1();
-                    printf("Total All %i: %.12f\n", k, (float) (time3-time2) / 1000000);
+
+                    event.wait();
+                    event.getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
+                    event.getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
+                    total_time = time_end - time_start;
+                    printf("Execution time in milliseconds = %0.3f ms\n", (total_time / 1000000.0) );
                 }
              k++;
             }
             iterationsAfterSwap++;
-            LOG_DEBUG("Stencil kernel ", i, " started");
+            LOG_DEBUG_INFO("Stencil kernel ", i, " started");
         }
 
     } catch (cl::Error& err) {
