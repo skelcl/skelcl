@@ -1,6 +1,6 @@
 int func(input_matrix_t* img, __global float* kernelVec, int rangeNorth, int rangeWest, int rangeSouth, int rangeEast)
 {
-
+return getData(img, rangeWest, rangeNorth);
 int range = rangeNorth;
 range = rangeSouth > range ? rangeSouth : range;
 range = rangeWest > range ? rangeWest : range;

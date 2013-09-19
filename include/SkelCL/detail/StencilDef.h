@@ -127,6 +127,7 @@ Matrix<Tout>& Stencil<Tout(Tin)>::operator()(unsigned int iterations, Out<Matrix
     ASSERT(iterations > 0);
     ASSERT(in.rowCount() > 0);
     ASSERT(in.columnCount() > 0);
+
     _iterations = iterations;
     prepareInput(in);
 

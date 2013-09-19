@@ -96,6 +96,10 @@ int readPPM(const std::string inFile, std::vector<float>& img) {
 int main(int argc, char** argv) {
     long long time0;
     long long time1;
+    long long time2;
+    long long time3;
+    long long time4;
+    long long time5;
     int i;
 
     using namespace pvsutil::cmdline;
@@ -162,21 +166,30 @@ int main(int argc, char** argv) {
 
     skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
 
+    time1 = get_time();
+
     Matrix<float> inputImage(img, numcols);
 
-    skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" }, static_cast<int>(rangeNorth),static_cast<int>(rangeWest),static_cast<int>(rangeSouth),static_cast<int>(rangeEast),
+    time2 = get_time();
+
+    skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" }, static_cast<unsigned int>(rangeNorth),static_cast<unsigned int>(rangeWest),static_cast<unsigned int>(rangeSouth),static_cast<unsigned int>(rangeEast),
                         detail::Padding::NEAREST, 255, "func", static_cast<int>(iterationenBetweenSwaps));
-
-    Matrix<float> outputImage = s(iterationen, inputImage, kernelVec, static_cast<int>(rangeNorth),static_cast<int>(rangeWest),static_cast<int>(rangeSouth),static_cast<int>(rangeEast));
-
+time3 = get_time();
+    Matrix<float> outputImage = s(iterationen, inputImage, kernelVec, static_cast<unsigned int>(rangeNorth),static_cast<unsigned int>(rangeWest),static_cast<unsigned int>(rangeSouth),static_cast<unsigned int>(rangeEast));
+time4 = get_time();
     Matrix<float>::iterator itr = outputImage.begin();
 
     //Get time
-    time1=get_time();
-    double total_time = time1 - time0;
-     printf("Total time : %.12f\n", (float) (time1-time0) / 1000000);
+    time5=get_time();
 
-    writePPM(outputImage, out.str());
+    printf("Init time : %.12f\n", (float) (time1-time0) / 1000000);
+    printf("Input time : %.12f\n", (float) (time2-time1) / 1000000);
+    printf("Creation time : %.12f\n", (float) (time3-time2) / 1000000);
+    printf("Exec time : %.12f\n", (float) (time4-time3) / 1000000);
+    printf("Total time : %.12f\n", (float) (time5-time0) / 1000000);
+     printf("Total without init time : %.12f\n", (float) (time5-time1) / 1000000);
+
+    //writePPM(outputImage, out.str());
 
     skelcl::terminate();
 

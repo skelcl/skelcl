@@ -101,6 +101,7 @@ int main(int argc, char** argv) {
     long long time4;
     long long time5;
     long long time6;
+    long long time7;
     int i;
 
     using namespace pvsutil::cmdline;
@@ -156,8 +157,18 @@ int main(int argc, char** argv) {
 
     Matrix<float> inputImage(img, numcols);
 
+    time1 = get_time();
+
     skelcl::MapOverlap<float(float)> m(std::ifstream { "./cannyGauss.cl" }, static_cast<unsigned int>(range),
                         detail::Padding::NEUTRAL, 255, "func");
+    skelcl::MapOverlap<float(float)> n(std::ifstream { "./cannySobel.cl" }, 1,
+                        detail::Padding::NEAREST, 0, "func");
+    skelcl::MapOverlap<float(float)> o(std::ifstream { "./cannyNMS.cl" }, 1,
+                        detail::Padding::NEUTRAL, 0, "func");
+    skelcl::MapOverlap<float(float)> p(std::ifstream { "./cannyThreshold.cl" }, 1,
+                        detail::Padding::NEAREST, 255, "func");
+
+    time2 = get_time();
 
     Matrix<float> outputImage = m(inputImage, kernelVec, static_cast<unsigned int>(range));
     outputImage.copyDataToHost();
@@ -165,45 +176,39 @@ int main(int argc, char** argv) {
 
 
     //Get time
-    time2=get_time();
-    printf("Total Gauß: %.12f\n", (float) (time2-time0) / 1000000);
-
-    skelcl::MapOverlap<float(float)> n(std::ifstream { "./cannySobel.cl" }, 1,
-                        detail::Padding::NEAREST, 0, "func");
+    time3=get_time();
 
     Matrix<float> tempImage = n(outputImage, kernelVec, 1);
     tempImage.copyDataToHost();
     tempImage.resize(inputImage.size());
 
     //Get time
-    time3=get_time();
-    printf("Total Sobel: %.12f\n", (float) (time3-time2) / 1000000);
-
-    skelcl::MapOverlap<float(float)> o(std::ifstream { "./cannyNMS.cl" }, 1,
-                        detail::Padding::NEUTRAL, 0, "func");
+    time4=get_time();
 
     outputImage = o(tempImage, kernelVec, 1);
     outputImage.copyDataToHost();
     outputImage.resize(inputImage.size());
 
     //Get time
-    time4=get_time();
-    printf("Total NMS: %.12f\n", (float) (time4-time3) / 1000000);
-
-    skelcl::MapOverlap<float(float)> p(std::ifstream { "./cannyThreshold.cl" }, 1,
-                        detail::Padding::NEAREST, 255, "func");
+    time5=get_time();
 
     tempImage = p(outputImage, kernelVec, 1);
 
     //Get time
-    time5=get_time();
-    printf("Total Threshold: %.12f\n", (float) (time5-time4) / 1000000);
+    time6=get_time();
 
     Matrix<float>::iterator itr = tempImage.begin();
 
     //Get time
-    time6=get_time();
+    time7=get_time();
+    printf("Total Init: %.12f\n", (float) (time1-time0) / 1000000);
+    printf("Total Creation: %.12f\n", (float) (time2-time1) / 1000000);
+    printf("Total Gauß: %.12f\n", (float) (time3-time2) / 1000000);
+    printf("Total Sobel: %.12f\n", (float) (time4-time3) / 1000000);
+    printf("Total NSM: %.12f\n", (float) (time5-time4) / 1000000);
+    printf("Total Threshold: %.12f\n", (float) (time6-time5) / 1000000);
     printf("Total Total: %.12f\n", (float) (time6-time0) / 1000000);
+    printf("Total Total no init: %.12f\n", (float) (time6-time1) / 1000000);
 
     writePPM(tempImage, out.str());
 

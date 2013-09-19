@@ -97,6 +97,7 @@ int main(int argc, char** argv) {
     long long time0;
     long long time1;
     long long time2;
+    long long time3;
     int i;
     using namespace pvsutil::cmdline;
     pvsutil::CLArgParser cmd(Description("Computation of canny."));
@@ -150,26 +151,31 @@ int main(int argc, char** argv) {
 
     Matrix<float> inputImage(img, numcols);
 
+    time1 = get_time();
+
     skelcl::Stencil<float(float)> s(std::ifstream { "./cannyGauss.cl" }, static_cast<int>(range),static_cast<int>(range),static_cast<int>(range),static_cast<int>(range),
-                        detail::Padding::NEAREST, 255, "func");
+                        detail::Padding::NEUTRAL, 255, "func");
     s.add(std::ifstream { "./cannySobel.cl" },1,1,1,1,
-          detail::Padding::NEUTRAL, 255, "func");
+          detail::Padding::NEAREST, 255, "func");
     s.add(std::ifstream { "./cannyNMS.cl" }, 1,1,1,1,
-       detail::Padding::NEAREST_INITIAL, 1, "func");
+       detail::Padding::NEUTRAL, 1, "func");
     s.add(std::ifstream { "./cannyThreshold.cl" }, 0,0,0,0,
        detail::Padding::NEAREST, 1, "func");
 
     //Get time
-    time1=get_time();
-    printf("Total Creation: %.12f\n", (float) (time1-time0) / 1000000);
+    time2=get_time();
+
 
     Matrix<float> outputImage = s(1, inputImage, kernelVec, static_cast<int>(range));
 
     Matrix<float>::iterator itr = outputImage.begin();
 
     //Get time
-    time2=get_time();
-    printf("Total Total: %.12f\n", (float) (time2-time0) / 1000000);
+    time3=get_time();
+    printf("Total Init: %.12f\n", (float) (time1-time0) / 1000000);
+    printf("Total Creation: %.12f\n", (float) (time2-time1) / 1000000);
+    printf("Total Total: %.12f\n", (float) (time3-time0) / 1000000);
+    printf("Total no init Total: %.12f\n", (float) (time3-time1) / 1000000);
 
     writePPM(outputImage, out.str());
 
