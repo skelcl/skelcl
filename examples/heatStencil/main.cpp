@@ -96,6 +96,9 @@ int readPPM(const std::string inFile, std::vector<float>& img) {
 int main(int argc, char** argv) {
     long long time0;
     long long time1;
+    long long time2;
+    long long time3;
+    long long time4;
     int i;
 
     using namespace pvsutil::cmdline;
@@ -154,16 +157,26 @@ int main(int argc, char** argv) {
 
     Matrix<float> inputImage(img, numcols);
 
+    time1 = get_time();
+
     skelcl::Stencil<float(float)> s(std::ifstream { "./heat.cl" }, static_cast<int>(range),0,static_cast<int>(range),0,
                         detail::Padding::NEAREST_INITIAL, 0, "func", static_cast<int>(iterationenBetweenSwaps));
 
+    time2 = get_time();
+
     Matrix<float> outputImage = s(iterationen, inputImage, kernelVec, static_cast<int>(range));
+
+    time3 = get_time();
 
     Matrix<float>::iterator itr = outputImage.begin();
 
     //Get time
-    time1=get_time();
-    printf("Total: %.12f\n", (float) (time1-time0) / 1000000);
+    time4=get_time();
+    printf("Init time : %.12f\n", (float) (time1-time0) / 1000000);
+    printf("Creation time : %.12f\n", (float) (time2-time1) / 1000000);
+    printf("Exec time all iter: %.12f\n", (float) (time3-time2) / 1000000);
+    printf("Total time : %.12f\n", (float) (time4-time0) / 1000000);
+    printf("Total without init time : %.12f\n", (float) (time4-time1) / 1000000);
 
     writePPM(outputImage, out.str());
 

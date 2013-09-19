@@ -97,6 +97,9 @@ int readPPM(const std::string inFile, std::vector<int>& img) {
 int main(int argc, char** argv) {
     long long time0;
     long long time1;
+    long long time2;
+    long long time3;
+    long long time4;
     int i;
     using namespace pvsutil::cmdline;
     pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
@@ -154,8 +157,12 @@ int main(int argc, char** argv) {
 
     Matrix<int> inputImage(img, numcols);
 
+    time1 = get_time();
+
     skelcl::MapOverlap<int(int)> s(std::ifstream { "./heat.cl" }, static_cast<unsigned int>(range),
-                detail::Padding::NEUTRAL, 255);
+                detail::Padding::NEAREST, 255);
+
+    time2 = get_time();
 
     for (int iter=0; iter<iterationen; iter++){
         inputImage = s(inputImage, kernelVec, static_cast<unsigned int>(range));
@@ -163,13 +170,17 @@ int main(int argc, char** argv) {
         inputImage.resize(inputImage.size());
     }
 
-    //Matrix<int> outputImage = s(inputImage, kernelVec, range);
+    time3 = get_time();
 
     Matrix<int>::iterator itr = inputImage.begin();
 
     //Get time
-    time1=get_time();
-    printf("Total: %.12f\n", (float) (time1-time0) / 1000000);
+    time4=get_time();
+    printf("Init time : %.12f\n", (float) (time1-time0) / 1000000);
+    printf("Creation time : %.12f\n", (float) (time2-time1) / 1000000);
+    printf("Exec time all iter: %.12f\n", (float) (time3-time2) / 1000000);
+    printf("Total time : %.12f\n", (float) (time4-time0) / 1000000);
+    printf("Total without init time : %.12f\n", (float) (time4-time1) / 1000000);
 
     writePPM(inputImage, out.str());
 
