@@ -86,6 +86,15 @@ Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int north, unsigned i
     add(source, north, west, south, east, padding, neutral_element, func);
 }
 
+//Konstruktor für Matrix (Convenience for square stencil shapes)
+template<typename Tin, typename Tout>
+Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int range,
+                            detail::Padding padding, Tin neutral_element, const std::string& func, int iterBetSwaps):
+    detail::Skeleton(), _iterBetSwaps(iterBetSwaps) {
+    LOG_DEBUG_INFO("Create new Stencil object for Matrix (", this, ")");
+    add(source, range, range, range, range, padding, neutral_element, func);
+}
+
 //Konstruktor für Vektor
 template<typename Tin, typename Tout>
 Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int west, unsigned int east,
@@ -93,6 +102,12 @@ Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int west, unsigned in
     detail::Skeleton(), _iterBetSwaps(iterBetSwaps) {
     LOG_DEBUG_INFO("Create new Stencil object for Vector (", this, ")");
     add(source, 0, west, 0, east, padding, neutral_element, func);
+}
+
+template<typename Tin, typename Tout>
+void Stencil<Tout(Tin)>::add(const Source& source, unsigned int range,
+         detail::Padding padding, Tin neutral_element, const std::string& func){
+    add(source, range, range, range, range, padding, neutral_element, func);
 }
 
 template<typename Tin, typename Tout>
@@ -199,16 +214,15 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                     cl_uint global[2] = {
                             static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.columnCount(),
                                     local[0])),
-                        static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount(),
+                        static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.rowCount(),
                                     local[1]))}; // SUBTILES
                     if(devicePtr->id()==0 && in.distribution().devices().size()>1){
-                        global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount() + iterationsBetweenSwaps * determineLargestSouth(),
+                        global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.rowCount() + iterationsBetweenSwaps * determineLargestSouth(),
                                                                                         local[1]));
                     } else if (devicePtr->id()==in.distribution().devices().size()-1 && in.distribution().devices().size()>1) {
-                        global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount() + iterationsBetweenSwaps * determineLargestNorth(),
+                        global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.rowCount() + iterationsBetweenSwaps * determineLargestNorth(),
                                                                                         local[1]));
                     }
-
                     LOG_DEBUG_INFO("device: ", devicePtr->id(), " elements: ", elements);
                     //Get time
                     int j = 0;

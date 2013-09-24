@@ -64,6 +64,10 @@ public:
 			detail::Padding padding, Tin neutral_element,
             const std::string& func, int iterBetSwaps=-1);
 
+    Stencil<Tout(Tin)>(const Source& source, unsigned int range,
+        detail::Padding padding, Tin neutral_element,
+        const std::string& func, int iterBetSwaps=-1);
+
 	Stencil<Tout(Tin)>(const Source& source, unsigned int west,
 			unsigned int east, detail::Padding padding, Tin neutral_element,
             const std::string& func, int iterBetSwaps=-1);
@@ -82,6 +86,10 @@ public:
 	void add(const Source& source, unsigned int north, unsigned int west,
 			unsigned int south, unsigned int east, detail::Padding padding,
 			Tin neutral_element, const std::string& func);
+
+    // Fügt dem Stencil-Skelett eine neue Stencil Shape hinzu
+    void add(const Source& source, unsigned int range, detail::Padding padding,
+            Tin neutral_element, const std::string& func);
 private:
 
 	// Ausführungsoperator mit Referenz weitergeleitet, um die temporäre Matrix vor dem User zu verstecken
