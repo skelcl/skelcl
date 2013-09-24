@@ -61,7 +61,7 @@ void writePPM(std::vector<float>& img, const std::string filename) {
     }
 }
 
-int readPPM(const std::string inFile, std::vector<int>& img) {
+int readPPM(const std::string inFile, std::vector<float>& img) {
     img.clear();
     int numrows = 0, numcols = 0;
     std::ifstream infile(inFile);
@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
     }
 
     //Read pgm-File
-    std::vector<int> img(1);
+    std::vector<float> img(1);
 
     int numcols = readPPM(inFile, img);
 
@@ -155,11 +155,11 @@ int main(int argc, char** argv) {
 
     skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
 
-    Matrix<int> inputImage(img, numcols);
+    Matrix<float> inputImage(img, numcols);
 
     time1 = get_time();
 
-    skelcl::MapOverlap<int(int)> s(std::ifstream { "./heat.cl" }, static_cast<unsigned int>(range),
+    skelcl::MapOverlap<float(float)> s(std::ifstream { "./heat.cl" }, static_cast<unsigned int>(range),
                 detail::Padding::NEAREST, 255);
 
     time2 = get_time();
@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
 
     time3 = get_time();
 
-    Matrix<int>::iterator itr = inputImage.begin();
+    Matrix<float>::iterator itr = inputImage.begin();
 
     //Get time
     time4=get_time();

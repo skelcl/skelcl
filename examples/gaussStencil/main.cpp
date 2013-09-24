@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
 
     time2 = get_time();
 
-    skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" }, static_cast<unsigned int>(rangeNorth),static_cast<unsigned int>(rangeWest),static_cast<unsigned int>(rangeSouth),static_cast<unsigned int>(rangeEast),
+    skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" }, static_cast<unsigned int>(rangeEast),
                         detail::Padding::NEAREST, 255, "func", static_cast<int>(iterationenBetweenSwaps));
 time3 = get_time();
     Matrix<float> outputImage = s(iterationen, inputImage, kernelVec, static_cast<unsigned int>(rangeNorth),static_cast<unsigned int>(rangeWest),static_cast<unsigned int>(rangeSouth),static_cast<unsigned int>(rangeEast));
@@ -189,7 +189,7 @@ time4 = get_time();
     printf("Total time : %.12f\n", (float) (time5-time0) / 1000000);
      printf("Total without init time : %.12f\n", (float) (time5-time1) / 1000000);
 
-    //writePPM(outputImage, out.str());
+    writePPM(outputImage, out.str());
 
     skelcl::terminate();
 

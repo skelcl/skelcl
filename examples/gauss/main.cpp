@@ -61,7 +61,7 @@ void writePPM(std::vector<float>& img, const std::string filename) {
     }
 }
 
-int readPPM(const std::string inFile, std::vector<int>& img) {
+int readPPM(const std::string inFile, std::vector<float>& img) {
     img.clear();
     int numrows = 0, numcols = 0;
     std::ifstream infile(inFile);
@@ -119,7 +119,11 @@ int main(int argc, char** argv) {
     auto inFile = Arg<std::string>(Flags(Long("inFile")),
                                        Description("Filename of the input file"), Default(std::string("lena.pgm")));
 
-    cmd.add(&deviceCount, &deviceType, &range, &inFile);
+
+    auto iterationen = Arg<int>(Flags(Long("iterationen")),
+                                Description("Number of iterations."), Default(1));
+
+    cmd.add(&deviceCount, &deviceType, &range, &inFile, &iterationen);
     cmd.parse(argc, argv);
 
     std::stringstream out("_");
@@ -145,7 +149,7 @@ int main(int argc, char** argv) {
     }
 
     //Read pgm-File
-    std::vector<int> img(1);
+    std::vector<float> img(1);
 
     int numcols = readPPM(inFile, img);
 
@@ -155,28 +159,32 @@ int main(int argc, char** argv) {
 
     time1 = get_time();
 
-    Matrix<int> inputImage(img, numcols);
+    Matrix<float> inputImage(img, numcols);
+
+    skelcl::MapOverlap<float(float)> s(std::ifstream { "./gauss2D.cl" }, static_cast<unsigned int>(range),
+                detail::Padding::NEAREST, 255);
 
     time2 = get_time();
 
-    skelcl::MapOverlap<int(int)> s(std::ifstream { "./gauss2D.cl" }, static_cast<unsigned int>(range),
-                detail::Padding::NEAREST, 255);
+    for (int iter=0; iter<iterationen; iter++){
+        inputImage = s(inputImage, kernelVec, static_cast<unsigned int>(range));
+        inputImage.copyDataToHost();
+        inputImage.resize(inputImage.size());
+    }
 
     time3 = get_time();
-    Matrix<int> outputImage = s(inputImage, kernelVec, static_cast<unsigned int>(range));
-    time4 = get_time();
-    Matrix<int>::iterator itr = outputImage.begin();
+
+    Matrix<float>::iterator itr = inputImage.begin();
 
     //Get time
     time5=get_time();
     printf("Init time : %.12f\n", (float) (time1-time0) / 1000000);
-    printf("Input time : %.12f\n", (float) (time2-time1) / 1000000);
-    printf("Creation time : %.12f\n", (float) (time3-time2) / 1000000);
-    printf("Exec time : %.12f\n", (float) (time4-time3) / 1000000);
+    printf("Creation time : %.12f\n", (float) (time2-time1) / 1000000);
+    printf("Exec time : %.12f\n", (float) (time3-time2) / 1000000);
      printf("Total time : %.12f\n", (float) (time5-time0) / 1000000);
      printf("Total without init time : %.12f\n", (float) (time5-time1) / 1000000);
 
-    //writePPM(outputImage, out.str());
+    writePPM(inputImage, out.str());
 
     skelcl::terminate();
 
