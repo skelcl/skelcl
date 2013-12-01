@@ -7,11 +7,13 @@ Most of the functionality is explained in detail in the following
 peer-reviewed publications:
 
  - M. Steuwer, M. Friese, S. Albers, and S. Gorlatch:
-   Introducing and Implementing the Allpairs Skeleton for Programming Multi-GPU Systems
+   Introducing and Implementing the Allpairs Skeleton for Programming
+   Multi-GPU Systems
    in International Journal of Parallel Programming, 2013, Springer
 
  - M. Steuwer and S. Gorlatch:
-   High-Level Programming for Medical Imaging on Multi-GPU Systems using the SkelCL Library
+   High-Level Programming for Medical Imaging on Multi-GPU Systems using the
+   SkelCL Library
    in Procedia Computer Science, Volumne 18, Pages 749-758, 2013, Elsevier
 
  - M. Steuwer and S. Gorlatch:
