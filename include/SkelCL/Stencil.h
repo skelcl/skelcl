@@ -64,15 +64,15 @@ public:
 	Stencil<Tout(Tin)>(const Source& source, unsigned int north,
 			unsigned int west, unsigned int south, unsigned int east,
 			detail::Padding padding, Tin neutral_element,
-            const std::string& func, int iterBetSwaps=-1);
+			const std::string& func, int iterBetSwaps = -1);
 
-    Stencil<Tout(Tin)>(const Source& source, unsigned int range,
-        detail::Padding padding, Tin neutral_element,
-        const std::string& func, int iterBetSwaps=-1);
+	Stencil<Tout(Tin)>(const Source& source, unsigned int range,
+			detail::Padding padding, Tin neutral_element,
+			const std::string& func, int iterBetSwaps = -1);
 
 	Stencil<Tout(Tin)>(const Source& source, unsigned int west,
 			unsigned int east, detail::Padding padding, Tin neutral_element,
-            const std::string& func, int iterBetSwaps=-1);
+			const std::string& func, int iterBetSwaps = -1);
 
 	// Ausführungsoperator
 	template<typename ... Args>
@@ -89,9 +89,9 @@ public:
 			unsigned int south, unsigned int east, detail::Padding padding,
 			Tin neutral_element, const std::string& func);
 
-    // Fügt dem Stencil-Skelett eine neue Stencil Shape hinzu
-    void add(const Source& source, unsigned int range, detail::Padding padding,
-            Tin neutral_element, const std::string& func);
+	// Fügt dem Stencil-Skelett eine neue Stencil Shape hinzu
+	void add(const Source& source, unsigned int range, detail::Padding padding,
+			Tin neutral_element, const std::string& func);
 private:
 
 	// Ausführungsoperator mit Referenz weitergeleitet, um die temporäre Matrix vor dem User zu verstecken
@@ -116,7 +116,8 @@ private:
 	// Ermittelt aus allen hinzugefügten Stencil Shapes die Summe der Ausmaße in Richtung Osten.
 	unsigned int determineEastSum();
 
-    unsigned int determineIterationsBetweenDataSwaps(const Matrix<Tin>& in, unsigned int iterLeft);
+	unsigned int determineIterationsBetweenDataSwaps(const Matrix<Tin>& in,
+			unsigned int iterLeft);
 
 	// Eingabe vorbereiten
 	void prepareInput(const Matrix<Tin>& in);
@@ -129,7 +130,7 @@ private:
 
 	unsigned int _iterations;
 
-    int _iterBetSwaps;
+	int _iterBetSwaps;
 
 };
 

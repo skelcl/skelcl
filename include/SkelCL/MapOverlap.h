@@ -53,15 +53,14 @@ template<typename > class Out;
 
 template<typename > class MapOverlap;
 
-template<typename Tin,
-         typename Tout>
+template<typename Tin, typename Tout>
 class MapOverlap<Tout(Tin)> : public detail::Skeleton {
 
 public:
 	//Constructors
-	MapOverlap<Tout(Tin)>(const Source& source,
-			unsigned int overlap_range = 1, detail::Padding padding =
-					detail::Padding::NEAREST, Tin neutral_element = Tin(),
+	MapOverlap<Tout(Tin)>(const Source& source, unsigned int overlap_range = 1,
+			detail::Padding padding = detail::Padding::NEAREST,
+			Tin neutral_element = Tin(),
 			const std::string& func = std::string("func"));
 
 	// Ausführungsoperator
@@ -99,8 +98,8 @@ private:
 	/// The neutral element, which shall be used to fill the overlap region (only used if detail::Padding == NEUTRAL)
 	Tin _neutral_element;
 
-    /// Name of the main function defined in _userSource
-    std::string _funcName;
+	/// Name of the main function defined in _userSource
+	std::string _funcName;
 
 	detail::Program _program;
 };

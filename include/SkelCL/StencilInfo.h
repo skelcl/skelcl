@@ -26,58 +26,58 @@ template<typename > class StencilInfo;
 ///
 /// \author Stefan Breuer
 ///
-template<typename Tin,
-         typename Tout>
+template<typename Tin, typename Tout>
 class StencilInfo<Tout(Tin)> {
 public:
 
-   StencilInfo(const Source& source, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
-                                detail::Padding padding, Tin neutral_element, const std::string& func);
+	StencilInfo(const Source& source, unsigned int north, unsigned int west,
+			unsigned int south, unsigned int east, detail::Padding padding,
+			Tin neutral_element, const std::string& func);
 
-   const unsigned int& getNorth() const;
-   const unsigned int& getWest() const;
-   const unsigned int& getSouth() const;
-   const unsigned int& getEast() const;
+	const unsigned int& getNorth() const;
+	const unsigned int& getWest() const;
+	const unsigned int& getSouth() const;
+	const unsigned int& getEast() const;
 
-   const detail::Padding& getPadding() const;
+	const detail::Padding& getPadding() const;
 
-   const Tin& getNeutralElement() const;
+	const Tin& getNeutralElement() const;
 
-   const detail::Program& getProgram() const;
+	const detail::Program& getProgram() const;
 
-   const unsigned int& getTileWidth() const;
-   const unsigned int& getTileHeight() const;
+	const unsigned int& getTileWidth() const;
+	const unsigned int& getTileHeight() const;
 
-   std::string getDebugInfo() const;
+	std::string getDebugInfo() const;
 private:
 
-   // Programm erstellen
-   detail::Program createAndBuildProgram() const;
+	// Programm erstellen
+	detail::Program createAndBuildProgram() const;
 
-   //Größe des Local memory bestimmen
-   unsigned int determineMaxWorkGroupSize() const;
-   unsigned int determineTileWidth() const;
-   unsigned int determineTileHeight() const;
+	//Größe des Local memory bestimmen
+	unsigned int determineMaxWorkGroupSize() const;
+	unsigned int determineTileWidth() const;
+	unsigned int determineTileHeight() const;
 
-    /// Source code as defined by the application developer
-    std::string _userSource;
+	/// Source code as defined by the application developer
+	std::string _userSource;
 
-    /// Specifies the stencil shape
-    unsigned int _north;
-    unsigned int _west;
-    unsigned int _south;
-    unsigned int _east;
+	/// Specifies the stencil shape
+	unsigned int _north;
+	unsigned int _west;
+	unsigned int _south;
+	unsigned int _east;
 
-    /// Determines the padding method.
-    detail::Padding _padding;
+	/// Determines the padding method.
+	detail::Padding _padding;
 
-    /// The neutral element, which shall be used to fill the overlap region (only used if detail::Padding == NEUTRAL)
-    Tin _neutral_element;
+	/// The neutral element, which shall be used to fill the overlap region (only used if detail::Padding == NEUTRAL)
+	Tin _neutral_element;
 
-    /// Name of the main function defined in _userSource
-    std::string _funcName;
+	/// Name of the main function defined in _userSource
+	std::string _funcName;
 
-    detail::Program _program;
+	detail::Program _program;
 
 };
 
