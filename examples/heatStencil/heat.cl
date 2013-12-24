@@ -1,12 +1,13 @@
-float func(input_matrix_t* img, __global float* kernelVec, int range)
+float func(input_matrix_t* img)
 {
-        float sum = 0.0;
-        float norm = 0.0;
-        int i;
-        for(i=-range; i<=range; i++){
-            sum += getData(img,0,i) * kernelVec[i+range];
-            norm += kernelVec[i+range];
-        }
-        return sum/norm;
+float t = getData(img, 0, 1);
+float b = getData(img, 0, -1);
+float l = getData(img, -1, 0);
+float r = getData(img, 1, 0);
+float c = getData(img, 0, 0);
+
+if(c==255.0) return 255.0;
+
+return c + (t+b+r+l-4*c)/4;
 
 }

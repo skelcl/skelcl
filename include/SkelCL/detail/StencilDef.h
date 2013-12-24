@@ -179,24 +179,33 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
         Args&&... args) {
     ASSERT(in.distribution().isValid());
     ASSERT(output.rowCount() == in.rowCount() && output.columnCount() == in.columnCount());
-    unsigned int iterationsBetweenSwaps = determineIterationsBetweenDataSwaps(_iterations);
-    unsigned int iterationsAfterSwap = 0;
+    unsigned int iterationsBetweenSwaps = determineIterationsBetweenDataSwaps(in, _iterations);
+    unsigned int iterationsAfterLastSync = 0;
+
+	unsigned int outputRowCount = output.rowCount();
+unsigned int noOfDevices = in.distribution().devices().size();
+
     cl_ulong time_start, time_end;
-            double total_time;
+    double total_time;
+    unsigned int southSum = determineSouthSum();
+    unsigned int northSum = determineNorthSum();
     unsigned int i = 0;
+	long long time1, time2;
     int k = 1;
+    std::vector<cl::Event> kernels(3);
+    kernels.resize(0);
+    cl::Event event;
     try {
         for(i = 0; i<_iterations; i++){
             k--;
-            if(in.distribution().devices().size() != 1 && iterationsAfterSwap==iterationsBetweenSwaps){
-                if((i+k) % 2 == 0){
-                    LOG_DEBUG("TEMP SWAP");
+            if(noOfDevices != 1 && iterationsAfterLastSync==iterationsBetweenSwaps){
+		if((i+k) % 2 == 0){
                     (dynamic_cast<detail::StencilDistribution< Matrix<Tout> >*>(&temp.distribution()))->swap(temp, iterationsBetweenSwaps);
                 } else if ((i+k) % 2 == 1) {
-                    LOG_DEBUG("OUTPUT SWAP");
                     (dynamic_cast<detail::StencilDistribution< Matrix<Tout> >*>(&output.distribution()))->swap(output, iterationsBetweenSwaps);
                 }
-                iterationsAfterSwap = 0;
+                iterationsBetweenSwaps = determineIterationsBetweenDataSwaps(in, _iterations-i-1);
+                iterationsAfterLastSync = 0;
             }
 
             for(auto& sInfo : _stencilInfos) {
@@ -210,20 +219,27 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                     cl::Kernel kernel(sInfo.getProgram().kernel(*devicePtr, "SCL_STENCIL"));
 
                     cl_uint workgroupSize = static_cast<cl_uint>(detail::kernelUtil::determineWorkgroupSizeForKernel(kernel, *devicePtr));
+                    cl_uint offset = 0;
                     cl_uint local[2] = { static_cast<cl_uint>(sqrt(workgroupSize)),static_cast<cl_uint>(local[0])};
                     cl_uint global[2] = {
                             static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.columnCount(),
                                     local[0])),
                         static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.rowCount(),
-                                    local[1]))}; // SUBTILES
-                    if(devicePtr->id()==0 && in.distribution().devices().size()>1){
-                        global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.rowCount() + iterationsBetweenSwaps * determineLargestSouth(),
+                                    local[1]))}; // HALO
+                    if(devicePtr->id()==0 && noOfDevices>1){
+                        global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(outputRowCount + (iterationsBetweenSwaps-iterationsAfterLastSync) * southSum,
                                                                                         local[1]));
-                    } else if (devicePtr->id()==in.distribution().devices().size()-1 && in.distribution().devices().size()>1) {
-                        global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.rowCount() + iterationsBetweenSwaps * determineLargestNorth(),
+                    } else if (devicePtr->id()==noOfDevices-1 && noOfDevices>1) {
+                        offset = iterationsAfterLastSync * northSum;
+                        global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(outputRowCount + (iterationsBetweenSwaps-iterationsAfterLastSync) * northSum,
+                                                                                        local[1]));
+                    } else if (noOfDevices>1) {
+                        offset = iterationsAfterLastSync * northSum;
+                        global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(outputRowCount + (iterationsBetweenSwaps-iterationsAfterLastSync) * northSum
+                                                                                        + (iterationsBetweenSwaps-iterationsAfterLastSync) * southSum,
                                                                                         local[1]));
                     }
-                    LOG_DEBUG_INFO("device: ", devicePtr->id(), " elements: ", elements);
+                    //LOG_DEBUG_INFO("device: ", devicePtr->id(), " elements: ", elements);
                     //Get time
                     int j = 0;
 
@@ -269,19 +285,16 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
                     // after finishing the kernel invoke this function ...
                     auto invokeAfter = [=] () {(void)keepAlive;};
 
-                     auto event =  devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
+                     event =  devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
                                 cl::NDRange(local[0], local[1]), cl::NullRange,
                             invokeAfter);
+			kernels.push_back(event);
 
-                    event.wait();
-                    event.getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
-                    event.getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
-                    total_time = time_end - time_start;
-                    printf("Execution time in milliseconds = %0.3f ms\n", (total_time / 1000000.0) );
                 }
+             
              k++;
             }
-            iterationsAfterSwap++;
+            iterationsAfterLastSync++;
             LOG_DEBUG_INFO("Stencil kernel ", i, " started");
         }
 
@@ -289,14 +302,60 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
             ABORT_WITH_ERROR(err);
     }
 
+//for(unsigned int i = 0; i<kernels.size(); i++){
+//	kernels[i].wait();
+//}
+
+/*unsigned int devicesSize = in.distribution().devices().size();
+for(unsigned int i = devicesSize; i<kernels.size(); i++) {
+	cl_ulong time_start_now, time_end_now, time_start_before, time_end_before;
+	kernels[i-devicesSize].getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end_before);	
+	kernels[i].getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
+	double dt((time_start-time_end_before)/1e9);
+	printf("Sync Time: %12.3f\n", dt*1e3);
+
+}*/
+
+/*cl_ulong time_queued0, time_queued1, time_queued2;
+kernels[0].getProfilingInfo(CL_PROFILING_COMMAND_QUEUED, &time_queued0);
+kernels[1].getProfilingInfo(CL_PROFILING_COMMAND_QUEUED, &time_queued1);
+kernels[2].getProfilingInfo(CL_PROFILING_COMMAND_QUEUED, &time_queued2);
+
+printf("%lld, %lld, %lld\n", time_queued0, time_queued1, time_queued2);
+
+	for(int i = 0; i<kernels.size(); i++){
+		kernels[i].wait();
+
+		cl_ulong time_start, time_end, time_queued, time_submit;
+	
+		kernels[i].getProfilingInfo(CL_PROFILING_COMMAND_QUEUED, &time_queued);
+		kernels[i].getProfilingInfo(CL_PROFILING_COMMAND_SUBMIT, &time_submit);
+		kernels[i].getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
+		kernels[i].getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
+if(i==0){
+	printf("%i Q -> S: %lld, %lld, %lld, %lld\n", i, time_queued-time_queued0, time_submit-time_queued0, time_start-time_queued0, time_end-time_queued0);
+} 
+else if(i==1){
+	printf("%i Q -> S: %lld, %lld, %lld, %lld\n", i, time_queued-time_queued1, time_submit-time_queued1, time_start-time_queued1, time_end-time_queued1);
+} else if(i==2){
+	printf("%i Q -> S: %lld, %lld, %lld, %lld\n", i, time_queued-time_queued2, time_submit-time_queued2, time_start-time_queued2, time_end-time_queued2);
+} else if(i==3){
+	printf("%i Q -> S: %lld, %lld, %lld, %lld\n", i, time_queued-time_queued0, time_submit-time_queued0, time_start-time_queued0, time_end-time_queued0);
+} else if(i==4){
+	printf("%i Q -> S: %lld, %lld, %lld, %lld\n", i, time_queued-time_queued1, time_submit-time_queued1, time_start-time_queued1, time_end-time_queued1);
+} else {
+printf("%i Q -> S: %lld, %lld, %lld, %lld\n", i, time_queued-time_queued2, time_submit-time_queued2, time_start-time_queued2, time_end-time_queued2);
+}
+
+}*/
 }
 
 // Eingabe vorbereiten
 template<typename Tin, typename Tout>
 void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
     // set distribution
-    detail::StencilDistribution<Matrix<Tin>> dist(determineLargestNorth(), determineLargestWest(), determineLargestSouth(), determineLargestEast(),
-                                                  determineIterationsBetweenDataSwaps(_iterations));
+    detail::StencilDistribution<Matrix<Tin>> dist(determineNorthSum(), determineWestSum(), determineSouthSum(), determineEastSum(),
+                                                  determineIterationsBetweenDataSwaps(in, _iterations));
     in.setDistribution(dist);
 
     // create buffers if required
@@ -307,50 +366,55 @@ void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
 }
 
 template<typename Tin, typename Tout>
-unsigned int Stencil<Tout(Tin)>::determineIterationsBetweenDataSwaps(unsigned int iterLeft) {
+unsigned int Stencil<Tout(Tin)>::determineIterationsBetweenDataSwaps(const Matrix<Tin>& in, unsigned int iterLeft) {
+    //User chose a value
     if(_iterBetSwaps!=-1) return _iterBetSwaps;
+
+    //First determination
+    /*if(iterLeft==_iterations) {
+        unsigned int noOfDevices = in.distribution().devices().size();
+        unsigned int rowsPerDev = in.size().rowCount() / noOfDevices / 2;
+        unsigned int north = determineLargestNorth();
+        unsigned int south = determineLargestSouth();
+        unsigned int largestExtent = north > south ? north : south;
+        unsigned int maxIter = rowsPerDev / largestExtent;
+    } else {
+
+    }*/
     return 1;
 }
 
 template<typename Tin, typename Tout>
-unsigned int Stencil<Tout(Tin)>::determineLargestNorth() {
+unsigned int Stencil<Tout(Tin)>::determineNorthSum() {
     unsigned int largestNorth = 0;
     for(auto& s : _stencilInfos) {
-        if(s.getNorth() > largestNorth){
-            largestNorth = s.getNorth();
-        }
+            largestNorth += s.getNorth();
     }
     return largestNorth;
 }
 
 template<typename Tin, typename Tout>
-unsigned int Stencil<Tout(Tin)>::determineLargestWest() {
+unsigned int Stencil<Tout(Tin)>::determineWestSum() {
     unsigned int largestWest = 0;
     for(auto& s : _stencilInfos){
-        if(s.getWest() > largestWest){
-            largestWest = s.getWest();
+            largestWest += s.getWest();
         }
-    }
     return largestWest;
 }
 template<typename Tin, typename Tout>
-unsigned int Stencil<Tout(Tin)>::determineLargestSouth() {
+unsigned int Stencil<Tout(Tin)>::determineSouthSum() {
     unsigned int largestSouth = 0;
     for(auto& s : _stencilInfos){
-        if(s.getSouth() > largestSouth){
-            largestSouth = s.getSouth();
+            largestSouth += s.getSouth();
         }
-    }
     return largestSouth;
 }
 template<typename Tin, typename Tout>
-unsigned int Stencil<Tout(Tin)>::determineLargestEast() {
+unsigned int Stencil<Tout(Tin)>::determineEastSum() {
     unsigned int largestEast = 0;
     for(auto& s : _stencilInfos){
-        if(s.getEast() > largestEast){
-            largestEast = s.getEast();
+            largestEast += s.getEast();
         }
-    }
     return largestEast;
 }
 
@@ -372,3 +436,4 @@ void Stencil<Tout(Tin)>::prepareOutput(Matrix<Tout>& output,
 }
 
 #endif /* STENCILDEF_H_ */
+

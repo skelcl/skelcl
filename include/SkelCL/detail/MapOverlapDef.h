@@ -123,17 +123,15 @@ void MapOverlap<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
 
         cl_uint workgroupSize = static_cast<cl_uint>(detail::kernelUtil::determineWorkgroupSizeForKernel(kernel, *devicePtr));
 
-        cl_ulong time_start, time_end;
-        double total_time;
         auto& outputBuffer = output.deviceBuffer(*devicePtr);
         auto& inputBuffer = in.deviceBuffer(*devicePtr);
 
-        cl_uint elements = static_cast<cl_uint>(output.size().elemCount());
+        cl_uint elements = static_cast<cl_uint>(inputBuffer.size()-2*_overlap_range*in.columnCount());
         cl_uint local[2] = { static_cast<cl_uint>(sqrt(workgroupSize)) , local[0] };
         cl_uint global[2] = {
-                static_cast<cl_uint>(detail::util::ceilToMultipleOf(output.columnCount(),
+                static_cast<cl_uint>(detail::util::ceilToMultipleOf(in.columnCount(),
                         local[0])),
-                static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / output.rowCount(),
+                static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements / in.rowCount(),
                         local[1]))};
 
         LOG_DEBUG_INFO("elements: ", elements, " overlap: ", _overlap_range);
@@ -164,11 +162,6 @@ void MapOverlap<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
             auto event = devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
                     cl::NDRange(local[0], local[1]), cl::NullRange, // offset
                     invokeAfter);
-            event.wait();
-            event.getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
-            event.getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
-            total_time = time_end - time_start;
-            printf("Total exec time in milliseconds = %0.3f ms\n", (total_time / 1000000.0) );
 
         } catch (cl::Error& err) {
             ABORT_WITH_ERROR(err);

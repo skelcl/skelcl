@@ -172,12 +172,12 @@ int main(int argc, char** argv) {
 
     //Get time
     time3=get_time();
-    printf("Total Init: %.12f\n", (float) (time1-time0) / 1000000);
-    printf("Total Creation: %.12f\n", (float) (time2-time1) / 1000000);
-    printf("Total Total: %.12f\n", (float) (time3-time0) / 1000000);
-    printf("Total no init Total: %.12f\n", (float) (time3-time1) / 1000000);
+    printf("Total Init time: %.12f\n", (float) (time1-time0) / 1000000);
+    printf("Total Creation time: %.12f\n", (float) (time2-time1) / 1000000);
+    printf("Total Total time: %.12f\n", (float) (time3-time0) / 1000000);
+    printf("Total no init Total time: %.12f\n", (float) (time3-time1) / 1000000);
 
-    writePPM(outputImage, out.str());
+    //writePPM(outputImage, out.str());
 
     skelcl::terminate();
 

@@ -201,16 +201,16 @@ int main(int argc, char** argv) {
 
     //Get time
     time7=get_time();
-    printf("Total Init: %.12f\n", (float) (time1-time0) / 1000000);
-    printf("Total Creation: %.12f\n", (float) (time2-time1) / 1000000);
-    printf("Total Gauß: %.12f\n", (float) (time3-time2) / 1000000);
-    printf("Total Sobel: %.12f\n", (float) (time4-time3) / 1000000);
-    printf("Total NSM: %.12f\n", (float) (time5-time4) / 1000000);
-    printf("Total Threshold: %.12f\n", (float) (time6-time5) / 1000000);
-    printf("Total Total: %.12f\n", (float) (time6-time0) / 1000000);
-    printf("Total Total no init: %.12f\n", (float) (time6-time1) / 1000000);
+    printf("Total Init time: %.12f\n", (float) (time1-time0) / 1000000);
+    printf("Total Creation time: %.12f\n", (float) (time2-time1) / 1000000);
+    printf("Total Gauß time: %.12f\n", (float) (time3-time2) / 1000000);
+    printf("Total Sobel time: %.12f\n", (float) (time4-time3) / 1000000);
+    printf("Total NSM time: %.12f\n", (float) (time5-time4) / 1000000);
+    printf("Total Threshold time: %.12f\n", (float) (time6-time5) / 1000000);
+    printf("Total Total time: %.12f\n", (float) (time6-time0) / 1000000);
+    printf("Total Total no init time: %.12f\n", (float) (time6-time1) / 1000000);
 
-    writePPM(tempImage, out.str());
+    //writePPM(tempImage, out.str());
 
     skelcl::terminate();
 

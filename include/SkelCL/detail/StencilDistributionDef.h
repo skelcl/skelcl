@@ -81,7 +81,7 @@ template<template<typename > class C, typename T>
 void StencilDistribution<C<T>>::swap(const C<T>& container, unsigned int iterations) const {
     detail::Event events;
     stencil_distribution_helper::swap(container, &events, this->_north,
-          this->_west, this->_south, this->_east, iterations, this->_devices);
+          this->_west, this->_south, this->_east, iterations, this->_initialIterationsBeforeFirstSwap, this->_devices);
 }
 
 
@@ -232,8 +232,8 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north,
         unsigned int west, unsigned int south, unsigned int east, unsigned int initialIterationsBeforeFirstSwap,
         detail::DeviceList devices) {
     ASSERT(events != nullptr);
-    cl_ulong time_start, time_end;
-            double total_time;
+    //cl_ulong time_start, time_end;
+    //        double total_time;
     LOG_DEBUG_INFO("Matrix Version , west: ", west, " and east: ", east,
             " are not considered for the upload.");
     if(initialIterationsBeforeFirstSwap){};
@@ -261,21 +261,20 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int north,
       events->insert(event);
 
       hostOffset += (buffer.size() - northOverlapWithIter - southOverlapwithIter);
-      event.wait();
+      /*event.wait();
       event.getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
       event.getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
       total_time = time_end - time_start;
-      printf("Total upload time in milliseconds = %0.3f ms\n", (total_time / 1000000.0) );
+      printf("Total upload time in milliseconds = %0.3f ms\n", (total_time / 1000000.0) );*/
 
       deviceOffset = 0; // after the first device, the device offset is 0
      }
-    events->wait();
 
 }
 
 template<typename T>
 void swap(const Vector<T>& vector, Event* events, unsigned int north, unsigned int west,
-          unsigned int south, unsigned int east, unsigned int iterations, detail::DeviceList devices) {
+          unsigned int south, unsigned int east, unsigned int iterations, unsigned int iterationsBeforeFirstSwap, detail::DeviceList devices) {
     /*
      *
      *
@@ -310,11 +309,14 @@ void swap(const Vector<T>& vector, Event* events, unsigned int north, unsigned i
 
 template<typename T>
 void swap(const Matrix<T>& matrix, Event* events, unsigned int north, unsigned int west,
-          unsigned int south, unsigned int east, unsigned int iterations, detail::DeviceList devices){
+          unsigned int south, unsigned int east, unsigned int iterations, unsigned int initialIterationsBeforeFirstSwap, detail::DeviceList devices){
+    ASSERT(initialIterationsBeforeFirstSwap<=iterations);
     LOG_DEBUG_INFO("Matrix Version , west: ", west, " and east: ", east,
             " are not considered for the swap.");
-
     // create temporary vectors
+    //std::vector<cl::Event> eventsToMeasure(1);
+    //std::vector<std::string> whichevents(1);
+
     std::vector<std::vector<T>> vs(2*(devices.size() - 1));
 
     size_t devSize = devices.size();
@@ -326,43 +328,63 @@ void swap(const Matrix<T>& matrix, Event* events, unsigned int north, unsigned i
     size_t iterationsSouthOverlap = iterations * southOverlap;
     size_t iterationsNorthOverlap = iterations * northOverlap;
 
-    events->wait();
+    size_t diffFromInitial = (initialIterationsBeforeFirstSwap - iterations) * matrix.size().columnCount();
+
+    //events->wait();
 
     int k = 0;
+//eventsToMeasure.resize(0);
+//whichevents.resize(0);
+
     for(size_t i = 0; i < devSize; ++i) {
 
         auto& devicePtr = devices[i];
         auto id = devicePtr->id();
         auto& buffer = matrix.deviceBuffer(*devicePtr);
-
         if (id == devSize - 1 && devSize > 1) {
-            vs[k].resize(iterationsSouthOverlap);
-            deviceOffset = iterationsNorthOverlap;
-            auto event = devicePtr->enqueueRead(buffer, vs[k].begin(), vs[k].size(), deviceOffset, 0);
-            events->insert(event);
+            vs[k].resize(iterationsSouthOverlap-diffFromInitial);
+	    if(vs[k].size()!=0){
+		    deviceOffset = iterationsNorthOverlap;
+		    auto event = devicePtr->enqueueRead(buffer, vs[k].begin(), vs[k].size(), deviceOffset, 0);
+		    events->insert(event);
+//		   eventsToMeasure.push_back(event);
+//whichevents.push_back("Download last");
+	    }
             k++;
         } else if (id == 0 && devSize == 1) {
             LOG_ERROR("It is stupid to call swap when there is only one device");
         } else if (id == 0) {
-            vs[k].resize(iterationsNorthOverlap);
-            deviceOffset = buffer.size() - iterationsNorthOverlap - iterationsSouthOverlap;
+            vs[k].resize(iterationsNorthOverlap-diffFromInitial);
+if(vs[k].size()!=0){
+            deviceOffset = buffer.size() - iterationsNorthOverlap - iterationsSouthOverlap + 2 * diffFromInitial;
             auto event = devicePtr->enqueueRead(buffer, vs[k].begin(), vs[k].size(), deviceOffset, 0);
-            events->insert(event);
+events->insert(event);
+//eventsToMeasure.push_back(event);
+//whichevents.push_back("Download first");
+}
             k++;
         } else {
-            vs[k].resize(iterationsSouthOverlap);
-            deviceOffset = iterationsNorthOverlap;
+            vs[k].resize(iterationsSouthOverlap-diffFromInitial);
+if(vs[k].size()!=0){
+            deviceOffset = iterationsNorthOverlap + diffFromInitial;
             auto event = devicePtr->enqueueRead(buffer, vs[k].begin(), vs[k].size(), deviceOffset, 0);
             events->insert(event);
+//eventsToMeasure.push_back(event);
+//whichevents.push_back("Download middle 1");
+}
             k++;
-            vs[k].resize(iterationsNorthOverlap);
-            deviceOffset = buffer.size() - iterationsSouthOverlap - iterationsNorthOverlap;
-            event = devicePtr->enqueueRead(buffer, vs[k].begin(), vs[k].size(), deviceOffset, 0);
+            vs[k].resize(iterationsNorthOverlap-diffFromInitial);
+if(vs[k].size()!=0){
+            deviceOffset = buffer.size() - iterationsSouthOverlap - iterationsNorthOverlap + 2* diffFromInitial;
+            auto event = devicePtr->enqueueRead(buffer, vs[k].begin(), vs[k].size(), deviceOffset, 0);
             events->insert(event);
+//eventsToMeasure.push_back(event);
+//whichevents.push_back("Download middle 2");
+}
             k++;
         }
     }
-    events->wait();
+    //events->wait();
 
     for(unsigned int i = 0; i<vs.size()-1; i=i+2) {
         std::swap(vs[i], vs[i+1]);
@@ -378,37 +400,72 @@ void swap(const Matrix<T>& matrix, Event* events, unsigned int north, unsigned i
         auto& buffer = matrix.deviceBuffer(*devicePtr);
 
         if (id == devSize - 1 && devSize > 1) {
-            deviceOffset = 0;
+if(vs[i].size()!=0){
+            deviceOffset = diffFromInitial;
             auto event = devicePtr->enqueueWrite(buffer,
                                                vs[j].begin(),
                                                vs[j].size(),
                                                deviceOffset, 0);
-            events->insert(event);
+        events->insert(event);
+//eventsToMeasure.push_back(event);
+//whichevents.push_back("Upload last");
+}
         } else if (id == 0 && devSize == 1) {
             LOG_ERROR("It is stupid to call swap when there is only one device");
         } else if (id == 0) {
             deviceOffset = buffer.size() - iterationsSouthOverlap;
-            auto event = devicePtr->enqueueWrite(buffer,
-                                                 vs[i].begin(),
-                                                 vs[i].size(),
-                                                 deviceOffset, 0);
-            events->insert(event);
+		if(vs[i].size()!=0){
+			    auto event = devicePtr->enqueueWrite(buffer,
+				                                 vs[i].begin(),
+				                                 vs[i].size(),
+				                                 deviceOffset, 0);
+			    events->insert(event);
+		//eventsToMeasure.push_back(event);
+		//whichevents.push_back("Upload first");
+		}
         } else {
-            deviceOffset = 0;
+if(vs[i].size()!=0){
+            deviceOffset = diffFromInitial;
             auto event = devicePtr->enqueueWrite(buffer,
                                                  vs[j].begin(),
                                                  vs[j].size(),
                                                  deviceOffset, 0);
             events->insert(event);
+//eventsToMeasure.push_back(event);
+//whichevents.push_back("Upload middle 1");
             deviceOffset = buffer.size() - iterationsSouthOverlap;
             event = devicePtr->enqueueWrite(buffer,
                                                  vs[j+1].begin(),
                                                  vs[j+1].size(),
                                                  deviceOffset, 0);
             events->insert(event);
+//eventsToMeasure.push_back(event);
+//whichevents.push_back("Upload middle 2");
         }
+}
     }
-    events->wait();
+   
+/*events->wait();
+	cl_ulong time_end_max = 0, time_start_min = ULONG_MAX;
+for(int i = 0; i<eventsToMeasure.size(); i++){
+	cl_ulong time_start, time_end, time_queued, time_submit;
+	
+	eventsToMeasure[i].getProfilingInfo(CL_PROFILING_COMMAND_QUEUED, &time_queued);
+        eventsToMeasure[i].getProfilingInfo(CL_PROFILING_COMMAND_SUBMIT, &time_submit);
+	eventsToMeasure[i].getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
+        eventsToMeasure[i].getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
+	
+	if(time_end > time_end_max) time_end_max = time_end;
+	if(time_start_min > time_start) time_start_min = time_start;
+		
+	double dt_qs((time_submit-time_queued)/1e9), dt_ss((time_start-time_submit)/1e9), dt_se((time_end-time_start)/1e9), dt_all((time_end-time_queued)/1e9);
+	printf("%s Q -> S: %lld, %lld, %lld, %lld\n", whichevents[i].c_str(), time_queued, time_submit, time_start, time_end);
+
+	printf("%s Q -> S: %12.3f, S -> ST: %12.3f, ST -> E: %12.3f, Q -> E: %12.3f\n", whichevents[i].c_str(), dt_qs*1e3, dt_ss*1e3, dt_se*1e3, dt_all*1e3);
+}
+double dt_total((time_end_max-time_start_min)/1e9);
+printf("Total: %12.3f\n", dt_total*1e3);*/
+
 }
 
 template<typename T>
@@ -442,8 +499,8 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int north,
         detail::DeviceList devices) {
     if(initialIterationsBeforeFirstSwap){};
     ASSERT(events != nullptr);
-    cl_ulong time_start, time_end;
-            double total_time;
+    //cl_ulong time_start, time_end;
+    //        double total_time;
     LOG_DEBUG_INFO("Matrix Version , west: ", west, " and east: ", east,
             " are not considered for the download.");
     size_t offset = 0;
@@ -477,11 +534,11 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int north,
                 size, deviceOffset, offset);
         offset += size;
         events->insert(event);
-        event.wait();
+        /*event.wait();
         event.getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
         event.getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
         total_time = time_end - time_start;
-        printf("Total download time in milliseconds = %0.3f ms\n", (total_time / 1000000.0) );
+        printf("Total download time in milliseconds = %0.3f ms\n", (total_time / 1000000.0) );*/
     }
 
 // mark data on device as out of date !
@@ -496,3 +553,4 @@ void startDownload(Matrix<T>& matrix, Event* events, unsigned int north,
 } // namespace skelcl
 
 #endif // STENCILDISTRIBUTION_DEF _H_
+

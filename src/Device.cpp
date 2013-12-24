@@ -129,7 +129,6 @@ cl::Event Device::enqueue(const cl::Kernel& kernel,
     return isDivisiable;
   });
   ASSERT(globalSizeIsDivisiableByLocalSize());
-  
   cl::Event event;
   try {
     _commandQueue.enqueueNDRangeKernel(kernel, offset, global, local,
@@ -176,7 +175,7 @@ cl::Event Device::enqueueWrite(const  DeviceBuffer& buffer,
   }
 
   LOG_DEBUG_INFO("Enqueued write buffer for device ", _id,
-                 " (size: ", buffer.sizeInBytes(),
+                 " (Bufferize: ", buffer.sizeInBytes(),
                  ", clBuffer: ", buffer.clBuffer()(),
                  ", deviceOffset: 0",
                  ", hostPointer: ", static_cast<const void*>(
@@ -211,6 +210,7 @@ cl::Event Device::enqueueWrite(const  DeviceBuffer& buffer,
 
   LOG_DEBUG_INFO("Enqueued write buffer for device ", _id,
                  " (Buffersize: ", buffer.sizeInBytes(),
+                 ", size: ", size,
                  ", clBuffer: ", buffer.clBuffer()(),
                  ", deviceOffset: ", deviceOffset*buffer.elemSize(),
                  ", hostPointer: ", static_cast<void*const>(

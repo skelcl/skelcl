@@ -43,6 +43,8 @@
 #include "Distribution.h"
 #include "Padding.h"
 
+#include <climits>
+
 namespace skelcl {
 
 template<typename > class Matrix;
@@ -121,10 +123,10 @@ template<typename T>
 void startUpload(Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, unsigned int initialIterationsBeforeFirstSwap, detail::DeviceList devices);
 
 template<typename T>
-void swap(const Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, unsigned int iterations, detail::DeviceList devices);
+void swap(const Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, unsigned int iterations, unsigned int initialIterationsBeforeFirstSwap, detail::DeviceList devices);
 
 template<typename T>
-void swap(const Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, unsigned int iterations, detail::DeviceList devices);
+void swap(const Matrix<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, unsigned int iterations, unsigned int initialIterationsBeforeFirstSwap, detail::DeviceList devices);
 
 template<typename T>
 void startDownload(Vector<T>& vector, Event* events, unsigned int north, unsigned int west, unsigned int south, unsigned int east, unsigned int initialIterationsBeforeFirstSwap, detail::DeviceList devices);
@@ -143,3 +145,4 @@ void startDownload(Matrix<T>& vector, Event* events, unsigned int north, unsigne
 #include "StencilDistributionDef.h"
 
 #endif // STENCILDISTRIBUTION_H_
+

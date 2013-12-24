@@ -158,25 +158,23 @@ template<typename T>
 size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 		const typename Matrix<T>::size_type size, const DeviceList& devices,
 		const unsigned int overlapRadius) {
-	auto id = devicePtr->id();
+/*	auto id = devicePtr->id();
 	if (id) {
 	};
 	auto s = size.elemCount() / devices.size();
 	s += 2 * overlapRadius * size.columnCount();
-	return s;
-//	auto id = devicePtr->id();
-//	if (id < devices.size() - 1) {
-//		auto s = size.rowCount() / devices.size();
-//		s += overlapRadius + overlapRadius;
-//		return s * size.columnCount();
-//
-//	} else { // "last" device
-//
-//		auto s = size.rowCount() / devices.size();
-//		s += size.rowCount() % devices.size();
-//		s += overlapRadius + overlapRadius;
-//		return s * size.columnCount();
-//	}
+	return s;*/
+auto id = devicePtr->id();
+ if (id < devices.size() - 1) {
+    auto s = size.rowCount() / devices.size();
+    s += overlapRadius + overlapRadius;
+    return s * size.columnCount();
+  } else { // "last" device
+    auto s = size.rowCount() / devices.size();
+s += size.rowCount() % devices.size();
+    s += overlapRadius + overlapRadius;
+    return s * size.columnCount();
+  }
 }
 
 template<typename T>
@@ -248,8 +246,7 @@ template<typename T>
 void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 		detail::Padding padding, T neutralElement, detail::DeviceList devices) {
 	ASSERT(events != nullptr);
-    cl_ulong time_start, time_end;
-    double total_time;
+
 	// some shortcuts ...
 
 	auto columnCount = matrix.size().columnCount();
@@ -265,7 +262,8 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
     if (padding == detail::Padding::NEAREST) {
 		paddingTop.clear();
 		paddingBottom.clear();
-
+paddingTop.resize(0);
+paddingBottom.resize(0);
         for (unsigned int row = 0; row < overlapRadius; row++) {
             for (unsigned int col = 0; col < columnCount; col++) {
                 T valFront = matrix(row, col);
@@ -273,57 +271,51 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
                 paddingTop.push_back(valFront);
                 paddingBottom.push_back(valBack);
             }
-		}
+	}
     }
 
 	// Upload top padding to first device
-	auto& firstDevicePtr = devices.front();
-    auto event1 = firstDevicePtr->enqueueWrite(
-            matrix.deviceBuffer(*firstDevicePtr), paddingTop.begin(), paddingTop.size(), 0);
-    events->insert(event1);
+    auto& firstDevicePtr = devices.front();
+    auto event = firstDevicePtr->enqueueWrite(
+    matrix.deviceBuffer(*firstDevicePtr), paddingTop.begin(), paddingTop.size(), 0);
+    events->insert(event);
 
 	size_t hostOffset = 0;
 	size_t deviceOffset = paddingTop.size();
 	size_t devSize = devices.size();
 
-	for (size_t i = 0; i < devSize; ++i) {
-		auto& devicePtr = devices[i];
-		auto& buffer = matrix.deviceBuffer(*devicePtr);
+for(size_t i = 0; i < devSize; ++i) {
+    auto& devicePtr = devices[i];
+    auto& buffer = matrix.deviceBuffer(*devicePtr);
 
-		auto size = buffer.size();
+    auto size = buffer.size();
+    if (i == 0)         size -= paddingTop.size();
+    if (i == devSize-1) size -= paddingBottom.size();
+    event = devicePtr->enqueueWrite(buffer,
+                                    matrix.hostBuffer().begin(),
+                                    size,
+                                    deviceOffset,
+                                    hostOffset);
+    events->insert(event);
 
-		if (i == 0)
-			size -= paddingTop.size();
-		if (i == devSize - 1)
-			size -= paddingBottom.size();
+	if(i==0){
+    hostOffset += (buffer.size() - 2*overlapRadius * columnCount - overlapRadius * columnCount);
+} else {
+	hostOffset += buffer.size() - 2*overlapRadius * columnCount;
+}
 
-        auto event2 = devicePtr->enqueueWrite(buffer, matrix.hostBuffer().begin(), size,
-                deviceOffset, hostOffset);
-        events->insert(event2);
+    if(i == devSize - 1){
+        deviceOffset = buffer.size() - paddingBottom.size();
 
-		hostOffset += size - overlapRadius * columnCount;
-
-		// offset += (buffer.size()-2*_overlap_radius
-		//            *_size.column_count-deviceoffset);
-		deviceOffset = 0; // after the first device, the device offset is 0
-	}
-
-	// Upload bottom padding at the end of last device
-    auto& lastDevicePtr = devices.back();
-    // calculate offset on the device ...
-    deviceOffset = matrix.deviceBuffer(*lastDevicePtr).size()
-            - paddingBottom.size();
-
-    auto event3 = firstDevicePtr->enqueueWrite(matrix.deviceBuffer(*lastDevicePtr),
-            paddingBottom.begin(), paddingBottom.size(), deviceOffset, 0);
-    events->insert(event3);
-    event3.wait();
-
-    event1.getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
-    event3.getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
-
-    total_time = time_end - time_start;
-    printf("Total upload time in milliseconds = %0.3f ms\n", (total_time / 1000000.0)  );
+        event = devicePtr->enqueueWrite(
+                   buffer,
+                   paddingBottom.begin(),
+                   paddingBottom.size(),
+                   deviceOffset,0 );
+        events->insert(event);
+    }
+        deviceOffset = 0; // after the first device, the device offset is 0
+   }
 }
 
 template<typename T>
@@ -336,7 +328,7 @@ void startDownload(Vector<T>& vector, Event* events, unsigned int overlapRadius,
 	for (auto& devicePtr : devices) {
 		auto& buffer = vector.deviceBuffer(*devicePtr);
 
-		int size = buffer.size() - (2 * overlapRadius);
+		auto size = buffer.size() - (2 * overlapRadius);
 
 		auto event = devicePtr->enqueueRead(buffer, vector.hostBuffer().begin(),
 				size, overlapRadius, offset);
@@ -352,34 +344,28 @@ void startDownload(Vector<T>& vector, Event* events, unsigned int overlapRadius,
 template<typename T>
 void startDownload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 		detail::DeviceList devices) {
-	ASSERT(events != nullptr);
-    cl_ulong time_start, time_end;
-    double total_time;
-	size_t offset = 0;
-	for (auto& devicePtr : devices) {
-		auto& buffer = matrix.deviceBuffer(*devicePtr);
+   ASSERT(events != nullptr);
 
-		size_t overlapSize = overlapRadius * matrix.size().columnCount();
+  size_t offset = 0;
 
-		size_t size = buffer.size() - (2 * overlapSize);
+  for (auto& devicePtr : devices) {
+    auto& buffer = matrix.deviceBuffer(*devicePtr);
 
-		auto event = devicePtr->enqueueRead(buffer, matrix.hostBuffer().begin(),
-                size, overlapSize, 2*offset);
-		offset += size;
-		events->insert(event);
-        event.wait();
+    auto overlapSize = overlapRadius * matrix.size().columnCount();
 
-        event.getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
-        event.getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
+    auto size =   buffer.size() - (2 * overlapSize);
 
-        total_time = time_end - time_start;
-        printf("Total download time in milliseconds = %0.3f ms\n", (total_time / 1000000.0) );
-	}
+    auto event = devicePtr->enqueueRead(buffer,
+                                        matrix.hostBuffer().begin(),
+                                        size,
+                                        overlapSize,
+                                        offset);
+    offset += size;
+    events->insert(event);
+  }
 
-
-
-	// mark data on device as out of date !
-	// TODO: find out why? -> ask matthias
+  // mark data on device as out of date !
+  // TODO: find out why? -> ask matthias
   matrix.dataOnHostModified();
 }
 

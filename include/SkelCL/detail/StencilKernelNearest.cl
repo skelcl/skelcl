@@ -189,7 +189,6 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
         if(row<SCL_ELEMENTS/SCL_COLS && col<SCL_COLS) {
             SCL_OUT[row*SCL_COLS+col] = USR_FUNC(&Mm);
         }
-        barrier(CLK_GLOBAL_MEM_FENCE);
 
 }
 

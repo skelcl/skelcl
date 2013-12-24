@@ -98,15 +98,12 @@ SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y){
     if(_north == 0 && _south == 0 && _west == 0 && _east == 0) {
 s.append(R"(
 
-typedef float SCL_TYPE_0;
-typedef float SCL_TYPE_1;
-
 __kernel void SCL_STENCIL(
             __global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_OUT, __global SCL_TYPE_1* SCL_TMP, __local SCL_TYPE_1* SCL_LOCAL_TMP, const unsigned int SCL_TILE_WIDTH,
                         const unsigned int SCL_TILE_HEIGHT, const unsigned int SCL_ELEMENTS, const unsigned int SCL_NORTH, const unsigned int SCL_WEST, const unsigned int SCL_SOUTH,
                         const unsigned int SCL_EAST, const unsigned int SCL_COLS)
 {
-if (get_global_id(0) < SCL_ELEMENTS) {
+if (get_global_id(1)*SCL_COLS+get_global_id(0) < SCL_ELEMENTS) {
     input_matrix_t Mm;
     Mm.data = SCL_TMP+get_global_id(1)*SCL_COLS+get_global_id(0);
     SCL_OUT[get_global_id(1)*SCL_COLS+get_global_id(0)] = USR_FUNC(&Mm);
@@ -215,3 +212,4 @@ std::string StencilInfo<Tout(Tin)>::getDebugInfo() const {
 }
 
 #endif /* STENCILINFODEF_H_ */
+

@@ -102,19 +102,19 @@ private:
 	void execute(Matrix<Tout>& output, Matrix<Tout>& tmp, const Matrix<Tin>& in,
 			Args&&... args);
 
-	// Ermittelt aus allen hinzugefügten Stencil Shapes das größte Ausmaß in Richtung Norden.
-	unsigned int determineLargestNorth();
+	// Ermittelt aus allen hinzugefügten Stencil Shapes die Summe der Ausmaße in Richtung Norden.
+	unsigned int determineNorthSum();
 
-	// Ermittelt aus allen hinzugefügten Stencil Shapes das größte Ausmaß in Richtung Westen.
-	unsigned int determineLargestWest();
+	// Ermittelt aus allen hinzugefügten Stencil Shapes die Summe der Ausmaße in Richtung Westen.
+	unsigned int determineWestSum();
 
-	// Ermittelt aus allen hinzugefügten Stencil Shapes das größte Ausmaß in Richtung Süden.
-	unsigned int determineLargestSouth();
+	// Ermittelt aus allen hinzugefügten Stencil Shapes die Summe der Ausmaße in Richtung Süden.
+	unsigned int determineSouthSum();
 
-	// Ermittelt aus allen hinzugefügten Stencil Shapes das größte Ausmaß in Richtung Osten.
-	unsigned int determineLargestEast();
+	// Ermittelt aus allen hinzugefügten Stencil Shapes die Summe der Ausmaße in Richtung Osten.
+	unsigned int determineEastSum();
 
-    unsigned int determineIterationsBetweenDataSwaps(unsigned int iterLeft);
+    unsigned int determineIterationsBetweenDataSwaps(const Matrix<Tin>& in, unsigned int iterLeft);
 
 	// Eingabe vorbereiten
 	void prepareInput(const Matrix<Tin>& in);
@@ -136,3 +136,4 @@ private:
 #include "detail/StencilDef.h"
 
 #endif /* STENCIL_H_ */
+
