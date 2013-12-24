@@ -182,11 +182,11 @@ time4 = get_time();
     //Get time
     time5=get_time();
 
-    /*printf("Init time : %.12f\n", (float) (time1-time0) / 1000000);
+    printf("Init time : %.12f\n", (float) (time1-time0) / 1000000);
     printf("Input time : %.12f\n", (float) (time2-time1) / 1000000);
     printf("Creation time : %.12f\n", (float) (time3-time2) / 1000000);
     printf("Exec time : %.12f\n", (float) (time4-time3) / 1000000);
-    printf("Total time : %.12f\n", (float) (time5-time0) / 1000000);*/
+    printf("Total time : %.12f\n", (float) (time5-time0) / 1000000);
      printf("Total without init time : %.12f\n", (float) (time5-time1) / 1000000);
 
     writePPM(outputImage, out.str());

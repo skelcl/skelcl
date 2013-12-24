@@ -34,6 +34,7 @@
 ///
 /// \file StencilDistribution.h
 ///
+/// Works with the matrix.
 ///
 ///	\author Stefan Breuer <s_breu03@uni-muenster.de>
 ///

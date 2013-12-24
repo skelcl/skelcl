@@ -34,6 +34,8 @@
 ///
 /// \file Stencil.h
 ///
+/// Works with the matrix.
+///
 ///	\author Stefan Breuer<s_breu03@uni-muenster.de>
 ///
 #ifndef STENCIL_H_

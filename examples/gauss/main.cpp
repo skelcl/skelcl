@@ -99,7 +99,6 @@ int main(int argc, char** argv) {
     long long time1;
     long long time2;
     long long time3;
-    long long time4;
     long long time5;
 
     int i;
@@ -164,8 +163,7 @@ int main(int argc, char** argv) {
 
     time2 = get_time();
 
-    //Matrix<float> outputImage = s(inputImage, kernelVec, static_cast<unsigned int>(range));
-    for (int iter=0; iter<static_cast<unsigned int>(iterationen); iter++){
+    for (unsigned int iter=0; iter<static_cast<unsigned int>(iterationen); iter++){
         inputImage = s(inputImage, kernelVec, static_cast<unsigned int>(range));
         inputImage.copyDataToHost();
         inputImage.resize(inputImage.size());
@@ -177,10 +175,10 @@ int main(int argc, char** argv) {
 
     //Get time
     time5=get_time();
-    /*printf("Init time : %.12f\n", (float) (time1-time0) / 1000000);
+    printf("Init time : %.12f\n", (float) (time1-time0) / 1000000);
     printf("Creation time : %.12f\n", (float) (time2-time1) / 1000000);
     printf("Exec time : %.12f\n", (float) (time3-time2) / 1000000);
-     printf("Total time : %.12f\n", (float) (time5-time0) / 1000000);*/
+     printf("Total time : %.12f\n", (float) (time5-time0) / 1000000);
      printf("Total without init time : %.12f\n", (float) (time5-time1) / 1000000);
 
     //writePPM(inputImage, out.str());

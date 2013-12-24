@@ -158,12 +158,6 @@ template<typename T>
 size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 		const typename Matrix<T>::size_type size, const DeviceList& devices,
 		const unsigned int overlapRadius) {
-/*	auto id = devicePtr->id();
-	if (id) {
-	};
-	auto s = size.elemCount() / devices.size();
-	s += 2 * overlapRadius * size.columnCount();
-	return s;*/
 auto id = devicePtr->id();
  if (id < devices.size() - 1) {
     auto s = size.rowCount() / devices.size();
@@ -207,7 +201,6 @@ void startUpload(Vector<T>& vector, Event* events, unsigned int overlapRadius,
             paddingFront.size());
     events->insert(event1);
 
-//  size_t offset       = 0;
 	size_t deviceOffset = paddingFront.size();
 	size_t devSize = devices.size();
 	size_t hostOffset = 0; //????

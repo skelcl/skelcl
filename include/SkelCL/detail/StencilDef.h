@@ -34,6 +34,8 @@
 ///
 /// \file StencilDef.h
 ///
+/// Works with the matrix.
+///
 ///	\author Stefan Breuer<s_breu03@uni-muenster.de>
 ///
 #ifndef STENCILDEF_H_
@@ -70,12 +72,6 @@
 #include "Util.h"
 
 namespace skelcl {
-
-long long get_time1() {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return (tv.tv_sec * 1000000) + tv.tv_usec;
-}
 
 //Konstruktor für Matrix
 template<typename Tin, typename Tout>
@@ -157,7 +153,6 @@ Matrix<Tout>& Stencil<Tout(Tin)>::operator()(unsigned int iterations, Out<Matrix
     //Da das Kopieren und Zuweisen von Matrizen hier explizit verboten wurde, wird hier im vorhinein die Ausgabe-Matrix bestimmt.
     if(_iterations % 2 == 0){
        execute(temp.container(), output.container(), in, std::forward<Args>(args)...);
-       LOG_DEBUG("Return temp");
     } else {
         if((_iterations % 2 == 1) && (_stencilInfos.size() % 2 == 0)){
             execute(temp.container(), output.container(), in, std::forward<Args>(args)...);
@@ -185,16 +180,11 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp, const
 	unsigned int outputRowCount = output.rowCount();
 unsigned int noOfDevices = in.distribution().devices().size();
 
-    cl_ulong time_start, time_end;
-    double total_time;
     unsigned int southSum = determineSouthSum();
     unsigned int northSum = determineNorthSum();
     unsigned int i = 0;
-	long long time1, time2;
     int k = 1;
-    std::vector<cl::Event> kernels(3);
-    kernels.resize(0);
-    cl::Event event;
+
     try {
         for(i = 0; i<_iterations; i++){
             k--;
@@ -284,12 +274,14 @@ unsigned int noOfDevices = in.distribution().devices().size();
 
                     // after finishing the kernel invoke this function ...
                     auto invokeAfter = [=] () {(void)keepAlive;};
-
-                     event =  devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
-                                cl::NDRange(local[0], local[1]), cl::NullRange,
+if(devicePtr->id()==0)
+                     devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
+                                cl::NDRange(local[0], local[1]), cl::NDRange(0, offset),
                             invokeAfter);
-			kernels.push_back(event);
-
+else
+    devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
+               cl::NDRange(local[0], local[1]), cl::NullRange,
+           invokeAfter);
                 }
              
              k++;
@@ -301,53 +293,6 @@ unsigned int noOfDevices = in.distribution().devices().size();
     } catch (cl::Error& err) {
             ABORT_WITH_ERROR(err);
     }
-
-//for(unsigned int i = 0; i<kernels.size(); i++){
-//	kernels[i].wait();
-//}
-
-/*unsigned int devicesSize = in.distribution().devices().size();
-for(unsigned int i = devicesSize; i<kernels.size(); i++) {
-	cl_ulong time_start_now, time_end_now, time_start_before, time_end_before;
-	kernels[i-devicesSize].getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end_before);	
-	kernels[i].getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
-	double dt((time_start-time_end_before)/1e9);
-	printf("Sync Time: %12.3f\n", dt*1e3);
-
-}*/
-
-/*cl_ulong time_queued0, time_queued1, time_queued2;
-kernels[0].getProfilingInfo(CL_PROFILING_COMMAND_QUEUED, &time_queued0);
-kernels[1].getProfilingInfo(CL_PROFILING_COMMAND_QUEUED, &time_queued1);
-kernels[2].getProfilingInfo(CL_PROFILING_COMMAND_QUEUED, &time_queued2);
-
-printf("%lld, %lld, %lld\n", time_queued0, time_queued1, time_queued2);
-
-	for(int i = 0; i<kernels.size(); i++){
-		kernels[i].wait();
-
-		cl_ulong time_start, time_end, time_queued, time_submit;
-	
-		kernels[i].getProfilingInfo(CL_PROFILING_COMMAND_QUEUED, &time_queued);
-		kernels[i].getProfilingInfo(CL_PROFILING_COMMAND_SUBMIT, &time_submit);
-		kernels[i].getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
-		kernels[i].getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
-if(i==0){
-	printf("%i Q -> S: %lld, %lld, %lld, %lld\n", i, time_queued-time_queued0, time_submit-time_queued0, time_start-time_queued0, time_end-time_queued0);
-} 
-else if(i==1){
-	printf("%i Q -> S: %lld, %lld, %lld, %lld\n", i, time_queued-time_queued1, time_submit-time_queued1, time_start-time_queued1, time_end-time_queued1);
-} else if(i==2){
-	printf("%i Q -> S: %lld, %lld, %lld, %lld\n", i, time_queued-time_queued2, time_submit-time_queued2, time_start-time_queued2, time_end-time_queued2);
-} else if(i==3){
-	printf("%i Q -> S: %lld, %lld, %lld, %lld\n", i, time_queued-time_queued0, time_submit-time_queued0, time_start-time_queued0, time_end-time_queued0);
-} else if(i==4){
-	printf("%i Q -> S: %lld, %lld, %lld, %lld\n", i, time_queued-time_queued1, time_submit-time_queued1, time_start-time_queued1, time_end-time_queued1);
-} else {
-printf("%i Q -> S: %lld, %lld, %lld, %lld\n", i, time_queued-time_queued2, time_submit-time_queued2, time_start-time_queued2, time_end-time_queued2);
-}
-
-}*/
 }
 
 // Eingabe vorbereiten
@@ -368,19 +313,11 @@ void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
 template<typename Tin, typename Tout>
 unsigned int Stencil<Tout(Tin)>::determineIterationsBetweenDataSwaps(const Matrix<Tin>& in, unsigned int iterLeft) {
     //User chose a value
-    if(_iterBetSwaps!=-1) return _iterBetSwaps;
+    if(iterLeft < _iterBetSwaps) return iterLeft;
+    else if(_iterBetSwaps!=-1) return _iterBetSwaps;
 
-    //First determination
-    /*if(iterLeft==_iterations) {
-        unsigned int noOfDevices = in.distribution().devices().size();
-        unsigned int rowsPerDev = in.size().rowCount() / noOfDevices / 2;
-        unsigned int north = determineLargestNorth();
-        unsigned int south = determineLargestSouth();
-        unsigned int largestExtent = north > south ? north : south;
-        unsigned int maxIter = rowsPerDev / largestExtent;
-    } else {
+    //Add the online determination of the number of iterations between device synchronizations here
 
-    }*/
     return 1;
 }
 

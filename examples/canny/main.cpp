@@ -207,8 +207,8 @@ int main(int argc, char** argv) {
     printf("Total Sobel time: %.12f\n", (float) (time4-time3) / 1000000);
     printf("Total NSM time: %.12f\n", (float) (time5-time4) / 1000000);
     printf("Total Threshold time: %.12f\n", (float) (time6-time5) / 1000000);
-    printf("Total Total time: %.12f\n", (float) (time6-time0) / 1000000);
-    printf("Total Total no init time: %.12f\n", (float) (time6-time1) / 1000000);
+    printf("Total Total time: %.12f\n", (float) (time7-time0) / 1000000);
+    printf("Total Total no init time: %.12f\n", (float) (time7-time1) / 1000000);
 
     //writePPM(tempImage, out.str());
 

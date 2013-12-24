@@ -34,7 +34,7 @@
 ///
 /// \file OLDistribution.h
 ///
-/// Working for Matrix-Version.
+/// Working for Matrix-Version. This replaces OverlapDistribution, which did not work at all.
 ///
 ///	\author Stefan Breuer <s_breu03@uni-muenster.de>
 ///
