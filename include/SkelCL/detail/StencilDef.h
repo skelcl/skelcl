@@ -205,7 +205,7 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
 		for (i = 0; i < _iterations; i++) {
 			k--;
 			if (noOfDevices != 1
-					&& iterationsAfterLastSync == iterationsBetweenSwaps) {
+					&& iterationsAfterLastSync == iterationsBetweenSwaps ) {
 				if ((i + k) % 2 == 0) {
 					(dynamic_cast<detail::StencilDistribution<Matrix<Tout> >*>(&temp.distribution()))->swap(
 							temp, iterationsBetweenSwaps);
@@ -214,7 +214,7 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
 							output, iterationsBetweenSwaps);
 				}
 				iterationsBetweenSwaps = determineIterationsBetweenDataSwaps(in,
-						_iterations - i - 1);
+						_iterations - i);
 				iterationsAfterLastSync = 0;
 			}
 
@@ -362,7 +362,7 @@ template<typename Tin, typename Tout>
 unsigned int Stencil<Tout(Tin)>::determineIterationsBetweenDataSwaps(
 		const Matrix<Tin>& in, unsigned int iterLeft) {
 	//User chose a value
-	if (iterLeft < _iterBetSwaps)
+	if (iterLeft <= _iterBetSwaps)
 		return iterLeft;
 	else if (_iterBetSwaps != -1)
 		return _iterBetSwaps;

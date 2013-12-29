@@ -186,7 +186,7 @@ int main(int argc, char** argv) {
 	printf("Total without init time : %.12f\n",
 			(float) (time5 - time1) / 1000000);
 
-	//writePPM(inputImage, out.str());
+    writePPM(inputImage, out.str());
 
 	skelcl::terminate();
 

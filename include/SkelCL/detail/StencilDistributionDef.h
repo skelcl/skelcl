@@ -312,7 +312,7 @@ void swap(const Matrix<T>& matrix, Event* events, unsigned int north,
 		unsigned int west, unsigned int south, unsigned int east,
 		unsigned int iterations, unsigned int initialIterationsBeforeFirstSwap,
 		detail::DeviceList devices) {
-	ASSERT(initialIterationsBeforeFirstSwap <= iterations);
+	ASSERT(initialIterationsBeforeFirstSwap >= iterations);
 	LOG_DEBUG_INFO("Matrix Version , west: ", west, " and east: ", east,
 			" are not considered for the swap.");
 	// create temporary vectors
