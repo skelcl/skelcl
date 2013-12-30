@@ -214,7 +214,7 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
 							output, iterationsBetweenSwaps);
 				}
 				iterationsBetweenSwaps = determineIterationsBetweenDataSwaps(in,
-						_iterations - i);
+						_iterations - i - 1);
 				iterationsAfterLastSync = 0;
 			}
 
