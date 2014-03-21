@@ -838,7 +838,11 @@ std::string Matrix<T>::deviceFunctions()
 
   // found "double" => enable double
   if (type.find("double") != std::string::npos) {
-    s << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
+    s << "#if defined(cl_khr_fp64)\n"
+         "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n"
+         "#elif defined(cl_amd_fp64)\n"
+         "#pragma OPENCL EXTENSION cl_amd_fp64 : enable\n"
+         "#endif\n";
   }
 
   s << "#ifndef " << type << "_MATRIX_T\n"
