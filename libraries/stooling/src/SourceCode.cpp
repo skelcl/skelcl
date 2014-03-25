@@ -14,6 +14,7 @@
 #pragma GCC diagnostic ignored "-Wshadow"
 #pragma GCC diagnostic ignored "-Wmissing-noreturn"
 #pragma GCC diagnostic ignored "-Wcast-align"
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #ifdef __clang__
 # pragma GCC diagnostic ignored "-Wshift-sign-overflow"
 # if (__clang_major__ >= 3 && __clang_minor__ >= 3)
