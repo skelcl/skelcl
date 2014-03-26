@@ -42,7 +42,6 @@
 namespace skelcl {
 
 // MatrixSize
-
 MatrixSize::MatrixSize(size_type rowCount, size_type columnCount)
 : _rowCount(rowCount), _columnCount(columnCount)
 {
