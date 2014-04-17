@@ -1,1 +1,7 @@
 libraries/gtest
+msvc/pvsutil.sdf
+msvc/pvsutil.opensdf
+msvc/pvsutil.v12.suo
+msvc/Debug
+msvc/Release
+msvc/x64

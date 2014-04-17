@@ -58,7 +58,7 @@
 # ifdef __GNUC__
 #   define NORETURN_ATTRIBUTE __attribute__((noreturn))
 # else
-#   define NORETURN
+#   define NORETURN_ATTRIBUTE
 # endif
 #endif
 

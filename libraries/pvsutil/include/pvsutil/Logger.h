@@ -124,12 +124,6 @@ private:
 
 #endif // NDEBUG
 
-#if COMPILING_DLL
-    #define DLLEXTERN __declspec(dllexport)
-#else
-    #define DLLEXTERN __declspec(dllimport)
-#endif
-
 // Default logger connected per default to std::clog
 PVSUTIL_API extern Logger defaultLogger;
 
