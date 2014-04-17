@@ -55,11 +55,11 @@ protected:
     //    pvsutil::Logger::Severity::DebugInfo );
 
     skelcl::init(skelcl::nDevices(1));
-  };
+  }
 
   ~MapTest() {
     skelcl::terminate();
-  };
+  }
 };
 
 TEST_F(MapTest, CreateMapWithString) {

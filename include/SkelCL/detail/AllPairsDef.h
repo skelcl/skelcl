@@ -160,15 +160,23 @@ void AllPairs<Tout(Tleft, Tright)>::execute(Matrix<Tout>& output,
         auto& leftBuffer   = left.deviceBuffer(*devicePtr);
         auto& rightBuffer  = right.deviceBuffer(*devicePtr);
 
-        cl_uint elements[2]   = { static_cast<cl_uint>(outputBuffer.size() / output.columnCount()),
+        cl_uint elements[2]   = { static_cast<cl_uint>(
+                                    outputBuffer.size() / output.columnCount()),
                                   static_cast<cl_uint>(output.columnCount()) };
         cl_uint local[2]      = {_C, _R}; // C, R
-        cl_uint global[2]     = {static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements[1], local[0])),
-                                 static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements[0], local[1]*_S))/_S}; // SUBTILES
-        cl_uint dimension     = left.columnCount();
+        cl_uint global[2]     = {static_cast<cl_uint>(
+                                  detail::util::ceilToMultipleOf(elements[1],
+                                                                 local[0])),
+                                 static_cast<cl_uint>(
+                                  detail::util::ceilToMultipleOf(elements[0],
+                                                                 local[1]*_S))
+                                   /_S}; // SUBTILES
+        cl_uint dimension     = static_cast<cl_uint>( left.columnCount() );
 
-        LOG_DEBUG("dim: ", dimension, " height: ", elements[0], " width: ",elements[1]);
-        LOG_DEBUG("local: ", local[0],",", local[1], " global: ", global[0],",",global[1]);
+        LOG_DEBUG("dim: ", dimension, " height: ",
+                  elements[0], " width: ",elements[1]);
+        LOG_DEBUG("local: ", local[0],",", local[1],
+                  " global: ", global[0],",",global[1]);
 
         try {
             cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_ALLPAIRS"));

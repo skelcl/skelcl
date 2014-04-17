@@ -2,6 +2,7 @@
 #define STOOLING_SOURCE_CODE_H_
 
 #include <string>
+#include <vector>
 
 #include "detail/stoolingDll.h"
 
@@ -36,7 +37,9 @@ public:
 
   void fixKernelParameter(const std::string& kernel);
 
-  const std::string& code();
+  const std::string& code() const;
+
+  std::vector<std::string> parameterTypeNames(const std::string& funcName) const;
 
 private:
   SourceCode();// = delete;

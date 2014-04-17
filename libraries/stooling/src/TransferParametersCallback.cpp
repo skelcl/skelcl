@@ -6,6 +6,17 @@
 #pragma GCC diagnostic ignored "-Weffc++"
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wsign-promo"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wmissing-noreturn"
+#pragma GCC diagnostic ignored "-Wcast-align"
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wshift-sign-overflow"
+#pragma GCC diagnostic ignored "-Wduplicate-enum"
+#endif
 
 #include <clang/AST/Expr.h>
 #include <clang/AST/ExprCXX.h>

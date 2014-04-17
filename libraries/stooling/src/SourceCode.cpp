@@ -8,6 +8,17 @@
 #pragma GCC diagnostic ignored "-Weffc++"
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wsign-promo"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wmissing-noreturn"
+#pragma GCC diagnostic ignored "-Wcast-align"
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wshift-sign-overflow"
+#pragma GCC diagnostic ignored "-Wduplicate-enum"
+#endif
 
 #include <clang/AST/Expr.h>
 #include <clang/AST/ExprCXX.h>
@@ -20,6 +31,7 @@
 #pragma GCC diagnostic pop
 
 #include <string>
+#include <vector>
 
 #include "RefactoringTool.h"
 
@@ -29,6 +41,7 @@
 #include "RenameTypedefCallback.h"
 #include "RedefineTypedefCallback.h"
 #include "FixKernelParameterCallback.h"
+#include "GetParameterTypeNamesCallback.h"
 
 #include <iostream>
 
@@ -169,7 +182,20 @@ void SourceCode::fixKernelParameter(const std::string& kernel)
   _source = _tool->transform(_source, newFrontendActionFactory(&finder));
 }
 
-const std::string& SourceCode::code()
+std::vector<std::string>
+  SourceCode::parameterTypeNames(const std::string& funcName) const
+{
+  ast_matchers::MatchFinder finder;
+  GetParameterTypeNamesCallback callback;
+  finder.addMatcher(
+      functionDecl(hasName(funcName)).bind("decl"),
+      &callback);
+
+  _tool->run(_source, newFrontendActionFactory(&finder));
+  return callback.getParameterTypeNames();
+}
+
+const std::string& SourceCode::code() const
 {
   return _source;
 }

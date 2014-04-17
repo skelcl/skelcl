@@ -48,16 +48,16 @@ protected:
   VectorTest() {
     pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
     skelcl::init(skelcl::nDevices(1));
-  };
+  }
 
   ~VectorTest() {
     skelcl::terminate();
-  };
+  }
 };
 
 struct A {
-  A() : _a(0) {};
-  A(int a) : _a(a) {};
+  A() : _a(0) {}
+  A(int a) : _a(a) {}
   int _a;
 };
 
@@ -172,8 +172,8 @@ TEST_F(VectorTest, Resize) {
 }
 
 typedef struct Position {
-  Position() : _x(0), _y(0) {};
-  Position(int x, int y) : _x(x), _y(y) {};
+  Position() : _x(0), _y(0) {}
+  Position(int x, int y) : _x(x), _y(y) {}
   int _x;
   int _y;
 } Position;

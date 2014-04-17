@@ -127,6 +127,7 @@ void CLArgParser::parse(int argc, char** argv)
   }
 }
 
+NORETURN_ATTRIBUTE
 void CLArgParser::printHelp()
 {
   _logger.output() << _description.getDescription() << std::endl << std::endl;
@@ -137,6 +138,7 @@ void CLArgParser::printHelp()
   exit(0);
 }
 
+NORETURN_ATTRIBUTE
 void CLArgParser::printVersion()
 {
   _logger.output() << "Version: " << _version.getVersion() << std::endl;

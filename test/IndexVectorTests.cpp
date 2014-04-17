@@ -49,11 +49,11 @@ protected:
   IndexVectorTest() {
     pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
     skelcl::init(skelcl::nDevices(1));
-  };
+  }
 
   ~IndexVectorTest() {
     skelcl::terminate();
-  };
+  }
 };
 
 TEST_F(IndexVectorTest, CreateIndexVector) {

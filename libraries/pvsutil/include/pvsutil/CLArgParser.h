@@ -52,6 +52,16 @@
 
 #include "detail/pvsutilDll.h"
 
+#ifdef __clang__
+# define NORETURN_ATTRIBUTE [[ noreturn ]]
+#else
+# ifdef __GNUC__
+#   define NORETURN_ATTRIBUTE __attribute__((noreturn))
+# else
+#   define NORETURN
+# endif
+#endif
+
 namespace pvsutil {
 
 class PVSUTIL_API CLArgParser {
@@ -77,7 +87,11 @@ private:
   void printArg(std::ostream& output, cmdline::BaseArg& arg);
 
   void printDescription();
+
+  NORETURN_ATTRIBUTE
   void printHelp();
+
+  NORETURN_ATTRIBUTE
   void printVersion();
 
 

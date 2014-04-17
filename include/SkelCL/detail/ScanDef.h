@@ -120,11 +120,11 @@ void Scan<T(T)>::execute(Vector<T>& output,
   auto& inputBuffer   = input.deviceBuffer(*devicePtr);
   auto& outputBuffer  = output.deviceBuffer(*devicePtr);
 
-  unsigned int elements = inputBuffer.size();
-  unsigned int wgSize   = std::min(this->workGroupSize(),
-                                   devicePtr->maxWorkGroupSize());
+  size_t elements = inputBuffer.size();
+  size_t wgSize   = std::min(this->workGroupSize(),
+                             devicePtr->maxWorkGroupSize());
   // calculate number of passes
-  unsigned int passes = calculateNumberOfPasses(wgSize, elements);
+  size_t passes = calculateNumberOfPasses(wgSize, elements);
 
   // allocate intermediate buffers
   auto tmpBuffers = createImmediateBuffers(passes, wgSize, elements, devicePtr);
@@ -141,10 +141,10 @@ void Scan<T(T)>::execute(Vector<T>& output,
 }
 
 template <typename T>
-unsigned int Scan<T(T)>::calculateNumberOfPasses(size_t workGroupSize,
-                                                 size_t elements) const
+size_t Scan<T(T)>::calculateNumberOfPasses(size_t workGroupSize,
+                                           size_t elements) const
 {
-  unsigned int passes = 0;
+  size_t passes = 0;
   do {
     // round up while dividing
     elements = (elements + workGroupSize - 1) / workGroupSize;
@@ -157,9 +157,9 @@ unsigned int Scan<T(T)>::calculateNumberOfPasses(size_t workGroupSize,
 
 template <typename T>
 std::vector<detail::DeviceBuffer>
-  Scan<T(T)>::createImmediateBuffers(unsigned int passes,
-                                     unsigned int wgSize,
-                                     unsigned int elements,
+  Scan<T(T)>::createImmediateBuffers(size_t passes,
+                                     size_t wgSize,
+                                     size_t elements,
                                      const detail::Device::ptr_type& devicePtr)
 {
   std::vector<detail::DeviceBuffer> tmpBuffers(passes);
@@ -167,15 +167,16 @@ std::vector<detail::DeviceBuffer>
   for (auto& buffer : tmpBuffers) {
 
     buffer = detail::DeviceBuffer(devicePtr, n, sizeof(T));
-    n = (n + wgSize - 1) / wgSize; // round up while dividing
+    n = (n + static_cast<cl_uint>(wgSize) - 1)
+        / static_cast<cl_uint>(wgSize); // round up while dividing
   }
   return tmpBuffers;
 }
 
 template <typename T>
 void
-  Scan<T(T)>::performScanPasses(unsigned int passes,
-                                unsigned int wgSize,
+  Scan<T(T)>::performScanPasses(size_t passes,
+                                size_t wgSize,
                                 const detail::Device::ptr_type& devicePtr,
                                 const std::vector<detail::DeviceBuffer>&
                                   tmpBuffers,
@@ -193,9 +194,10 @@ void
     for (unsigned int i = 0; i < passes; i++) {
       auto* currentTmp = &tmpBuffers[i];
 
-      cl_uint local  = wgSize / 2;
-      cl_uint global = detail::util::ceilToMultipleOf(currentTmp->size() / 2,
-                                                      local);
+      cl_uint local  = static_cast<cl_uint>( wgSize / 2 );
+      cl_uint global = static_cast<cl_uint>(
+                          detail::util::ceilToMultipleOf(currentTmp->size() / 2,
+                                                         local) );
       scanKernel.setArg(0, currentInput->clBuffer());
       scanKernel.setArg(1, currentOutput->clBuffer());
       scanKernel.setArg(3, currentTmp->clBuffer());
@@ -218,8 +220,8 @@ void
 
 template<typename T>
 void
-  Scan<T(T)>::performUniformCombination(unsigned int passes,
-                                        unsigned int wgSize,
+  Scan<T(T)>::performUniformCombination(size_t passes,
+                                        size_t wgSize,
                                         const detail::Device::ptr_type&
                                           devicePtr,
                                         const std::vector<detail::DeviceBuffer>&
@@ -230,7 +232,7 @@ void
   try {
     cl::Kernel uniformCombinationKernel(
         _program.kernel(*devicePtr, "SCL_UNIFORM_COMBINATION"));
-    for (int i = passes - 2; i >= 0; i--) {
+    for (long i = passes - 2; i >= 0; i--) {
       auto* currentInput = &tmpBuffers[i];
       const detail::DeviceBuffer* currentOutput = nullptr;
       if ( i > 0 ) {
@@ -239,9 +241,10 @@ void
         currentOutput = &outputBuffer;
       }
 
-      cl_uint local = wgSize / 2;
-      cl_uint global = detail::util::ceilToMultipleOf(currentInput->size() / 2,
-                                                      local);
+      cl_uint local  = static_cast<cl_uint>( wgSize / 2 );
+      cl_uint global = static_cast<cl_uint>(
+                        detail::util::ceilToMultipleOf(currentInput->size() / 2,
+                                                       local) );
       uniformCombinationKernel.setArg(0, currentOutput->clBuffer());
       uniformCombinationKernel.setArg(1, currentInput->clBuffer());
       uniformCombinationKernel.setArg(2,

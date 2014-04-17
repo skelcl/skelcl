@@ -30,49 +30,43 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
-///
-/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
-///
 
-#include <SkelCL/detail/Device.h>
+#include <string>
 
 #include "Test.h"
 
-class DeviceTest : public ::testing::Test {
+using namespace testing;
+
+class GetParameterTypeNamesTest  : public Test
+{
 protected:
-  DeviceTest() : _platform(), _device() {
-    std::vector<cl::Platform> platforms;
-    cl::Platform::get(&platforms);
-    _platform = platforms[0];
-
-    std::vector<cl::Device> devices;
-    _platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
-
-    _device = devices[0];
-  }
-
-  ~DeviceTest() {
-    // tear down
-  }
-  cl::Platform  _platform;
-  cl::Device    _device;
+  GetParameterTypeNamesTest() {}
 };
 
-TEST_F(DeviceTest, CreateDevice) {
-  size_t id = 0;
-  skelcl::detail::Device device(_device, _platform, id);
+TEST_F(GetParameterTypeNamesTest, TwoIntParams)
+{
+  const char* input = "\
+void foo(int x, int y);\
+";
+  stooling::SourceCode s(input);
 
-  EXPECT_EQ(id, device.id()); // test id
-  EXPECT_EQ(_device(), device.clDevice()()); // test clDevice
+  auto paramTypeNames = s.parameterTypeNames("foo");
 
-  cl::Context context = device.clContext(); // test clContext
-  cl_int err;
-  std::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>(&err);
-  EXPECT_EQ(CL_SUCCESS, err); // getInfo succeeded
-  EXPECT_EQ(1, devices.size()); // exactly one device found
-  EXPECT_EQ(device.clDevice()(), devices[0]()); // device in context is the same device
+  for (auto& typeName : paramTypeNames) {
+    EXPECT_EQ("int", typeName);
+  }
+}
 
-  // TODO: Test command queue
+TEST_F(GetParameterTypeNamesTest, TwoQualifiedIntParams)
+{
+  const char* input = "\
+void foo(const int x, int* y);\
+";
+  stooling::SourceCode s(input);
+
+  auto paramTypeNames = s.parameterTypeNames("foo");
+
+  EXPECT_EQ("int", paramTypeNames[0]);
+  EXPECT_EQ("int *", paramTypeNames[1]);
 }
 

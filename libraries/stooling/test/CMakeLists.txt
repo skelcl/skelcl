@@ -18,4 +18,5 @@ add_testcase (RenameFunctionTest)
 add_testcase (RenameTypedefTest)
 add_testcase (TransferParametersTest)
 add_testcase (TransferArgumentsTest)
+add_testcase (GetParameterTypeNamesTest)
 

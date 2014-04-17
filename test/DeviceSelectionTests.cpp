@@ -46,11 +46,11 @@ class DeviceSelectionTest : public ::testing::Test {
 protected:
   DeviceSelectionTest() {
     // skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
-  };
+  }
 
   ~DeviceSelectionTest() {
     skelcl::terminate();
-  };
+  }
 };
 
 using namespace skelcl;

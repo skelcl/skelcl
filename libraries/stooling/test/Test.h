@@ -38,6 +38,13 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wundef"
+#pragma GCC diagnostic ignored "-Wmissing-noreturn"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wshift-sign-overflow"
+#pragma GCC diagnostic ignored "-Wused-but-marked-unused"
+#endif
 
 #include <gtest/gtest.h>
 

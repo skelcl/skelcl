@@ -49,11 +49,11 @@ protected:
   IndexMatrixTest() {
     //pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
     skelcl::init(skelcl::nDevices(1));
-  };
+  }
 
   ~IndexMatrixTest() {
     skelcl::terminate();
-  };
+  }
 };
 
 TEST_F(IndexMatrixTest, CreateIndexMatrix) {

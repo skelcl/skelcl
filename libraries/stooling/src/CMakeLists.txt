@@ -11,6 +11,7 @@ set (STOOLING_SOURCES
   ../include/stooling/detail/stoolingDll.h
   CustomToolInvocation.cpp
   FixKernelParameterCallback.cpp
+  GetParameterTypeNamesCallback.cpp
   RefactoringTool.cpp
   RenameFunctionCallback.cpp
   RenameTypedefCallback.cpp

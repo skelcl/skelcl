@@ -50,11 +50,11 @@ protected:
   ReduceTest() {
     //pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
     skelcl::init(skelcl::nDevices(1));
-  };
+  }
 
   ~ReduceTest() {
     skelcl::terminate();
-  };
+  }
 };
 
 TEST_F(ReduceTest, CreateReduce) {
@@ -79,7 +79,7 @@ TEST_F(ReduceTest, SimpleReduce2) {
   skelcl::Reduce<int(int)> r("int func(int x, int y){ return x+y; }");
 
   skelcl::Vector<int> input(1587);
-  for (size_t i = 0; i < input.size(); ++i) {
+  for (unsigned int i = 0; i < input.size(); ++i) {
     input[i] = i;
   }
 

@@ -31,34 +31,42 @@
 #pragma GCC diagnostic pop
 
 #include <string>
+#include <sstream>
 
-#include "RenameTypedefCallback.h"
+#include "GetParameterTypeNamesCallback.h"
+#include "Utilities.h"
 
 using namespace clang;
 using namespace clang::tooling;
 
 namespace stooling {
 
-RenameTypedefCallback::RenameTypedefCallback(
-    tooling::Replacements& replacements,
-    const std::string& oldName,
-    const std::string& newName)
-  : _replacements(replacements), _oldName(oldName), _newName(newName)
+GetParameterTypeNamesCallback::GetParameterTypeNamesCallback()
+  : _parameterTypeNames()
 {
 }
 
-void RenameTypedefCallback::run(
+void GetParameterTypeNamesCallback::run(
     const ast_matchers::MatchFinder::MatchResult& result)
 {
-  const TypedefNameDecl* typedefDecl
-    = result.Nodes.getDeclAs<TypedefNameDecl>("decl");
-  if (typedefDecl && typedefDecl->getName() == _oldName) {
-    _replacements.insert(Replacement(*result.SourceManager, typedefDecl,
-          "typedef "
-          + typedefDecl->getUnderlyingType().getAsString()
-          + " "
-          + _newName));
+  auto funcDecl = result.Nodes.getDeclAs<FunctionDecl>("decl");
+  if (funcDecl) {
+    for (auto i  = funcDecl->param_begin(),
+              e  = funcDecl->param_end();
+              i != e;
+            ++i) {
+      _parameterTypeNames.push_back(
+          // get unqualified, i.e. without const, etc. type
+          (*i)->getType().getUnqualifiedType().getAsString()
+          );
+    }
   }
+}
+
+std::vector<std::string>
+  GetParameterTypeNamesCallback::getParameterTypeNames() const
+{
+  return _parameterTypeNames;
 }
 
 } // namespace stooling
