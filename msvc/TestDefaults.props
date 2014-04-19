@@ -8,16 +8,16 @@
     <IncludePath>$(GTEST_HOME)\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LibraryPath>$(GTEST_HOME)\lib\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(GTEST_HOME)\lib\x86;$(GTEST_HOME)\msvc\gtest-md\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>$(GTEST_HOME)\lib\x86_64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(GTEST_HOME)\lib\x86_64;$(GTEST_HOME)\msvc\x64\Debug;$(GTEST_HOME)\msvc\gtest-md\x64\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>$(GTEST_HOME)\lib\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(GTEST_HOME)\lib\x86;$(GTEST_HOME)\msvc\gtest-md\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>$(GTEST_HOME)\lib\x86_64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(GTEST_HOME)\lib\x86_64;$(GTEST_HOME)\msvc\x64\Release;$(GTEST_HOME)\msvc\gtest-md\x64\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Link>

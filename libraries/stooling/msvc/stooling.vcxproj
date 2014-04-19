@@ -73,22 +73,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(LLVM_HOME)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LLVM_HOME)\lib\x86\Debug;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(LLVM_HOME)\build\Debug\lib;$(LLVM_HOME)\lib\x86\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(LLVM_HOME)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LLVM_HOME)\lib\x86_64\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(LLVM_HOME)\include;$(LLVM_HOME)\tools\clang\include;$(LLVM_HOME)\build\include;$(LLVM_HOME)\build\tools\clang\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LLVM_HOME)\build\Debug\lib;$(LLVM_HOME)\lib\x86_64\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(LLVM_HOME)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LLVM_HOME)\lib\x86\Release;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(LLVM_HOME)\build\Release\lib;$(LLVM_HOME)\lib\x86\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(LLVM_HOME)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LLVM_HOME)\lib\x86_64\Release;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(LLVM_HOME)\build\Release\lib;$(LLVM_HOME)\lib\x86_64\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
