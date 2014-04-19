@@ -5,50 +5,50 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
+    <Filter Include="Public Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Header Files\cmdline">
+    <Filter Include="Public Header Files\cmdline">
       <UniqueIdentifier>{2eb67dde-e141-47d6-b5dd-ea0a4ef3317a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\detail">
+    <Filter Include="Public Header Files\detail">
       <UniqueIdentifier>{865b989c-7698-4271-8f29-ae534f996c24}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\pvsutil\cmdline\Default.h">
-      <Filter>Header Files\cmdline</Filter>
+      <Filter>Public Header Files\cmdline</Filter>
     </ClInclude>
     <ClInclude Include="..\include\pvsutil\cmdline\Description.h">
-      <Filter>Header Files\cmdline</Filter>
+      <Filter>Public Header Files\cmdline</Filter>
     </ClInclude>
     <ClInclude Include="..\include\pvsutil\cmdline\Flags.h">
-      <Filter>Header Files\cmdline</Filter>
+      <Filter>Public Header Files\cmdline</Filter>
     </ClInclude>
     <ClInclude Include="..\include\pvsutil\cmdline\Version.h">
-      <Filter>Header Files\cmdline</Filter>
+      <Filter>Public Header Files\cmdline</Filter>
     </ClInclude>
     <ClInclude Include="..\include\pvsutil\cmdline\Arg.h">
-      <Filter>Header Files\cmdline</Filter>
+      <Filter>Public Header Files\cmdline</Filter>
     </ClInclude>
     <ClInclude Include="..\include\pvsutil\detail\LoggerDef.h">
-      <Filter>Header Files\detail</Filter>
+      <Filter>Public Header Files\detail</Filter>
     </ClInclude>
     <ClInclude Include="..\include\pvsutil\detail\pvsutilDll.h">
-      <Filter>Header Files\detail</Filter>
+      <Filter>Public Header Files\detail</Filter>
     </ClInclude>
     <ClInclude Include="..\include\pvsutil\Assert.h">
-      <Filter>Header Files</Filter>
+      <Filter>Public Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\pvsutil\CLArgParser.h">
-      <Filter>Header Files</Filter>
+      <Filter>Public Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\pvsutil\Logger.h">
-      <Filter>Header Files</Filter>
+      <Filter>Public Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\pvsutil\Timer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Public Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

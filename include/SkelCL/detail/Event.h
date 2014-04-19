@@ -47,11 +47,13 @@
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include "skelclDll.h"
+
 namespace skelcl {
 
 namespace detail {
 
-class Event {
+class SKELCL_DLL Event {
 public:
   Event();
 

@@ -13,6 +13,7 @@
 #endif
 
 #include <llvm/Support/Host.h>
+#include <llvm/ADT/OwningPtr.h>
 #include <clang/Basic/FileManager.h>
 #include <clang/Driver/Compilation.h>
 #include <clang/Driver/Driver.h>
@@ -56,7 +57,9 @@ const clang::driver::ArgStringList* getCC1Arguments(
   if (jobs.size() != 1 || !isa<clang::driver::Command>(*jobs.begin())) {
     SmallString<256> error_msg;
     llvm::raw_svector_ostream error_stream(error_msg);
-    compilation->PrintJob(error_stream, compilation->getJobs(), "; ", true);
+		for (auto& j : jobs) {
+			j->Print(error_stream, "; ", true);
+		}
     diagnostics->Report(clang::diag::err_fe_expected_compiler_job)
         << error_stream.str();
     return NULL;
@@ -149,7 +152,9 @@ bool CustomToolInvocation::runInvocation(
   // Show the invocation, with -v.
   if (invocation->getHeaderSearchOpts().Verbose) {
     llvm::errs() << "clang Invocation:\n";
-    compilation->PrintJob(llvm::errs(), compilation->getJobs(), "\n", true);
+		for (auto& j : compilation->getJobs()) {
+			j->Print(llvm::errs(), "\n", true);
+		}
     llvm::errs() << "\n";
   }
 

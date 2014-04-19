@@ -47,6 +47,7 @@
 #include "Vector.h"
 
 #include "detail/DeviceList.h"
+#include "detail/skelclDll.h"
 
 namespace skelcl {
 
@@ -61,7 +62,7 @@ namespace skelcl {
 typedef const Matrix<IndexPoint> IndexMatrix;
 
 template <>
-class Matrix<IndexPoint> {
+class SKELCL_DLL Matrix<IndexPoint> {
 public:
   typedef IndexPoint value_type;
 //  typedef ?? const_iterator;

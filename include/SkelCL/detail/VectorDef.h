@@ -90,7 +90,7 @@ Vector<T>::Vector(const size_type size,
                   const value_type& value,
                   const detail::Distribution<Vector<T>>& distribution)
   : _size(size),
-    _distribution(detail::cloneAndConvert<T>(distribution)),
+    _distribution(detail::cloneAndConvert<Vector<T>>(distribution)),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(size, value),
@@ -122,7 +122,7 @@ Vector<T>::Vector(InputIterator first,
                   InputIterator last,
                   const detail::Distribution<Vector<T>>& distribution)
   : _size(std::distance(first, last)),
-    _distribution(detail::cloneAndConvert<T>(distribution)),
+    _distribution(detail::cloneAndConvert<Vector<T>>(distribution)),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(first, last),
@@ -136,7 +136,7 @@ Vector<T>::Vector(InputIterator first,
 template <typename T>
 Vector<T>::Vector(const Vector<T>& rhs)
   : _size(rhs._size),
-    _distribution(detail::cloneAndConvert<T>(rhs.distribution())),
+    _distribution(detail::cloneAndConvert<Vector<T>>(rhs.distribution())),
     _hostBufferUpToDate(rhs._hostBufferUpToDate),
     _deviceBuffersUpToDate(rhs._deviceBuffersUpToDate),
     _hostBuffer(rhs._hostBuffer),
@@ -169,7 +169,7 @@ Vector<T>& Vector<T>::operator=(const Vector<T>& rhs)
 {
   if (this == &rhs) return *this; // handle self assignment
   _size                   = rhs._size;
-  _distribution           = detail::cloneAndConvert<T>(rhs._distribution);
+  _distribution = detail::cloneAndConvert<Vector<T>>(rhs._distribution);
   _hostBufferUpToDate     = rhs._hostBufferUpToDate;
   _deviceBuffersUpToDate  = rhs._deviceBuffersUpToDate;
   _hostBuffer             = rhs._hostBuffer;
@@ -480,7 +480,7 @@ void Vector<T>::setDistribution(const detail::Distribution<Vector<U>>&
 {
   ASSERT(origDistribution.isValid());
   // convert and set distribution
-  this->setDistribution(detail::cloneAndConvert<T>(origDistribution));
+  this->setDistribution(detail::cloneAndConvert<Vector<T>>(origDistribution));
 }
 
 template <typename T>
@@ -492,7 +492,7 @@ void Vector<T>::setDistribution(
   ASSERT(origDistribution != nullptr);
   ASSERT(origDistribution->isValid());
   // convert and set distribution
-  this->setDistribution(detail::cloneAndConvert<T>(*origDistribution));
+  this->setDistribution(detail::cloneAndConvert<Vector<T>>(*origDistribution));
 }
 
 template <typename T>
@@ -693,7 +693,7 @@ std::string Vector<T>::getDebugInfo() const
     << ", deviceBuffersCreated: "  << (!_deviceBuffers.empty())
     << ", hostBufferUpToDate: "    << _hostBufferUpToDate
     << ", deviceBuffersUpToDate: " << _deviceBuffersUpToDate
-    << ", hostBuffer: "            << &_hostBuffer.front();
+    << ", hostBuffer: "            << _hostBuffer.data();
   return s.str();
 }
 

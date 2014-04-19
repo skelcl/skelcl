@@ -260,8 +260,8 @@ size_t
     auto maxWorkGroupCount = workGroupStepWidth;
     auto count =   (inputSize / workGroupStepWidth) // round up
                  + ( (inputSize % workGroupStepWidth != 0) ? 1 : 0 );
-    auto workGroupCount = std::min(maxWorkGroupCount, count);
-    return workGroupCount;
+    // return workGroupCount
+    return std::min(maxWorkGroupCount, count);
   }
 }
 
@@ -300,8 +300,7 @@ std::shared_ptr<typename Reduce<T(T)>::Level>
           const detail::Device& device,
           const Vector<T>& input,
           const Vector<T>& output,
-          const std::shared_ptr<Reduce<T(T)>::Level>& firstLevel
-                                              )
+          const std::shared_ptr<typename Reduce<T(T)>::Level>& firstLevel)
 {
   auto level = std::make_shared<typename Reduce<T(T)>::Level>();
 

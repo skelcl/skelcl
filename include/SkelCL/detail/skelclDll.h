@@ -30,33 +30,19 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
+ 
+///
+/// \file skelclDll.h
+///
+/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///
 
-#ifndef DEVICE_ID_H
-#define DEVICE_ID_H
-
-#include <cstring>
-
-#include "skelclDll.h"
-
-namespace skelcl {
-
-namespace detail {
-
-class SKELCL_DLL DeviceID {
-public:
-  typedef size_t id_type;
-
-  explicit DeviceID(id_type pid);
-
-  id_type id() const;
-
-private:
-  const id_type _id;
-};
-
-} // namespace detail
-
-} // namespace skelcl
-
-#endif // DEVICE_ID_H
-
+#ifdef _WIN32
+#  ifdef SKELCL_EXPORTS
+#    define SKELCL_DLL __declspec(dllexport) 
+#  else
+#    define SKELCL_DLL __declspec(dllimport) 
+#  endif
+#else
+#  define SKELCL_DLL 
+#endif

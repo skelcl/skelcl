@@ -56,10 +56,11 @@
 #include "detail/DeviceBuffer.h"
 #include "detail/Distribution.h"
 #include "detail/Padding.h"
+#include "detail/skelclDll.h"
 
 namespace skelcl {
 
-class MatrixSize {
+class SKELCL_DLL MatrixSize {
 public:
   typedef size_t size_type;
 

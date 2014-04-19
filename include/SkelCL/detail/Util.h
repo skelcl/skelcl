@@ -44,6 +44,8 @@
 #include <cxxabi.h>
 #endif
 
+#include "skelclDll.h"
+
 #ifndef UTILITIES_H_
 #define UTILITIES_H_
 
@@ -60,37 +62,39 @@ std::string getResourcePath(const std::string& name,
 #endif
 #endif
 
-std::string envVarValue(const std::string& envVar);
+SKELCL_DLL std::string envVarValue(const std::string& envVar);
 
-std::string hash(const std::string& text);
+SKELCL_DLL std::string hash(const std::string& text);
 
-size_t devideAndRoundUp(size_t i, size_t j);
+SKELCL_DLL size_t devideAndRoundUp(size_t i, size_t j);
 
-size_t devideAndAlign(size_t i, size_t j, size_t a);
+SKELCL_DLL size_t devideAndAlign(size_t i, size_t j, size_t a);
 
-size_t ceilToMultipleOf(size_t i, size_t j);
+SKELCL_DLL size_t ceilToMultipleOf(size_t i, size_t j);
 
-bool isPowerOfTwo(size_t n);
+SKELCL_DLL bool isPowerOfTwo(size_t n);
 
-int floorPow2(int n);
+SKELCL_DLL int floorPow2(int n);
 
-int ceilPow2(int n);
+SKELCL_DLL int ceilPow2(int n);
 
 template<typename T>
 std::string typeToString() {
 #ifdef _WIN32
-  return std::string(typeid(T).name());
+  std::string name(typeid(T).name());
 #else
   char* cName = abi::__cxa_demangle(typeid(T).name(), NULL, NULL, NULL);
   std::string name(cName);
+#endif
   // remove namespaces ...
   auto namesp = name.rfind(":");
   if (namesp != std::string::npos) {
     name.erase(0, namesp+1);
   }
+#ifndef _WIN32
   free(cName);
-  return name;
 #endif
+  return name;
 }
 
 } // namespace util

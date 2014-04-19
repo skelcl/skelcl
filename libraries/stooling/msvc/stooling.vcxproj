@@ -19,32 +19,32 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{97D38772-097E-4AD6-83E0-4B89553048F3}</ProjectGuid>
+    <ProjectGuid>{76D2E899-5A9C-47AC-853A-592342D76765}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>pvsutilTests</RootNamespace>
+    <RootNamespace>stooling</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -68,23 +68,20 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(GTEST_HOME)\include;..\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(GTEST_HOME)\lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\include;$(LLVM_HOME)\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(GTEST_HOME)\include;..\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(GTEST_HOME)\lib\x86_64;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\include;$(LLVM_HOME)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LLVM_HOME)\lib\x86_64\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(GTEST_HOME)\include;..\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(GTEST_HOME)\lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\include;$(LLVM_HOME)\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(GTEST_HOME)\include;..\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(GTEST_HOME)\lib\x86_64;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\include;$(LLVM_HOME)\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -92,12 +89,12 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;STOOLING_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>gtestd.lib;gtest_main-mdd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>clangTooling.lib;clangRewriteFrontend.lib;clangRewriteCore.lib;clangFrontendTool.lib;clangFrontend.lib;clangParse.lib;clangSema.lib;clangAnalysis.lib;clangDriver.lib;clangStaticAnalyzerCheckers.lib;clangStaticAnalyzerFrontend.lib;clangStaticAnalyzerCore.lib;clangEdit.lib;clangFormat.lib;clangSerialization.lib;clangASTMatchers.lib;clangAST.lib;clangLex.lib;clangBasic.lib;LLVMBitReader.lib;LLVMBitWriter.lib;LLVMMCParser.lib;LLVMMC.lib;LLVMOption.lib;LLVMCore.lib;LLVMSupport.lib;LLVMTransformUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -106,12 +103,12 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;STOOLING_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>gtestd.lib;gtest_main-mdd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>clangTooling.lib;clangRewriteFrontend.lib;clangRewriteCore.lib;clangFrontendTool.lib;clangFrontend.lib;clangParse.lib;clangSema.lib;clangAnalysis.lib;clangDriver.lib;clangStaticAnalyzerCheckers.lib;clangStaticAnalyzerFrontend.lib;clangStaticAnalyzerCore.lib;clangEdit.lib;clangFormat.lib;clangSerialization.lib;clangASTMatchers.lib;clangAST.lib;clangLex.lib;clangBasic.lib;LLVMBitReader.lib;LLVMBitWriter.lib;LLVMMCParser.lib;LLVMMC.lib;LLVMOption.lib;LLVMCore.lib;LLVMSupport.lib;LLVMTransformUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -122,14 +119,14 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;STOOLING_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>gtest.lib;gtest_main-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>clangTooling.lib;clangRewriteFrontend.lib;clangRewriteCore.lib;clangFrontendTool.lib;clangFrontend.lib;clangParse.lib;clangSema.lib;clangAnalysis.lib;clangDriver.lib;clangStaticAnalyzerCheckers.lib;clangStaticAnalyzerFrontend.lib;clangStaticAnalyzerCore.lib;clangEdit.lib;clangFormat.lib;clangSerialization.lib;clangASTMatchers.lib;clangAST.lib;clangLex.lib;clangBasic.lib;LLVMBitReader.lib;LLVMBitWriter.lib;LLVMMCParser.lib;LLVMMC.lib;LLVMOption.lib;LLVMCore.lib;LLVMSupport.lib;LLVMTransformUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -140,26 +137,42 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;STOOLING_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>gtest.lib;gtest_main-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>clangTooling.lib;clangRewriteFrontend.lib;clangRewriteCore.lib;clangFrontendTool.lib;clangFrontend.lib;clangParse.lib;clangSema.lib;clangAnalysis.lib;clangDriver.lib;clangStaticAnalyzerCheckers.lib;clangStaticAnalyzerFrontend.lib;clangStaticAnalyzerCore.lib;clangEdit.lib;clangFormat.lib;clangSerialization.lib;clangASTMatchers.lib;clangAST.lib;clangLex.lib;clangBasic.lib;LLVMBitReader.lib;LLVMBitWriter.lib;LLVMMCParser.lib;LLVMMC.lib;LLVMOption.lib;LLVMCore.lib;LLVMSupport.lib;LLVMTransformUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\test\Test.h" />
+    <ClInclude Include="..\include\stooling\detail\stoolingDll.h" />
+    <ClInclude Include="..\include\stooling\SourceCode.h" />
+    <ClInclude Include="..\src\CustomToolInvocation.h" />
+    <ClInclude Include="..\src\FixKernelParameterCallback.h" />
+    <ClInclude Include="..\src\FixStringCall.h" />
+    <ClInclude Include="..\src\GetParameterTypeNamesCallback.h" />
+    <ClInclude Include="..\src\RedefineTypedefCallback.h" />
+    <ClInclude Include="..\src\RefactoringTool.h" />
+    <ClInclude Include="..\src\RenameFunctionCallback.h" />
+    <ClInclude Include="..\src\RenameTypedefCallback.h" />
+    <ClInclude Include="..\src\TransferArgumentsCallback.h" />
+    <ClInclude Include="..\src\TransferParametersCallback.h" />
+    <ClInclude Include="..\src\Utilities.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\test\TimerTests.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="pvsutil.vcxproj">
-      <Project>{0a6cfa3a-ef36-4710-a8c9-3f80dfc8e60b}</Project>
-    </ProjectReference>
+    <ClCompile Include="..\src\CustomToolInvocation.cpp" />
+    <ClCompile Include="..\src\FixKernelParameterCallback.cpp" />
+    <ClCompile Include="..\src\GetParameterTypeNamesCallback.cpp" />
+    <ClCompile Include="..\src\RedefineTypedefCallback.cpp" />
+    <ClCompile Include="..\src\RefactoringTool.cpp" />
+    <ClCompile Include="..\src\RenameFunctionCallback.cpp" />
+    <ClCompile Include="..\src\RenameTypedefCallback.cpp" />
+    <ClCompile Include="..\src\SourceCode.cpp" />
+    <ClCompile Include="..\src\TransferArgumentsCallback.cpp" />
+    <ClCompile Include="..\src\TransferParametersCallback.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

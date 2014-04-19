@@ -18,33 +18,10 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\include\pvsutil\Assert.h" />
-    <ClInclude Include="..\include\pvsutil\CLArgParser.h" />
-    <ClInclude Include="..\include\pvsutil\cmdline\Arg.h" />
-    <ClInclude Include="..\include\pvsutil\cmdline\Default.h" />
-    <ClInclude Include="..\include\pvsutil\cmdline\Description.h" />
-    <ClInclude Include="..\include\pvsutil\cmdline\Flags.h" />
-    <ClInclude Include="..\include\pvsutil\cmdline\Version.h" />
-    <ClInclude Include="..\include\pvsutil\detail\LoggerDef.h" />
-    <ClInclude Include="..\include\pvsutil\detail\pvsutilDll.h" />
-    <ClInclude Include="..\include\pvsutil\Logger.h" />
-    <ClInclude Include="..\include\pvsutil\Timer.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\src\Arg.cpp" />
-    <ClCompile Include="..\src\Assert.cpp" />
-    <ClCompile Include="..\src\CLArgParser.cpp" />
-    <ClCompile Include="..\src\Description.cpp" />
-    <ClCompile Include="..\src\Flags.cpp" />
-    <ClCompile Include="..\src\Logger.cpp" />
-    <ClCompile Include="..\src\Timer.cpp" />
-    <ClCompile Include="..\src\Version.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{0A6CFA3A-EF36-4710-A8C9-3F80DFC8E60B}</ProjectGuid>
+    <ProjectGuid>{3E4BD2AA-D3F7-4102-8B42-89BDCC9D80F8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>pvsutil</RootNamespace>
+    <RootNamespace>skelcl</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -91,23 +68,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\include;$(OPENCL_HOME)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(OPENCL_HOME)\lib\x86\;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\include;..\libraries\stooling\include;..\libraries\pvsutil\include;$(OPENCL_HOME)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(OPENCL_HOME)\lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\include;$(OPENCL_HOME)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(OPENCL_HOME)\lib\x64;$(OPENCL_HOME)\lib\x86_64\;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\include;..\libraries\stooling\include;..\libraries\pvsutil\include;$(OPENCL_HOME)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(OPENCL_HOME)\lib\x64;$(OPENCL_HOME)\lib\x86_64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\include;$(OPENCL_HOME)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(OPENCL_HOME)\lib\x86\;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\include;..\libraries\stooling\include;..\libraries\pvsutil\include;$(OPENCL_HOME)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(OPENCL_HOME)\lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\include;$(OPENCL_HOME)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(OPENCL_HOME)\lib\x86_64\;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\include;..\libraries\stooling\include;..\libraries\pvsutil\include;$(OPENCL_HOME)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(OPENCL_HOME)\lib\x86_64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -115,7 +92,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PVSUTIL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;_DEBUG;_WINDOWS;_USRDLL;SKELCL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -129,7 +106,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PVSUTIL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;_DEBUG;_WINDOWS;_USRDLL;SKELCL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -145,7 +122,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PVSUTIL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;NDEBUG;_WINDOWS;_USRDLL;SKELCL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -163,7 +140,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PVSUTIL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;NDEBUG;_WINDOWS;_USRDLL;SKELCL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -173,6 +150,98 @@
       <AdditionalDependencies>OpenCL.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\SkelCL\AllPairs.h" />
+    <ClInclude Include="..\include\SkelCL\detail\AllPairsDef.h" />
+    <ClInclude Include="..\include\SkelCL\detail\BlockDistribution.h" />
+    <ClInclude Include="..\include\SkelCL\detail\BlockDistributionDef.h" />
+    <ClInclude Include="..\include\SkelCL\detail\Container.h" />
+    <ClInclude Include="..\include\SkelCL\detail\CopyDistribution.h" />
+    <ClInclude Include="..\include\SkelCL\detail\CopyDistributionDef.h" />
+    <ClInclude Include="..\include\SkelCL\detail\Device.h" />
+    <ClInclude Include="..\include\SkelCL\detail\DeviceBuffer.h" />
+    <ClInclude Include="..\include\SkelCL\detail\DeviceID.h" />
+    <ClInclude Include="..\include\SkelCL\detail\DeviceList.h" />
+    <ClInclude Include="..\include\SkelCL\detail\DeviceProperties.h" />
+    <ClInclude Include="..\include\SkelCL\detail\Distribution.h" />
+    <ClInclude Include="..\include\SkelCL\detail\DistributionDef.h" />
+    <ClInclude Include="..\include\SkelCL\detail\Event.h" />
+    <ClInclude Include="..\include\SkelCL\detail\IndexMatrixDef.h" />
+    <ClInclude Include="..\include\SkelCL\detail\IndexVectorDef.h" />
+    <ClInclude Include="..\include\SkelCL\detail\KernelUtil.h" />
+    <ClInclude Include="..\include\SkelCL\detail\Macros.h" />
+    <ClInclude Include="..\include\SkelCL\detail\MapDef.h" />
+    <ClInclude Include="..\include\SkelCL\detail\MapHelper.h" />
+    <ClInclude Include="..\include\SkelCL\detail\MapHelperDef.h" />
+    <ClInclude Include="..\include\SkelCL\detail\MatrixDef.h" />
+    <ClInclude Include="..\include\SkelCL\detail\OverlapDistribution.h" />
+    <ClInclude Include="..\include\SkelCL\detail\OverlapDistributionDef.h" />
+    <ClInclude Include="..\include\SkelCL\detail\Padding.h" />
+    <ClInclude Include="..\include\SkelCL\detail\PlatformID.h" />
+    <ClInclude Include="..\include\SkelCL\detail\Program.h" />
+    <ClInclude Include="..\include\SkelCL\detail\ReduceDef.h" />
+    <ClInclude Include="..\include\SkelCL\detail\ScanDef.h" />
+    <ClInclude Include="..\include\SkelCL\detail\Significances.h" />
+    <ClInclude Include="..\include\SkelCL\detail\SingleDistribution.h" />
+    <ClInclude Include="..\include\SkelCL\detail\SingleDistributionDef.h" />
+    <ClInclude Include="..\include\SkelCL\detail\skelclDll.h" />
+    <ClInclude Include="..\include\SkelCL\detail\Skeleton.h" />
+    <ClInclude Include="..\include\SkelCL\detail\Types.h" />
+    <ClInclude Include="..\include\SkelCL\detail\Util.h" />
+    <ClInclude Include="..\include\SkelCL\detail\VectorDef.h" />
+    <ClInclude Include="..\include\SkelCL\detail\ZipDef.h" />
+    <ClInclude Include="..\include\SkelCL\Distributions.h" />
+    <ClInclude Include="..\include\SkelCL\Index.h" />
+    <ClInclude Include="..\include\SkelCL\IndexMatrix.h" />
+    <ClInclude Include="..\include\SkelCL\IndexVector.h" />
+    <ClInclude Include="..\include\SkelCL\Local.h" />
+    <ClInclude Include="..\include\SkelCL\Map.h" />
+    <ClInclude Include="..\include\SkelCL\Matrix.h" />
+    <ClInclude Include="..\include\SkelCL\Out.h" />
+    <ClInclude Include="..\include\SkelCL\Reduce.h" />
+    <ClInclude Include="..\include\SkelCL\Scan.h" />
+    <ClInclude Include="..\include\SkelCL\SkelCL.h" />
+    <ClInclude Include="..\include\SkelCL\Source.h" />
+    <ClInclude Include="..\include\SkelCL\Vector.h" />
+    <ClInclude Include="..\include\SkelCL\Zip.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\include\SkelCL\detail\AllPairsKernel.cl" />
+    <None Include="..\include\SkelCL\detail\AllPairsKernel2.cl" />
+    <None Include="..\include\SkelCL\detail\AllPairsKernel3.cl" />
+    <None Include="..\include\SkelCL\detail\ReduceKernel.cl" />
+    <None Include="..\include\SkelCL\detail\ScanKernel.cl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\Device.cpp" />
+    <ClCompile Include="..\src\DeviceBuffer.cpp" />
+    <ClCompile Include="..\src\DeviceID.cpp" />
+    <ClCompile Include="..\src\DeviceList.cpp" />
+    <ClCompile Include="..\src\DeviceProperties.cpp" />
+    <ClCompile Include="..\src\Event.cpp" />
+    <ClCompile Include="..\src\Index.cpp" />
+    <ClCompile Include="..\src\IndexMatrix.cpp" />
+    <ClCompile Include="..\src\IndexVector.cpp" />
+    <ClCompile Include="..\src\KernelUtil.cpp" />
+    <ClCompile Include="..\src\Local.cpp" />
+    <ClCompile Include="..\src\Map.cpp" />
+    <ClCompile Include="..\src\MatrixSize.cpp" />
+    <ClCompile Include="..\src\PlatformID.cpp" />
+    <ClCompile Include="..\src\Program.cpp" />
+    <ClCompile Include="..\src\Significances.cpp" />
+    <ClCompile Include="..\src\SkelCL.cpp" />
+    <ClCompile Include="..\src\Skeleton.cpp" />
+    <ClCompile Include="..\src\Source.cpp" />
+    <ClCompile Include="..\src\Util.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libraries\pvsutil\msvc\pvsutil.vcxproj">
+      <Project>{0a6cfa3a-ef36-4710-a8c9-3f80dfc8e60b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\libraries\stooling\msvc\stooling.vcxproj">
+      <Project>{76d2e899-5a9c-47ac-853a-592342d76765}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -43,13 +43,15 @@
 #include <initializer_list>
 #include <vector>
 
+#include "skelclDll.h"
+
 namespace skelcl {
 
 namespace detail {
 
 class Device;
 
-class Significances {
+class SKELCL_DLL Significances {
 public:
   typedef float value_type;
 

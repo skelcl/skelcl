@@ -48,7 +48,8 @@
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
-#include "SkelCL/detail/Device.h"
+#include "Device.h"
+#include "skelclDll.h"
 
 namespace skelcl {
 
@@ -58,7 +59,7 @@ class DeviceID;
 class DeviceProperties;
 class PlatformID;
 
-class DeviceList {
+class SKELCL_DLL DeviceList {
   typedef std::shared_ptr<Device> device_ptr;
   typedef std::vector<device_ptr> vector_type;
 public:
@@ -118,7 +119,7 @@ private:
   vector_type _devices;
 };
 
-extern DeviceList globalDeviceList;
+SKELCL_DLL extern DeviceList globalDeviceList;
 
 } // namespace detail
 

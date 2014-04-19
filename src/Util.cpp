@@ -45,10 +45,14 @@
 #include <cmath>
 #include <cstdlib>
 
+#ifdef _WIN32
+
+#else
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <openssl/sha.h>
 #pragma GCC diagnostic pop
+#endif
 
 #include "SkelCL/detail/Util.h"
 
@@ -70,6 +74,9 @@ std::string envVarValue(const std::string& envVar)
 
 std::string hash(const std::string& string)
 {
+#ifdef WIN32
+	return std::string();
+#else
   unsigned char raw[20];
   char* c_str = const_cast<char*>(string.c_str());
 #pragma GCC diagnostic push
@@ -84,6 +91,7 @@ std::string hash(const std::string& string)
            << static_cast<int>( raw[i] );
   }
   return buffer.str();
+#endif
 }
 
 size_t devideAndRoundUp(size_t i, size_t j)

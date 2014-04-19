@@ -50,6 +50,8 @@
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include "skelclDll.h"
+
 namespace skelcl {
 
 namespace detail {
@@ -64,7 +66,7 @@ class DeviceBuffer;
 /// This class encapsulates functionality like starting data transfers, kernel
 /// executions, querying information about the device, etc.
 ///
-class Device {
+class SKELCL_DLL Device {
 public:
   typedef size_t id_type;
   typedef std::shared_ptr<Device> ptr_type;
@@ -388,16 +390,6 @@ cl::Event Device::enqueueRead(const DeviceBuffer& buffer,
                      size, deviceOffset, hostOffset);
 }
 
-#if 0
-// unclear where used and why defined as a free function, same functionality in
-// DeviceList::barrier
-// free helper functions
-template <typename DeviceIterator>
-void barrier(DeviceIterator begin, DeviceIterator end) {
-  std::for_each( begin, end,
-                 std::mem_fn(&skelcl::detail::Device::wait) );
-}
-#endif
 } // namespace detail
 
 } // namespace skelcl

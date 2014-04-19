@@ -12,10 +12,14 @@ class RefactoringTool;
 
 class STOOLING_API SourceCode {
 public:
+  SourceCode() = delete;
+
   SourceCode(const std::string& source);
 
+  SourceCode(const SourceCode& rhs) = delete;
   SourceCode(SourceCode&& rhs);
 
+  SourceCode& operator=(const SourceCode& rhs) = delete;
   SourceCode& operator=(SourceCode&& rhs);
   
   ~SourceCode();
@@ -42,11 +46,6 @@ public:
   std::vector<std::string> parameterTypeNames(const std::string& funcName) const;
 
 private:
-  SourceCode();// = delete;
-
-  SourceCode(const SourceCode& rhs);// = delete;
-
-  SourceCode& operator=(const SourceCode& rhs);// = delete;
 
   std::string       _source;
   RefactoringTool*  _tool;

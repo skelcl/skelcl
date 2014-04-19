@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{97D38772-097E-4AD6-83E0-4B89553048F3}</ProjectGuid>
+    <ProjectGuid>{188E6EB5-D106-443B-8F31-4841E07D4765}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>pvsutilTests</RootNamespace>
+    <RootNamespace>stoolingTests</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -68,22 +68,22 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(GTEST_HOME)\include;..\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\include;$(GTEST_HOME)\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(GTEST_HOME)\lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(GTEST_HOME)\include;..\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\include;$(GTEST_HOME)\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(GTEST_HOME)\lib\x86_64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(GTEST_HOME)\include;..\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\include;$(GTEST_HOME)\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(GTEST_HOME)\lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(GTEST_HOME)\include;..\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\include;$(GTEST_HOME)\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(GTEST_HOME)\lib\x86_64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -151,14 +151,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\test\GetParameterTypeNamesTest.cpp" />
+    <ClCompile Include="..\test\RenameFunctionTest.cpp" />
+    <ClCompile Include="..\test\RenameTypedefTest.cpp" />
+    <ClCompile Include="..\test\TransferArgumentsTest.cpp" />
+    <ClCompile Include="..\test\TransferParametersTest.cpp" />
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="..\test\Test.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\test\TimerTests.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="pvsutil.vcxproj">
-      <Project>{0a6cfa3a-ef36-4710-a8c9-3f80dfc8e60b}</Project>
+    <ProjectReference Include="stooling.vcxproj">
+      <Project>{76d2e899-5a9c-47ac-853a-592342d76765}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

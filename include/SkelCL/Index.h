@@ -40,6 +40,8 @@
 #ifndef INDEX_H_
 #define INDEX_H_
 
+#include "detail/skelclDll.h"
+
 #include <cstring>
 #include <utility>
 
@@ -49,7 +51,7 @@ namespace skelcl {
 /// \brief  This class defines an Index, i.e. an unsigned integer representing a
 ///         value in a one-dimensional index space.
 /// 
-class Index {
+class SKELCL_DLL Index {
 public:
   /// 
   /// \brief  Actual type used to store the unsigned integer representing the
@@ -123,7 +125,7 @@ private:
 ///        unsigned integers representing a value in a two-dimensional index
 ///        space.
 /// 
-class IndexPoint {
+class SKELCL_DLL IndexPoint {
 public:
   /// 
   /// \brief Actual type used to store the pair of unsigned integers

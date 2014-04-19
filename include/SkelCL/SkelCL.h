@@ -108,24 +108,25 @@
 #ifndef SKELCL_H_
 #define SKELCL_H_
 
-#include "SkelCL/detail/Device.h"
-#include "SkelCL/detail/DeviceID.h"
-#include "SkelCL/detail/DeviceProperties.h"
-#include "SkelCL/detail/Macros.h"
-#include "SkelCL/detail/PlatformID.h"
-#include "SkelCL/detail/Types.h"
+#include "detail/Device.h"
+#include "detail/DeviceID.h"
+#include "detail/DeviceProperties.h"
+#include "detail/Macros.h"
+#include "detail/PlatformID.h"
+#include "detail/Types.h"
+#include "detail/skelclDll.h"
 
 namespace skelcl {
 
 typedef detail::Device::Type device_type;
 
-detail::DeviceProperties allDevices();
+SKELCL_DLL detail::DeviceProperties allDevices();
 
-detail::DeviceProperties nDevices(size_t n);
+SKELCL_DLL detail::DeviceProperties nDevices(size_t n);
 
-detail::PlatformID platform(size_t pID);
+SKELCL_DLL detail::PlatformID platform(size_t pID);
 
-detail::DeviceID device(size_t dID);
+SKELCL_DLL detail::DeviceID device(size_t dID);
 
 ///
 /// \brief Initializes the SkelCL library. This function has to be called
@@ -136,9 +137,9 @@ detail::DeviceID device(size_t dID);
 ///                   allDevices() function. To select a specific number
 ///                   of devices call nDevices(n)
 ///
-void init(detail::DeviceProperties properties = allDevices());
+SKELCL_DLL void init(detail::DeviceProperties properties = allDevices());
 
-void init(detail::PlatformID pID, detail::DeviceID dID);
+SKELCL_DLL void init(detail::PlatformID pID, detail::DeviceID dID);
 
 ///
 /// \brief Frees all resources allocated internally by SkelCL.
@@ -148,7 +149,7 @@ void init(detail::PlatformID pID, detail::DeviceID dID);
 /// after a first initialization, this function has to be called prior to
 /// calling the init function again.
 ///
-void terminate();
+SKELCL_DLL void terminate();
 
 } // namespace skelcl
 

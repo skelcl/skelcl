@@ -36,11 +36,13 @@
 
 #include <cstring>
 
+#include "skelclDll.h"
+
 namespace skelcl {
 
 namespace detail {
 
-class PlatformID {
+class SKELCL_DLL PlatformID {
 public:
   typedef size_t id_type;
 

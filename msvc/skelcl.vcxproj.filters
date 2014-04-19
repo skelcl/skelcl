@@ -1,0 +1,256 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Public Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Public Header Files\detail">
+      <UniqueIdentifier>{9823e4ee-7a19-4eec-b16c-87ba21fc9fd8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\SkelCL\AllPairs.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\Distributions.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\Index.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\IndexMatrix.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\IndexVector.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\Local.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\Map.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\Matrix.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\Out.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\Reduce.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\Scan.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\SkelCL.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\Source.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\Vector.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\Zip.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\KernelUtil.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\Macros.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\MapDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\MapHelper.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\MapHelperDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\MatrixDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\OverlapDistribution.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\OverlapDistributionDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\Padding.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\PlatformID.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\Program.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\ReduceDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\ScanDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\Significances.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\SingleDistribution.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\SingleDistributionDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\Skeleton.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\Types.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\Util.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\VectorDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\ZipDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\AllPairsDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\BlockDistribution.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\BlockDistributionDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\Container.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\CopyDistribution.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\CopyDistributionDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\Device.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\DeviceBuffer.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\DeviceID.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\DeviceList.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\DeviceProperties.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\Distribution.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\DistributionDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\Event.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\IndexMatrixDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\IndexVectorDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SkelCL\detail\skelclDll.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\include\SkelCL\detail\ReduceKernel.cl">
+      <Filter>Public Header Files\detail</Filter>
+    </None>
+    <None Include="..\include\SkelCL\detail\ScanKernel.cl">
+      <Filter>Public Header Files\detail</Filter>
+    </None>
+    <None Include="..\include\SkelCL\detail\AllPairsKernel.cl">
+      <Filter>Public Header Files\detail</Filter>
+    </None>
+    <None Include="..\include\SkelCL\detail\AllPairsKernel2.cl">
+      <Filter>Public Header Files\detail</Filter>
+    </None>
+    <None Include="..\include\SkelCL\detail\AllPairsKernel3.cl">
+      <Filter>Public Header Files\detail</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\Device.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DeviceBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DeviceID.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DeviceList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DeviceProperties.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Event.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Index.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\IndexMatrix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\KernelUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Local.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Map.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\MatrixSize.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PlatformID.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Program.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Significances.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SkelCL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Skeleton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Source.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\IndexVector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

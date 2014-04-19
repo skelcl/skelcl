@@ -35,8 +35,7 @@ public:
 
   ~RefactoringTool();
 
-  typedef std::set<clang::tooling::Replacement,
-                   clang::tooling::Replacement::Less> Replacements;
+  typedef std::set<clang::tooling::Replacement> Replacements;
 
   void run(const std::string& code,
            clang::tooling::FrontendActionFactory *actionFactory);

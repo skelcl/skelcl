@@ -46,13 +46,14 @@
 #include "Index.h"
 
 #include "detail/DeviceList.h"
+#include "detail/skelclDll.h"
 
 namespace skelcl {
 
 typedef const Vector<Index> IndexVector;
 
 template <>
-class Vector<Index> {
+class SKELCL_DLL Vector<Index> {
 public:
   typedef Index value_type;
 //  typedef ?? const_iterator;
