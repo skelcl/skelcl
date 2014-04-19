@@ -343,7 +343,10 @@ private:
   id_type           _id;
 };
 
+SKELCL_DLL
 std::istream& operator>>(std::istream& stream, Device::Type& type);
+
+SKELCL_DLL
 std::ostream& operator<<(std::ostream& stream, const Device::Type& type);
 
 template <typename RandomAccessIterator>
