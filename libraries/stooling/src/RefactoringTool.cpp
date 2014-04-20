@@ -12,8 +12,10 @@
 #pragma GCC diagnostic ignored "-Wmissing-noreturn"
 #pragma GCC diagnostic ignored "-Wcast-align"
 #ifdef __clang__
-#pragma GCC diagnostic ignored "-Wshift-sign-overflow"
-#pragma GCC diagnostic ignored "-Wduplicate-enum"
+# pragma GCC diagnostic ignored "-Wshift-sign-overflow"
+# if (__clang_major__ >= 3 && __clang_minor__ >= 3)
+#   pragma GCC diagnostic ignored "-Wduplicate-enum"
+# endif
 #endif
 
 #include <llvm/Support/raw_os_ostream.h>
@@ -28,8 +30,8 @@
 #include <sstream>
 #include <iostream>
 
-#include "CustomToolInvocation.h"
-#include "RefactoringTool.h"
+#include "stooling/CustomToolInvocation.h"
+#include "stooling/RefactoringTool.h"
 
 namespace stooling {
 
@@ -37,12 +39,30 @@ RefactoringTool::RefactoringTool()
   : _replacements()
 {}
 
+RefactoringTool::RefactoringTool(const RefactoringTool& rhs)
+  : _replacements(rhs._replacements)
+{}
+
+RefactoringTool& RefactoringTool::operator=(const RefactoringTool& rhs)
+{
+  if (this == &rhs) return *this;
+  _replacements = rhs._replacements;
+  return *this;
+}
+
 RefactoringTool::~RefactoringTool() {}
 
 void RefactoringTool::run(const std::string& code,
                           clang::tooling::FrontendActionFactory *actionFactory)
 {
-  CustomToolInvocation(code).run(actionFactory->create());
+  CustomToolInvocation invocation(code);
+  run(invocation, actionFactory);
+}
+
+void RefactoringTool::run(CustomToolInvocation& invocation,
+                          clang::tooling::FrontendActionFactory *actionFactory)
+{
+  invocation.run(actionFactory->create());
 }
 
 std::string
@@ -50,13 +70,20 @@ RefactoringTool::transform(const std::string& code,
                            clang::tooling::FrontendActionFactory *actionFactory)
 {
   CustomToolInvocation invocation(code);
+  return transform(invocation, actionFactory);
+}
+
+std::string
+RefactoringTool::transform(CustomToolInvocation& invocation,
+                           clang::tooling::FrontendActionFactory *actionFactory)
+{
   invocation.run(actionFactory->create());
 
   //create rewriter
   clang::LangOptions defaultLangOptions;
   clang::Rewriter rewriter(invocation.getSources(), defaultLangOptions);
   if (_replacements.empty()) {
-    return code;
+    return invocation.code();
   }
   // apply replacements
   applyAllReplacements(_replacements, rewriter);

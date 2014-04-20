@@ -19,10 +19,10 @@
 #endif
 
 #ifdef __clang__
-#pragma GCC diagnostic ignored "-Wshift-sign-overflow"
-#if (__clang_major__ >= 3 && __clang_minor__ >= 3)
-#pragma GCC diagnostic ignored "-Wduplicate-enum"
-#endif
+# pragma GCC diagnostic ignored "-Wshift-sign-overflow"
+# if (__clang_major__ >= 3 && __clang_minor__ >= 3)
+#   pragma GCC diagnostic ignored "-Wduplicate-enum"
+# endif
 #endif
 
 #include <clang/AST/Expr.h>

@@ -12,8 +12,10 @@
 #pragma GCC diagnostic ignored "-Wmissing-noreturn"
 #pragma GCC diagnostic ignored "-Wcast-align"
 #ifdef __clang__
-#pragma GCC diagnostic ignored "-Wshift-sign-overflow"
-#pragma GCC diagnostic ignored "-Wduplicate-enum"
+# pragma GCC diagnostic ignored "-Wshift-sign-overflow"
+# if (__clang_major__ >= 3 && __clang_minor__ >= 3)
+#   pragma GCC diagnostic ignored "-Wduplicate-enum"
+# endif
 #endif
 
 #include <clang/Frontend/FrontendActions.h>
@@ -28,10 +30,16 @@
 
 namespace stooling {
 
+class CustomToolInvocation;
+
 class RefactoringTool {
 
 public:
   RefactoringTool();
+
+  RefactoringTool(const RefactoringTool& rhs);
+
+  RefactoringTool& operator=(const RefactoringTool& rhs);
 
   ~RefactoringTool();
 
@@ -45,7 +53,13 @@ public:
   void run(const std::string& code,
            clang::tooling::FrontendActionFactory *actionFactory);
 
+  void run(CustomToolInvocation& invocation,
+           clang::tooling::FrontendActionFactory *actionFactory);
+
   std::string transform(const std::string& code,
+                        clang::tooling::FrontendActionFactory *actionFactory);
+
+  std::string transform(CustomToolInvocation& invocation,
                         clang::tooling::FrontendActionFactory *actionFactory);
 
   Replacements& replacements();

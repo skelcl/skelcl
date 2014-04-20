@@ -50,6 +50,13 @@ static std::string getTextFromRange(const clang::SourceManager& sourceManager,
 }
 
 template <typename T>
+static std::string getTextFromLocation(const clang::SourceManager& sourceManager,
+                                       const T& sourceLocation)
+{
+  return getTextFromRange(sourceManager, clang::SourceRange(sourceLocation));
+}
+
+template <typename T>
 static std::string getText(const clang::SourceManager &sourceManager,
                            const T &node) {
   clang::SourceLocation startSpellingLocation =
