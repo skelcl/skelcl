@@ -12,10 +12,16 @@
 #pragma GCC diagnostic ignored "-Wshadow"
 #pragma GCC diagnostic ignored "-Wmissing-noreturn"
 #pragma GCC diagnostic ignored "-Wcast-align"
+
+#if (__GNUC__ >= 4 && __GNUC_MINOR__ >= 8)
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#endif
+
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wshift-sign-overflow"
+#if (__clang_major__ >= 3 && __clang_minor__ >= 3)
 #pragma GCC diagnostic ignored "-Wduplicate-enum"
+#endif
 #endif
 
 #include <clang/AST/Expr.h>

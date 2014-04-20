@@ -1,8 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
 
-# project name
-project (pvsutil)
-
 # set compiler and options
 if (${UNIX})
   if (${APPLE})
@@ -19,10 +16,8 @@ if (${UNIX})
       CACHE STRING "More strict flags used to compile the SSE sources.")
 endif (${UNIX})
 
-# set default build type explicitly to Debug
-if (NOT CMAKE_BUILD_TYPE)
-  set (CMAKE_BUILD_TYPE Debug)
-endif (NOT CMAKE_BUILD_TYPE)
+# project name
+project (pvsutil)
 
 # specify options and provide common variables
 option (BUILD_SHARED_LIBS
@@ -30,47 +25,22 @@ option (BUILD_SHARED_LIBS
 option (BUILD_TESTS
         "Build all tests automatically with the library." ON)
 
-# set common output directory
-if (NOT EXECUTABLE_OUTPUT_PATH)
-  set (EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
-endif (NOT EXECUTABLE_OUTPUT_PATH)
+# set default build type explicitly to Debug
+if (NOT CMAKE_BUILD_TYPE)
+  set (CMAKE_BUILD_TYPE Debug)
+endif (NOT CMAKE_BUILD_TYPE)
 
-if (NOT LIBRARY_OUTPUT_PATH)
-  set (LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
-endif (NOT LIBRARY_OUTPUT_PATH)
-
-# opencl dirs
-find_package (OpenCL)
-
-# common dirs and libraries
-set (PVSUTIL_COMMON_INCLUDE_DIR
-      "${PROJECT_SOURCE_DIR}/include"
-      "${OPENCL_INCLUDE_DIRS}"
-     CACHE INTERNAL
-     "Common include directories used by pvsutil.")
-
-set (PVSUTIL_COMMON_LIBS
-     ""
-     CACHE INTERNAL
-     "Common libraries used by pvsutil.")
-
-set (PVSUTIL_COMMON_LIB_DIR
-      ""
-     CACHE INTERNAL
-     "Common library directories used by pvsutil.")
+# add subdirectory to build library
+add_subdirectory (src)
 
 # build tests
 if (BUILD_TESTS)
   # this if prevents gtest from being build multiple times
   if (NOT TARGET gtest)
     add_subdirectory (libraries/gtest)
-    set (GTEST_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/libraries/gtest/include")
   endif (NOT TARGET gtest)
 
-  enable_testing ()
+	enable_testing ()
   add_subdirectory (test)
 endif (BUILD_TESTS)
-
-# add subdirectory to build library
-add_subdirectory (src)
 

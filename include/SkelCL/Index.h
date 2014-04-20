@@ -164,8 +164,8 @@ public:
   ///                   the new IndexPoint.
   /// 
   IndexPoint(IndexPoint&& rhs);
-  //IndexPoint(const IndexPoint& rhs) = default;
-  //IndexPoint& operator=(const IndexPoint& rhs) = default;
+  IndexPoint(const IndexPoint& rhs) = default;
+  IndexPoint& operator=(const IndexPoint& rhs) = default;
   IndexPoint& operator=(IndexPoint&& rhs);
   //~IndexPoint() = default;
 
