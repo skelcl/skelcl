@@ -1,9 +1,9 @@
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PVSUTIL_CXX_FLAGS}")
 
 # set include dir
-include_directories (${PVSUTIL_COMMON_INCLUDE_DIR})
-
-link_directories (${PVSUTIL_COMMON_LIB_DIR})
+include_directories (
+  "${PROJECT_SOURCE_DIR}/include"
+                    )
 
 # set files used to build library
 set (PVSUTIL_SOURCES
@@ -17,7 +17,6 @@ set (PVSUTIL_SOURCES
       ../include/pvsutil/cmdline/Flags.h
       ../include/pvsutil/cmdline/Version.h
       ../include/pvsutil/detail/LoggerDef.h
-      ../include/pvsutil/detail/pvsutilDll.h
       Arg.cpp
       Assert.cpp
       Description.cpp
@@ -30,10 +29,13 @@ set (PVSUTIL_SOURCES
 
 # specify library target
 add_library (pvsutil ${PVSUTIL_SOURCES})
-target_link_libraries( pvsutil ${PVSUTIL_COMMON_LIBS})
 
-# define DLL export Macro
-if (WIN32)
-  set_target_properties(pvsutil PROPERTIES DEFINE_SYMBOL PVSUTIL_EXPORTS)
-endif (WIN32)
+# specify install
+if (OS_LINUX)
+	# specify install into directory DESTINATION/lib
+  install (TARGETS pvsutil
+					 LIBRARY DESTINATION lib
+					 ARCHIVE DESTINATION lib
+					)
+endif (OS_LINUX)
 
