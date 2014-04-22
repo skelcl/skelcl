@@ -1,0 +1,428 @@
+[=====Program.cpp:312  000.236s DINFO] Create cl::Program for device 0 with source:
+#define skelcl_get_device_id() 0
+#define skelcl_get_devices() 3
+/* OpenCL fix end */
+
+
+
+typedef struct {	float x; float y; float z; float w; } data_t; 
+#ifndef data_t_MATRIX_T
+typedef struct {
+  __global data_t* data;
+  unsigned int col_count;
+} data_t_matrix_t;
+#define data_t_MATRIX_T
+#endif
+
+#ifndef MATRIX_GET
+#define get(m, y, x) m.data[(int)((y) * m.col_count + (x))]
+#define MATRIX_GET
+#endif
+#ifndef MATRIX_SET
+#define set(m, y, x, v) m.data[(int)((y) * m.col_count + (x))] = (v)
+#define MATRIX_SET
+#endif
+#define Pr 1.000000e+13f
+#define eps_r 4.000000e+00f
+#define eps_b 1.000000e+00f
+#define abs_cell_size 32
+#define array_size 256
+#define log_2 6.931472e-01f
+#define pi 3.141593e+00f
+#define dt 5.000000e-03f
+#define k 1.192011e-03f
+#define a1 1.580421e+04f
+#define a2 -1.530277e-03f
+#define omega_a2 1.421223e+31f
+#define Nges 3.311000e+24f
+#define dt_tau10 1.667820e-05f
+#define dt_tau32 1.667820e-04f
+#define dt_tau21 1.667820e-07f
+#define sqrt_eps0_mu0 2.654419e-03f
+#define c 2.997924e+08f
+#define src_x 50
+#define src_y 50
+#define idx_x (get_global_id(0))
+#define idx_y (get_global_id(1))
+#define idx_z (get_global_id(2))
+
+#define __sq(x) ((x)*(x))
+#define __cu(x) ((x)*(x)*(x))
+
+#define fx pml(idx_y+1, abs_cell_size, array_size, 0.25f)
+#define fy pml(idx_x+1, abs_cell_size, array_size, 0.25f)  
+#define gx pml(idx_y+1, abs_cell_size, array_size, 0.33f)
+#define gy pml(idx_x+1, abs_cell_size, array_size, 0.33f)
+
+bool cell_has_gain()
+{
+	return true; // FIXME
+}
+
+data_t pml(int i, int acs, int as, float scale)
+{
+	//		  1		   2	    3	   unused
+	data_t ret = { 0.0f, 1.0f, 1.0f, 0.0f };
+	if (i > as)
+		i = (as * 2) - 1 - i;
+
+	if (i >= acs)
+		return ret;
+
+	float xnum = acs - i;
+	float xn = 0;
+
+	xnum = (xnum - 0.5f) / acs;
+	xn = scale * xnum * xnum * xnum;
+	ret.x = xn;
+	ret.y = 1.0f / (1.0f + xn);
+	ret.z = (1.0f - xn) / (1.0f + xn);
+
+	return ret;
+}
+
+data_t SCL_FUNC(data_t N, data_t_matrix_t mE)
+{
+	if ((fx.x + fy.x) == 0.0f)
+	{
+		if (cell_has_gain())
+		{
+			data_t E = get(mE, idx_x, idx_y);
+
+			float N0 = (Nges - (N.x + N.y + N.z));
+/* N3 */	N.x = (1.0f - dt_tau32) * N.x + ((N0 < 0.0f) ? 0.0f : N0) * (Pr * dt);
+/* N2 */	N.y = (1.0f - dt_tau21)  * N.y + N.x * dt_tau32 + a1 * (E.z * E.w);
+/* N1 */	N.x = (1.0f - dt_tau10)  * N.z + N.y * dt_tau21 - a1 * (E.z * E.w);
+
+			E.w = a2 * E.w - omega_a2 * E.x * dt + k * ( N.z - N.y) * E.z * dt;	
+											   
+			E.x = E.x + E.w * dt;
+		}
+	}
+	return N;
+}
+
+float jsrc(float t)
+{
+	if ((t < (3.0f)))
+		return 1000.f * exp(-2.0f * log_2 * __sq((t - 0.0f) / 0.5f)) * sin(2.0f * pi * 2.0f * t);
+
+	return 0.0f;
+}
+
+							//	   y - 1		 x - 1
+data_t eFieldEquation(input_matrix_t* mH, data_t_matrix_t mE, float t)
+{
+	data_t E = get(mE, idx_x, idx_y);
+
+	data_t cx = gx;
+	data_t cy = gy;
+
+	data_t H  = getData(mH,  0,  0);
+	data_t Ha = getData(mH,  0, -1); 
+	data_t Hc = getData(mH, -1,  0);
+
+	E.y =  cx.z * cy.z * E.y + cx.y * cy.y * 0.5f * (H.y - Hc.y - H.x + Ha.x);
+
+	// Source handling???
+	if((idx_x == src_x) && (idx_y == src_y))
+		E.y += sqrt_eps0_mu0 * jsrc(t);
+
+	float eps = eps_b;
+	if ((fx.x + fy.x) == 0.0f)
+	{ 
+		if (cell_has_gain())
+			eps = eps_r; // in particle
+		else
+			eps = eps_b; // in background
+	}
+
+	E.z = (E.y-  c * E.x) * (1.0f / eps);
+
+	return E;
+}
+
+
+data_t hFieldEquation(input_matrix_t* mE, data_t_matrix_t mH)
+{
+	data_t H = get(mH, idx_x, idx_y);
+
+
+	data_t E  = getData(mE, 0, 0);
+	data_t Ea = getData(mE, 0, 1);
+	data_t Ec = getData(mE, 1, 0);
+
+	float2 curl_e = {0.0f, 0.0f}; 
+
+	data_t cx = fx;
+	data_t cy = fy;
+
+	curl_e.x = E.z - Ea.z;
+	curl_e.y = Ec.z - E.z;
+
+	if (cx.x > 0.0f)
+	{
+		H.z = H.z + cx.x * curl_e.x;
+	}
+	if (cy.x > 0.0f)
+	{
+		H.w = H.w + cy.x * curl_e.y;
+	}
+	
+	H.x = cy.z * H.x + cy.y * 0.5f * (curl_e.x + H.z);
+	H.y = cx.z * H.y + cx.y * 0.5f * (curl_e.y + H.w);
+	return H;
+}
+
+
+typedef data_t SCL_TYPE_0;
+typedef data_t SCL_TYPE_1;
+
+__kernel void SCL_MAP(
+    const __global SCL_TYPE_0*  SCL_IN,
+          __global SCL_TYPE_1*  SCL_OUT,
+    const unsigned int          SCL_ELEMENTS,__global data_t* mE_data,uint mE_col_count)
+{
+data_t_matrix_t mE;
+mE.data = mE_data;
+mE.col_count = mE_col_count;
+
+  if (get_global_id(0) < SCL_ELEMENTS) {
+    SCL_OUT[get_global_id(0)] = SCL_FUNC(SCL_IN[get_global_id(0)],mE);
+  }
+}
+
+
+[=====Program.cpp:312  000.236s DINFO] Create cl::Program for device 1 with source:
+#define skelcl_get_device_id() 1
+#define skelcl_get_devices() 3
+/* OpenCL fix end */
+
+
+
+typedef struct {	float x; float y; float z; float w; } data_t; 
+#ifndef data_t_MATRIX_T
+typedef struct {
+  __global data_t* data;
+  unsigned int col_count;
+} data_t_matrix_t;
+#define data_t_MATRIX_T
+#endif
+
+#ifndef MATRIX_GET
+#define get(m, y, x) m.data[(int)((y) * m.col_count + (x))]
+#define MATRIX_GET
+#endif
+#ifndef MATRIX_SET
+#define set(m, y, x, v) m.data[(int)((y) * m.col_count + (x))] = (v)
+#define MATRIX_SET
+#endif
+#define Pr 1.000000e+13f
+#define eps_r 4.000000e+00f
+#define eps_b 1.000000e+00f
+#define abs_cell_size 32
+#define array_size 256
+#define log_2 6.931472e-01f
+#define pi 3.141593e+00f
+#define dt 5.000000e-03f
+#define k 1.192011e-03f
+#define a1 1.580421e+04f
+#define a2 -1.530277e-03f
+#define omega_a2 1.421223e+31f
+#define Nges 3.311000e+24f
+#define dt_tau10 1.667820e-05f
+#define dt_tau32 1.667820e-04f
+#define dt_tau21 1.667820e-07f
+#define sqrt_eps0_mu0 2.654419e-03f
+#define c 2.997924e+08f
+#define src_x 50
+#define src_y 50
+#define idx_x (get_global_id(0))
+#define idx_y (get_global_id(1))
+#define idx_z (get_global_id(2))
+
+#define __sq(x) ((x)*(x))
+#define __cu(x) ((x)*(x)*(x))
+
+#define fx pml(idx_y+1, abs_cell_size, array_size, 0.25f)
+#define fy pml(idx_x+1, abs_cell_size, array_size, 0.25f)  
+#define gx pml(idx_y+1, abs_cell_size, array_size, 0.33f)
+#define gy pml(idx_x+1, abs_cell_size, array_size, 0.33f)
+
+bool cell_has_gain()
+{
+	return true; // FIXME
+}
+
+data_t pml(int i, int acs, int as, float scale)
+{
+	//		  1		   2	    3	   unused
+	data_t ret = { 0.0f, 1.0f, 1.0f, 0.0f };
+	if (i > as)
+		i = (as * 2) - 1 - i;
+
+	if (i >= acs)
+		return ret;
+
+	float xnum = acs - i;
+	float xn = 0;
+
+	xnum = (xnum - 0.5f) / acs;
+	xn = scale * xnum * xnum * xnum;
+	ret.x = xn;
+	ret.y = 1.0f / (1.0f + xn);
+	ret.z = (1.0f - xn) / (1.0f + xn);
+
+	return ret;
+}
+
+data_t SCL_FUNC(data_t N, data_t_matrix_t mE)
+{
+	if ((fx.x + fy.x) == 0.0f)
+	{
+		if (cell_has_gain())
+		{
+			data_t E = get(mE, idx_x, idx_y);
+
+			float N0 = (Nges - (N.x + N.y + N.z));
+/* N3 */	N.x = (1.0f - dt_tau32) * N.x + ((N0 < 0.0f) ? 0.0f : N0) * (Pr * dt);
+/* N2 */	N.y = (1.0f - dt_tau21)  * N.y + N.x * dt_tau32 + a1 * (E.z * E.w);
+/* N1 */	N.x = (1.0f - dt_tau10)  * N.z + N.y * dt_tau21 - a1 * (E.z * E.w);
+
+			E.w = a2 * E.w - omega_a2 * E.x * dt + k * ( N.z - N.y) * E.z * dt;	
+											   
+			E.x = E.x + E.w * dt;
+		}
+	}
+	return N;
+}
+
+float jsrc(float t)
+{
+	if ((t < (3.0f)))
+		return 1000.f * exp(-2.0f * log_2 * __sq((t - 0.0f) / 0.5f)) * sin(2.0f * pi * 2.0f * t);
+
+	return 0.0f;
+}
+
+							//	   y - 1		 x - 1
+data_t eFieldEquation(input_matrix_t* mH, data_t_matrix_t mE, float t)
+{
+	data_t E = get(mE, idx_x, idx_y);
+
+	data_t cx = gx;
+	data_t cy = gy;
+
+	data_t H  = getData(mH,  0,  0);
+	data_t Ha = getData(mH,  0, -1); 
+	data_t Hc = getData(mH, -1,  0);
+
+	E.y =  cx.z * cy.z * E.y + cx.y * cy.y * 0.5f * (H.y - Hc.y - H.x + Ha.x);
+
+	// Source handling???
+	if((idx_x == src_x) && (idx_y == src_y))
+		E.y += sqrt_eps0_mu0 * jsrc(t);
+
+	float eps = eps_b;
+	if ((fx.x + fy.x) == 0.0f)
+	{ 
+		if (cell_has_gain())
+			eps = eps_r; // in particle
+		else
+			eps = eps_b; // in background
+	}
+
+	E.z = (E.y-  c * E.x) * (1.0f / eps);
+
+	return E;
+}
+
+
+data_t hFieldEquation(input_matrix_t* mE, data_t_matrix_t mH)
+{
+	data_t H = get(mH, idx_x, idx_y);
+
+
+	data_t E  = getData(mE, 0, 0);
+	data_t Ea = getData(mE, 0, 1);
+	data_t Ec = getData(mE, 1, 0);
+
+	float2 curl_e = {0.0f, 0.0f}; 
+
+	data_t cx = fx;
+	data_t cy = fy;
+
+	curl_e.x = E.z - Ea.z;
+	curl_e.y = Ec.z - E.z;
+
+	if (cx.x > 0.0f)
+	{
+		H.z = H.z + cx.x * curl_e.x;
+	}
+	if (cy.x > 0.0f)
+	{
+		H.w = H.w + cy.x * curl_e.y;
+	}
+	
+	H.x = cy.z * H.x + cy.y * 0.5f * (curl_e.x + H.z);
+	H.y = cx.z * H.y + cx.y * 0.5f * (curl_e.y + H.w);
+	return H;
+}
+
+
+typedef data_t SCL_TYPE_0;
+typedef data_t SCL_TYPE_1;
+
+__kernel void SCL_MAP(
+    const __global SCL_TYPE_0*  SCL_IN,
+          __global SCL_TYPE_1*  SCL_OUT,
+    const unsigned int          SCL_ELEMENTS,__global data_t* mE_data,uint mE_col_count)
+{
+data_t_matrix_t mE;
+mE.data = mE_data;
+mE.col_count = mE_col_count;
+
+  if (get_global_id(0) < SCL_ELEMENTS) {
+    SCL_OUT[get_global_id(0)] = SCL_FUNC(SCL_IN[get_global_id(0)],mE);
+  }
+}
+
+
+[=====Program.cpp:256  000.520s ERROR] OpenCL error: CL_BUILD_PROGRAM_FAILURE (code: -11) clBuildProgram
+Build log:
+:113:23: error: unknown type name 'input_matrix_t'; did you mean 'data_t_matrix_t'?
+data_t eFieldEquation(input_matrix_t* mH, data_t_matrix_t mE, float t)
+                      ^~~~~~~~~~~~~~
+                      data_t_matrix_t
+:12:3: note: 'data_t_matrix_t' declared here
+} data_t_matrix_t;
+  ^
+:120:14: warning: implicit declaration of function 'getData' is invalid in C99
+        data_t H  = getData(mH,  0,  0);
+                    ^
+:120:9: error: initializing 'data_t' with an expression of incompatible type 'int'
+        data_t H  = getData(mH,  0,  0);
+               ^    ~~~~~~~~~~~~~~~~~~~
+:121:9: error: initializing 'data_t' with an expression of incompatible type 'int'
+        data_t Ha = getData(mH,  0, -1); 
+               ^    ~~~~~~~~~~~~~~~~~~~
+:122:9: error: initializing 'data_t' with an expression of incompatible type 'int'
+        data_t Hc = getData(mH, -1,  0);
+               ^    ~~~~~~~~~~~~~~~~~~~
+:145:23: error: unknown type name 'input_matrix_t'; did you mean 'data_t_matrix_t'?
+data_t hFieldEquation(input_matrix_t* mE, data_t_matrix_t mH)
+                      ^~~~~~~~~~~~~~
+                      data_t_matrix_t
+:12:3: note: 'data_t_matrix_t' declared here
+} data_t_matrix_t;
+  ^
+:150:9: error: initializing 'data_t' with an expression of incompatible type 'int'
+        data_t E  = getData(mE, 0, 0);
+               ^    ~~~~~~~~~~~~~~~~~
+:151:9: error: initializing 'data_t' with an expression of incompatible type 'int'
+        data_t Ea = getData(mE, 0, 1);
+               ^    ~~~~~~~~~~~~~~~~~
+:152:9: error: initializing 'data_t' with an expression of incompatible type 'int'
+        data_t Ec = getData(mE, 1, 0);
+               ^    ~~~~~~~~~~~~~~~~~
+

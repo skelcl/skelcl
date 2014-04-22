@@ -320,10 +320,18 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
 					// after finishing the kernel invoke this function ...
 					auto invokeAfter = [=] () {(void)keepAlive;};
 					if (devicePtr->id() == 0)
-						devicePtr->enqueue(kernel,
+					{
+						//LOG_INFO("starting Stencil with ", global[0], "x", global[1], " - ", local[0], "x", local[1]);
+						auto event = devicePtr->enqueue(kernel,
 								cl::NDRange(global[0], global[1]),
 								cl::NDRange(local[0], local[1]),
 								cl::NDRange(0, offset), invokeAfter);
+						//event.wait(); 
+						//cl_int err = 0; 
+						//auto start = event.template getProfilingInfo<CL_PROFILING_COMMAND_START>(&err); 
+						//auto end = event.template getProfilingInfo<CL_PROFILING_COMMAND_END>(&err);
+						//LOG_INFO("kernel execution: ", (end - start), "ns");
+					}
 					else
 						devicePtr->enqueue(kernel,
 								cl::NDRange(global[0], global[1]),

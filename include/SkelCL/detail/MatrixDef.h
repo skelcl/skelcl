@@ -751,6 +751,9 @@ std::string Matrix<T>::deviceFunctions() {
 		s << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
 	}
 
+	s << "typedef struct {	float x; float y; float z; float w; } data_t; \n" ;
+	
+
 	s << "#ifndef " << type << "_MATRIX_T\n" << "typedef struct {\n"
 			<< "  __global " << type << "* data;\n"
 			<< "  unsigned int col_count;\n" << "} " << type << "_matrix_t;\n"

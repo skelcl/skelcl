@@ -63,7 +63,6 @@ class MatrixSize {
 public:
   typedef size_t size_type;
 
-  template <typename ...Ts> MatrixSize(Ts... args) : MatrixSize(static_cast<size_type>(args)...) {} 
   MatrixSize(size_type rowCount, size_type columnCount);
 
   size_type elemCount() const;
