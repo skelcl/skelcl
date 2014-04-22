@@ -164,15 +164,16 @@ private:
   /// second level reduces this intermediate vector further to a single value.
   ///
   struct Level {
-    Level();
     Level(const Level& rhs) = delete;
     Level& operator=(const Level& rhs) = delete;
+    Level(size_t, size_t, size_t, const Vector<T>*, Vector<T>*, cl::Kernel);
 
-    size_t            workGroupSize;
-    size_t            workGroupCount;
+    int               data_size;
+    int               global_size;
+    int               local_size;
     const Vector<T>*  inputPtr; //just observing not owning: raw pointer is fine
-    const Vector<T>*  outputPtr;//just observing not owning: raw pointer is fine
-    std::shared_ptr<skelcl::detail::Program> program;
+    Vector<T>*        outputPtr;//just observing not owning: raw pointer is fine
+    cl::Kernel        kernel;
   };
 
   ///
@@ -272,7 +273,7 @@ private:
                                    const std::shared_ptr<Level>& firstLevel);
 
   std::shared_ptr<skelcl::detail::Program>
-    createPrepareAndBuildProgram(const std::string& preamble);
+    createPrepareAndBuildProgram();
 
   /// Literal describing the identity of type T in respect to the operation
   /// performed by the reduction and described in function named _funcName
@@ -283,6 +284,7 @@ private:
 
   /// Source code as defined by the application developer
   std::string _userSource;
+
 };
 
 } // namespace skelcl

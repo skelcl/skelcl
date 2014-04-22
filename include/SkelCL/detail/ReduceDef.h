@@ -80,7 +80,7 @@ template <typename T>
 Reduce<T(T)>::Reduce(const Source& source,
                      const std::string& id,
                      const std::string& funcName)
-  : detail::Skeleton(), _id(id), _funcName(funcName), _userSource(source)
+    : detail::Skeleton(), _id(id), _funcName(funcName), _userSource(source)
 {
 }
 
@@ -109,7 +109,48 @@ Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
   ASSERT(input.distribution().devices().size() == 1);
 
   auto& device = *(input.distribution().devices().front());
+  auto program = createPrepareAndBuildProgram();
 
+  size_t p = 2; // TODO min( 8192, max_wg_size )
+
+  if (input.size() <= p)
+  {
+    size_t            data_size   = input.size();
+    size_t            global_size = p;
+    size_t            local_size  = p;
+    cl::Kernel        kernel      = program->kernel(device, "SCL_REDUCE_2");
+
+    prepareOutput(output.container(), input, 1);
+    auto secondLevel = std::make_shared<Level>(data_size, global_size, local_size, &input, &output.container(), kernel);
+    execute(device, secondLevel);
+  }
+  else
+  {
+    size_t            data_size   = input.size();
+    size_t            global_size = p;
+    size_t            local_size  = global_size;
+    cl::Kernel        kernel      = program->kernel(device, "SCL_REDUCE_1");
+
+    Vector<T> tmpPtr;
+
+    prepareOutput(tmpPtr, input, p);
+    auto firstLevel  = std::make_shared<Level>(data_size, global_size, local_size, &input, &tmpPtr, kernel);
+    execute(device, firstLevel);
+
+
+    data_size   = p;
+    global_size = p;
+    local_size  = p;
+    kernel      = program->kernel(device, "SCL_REDUCE_2");
+
+    prepareOutput(output.container(), input, 1);
+    auto secondLevel = std::make_shared<Level>(data_size, global_size, local_size, &tmpPtr, &output.container(), kernel);
+    execute(device, secondLevel);
+  }
+
+
+
+  /*
   // ... determine if and how the first reduction step is performed ...
   auto firstLevel  = determineFirstLevelParameters(device, input,
                                                    output.container());
@@ -141,7 +182,7 @@ Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
 
   // ... execute second (final) reduction step ...
   execute(device, secondLevel, std::forward<Args>(args)...);
-
+*/
   // ... finally update modification status.
   updateModifiedStatus(output, std::forward<Args>(args)...);
 
@@ -196,22 +237,21 @@ void Reduce<T(T)>::execute(const detail::Device& device,
   auto& outputBuffer= level->outputPtr->deviceBuffer(device);
   auto& inputBuffer = level->inputPtr->deviceBuffer(device);
 
-  cl_uint elements  = static_cast<cl_uint>( level->inputPtr->size() );
-  cl_uint local     = static_cast<cl_uint>( level->workGroupSize );
-  cl_uint global    = static_cast<cl_uint>( level->workGroupSize
-                                          * level->workGroupCount );
+  //cl_uint elements  = static_cast<cl_uint>( level->inputPtr->data_size() );
+  //cl_uint local     = static_cast<cl_uint>( level->workGroupSize );
+  //cl_uint global    = static_cast<cl_uint>( level->global_size );           //static_cast<cl_uint>( level->workGroupSize * level->workGroupCount );
 
   try {
-    cl::Kernel kernel(level->program->kernel(device, "SCL_REDUCE"));
+    cl::Kernel kernel = level->kernel;
 
     kernel.setArg(0, inputBuffer.clBuffer());
     kernel.setArg(1, outputBuffer.clBuffer());
     // allocate shared memory size
-    kernel.setArg(2, cl::__local( sizeof(T) * local ) );
-    kernel.setArg(3, elements);
+    kernel.setArg(2, level->data_size);
+    kernel.setArg(3, level->global_size);
 
-    detail::kernelUtil::setKernelArgs(kernel, device, 4,
-                                      std::forward<Args>(args)...);
+   // detail::kernelUtil::setKernelArgs(kernel, device, 4,
+   //                                   std::forward<Args>(args)...);
 
     auto keepAlive = detail::kernelUtil::keepAlive(device,
                                                    inputBuffer.clBuffer(),
@@ -224,7 +264,7 @@ void Reduce<T(T)>::execute(const detail::Device& device,
                                };
 
     device.enqueue(kernel,
-                   cl::NDRange(global), cl::NDRange(local),
+                   cl::NDRange(level->global_size), cl::NDRange(level->local_size),
                    cl::NullRange, // offset
                    invokeAfter);
   } catch (cl::Error& err) {
@@ -324,17 +364,17 @@ std::shared_ptr<typename Reduce<T(T)>::Level>
 
 template <typename T>
 std::shared_ptr<skelcl::detail::Program>
-  Reduce<T(T)>::createPrepareAndBuildProgram(const std::string& preamble)
+  Reduce<T(T)>::createPrepareAndBuildProgram()
 {
   ASSERT_MESSAGE(!_userSource.empty(),
     "Tried to create program with empty user source.");
   // first: device specific functions
   std::string s(detail::CommonDefinitions::getSource());
   // second: user defined source
-  s.append(preamble + _userSource);
+  s.append(_userSource);
   // last: append skeleton implementation source
   s.append(
-    #include "ReduceKernel.cl"
+    #include "ReduceKernel_ARI.cl"
   );
 
   auto program = std::make_shared<detail::Program>(s
@@ -349,14 +389,17 @@ std::shared_ptr<skelcl::detail::Program>
   return program;
 }
 
+
 template <typename T>
-Reduce<T(T)>::Level::Level()
-  : workGroupSize(),
-    workGroupCount(),
-    inputPtr(),
-    outputPtr(),
-    program()
+Reduce<T(T)>::Level::Level(size_t a, size_t b, size_t f, const Vector<T>* c, Vector<T>* d, cl::Kernel e)
+  : data_size(a),
+    global_size(b),
+    local_size(f),
+    inputPtr(c),
+    outputPtr(d),
+    kernel(e)
 {}
+
 
 } // namespace skelcl
 
