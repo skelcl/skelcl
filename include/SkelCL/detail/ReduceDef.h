@@ -111,7 +111,7 @@ Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
   auto& device = *(input.distribution().devices().front());
   auto program = createPrepareAndBuildProgram();
 
-  size_t p = 1024; // TODO min( 8192, max_wg_size )
+  size_t p = 1; // TODO min( 8192, max_wg_size )
 
   if (input.size() <= p)
   {
