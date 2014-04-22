@@ -111,7 +111,7 @@ Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
   auto& device = *(input.distribution().devices().front());
   auto program = createPrepareAndBuildProgram();
 
-  size_t p = 2; // TODO min( 8192, max_wg_size )
+  size_t p = 1024; // TODO min( 8192, max_wg_size )
 
   if (input.size() <= p)
   {
@@ -148,41 +148,6 @@ Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
     execute(device, secondLevel);
   }
 
-
-
-  /*
-  // ... determine if and how the first reduction step is performed ...
-  auto firstLevel  = determineFirstLevelParameters(device, input,
-                                                   output.container());
-  if (firstLevel) {
-    LOG_DEBUG_INFO("firstLevel.workGroupSize: ",    firstLevel->workGroupSize,
-                   ", firstLevel.workGroupCount: ", firstLevel->workGroupCount);
-  }
-
-  // ... determine how the second (and final) reduction step is performed ...
-  auto secondLevel = determineSecondLevelParameters(device, input,
-                                                    output.container(),
-                                                    firstLevel);
-  LOG_DEBUG_INFO("secondLevel.workGroupSize: ",    secondLevel->workGroupSize,
-                 ", secondLevel.workGroupCount: ", secondLevel->workGroupCount);
-
-  // ... prepare output ...
-  if (firstLevel) {
-    // if a first reduction step is used, the output also serves
-    // as temporary vector
-    prepareOutput(output.container(), input, firstLevel->workGroupSize);
-  } else { // no first level
-    prepareOutput(output.container(), input, 1);
-  }
-
-  // ... execute first reduction step ...
-  if (firstLevel) {
-    execute(device, firstLevel, std::forward<Args>(args)...);
-  }
-
-  // ... execute second (final) reduction step ...
-  execute(device, secondLevel, std::forward<Args>(args)...);
-*/
   // ... finally update modification status.
   updateModifiedStatus(output, std::forward<Args>(args)...);
 
@@ -374,7 +339,7 @@ std::shared_ptr<skelcl::detail::Program>
   s.append(_userSource);
   // last: append skeleton implementation source
   s.append(
-    #include "ReduceKernel_ARI.cl"
+    #include "ReduceKernel.cl"
   );
 
   auto program = std::make_shared<detail::Program>(s
