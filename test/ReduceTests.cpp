@@ -89,6 +89,7 @@ TEST_F(ReduceTest, SimpleReduce2) {
   EXPECT_EQ(1258491, output[0]);
 }
 
+/*
 TEST_F(ReduceTest, SimpleReduce3) {
   skelcl::Reduce<int(int)> r("int func(int x, int y){ return x+y; }");
 
@@ -103,4 +104,4 @@ TEST_F(ReduceTest, SimpleReduce3) {
   EXPECT_LE(1, output.size());
   EXPECT_EQ(n, output[0]);
 }
-
+*/
