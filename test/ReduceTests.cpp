@@ -89,10 +89,11 @@ TEST_F(ReduceTest, SimpleReduce2) {
   EXPECT_EQ(1258491, output[0]);
 }
 
+
 TEST_F(ReduceTest, SimpleReduce3) {
   skelcl::Reduce<int(int)> r("int func(int x, int y){ return x+y; }");
 
-  skelcl::Vector<int>::size_type n = 10000000;
+  skelcl::Vector<int>::size_type n = 100000000;
   skelcl::Vector<int> input(n);
   for (unsigned int i = 0; i < input.size(); ++i) {
     input[i] = 1;

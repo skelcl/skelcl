@@ -205,9 +205,20 @@ private:
   ///        args   Additional arguments
   ///
   template <typename... Args>
-  void execute(const detail::Device& device,
-               const std::shared_ptr<Level>& level,
-               Args&&... args);
+  void execute_first_step(const detail::Device& device,
+                                        detail::DeviceBuffer& buffer,
+                                        size_t data_size,
+                                        size_t global_size,
+                                       // size_t local_size,
+                                        Args&&... args);
+
+  template <typename... Args>
+  void execute_second_step(const detail::Device& device,
+                                         detail::DeviceBuffer& inputBuffer,
+                                         detail::DeviceBuffer& outputBuffer,
+                                         size_t data_size,
+                                         size_t global_size,
+                                         Args&&... args);
 
   /// 
   /// \brief This function determines an appropriate work group size for the
@@ -284,6 +295,9 @@ private:
 
   /// Source code as defined by the application developer
   std::string _userSource;
+
+  /// Program
+  std::shared_ptr<skelcl::detail::Program> _program;
 
 };
 
