@@ -234,14 +234,16 @@ std::string formatHeader(const Logger& logger,
 #ifndef NPROFILING
   auto sinceStart =   std::chrono::high_resolution_clock::now()
                     - logger.startTimePoint();
-  using std::chrono::milliseconds; // avoid too long next line
-  auto ms = std::chrono::duration_cast<milliseconds>(sinceStart).count();
+  using std::chrono::nanoseconds; // avoid too long next line
+  auto ns = std::chrono::duration_cast<nanoseconds>(sinceStart).count();
+  auto ms = ns / 1e6;
   char prevFill = stream.fill('0'); // save fill char
   stream << std::right
          // extract just the 3 last digits of the seconds
-         << std::setw(3) << (ms / 1000) % 1000 << "."
+         //<< std::setw(3) << (ms / 1000) % 1000 << "."
          // extract just the milliseconds
-         << std::setw(3) << ms % 1000          << "s";
+         //<< std::setw(3) << ms % 1000          << "s";
+         << std::setw(9) << ms;
   stream.fill(prevFill); // reset fill char
   stream << " ";
 #endif

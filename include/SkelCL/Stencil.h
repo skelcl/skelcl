@@ -92,13 +92,13 @@ public:
 	// Fügt dem Stencil-Skelett eine neue Stencil Shape hinzu
 	void add(const Source& source, unsigned int range, detail::Padding padding,
 			Tin neutral_element, const std::string& func);
-private:
 
 	// Ausführungsoperator mit Referenz weitergeleitet, um die temporäre Matrix vor dem User zu verstecken
 	template<typename ... Args>
 	Matrix<Tout>& operator()(unsigned int iterations, Out<Matrix<Tout> > output,
 			Out<Matrix<Tout>> temp, const Matrix<Tin>& in, Args&&... args);
 
+private:
 	// Ausführen
 	template<typename ... Args>
 	void execute(Matrix<Tout>& output, Matrix<Tout>& tmp, const Matrix<Tin>& in,

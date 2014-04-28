@@ -30,7 +30,7 @@ detail::Program StencilInfo<Tout(Tin)>::createAndBuildProgram() const {
 	//Determine the padding mode
 	switch (_padding) {
 	case detail::Padding::NEUTRAL: {
-		temp << "#define NEUTRAL " << _neutral_element << std::endl;
+		temp << "#define NEUTRAL " << _neutral_element << "\n";
 	}
 		break;
 
@@ -38,6 +38,21 @@ detail::Program StencilInfo<Tout(Tin)>::createAndBuildProgram() const {
 	case detail::Padding::NEAREST_INITIAL:
 		break;
 	}
+
+  temp << "#define SCL_NORTH (" << _north << ")\n"
+       << "#define SCL_WEST  (" << _west  << ")\n"
+       << "#define SCL_SOUTH (" << _south << ")\n"
+       << "#define SCL_EAST  (" << _east  << ")\n"
+       << "#define SCL_TILE_WIDTH  (get_local_size(0) + SCL_WEST + SCL_EAST)\n"
+       << "#define SCL_TILE_HEIGHT (get_local_size(1) + SCL_NORTH + SCL_SOUTH)\n"
+       << "#define SCL_COL   (get_global_id(0))\n"
+       << "#define SCL_ROW   (get_global_id(1))\n"
+       << "#define SCL_L_COL (get_local_id(0))\n"
+       << "#define SCL_L_ROW (get_local_id(1))\n"
+       << "#define SCL_L_COL_COUNT (get_local_size(0))\n"
+       << "#define SCL_L_ROW_COUNT (get_local_size(1))\n"
+       << "#define SCL_L_ID (SCL_L_ROW * SCL_L_COL_COUNT + SCL_L_COL)\n"
+       << "#define SCL_ROWS (SCL_ELEMENTS / SCL_COLS)\n";
 
 	// create program
 	std::string s(Matrix<Tout>::deviceFunctions());
@@ -71,20 +86,15 @@ typedef float SCL_TYPE_1;
 
 typedef struct {
     __local SCL_TYPE_1* data;
-    int local_row;
-    int local_column;
-    int offset_north;
-    int offset_west;
-    int tile_width;
 } input_matrix_t;
 
 //In case, local memory is used
 SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y){
-    int offsetNorth = matrix->offset_north * matrix->tile_width;
-    int currentIndex = matrix->local_row * matrix->tile_width + matrix->local_column;
-    int shift = x - y * matrix->tile_width;
+    int offsetNorth = SCL_NORTH * SCL_TILE_WIDTH;
+    int currentIndex = SCL_L_ROW * SCL_TILE_WIDTH + SCL_L_COL;
+    int shift = x - y * SCL_TILE_WIDTH;
 
-    return matrix->data[currentIndex+offsetNorth+shift+matrix->offset_west];
+    return matrix->data[currentIndex+offsetNorth+shift+SCL_WEST];
 }
 
 )");
@@ -95,10 +105,12 @@ SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y){
 		s.append(
 				R"(
 
-__kernel void SCL_STENCIL(
-            __global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_OUT, __global SCL_TYPE_1* SCL_TMP, __local SCL_TYPE_1* SCL_LOCAL_TMP, const unsigned int SCL_TILE_WIDTH,
-                        const unsigned int SCL_TILE_HEIGHT, const unsigned int SCL_ELEMENTS, const unsigned int SCL_NORTH, const unsigned int SCL_WEST, const unsigned int SCL_SOUTH,
-                        const unsigned int SCL_EAST, const unsigned int SCL_COLS)
+__kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
+                          __global SCL_TYPE_1* SCL_OUT,
+                          __global SCL_TYPE_1* SCL_TMP,
+                          __local SCL_TYPE_1* SCL_LOCAL_TMP,
+                          const unsigned int SCL_ELEMENTS,
+                          const unsigned int SCL_COLS)
 {
 if (get_global_id(1)*SCL_COLS+get_global_id(0) < SCL_ELEMENTS) {
     input_matrix_t Mm;

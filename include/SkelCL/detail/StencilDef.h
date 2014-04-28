@@ -174,8 +174,7 @@ Matrix<Tout>& Stencil<Tout(Tin)>::operator()(unsigned int iterations,
 		}
 	}
 
-	updateModifiedStatus(temp, std::forward<Args>(args)...);
-	updateModifiedStatus(output, std::forward<Args>(args)...);
+	updateModifiedStatus(temp, output, std::forward<Args>(args)...);
 
 	return output.container();
 }
@@ -233,9 +232,12 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
 					cl_uint workgroupSize =
 							static_cast<cl_uint>(detail::kernelUtil::determineWorkgroupSizeForKernel(
 									kernel, *devicePtr));
+LOG_INFO("workgroupSize: ", workgroupSize);
+workgroupSize = 256;
 					cl_uint offset = 0;
-					cl_uint local[2] = { static_cast<cl_uint>(sqrt(
-							workgroupSize)), static_cast<cl_uint>(local[0]) };
+					//cl_uint local[2] = { static_cast<cl_uint>(sqrt(
+					//		workgroupSize)), static_cast<cl_uint>(local[0]) };
+cl_uint local[2] = { 32, 4 };
 					cl_uint global[2] = {
 							static_cast<cl_uint>(detail::util::ceilToMultipleOf(
 									output.columnCount(), local[0])),
@@ -273,9 +275,9 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
 					//Get time
 					int j = 0;
 
-					unsigned int tile_width = sqrt(workgroupSize)
+					unsigned int tile_width = local[0]
 							+ sInfo.getWest() + sInfo.getEast();
-					unsigned int tile_height = sqrt(workgroupSize)
+					unsigned int tile_height = local[1]
 							+ sInfo.getNorth() + sInfo.getSouth();
 					kernel.setArg(j++, inputBuffer.clBuffer());
 					if ((i + k) == 0) {
@@ -291,15 +293,10 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
 						kernel.setArg(j++, tempBuffer.clBuffer());
 						kernel.setArg(j++, outputBuffer.clBuffer());
 					}
+LOG_INFO("Allocate: ", tile_width * tile_height * sizeof(Tin), " bytes local memory");
 					kernel.setArg(j++, tile_width * tile_height * sizeof(Tin),
 							NULL); //Alloziere Local Memory
-					kernel.setArg(j++, tile_width);
-					kernel.setArg(j++, tile_height);
 					kernel.setArg(j++, elements);   // elements
-					kernel.setArg(j++, sInfo.getNorth()); // north
-					kernel.setArg(j++, sInfo.getWest()); // west
-					kernel.setArg(j++, sInfo.getSouth()); // south
-					kernel.setArg(j++, sInfo.getEast()); // east
 					kernel.setArg(j++,
 							static_cast<cl_uint>(output.columnCount())); // number of columns
 
@@ -321,16 +318,16 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
 					auto invokeAfter = [=] () {(void)keepAlive;};
 					if (devicePtr->id() == 0)
 					{
-						//LOG_INFO("starting Stencil with ", global[0], "x", global[1], " - ", local[0], "x", local[1]);
+						LOG_INFO("starting Stencil with ", global[0], "x", global[1], " - ", local[0], "x", local[1]);
 						auto event = devicePtr->enqueue(kernel,
 								cl::NDRange(global[0], global[1]),
 								cl::NDRange(local[0], local[1]),
 								cl::NDRange(0, offset), invokeAfter);
-						//event.wait(); 
-						//cl_int err = 0; 
-						//auto start = event.template getProfilingInfo<CL_PROFILING_COMMAND_START>(&err); 
-						//auto end = event.template getProfilingInfo<CL_PROFILING_COMMAND_END>(&err);
-						//LOG_INFO("kernel execution: ", (end - start), "ns");
+						event.wait(); 
+						cl_int err = 0; 
+						auto start = event.template getProfilingInfo<CL_PROFILING_COMMAND_START>(&err); 
+						auto end = event.template getProfilingInfo<CL_PROFILING_COMMAND_END>(&err);
+						LOG_INFO("kernel execution: ", (end - start) / 1e6, "ms");
 					}
 					else
 						devicePtr->enqueue(kernel,

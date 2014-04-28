@@ -39,33 +39,92 @@
 
 R"(
 
-__kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_OUT, __global SCL_TYPE_1* SCL_TMP, __local SCL_TYPE_1* SCL_LOCAL_TMP, const unsigned int SCL_TILE_WIDTH,
-            const unsigned int SCL_TILE_HEIGHT, const unsigned int SCL_ELEMENTS, const unsigned int SCL_NORTH, const unsigned int SCL_WEST, const unsigned int SCL_SOUTH,
-            const unsigned int SCL_EAST, const unsigned int SCL_COLS) {
 
+#define localIndex(rowOffset, colOffset) (((rowOffset + SCL_L_ROW) + SCL_NORTH) * SCL_TILE_WIDTH + SCL_WEST + (SCL_L_COL + colOffset))
+#define globalIndex(rowOffset, colOffset) ( (rowOffset + SCL_ROW) * SCL_COLS + (colOffset + SCL_COL))
+
+__kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
+                          __global SCL_TYPE_1* SCL_OUT,
+                          __global SCL_TYPE_1* SCL_TMP,
+                          __local SCL_TYPE_1* SCL_LOCAL_TMP,
+                          const unsigned int SCL_ELEMENTS,
+                          const unsigned int SCL_COLS)
+{
+	SCL_TYPE_0 neutral = NEUTRAL;
+
+  input_matrix_t Mm;
+  Mm.data = SCL_LOCAL_TMP;
+
+#if 1
+  // everybody copies one item to local memory
+  SCL_LOCAL_TMP[localIndex(0, 0)] = SCL_TMP[globalIndex(0, 0)];
+
+#if SCL_NORTH > 0
+  // the first SCL_NORTH many rows of thread copy the north region
+  if (SCL_L_ROW < SCL_NORTH) {
+    // TODO this assumes thae there are more rows of workgroups than rows of data
+    size_t rowId = -SCL_NORTH - SCL_L_ROW; // -SCL_NORTH ... -1
+
+    if (SCL_ROW < SCL_NORTH) { // out of bound handling
+      SCL_LOCAL_TMP[localIndex(rowId, 0)] = neutral;
+    } else {
+      SCL_LOCAL_TMP[localIndex(rowId, 0)] = SCL_TMP[globalIndex(rowId, 0)];
+    }
+  }
+#endif
+
+#if SCL_WEST > 0
+  // the first SCL_WEST many cols of threads copy the west region
+  if (SCL_L_COL < SCL_WEST) {
+    // TODO this assumes that there are more cols of workgroups than cols of data
+    size_t colId = -SCL_WEST - SCL_L_COL; // -SCL_WEST ... -1
+
+    if (SCL_COL < SCL_WEST) {
+      SCL_LOCAL_TMP[localIndex(0, colId)] = neutral;
+    } else {
+      SCL_LOCAL_TMP[localIndex(0, colId)] = SCL_TMP[globalIndex(0, colId)];
+    }
+  }
+#endif
+
+#if SCL_EAST > 0
+  // the last SCL_EAST many cols of threads copy the east region
+  if (SCL_L_COL >= SCL_L_COL_COUNT - SCL_EAST) {
+    size_t colId = SCL_EAST - (SCL_L_COL_COUNT - SCL_L_COL) + 1; // 1 .. SCL_EAST
+
+    if (SCL_COL >= SCL_COLS - SCL_EAST) {
+      SCL_LOCAL_TMP[localIndex(0, colId)] = neutral;
+    } else {
+      SCL_LOCAL_TMP[localIndex(0, colId)] = SCL_TMP[globalIndex(0, colId)];
+    }
+  }
+#endif
+
+#if SCL_SOUTH > 0
+  // the last SCL_SOUTH many rows of threads copy the south region
+  if (SCL_L_ROW >= SCL_L_ROW_COUNT - SCL_SOUTH) {
+    size_t rowId = SCL_SOUTH - (SCL_L_ROW_COUNT - SCL_L_ROW) + 1; // 1 .. SCL_SOUTH
+
+    if (SCL_ROW >= SCL_ROWS - SCL_SOUTH) {
+      SCL_LOCAL_TMP[localIndex(rowId, 0)] = neutral;
+    } else {
+      SCL_LOCAL_TMP[localIndex(rowId, 0)] = SCL_TMP[globalIndex(rowId, 0)];
+    }
+  }
+#endif
+
+#endif
+
+#if 0
         const unsigned int col = get_global_id(0);
         const unsigned int l_col = get_local_id(0);
         const unsigned int row = get_global_id(1);
         const unsigned int l_row = get_local_id(1);
 
-	SCL_TYPE_0 neutral = NEUTRAL;
-
-        input_matrix_t Mm;
-        Mm.data = SCL_LOCAL_TMP;
-        Mm.local_row = l_row;
-        Mm.local_column = l_col;
-        Mm.offset_north = SCL_NORTH;
-        Mm.offset_west = SCL_WEST;
-        Mm.tile_width = SCL_TILE_WIDTH;
-
         int i;
 
         if(l_row==0 && row < SCL_ELEMENTS / SCL_COLS) {
-                const unsigned int SCL_ROWS = SCL_ELEMENTS / SCL_COLS;
-                const unsigned int SCL_WORKGROUP = SCL_ROWS / get_local_size(1);
-                const unsigned int SCL_REST = SCL_ROWS % get_local_size(1);
-                const unsigned int SCL_WORKGROUP_X = SCL_COLS / get_local_size(0);
-                const unsigned int SCL_REST_X = SCL_COLS % get_local_size(1);
+                const unsigned int SCL_ROWS_ = SCL_ELEMENTS / SCL_COLS;
 
                 int withinCols = col < SCL_COLS;
                 int withinColsWest = col-SCL_WEST < SCL_COLS;
@@ -106,7 +165,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                                         else			SCL_LOCAL_TMP[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = neutral;
                                 }
                         }
-                } else if(row - SCL_NORTH + SCL_TILE_HEIGHT < SCL_ROWS) {
+                } else if(row - SCL_NORTH + SCL_TILE_HEIGHT < SCL_ROWS_) {
                     for(i = 0; i<SCL_TILE_HEIGHT; i++){
                             if(withinCols) 		SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(row+i-SCL_NORTH)*SCL_COLS+col];
                             else			SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = neutral;
@@ -135,7 +194,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                     }
                 } else {
                         for(i = 0; i<SCL_TILE_HEIGHT; i++){
-                                int withinRows = row + i - SCL_NORTH < SCL_ROWS;
+                                int withinRows = row + i - SCL_NORTH < SCL_ROWS_;
                                 if(withinCols && withinRows) 		SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_TMP[(row+i-SCL_NORTH)*SCL_COLS+col];
                                 else					SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = neutral;
                         }
@@ -146,7 +205,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                                 }
                         } else if(l_col<SCL_WEST) {
                                 for(i = 0; i<SCL_TILE_HEIGHT; i++){
-                                        int withinRows = row + i - SCL_NORTH < SCL_ROWS;
+                                        int withinRows = row + i - SCL_NORTH < SCL_ROWS_;
                                         if(withinColsWest && withinRows) 	SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col] = SCL_TMP[(row+i-SCL_NORTH)*SCL_COLS+col-SCL_WEST];
                                         else					SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col] = neutral;
                                 }
@@ -158,7 +217,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                                 }
                         } else if(l_col>=get_local_size(0) - SCL_EAST) {
                                 for(i = 0; i<SCL_TILE_HEIGHT; i++){
-                                        int withinRows = row + i - SCL_NORTH < SCL_ROWS;
+                                        int withinRows = row + i - SCL_NORTH < SCL_ROWS_;
                                         if(withinColsEast && withinRows) 	SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_TMP[(row+i-SCL_NORTH)*SCL_COLS+col+SCL_EAST];
                                         else					SCL_LOCAL_TMP[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = neutral;
                                 }
@@ -166,15 +225,13 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
                 }
 
         }
+#endif
 
+  barrier(CLK_LOCAL_MEM_FENCE);
 
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        if(row<SCL_ELEMENTS/SCL_COLS && col<SCL_COLS) {
-            SCL_OUT[row*SCL_COLS+col] = USR_FUNC(&Mm);
-        }
-
-
+  if( SCL_ROW < SCL_ELEMENTS/SCL_COLS && SCL_COL < SCL_COLS) {
+    SCL_OUT[SCL_ROW * SCL_COLS + SCL_COL] = USR_FUNC(&Mm);
+  }
 }
 
 )"
