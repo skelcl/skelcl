@@ -73,7 +73,6 @@
 #include "Skeleton.h"
 #include "Util.h"
 
-#include<iostream> // LÖSCHEN
 
 namespace skelcl {
 

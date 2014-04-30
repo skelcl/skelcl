@@ -124,7 +124,6 @@ cl::Event Device::enqueue(const cl::Kernel& kernel,
                           const std::function<void()> callback) const
 {
   ASSERT(global.dimensions() == local.dimensions());
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
   ONLY_IN_DEBUG(

@@ -62,7 +62,8 @@ protected:
 TEST_F(ReduceTest, CreateReduce) {
   skelcl::Reduce<float(float)> r("float func(float x, float y){ return x+y; }");
 }
-/*
+
+
 TEST_F(ReduceTest, SimpleReduce) {
   skelcl::Reduce<float(float)> r("float func(float x, float y){ return x+y; }");
 
@@ -74,9 +75,24 @@ TEST_F(ReduceTest, SimpleReduce) {
   skelcl::Vector<float> output = r(input);
 
   EXPECT_LE(1,    output.size());
-  EXPECT_EQ(1000, output[0]);
+  EXPECT_EQ(4950, output[0]);
 }
-*/
+
+
+TEST_F(ReduceTest, SimpleReduce2) {
+  skelcl::Reduce<int(int)> r("int func(int x, int y){ return x+y; }");
+
+  skelcl::Vector<int> input(1587);
+  for (unsigned int i = 0; i < input.size(); ++i) {
+    input[i] = i;
+  }
+
+  skelcl::Vector<int> output = r(input);
+
+  EXPECT_LE(1, output.size());
+  EXPECT_EQ(1258491, output[0]);
+}
+
 
 TEST_F(ReduceTest, nSizesReduce) {
   skelcl::Reduce<float(float)> r("float func(float x, float y){ return x+y; }");
@@ -99,35 +115,3 @@ TEST_F(ReduceTest, nSizesReduce) {
 
 
 
-/*
-TEST_F(ReduceTest, SimpleReduce2) {
-  skelcl::Reduce<int(int)> r("int func(int x, int y){ return x+y; }");
-
-  skelcl::Vector<int> input(1587);
-  for (unsigned int i = 0; i < input.size(); ++i) {
-    input[i] = i;
-  }
-
-  skelcl::Vector<int> output = r(input);
-
-  EXPECT_LE(1, output.size());
-  EXPECT_EQ(1258491, output[0]);
-}
-
-
-TEST_F(ReduceTest, SimpleReduce3) {
-  skelcl::Reduce<int(int)> r("int func(int x, int y){ return x+y; }");
-
-  skelcl::Vector<int>::size_type n = 100000000;
-  skelcl::Vector<int> input(n);
-  for (unsigned int i = 0; i < input.size(); ++i) {
-    input[i] = 1;
-  }
-
-  skelcl::Vector<int> output = r(input);
-
-  EXPECT_LE(1, output.size());
-  EXPECT_EQ(n, output[0]);
-}
-
-*/
