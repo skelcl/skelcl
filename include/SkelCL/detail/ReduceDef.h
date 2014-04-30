@@ -204,7 +204,7 @@ void Reduce<T(T)>::execute_first_step(const detail::Device& device,
     auto invokeAfter =  [keepAlive] () {};
 
     device.enqueue(kernel,
-                   cl::NDRange(global_size), cl::NDRange(global_size)/*ANPASSEN!!!*/,
+                   cl::NDRange(global_size), cl::NDRange(1), // verbessern
                    cl::NullRange, // offset
                    invokeAfter);
   } catch (cl::Error& err) {
