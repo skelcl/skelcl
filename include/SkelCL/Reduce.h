@@ -156,25 +156,6 @@ public:
   }
 
 private:
-  ///
-  /// \brief This struct describes one level of the reduce algorithm
-  ///
-  /// The reduce algorithm is executed in two levels. The first level reduces 
-  /// the input vector to an appropriate number of elements. Afterwards the
-  /// second level reduces this intermediate vector further to a single value.
-  ///
-  struct Level {
-    Level(const Level& rhs) = delete;
-    Level& operator=(const Level& rhs) = delete;
-    Level(size_t, size_t, size_t, const Vector<T>*, Vector<T>*, cl::Kernel);
-
-    int               data_size;
-    int               global_size;
-    int               local_size;
-    const Vector<T>*  inputPtr; //just observing not owning: raw pointer is fine
-    Vector<T>*        outputPtr;//just observing not owning: raw pointer is fine
-    cl::Kernel        kernel;
-  };
 
   ///
   /// \brief Prepares the input for kernel execution
@@ -206,82 +187,19 @@ private:
   ///
   template <typename... Args>
   void execute_first_step(const detail::Device& device,
-                                        detail::DeviceBuffer& buffer,
-                                        size_t data_size,
-                                        size_t global_size,
-                                       // size_t local_size,
-                                        Args&&... args);
+                          const detail::DeviceBuffer& input,
+                                detail::DeviceBuffer& output,
+                                size_t data_size,
+                                size_t global_size,
+                                Args&&... args);
 
   template <typename... Args>
   void execute_second_step(const detail::Device& device,
-                                         detail::DeviceBuffer& inputBuffer,
-                                         detail::DeviceBuffer& outputBuffer,
-                                         size_t data_size,
-                                         size_t global_size,
-                                         Args&&... args);
+                           const detail::DeviceBuffer& input,
+                                 detail::DeviceBuffer& output,
+                                 size_t data_size,
+                                 Args&&... args);
 
-  /// 
-  /// \brief This function determines an appropriate work group size for the
-  ///        given device
-  ///
-  /// \param The device for which the work group size should be determined
-  ///
-  /// \return An appropriate work group size for the given device
-  ///
-  size_t determineWorkGroupSize(const detail::Device& device);
-
-  ///
-  /// \brief This function determines the number of work groups to be started
-  ///        in the first level of the reduce algorithm for a given device.
-  ///
-  /// \param device         The device the work group number is determined for
-  ///        input          The input vector is used to determine the number 
-  ///                       of elements to be reduced by the given device
-  ///        workGroupSize  The size of a work group, as determined by the 
-  ///                       function determineWorkGroupSize
-  ///
-  /// \return Number of work groups to be started in the first level of the 
-  ///         reduce algorithm for this device
-  ///
-  size_t determineFirstLevelWorkGroupCount(const detail::Device& device,
-                                           const Vector<T>& input,
-                                           const size_t workGroupSize);
-
-  ///
-  /// \brief This function determines appropriate values for execution the 
-  ///        first level of the reduce algorithm on the given device.
-  ///        If no first level should be executed nullptr is returned.
-  ///
-  /// \param device The device the parameters are determined for
-  ///        input  The input vector of the first level
-  ///        output The output vector of the first level
-  ///
-  /// \return A pointer pointing to an appropriate filled level object, or
-  ///         nullptr if the first level should be skipped
-  ///
-  std::shared_ptr<Level>
-    determineFirstLevelParameters(const detail::Device& device,
-                                  const Vector<T>& input,
-                                  const Vector<T>& output);
-
-  ///
-  /// \brief This function determines appropriate values for execution the 
-  ///        second level of the reduce algorithm on the given device
-  ///
-  /// \param device     The device the parameters are determined for
-  ///        input      The input vector of the first level
-  ///        output     The output vector of the first level
-  ///        firstLevel The parameters used for the execution of the
-  ///                   first level, might be nullptr if no first level was 
-  ///                   executed
-  ///
-  /// \return A pointer pointing to an appropriate filled level object
-  ///
-  std::shared_ptr<Level>
-    determineSecondLevelParameters(const detail::Device& device,
-                                   const Vector<T>& input,
-                                   const Vector<T>& output,
-                                   const std::shared_ptr<Level>& firstLevel);
 
   std::shared_ptr<skelcl::detail::Program>
     createPrepareAndBuildProgram();
@@ -298,6 +216,7 @@ private:
 
   /// Program
   std::shared_ptr<skelcl::detail::Program> _program;
+
 
 };
 

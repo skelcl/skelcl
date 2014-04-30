@@ -48,56 +48,83 @@ typedef float SCL_TYPE_0;
 
 // ------------------------------------ Kernel 1 -----------------------------------------------
 
-
 __kernel void SCL_REDUCE_1 (
-          __global SCL_TYPE_0* SCL_BUF,
-    const unsigned int         DATA_SIZE,
-    const unsigned int         GLOBAL_SIZE)
+    const __global SCL_TYPE_0* SCL_IN,
+          __global SCL_TYPE_0* SCL_OUT,
+    const unsigned int  DATA_SIZE,
+    const unsigned int  GLOBAL_SIZE) 
 {
-  // ASSERT 1<= GLOBAL_SIZE <= DATA_SIZE
-
+    const int my_pos = get_global_id(0);
+    
     const unsigned int modul = GLOBAL_SIZE;
 
-    SCL_TYPE_0 res = SCL_IDENTITY;
-    int i = get_global_id(0);
+    int res = SCL_IN[my_pos];
+    int i   = my_pos + modul;
         
     while ( i < DATA_SIZE )
     {
-      res = res + SCL_BUF[i];
+      res = SCL_FUNC( res, SCL_IN[i] );
       i = i + modul;
     }
-      
-    SCL_BUF[get_global_id(0)] = res;
+    
+    SCL_OUT[my_pos] = res;
 }
 
 
 // ------------------------------------ Kernel 2 -----------------------------------------------
 
-__kernel void SCL_REDUCE_2 (
-          __global SCL_TYPE_0* SCL_IN,
-          __global SCL_TYPE_0* SCL_OUT,
-    const unsigned int         DATA_SIZE)    
-{
-    // ASSERT: DATA_SIZE <= get_local_size() ( == get_global_size() )
 
-    int pos = get_local_id(0);
-    int size = DATA_SIZE;
+__kernel void SCL_REDUCE_2 (
+    const __global SCL_TYPE_0* SCL_IN,
+          __global SCL_TYPE_0* SCL_OUT,
+          __local  SCL_TYPE_0* LOCAL_BUF, // hat Größe LOCAL_SIZE
+          unsigned int         DATA_SIZE,
+    const unsigned int         LOCAL_SIZE)    
+{
+    // ASSERT: NUR EINE WG GESTARTET
+
+    const int my_pos  = get_global_id(0);
+    //if (my_pos >= DATA_SIZE) return;
     
     int modul;
-    int active;
-    while ( size > 1)
-    {  
-      barrier(CLK_GLOBAL_MEM_FENCE);
-      modul  = ceil( size / 2.0f );
-      active = floor( size / 2.0f );
-      
-      if ( pos < active )
-        SCL_IN[pos] = SCL_IN[pos] + SCL_IN[ pos + modul ];
-      
-      size = ceil( size / 2.0f);
-    }
+    
+//------------------------------------- VORVERARBEITUNG --------------------------------
+
+    modul = LOCAL_SIZE;
+
+    SCL_TYPE_0 res = SCL_IN[my_pos];
+    int        i   = my_pos + modul;
         
-    SCL_OUT[0] = SCL_IN[0];
+    while ( i < DATA_SIZE )
+    {
+      res = SCL_FUNC( res, SCL_IN[i] );
+      i   = i + modul;
+    }
+      
+    LOCAL_BUF[my_pos] = res;
+
+
+    DATA_SIZE = min( LOCAL_SIZE, DATA_SIZE );
+    
+//-----------------      jetzt noch <=LOCAL_SIZE Elemente -> gespeichert in LOCAL_BUF       ---------------------------
+
+    int active;
+    
+    while ( DATA_SIZE > 1)
+    {  
+      barrier(CLK_LOCAL_MEM_FENCE);
+      
+      modul  = ceil ( DATA_SIZE / 2.0f );
+      active = floor( DATA_SIZE / 2.0f );
+      
+      if ( my_pos < active )
+        LOCAL_BUF[my_pos] = SCL_FUNC( LOCAL_BUF[my_pos], LOCAL_BUF[ my_pos + modul ] );
+      
+      DATA_SIZE = ceil( DATA_SIZE / 2.0f);
+    }
+
+    SCL_OUT[0] = LOCAL_BUF[0];
+
 }
                                                   
 )"

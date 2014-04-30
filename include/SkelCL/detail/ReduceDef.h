@@ -73,6 +73,7 @@
 #include "Skeleton.h"
 #include "Util.h"
 
+#include<iostream> // LÖSCHEN
 
 namespace skelcl {
 
@@ -103,71 +104,46 @@ Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
                                     const Vector<T>& input,
                                     Args&&... args)
 {
-  // first prepare input to set the default distribution if needed ...
+  size_t global_size = std::min( static_cast<size_t>(8192), input.size() );
+
   prepareInput(input);
-  prepareOutput(output.container(), input, 1);
+
+  Vector<T> tmpOutput;
+  prepareOutput( tmpOutput,          input,     global_size );
+  prepareOutput( output.container(), tmpOutput, 1           );
+
+
+  ASSERT(input.distribution().devices().size() == 1);
+  _program = createPrepareAndBuildProgram();
 
   // TODO: relax to multiple devices later
-  ASSERT(input.distribution().devices().size() == 1);
-
   auto&  device  = *(input.distribution().devices().front());
-        _program = createPrepareAndBuildProgram();
 
 
-// ------- GEN VALS --------
-  auto   block_size  = 2;    // ASSERT > 1
-  size_t break_point = 1024; // TODO min( xxx, 2 * max_wg_size ) mit log-warning
-// -------------------------
 
-  Vector<T> tmpBuffer = input;
-
-  if (input.size() <= break_point)
-  {
-    size_t data_size   = tmpBuffer.size();
-    size_t global_size = data_size / 2;
+  execute_first_step( device,
+                      input.deviceBuffer(device),
+                      tmpOutput.deviceBuffer(device),
+                      input.size(),
+                      global_size,
+                      args... );
 
 
-    execute_second_step( device,
-                         tmpBuffer.deviceBuffer(device),
-                         output.container().deviceBuffer(device),
-                         data_size,
-                         global_size,
-                         args... );
-  }
-  else
-  {
-    auto data_size   = tmpBuffer.size();
-    auto global_size = ceil ( data_size / static_cast<float>(block_size) );
+//  tmpOutput.dataOnDeviceModified();
 
-    while ( data_size > break_point)
-    {
-      //printf("\n data_size:%i, global_size=%i\n", static_cast<int>(data_size), static_cast<int>(global_size));
-      execute_first_step( device,
-                          tmpBuffer.deviceBuffer(device),
-                          data_size,
-                          global_size,
-                          args... );
+//for( int i = 0; i < tmpOutput.size(); ++i)
+//  std::cout << "tmpOutput[" << i << "]: " << tmpOutput[i] << std::endl;
 
-      data_size     = global_size;
-      global_size   = data_size / block_size;
-    }
-
-    global_size = ceil( data_size / 2.0f );
-/*
-    printf("\n data_size:%i, global_size=%i\n", static_cast<int>(data_size), static_cast<int>(global_size));
-
-    for (int i=0 ; i<tmpBuffer.size() ; ++i )
-        std::cout << "tmpBuffer[" << i << "] = " << tmpBuffer[i] << std::endl;
-*/
-    execute_second_step( device,
-                         tmpBuffer.deviceBuffer(device),
-                         output.container().deviceBuffer(device),
-                         data_size,
-                         global_size,
-                         args... );
+  output.container()[0]=123;
+  execute_second_step( device,
+                       tmpOutput.deviceBuffer(device),
+                       output.container().deviceBuffer(device),
+                       global_size,
+                       args... );
 
 
-  }
+
+
   // ... finally update modification status.
   updateModifiedStatus(output, std::forward<Args>(args)...);
 
@@ -214,10 +190,10 @@ void Reduce<T(T)>::prepareOutput(Vector<T>& output,
 template <typename T>
 template <typename... Args>
 void Reduce<T(T)>::execute_first_step(const detail::Device& device,
-                                      detail::DeviceBuffer& buffer,
+                                      const detail::DeviceBuffer& input,
+                                      detail::DeviceBuffer& output,
                                       size_t data_size,
                                       size_t global_size,
-                                     // size_t local_size,
                                       Args&&... args)
 {
 //  ASSERT( level->inputPtr->distribution().isValid() );
@@ -225,15 +201,19 @@ void Reduce<T(T)>::execute_first_step(const detail::Device& device,
   try {
     cl::Kernel kernel = _program->kernel(device, "SCL_REDUCE_1");
 
-    kernel.setArg(0, buffer.clBuffer());
-    kernel.setArg(1, static_cast<unsigned int>(data_size));
-    kernel.setArg(2, static_cast<unsigned int>(global_size));
+    const cl::Device dev{device.clDevice()};
+
+    kernel.setArg(0, input.clBuffer());
+    kernel.setArg(1, output.clBuffer());
+    kernel.setArg(2, static_cast<unsigned int>(data_size));
+    kernel.setArg(3, static_cast<unsigned int>(global_size));
 
    // detail::kernelUtil::setKernelArgs(kernel, device, 4,
    //                                   std::forward<Args>(args)...);
 
     auto keepAlive = detail::kernelUtil::keepAlive(device,
-                                                   buffer.clBuffer(),
+                                                   input.clBuffer(),
+                                                   output.clBuffer(),
                                                    std::forward<Args>(args)...);
 
     // after finishing the kernel invoke this function ...
@@ -242,7 +222,7 @@ void Reduce<T(T)>::execute_first_step(const detail::Device& device,
                                };
 
     device.enqueue(kernel,
-                   cl::NDRange(global_size), cl::NDRange(1) /*cl::NDRange(local_size)*/,
+                   cl::NDRange(global_size), cl::NDRange(global_size)/*ANPASSEN!!!*/,
                    cl::NullRange, // offset
                    invokeAfter);
   } catch (cl::Error& err) {
@@ -254,29 +234,34 @@ void Reduce<T(T)>::execute_first_step(const detail::Device& device,
 template <typename T>
 template <typename... Args>
 void Reduce<T(T)>::execute_second_step(const detail::Device& device,
-                                      detail::DeviceBuffer& inputBuffer,
-                                      detail::DeviceBuffer& outputBuffer,
-                                      size_t data_size,
-                                      size_t global_size,
-                                      Args&&... args)
+                                       const detail::DeviceBuffer& input,
+                                             detail::DeviceBuffer& output,
+                                             size_t data_size,
+                                             Args&&... args)
 {
-  // ASSERT global_size < "MAX_WI_IN_WG_COUNT_FOR_KERNEL2"
+  //ASSERT( level->inputPtr->distribution().isValid() );
+  //ASSERT: global_size < MAX_LOCAL_SIZE
 
-    //ASSERT( level->inputPtr->distribution().isValid() );
-
-  try {
+    try {
     cl::Kernel kernel = _program->kernel(device, "SCL_REDUCE_2");
+    const cl::Device dev{device.clDevice()};
 
-    kernel.setArg(0, inputBuffer.clBuffer());
-    kernel.setArg(1, outputBuffer.clBuffer());
-    kernel.setArg(2, static_cast<unsigned int>(data_size));
+    const size_t max_local_size = kernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(dev);
+    size_t global_size = std::min( data_size, max_local_size);
+
+    kernel.setArg(0, input.clBuffer() );
+    kernel.setArg(1, output.clBuffer() );
+    kernel.setArg(2, cl::__local(global_size * sizeof(T) ) );
+    kernel.setArg(3, static_cast<unsigned int>(data_size) );
+    kernel.setArg(4, static_cast<unsigned int>(global_size) );
 
    // detail::kernelUtil::setKernelArgs(kernel, device, 4,
    //                                   std::forward<Args>(args)...);
 
+
     auto keepAlive = detail::kernelUtil::keepAlive(device,
-                                                   inputBuffer.clBuffer(),
-                                                   outputBuffer.clBuffer(),
+                                                   input.clBuffer(),
+                                                   output.clBuffer(),
                                                    std::forward<Args>(args)...);
 
     // after finishing the kernel invoke this function ...
@@ -284,104 +269,26 @@ void Reduce<T(T)>::execute_second_step(const detail::Device& device,
                                   (void)keepAlive;
                                };
 
+//    void* buffer = static_cast<void*>(malloc(1 * sizeof(float)));
+//    detail::Event event{device.enqueueRead(input, buffer)};
+//    event.wait();
+
+//    for( int i=0; i < 100; ++i)
+//    std::cout << "INPUT[" << i << "]: " << static_cast<float*>(buffer)[i] << std::endl;
+
+
+
     device.enqueue(kernel,
                    cl::NDRange(global_size), cl::NDRange(global_size),
                    cl::NullRange, // offset
                    invokeAfter);
+
+
   } catch (cl::Error& err) {
     ABORT_WITH_ERROR(err);
   }
 }
 
-
-template <typename T>
-size_t Reduce<T(T)>::determineWorkGroupSize(const detail::Device& device)
-{
-  unsigned long maxWorkGroupSize = std::min( device.maxWorkGroupSize(),
-                                             static_cast<size_t>(64) );
-  unsigned long maxSizeToFitInLocalMem = device.localMemSize() / sizeof(T);
-
-  return std::min(maxWorkGroupSize, maxSizeToFitInLocalMem);
-}
-
-
-template <typename T>
-size_t
-  Reduce<T(T)>::determineFirstLevelWorkGroupCount(const detail::Device& device,
-                                                  const Vector<T>& input,
-                                                  const size_t workGroupSize)
-{
-  auto inputSize          = input.deviceBuffer(device).size();
-  auto workGroupStepWidth = 2 * workGroupSize;
-  if (inputSize <= workGroupStepWidth) {
-    return 0; // no first level necessary
-  } else {
-    // max so many work groups, that the results can be handled
-    // in a single step
-    auto maxWorkGroupCount = workGroupStepWidth;
-    auto count =   (inputSize / workGroupStepWidth) // round up
-                 + ( (inputSize % workGroupStepWidth != 0) ? 1 : 0 );
-    auto workGroupCount = std::min(maxWorkGroupCount, count);
-    return workGroupCount;
-  }
-}
-
-
-template <typename T>
-std::shared_ptr<typename Reduce<T(T)>::Level>
-  Reduce<T(T)>::determineFirstLevelParameters(const detail::Device& device,
-                                              const Vector<T>& input,
-                                              const Vector<T>& output)
-{
-  std::shared_ptr<typename Reduce<T(T)>::Level> level;
-
-  auto wgSize  = determineWorkGroupSize( device );
-  auto wgCount = determineFirstLevelWorkGroupCount( device, input, wgSize );
-
-  if (wgCount > 16) { // with fewer than 16 groups let second level handle it
-    level = std::make_shared<typename Reduce<T(T)>::Level>();
-    level->workGroupSize  = wgSize;
-    level->workGroupCount = wgCount;
-    level->inputPtr       = &input;
-    level->outputPtr      = &output;
-
-    std::stringstream preamble;
-    preamble << "#define GROUP_SIZE (" << level->workGroupSize << ")\n"
-             << "#define SCL_IDENTITY (" << _id << ")\n";
-    level->program = createPrepareAndBuildProgram( preamble.str() );
-  }
-
-  return level;
-}
-
-
-template <typename T>
-std::shared_ptr<typename Reduce<T(T)>::Level>
-  Reduce<T(T)>::determineSecondLevelParameters(
-          const detail::Device& device,
-          const Vector<T>& input,
-          const Vector<T>& output,
-          const std::shared_ptr<Reduce<T(T)>::Level>& firstLevel
-                                              )
-{
-  auto level = std::make_shared<typename Reduce<T(T)>::Level>();
-
-  level->workGroupSize  = determineWorkGroupSize( device );
-  level->workGroupCount = 1;
-  if (firstLevel) {
-    level->inputPtr     = &output;
-  } else {
-    level->inputPtr     = &input;
-  }
-  level->outputPtr      = &output;
-
-  std::stringstream preamble;
-  preamble << "#define GROUP_SIZE (" << level->workGroupSize << ")\n"
-           << "#define SCL_IDENTITY (" << _id << ")\n";
-  level->program = createPrepareAndBuildProgram( preamble.str() );
-
-  return level;
-}
 
 template <typename T>
 std::shared_ptr<skelcl::detail::Program>
@@ -410,16 +317,6 @@ std::shared_ptr<skelcl::detail::Program>
   return program;
 }
 
-
-template <typename T>
-Reduce<T(T)>::Level::Level(size_t a, size_t b, size_t f, const Vector<T>* c, Vector<T>* d, cl::Kernel e)
-  : data_size(a),
-    global_size(b),
-    local_size(f),
-    inputPtr(c),
-    outputPtr(d),
-    kernel(e)
-{}
 
 
 } // namespace skelcl
