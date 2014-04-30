@@ -97,7 +97,7 @@ TEST_F(ReduceTest, SimpleReduce2) {
 TEST_F(ReduceTest, nSizesReduce) {
   skelcl::Reduce<float(float)> r("float func(float x, float y){ return x+y; }");
 
-  const int N = 1000;
+  const int N = 100;
 
 
   skelcl::Vector<float> input;
@@ -108,7 +108,6 @@ TEST_F(ReduceTest, nSizesReduce) {
     input.resize(i, 1);
     output = r(input);
 
-    std::cout << "i=" << i << " , out=" << output[0] << std::endl;
     EXPECT_EQ(input.size(), output[0]);
   }
 }

@@ -80,7 +80,7 @@ template <typename T>
 Reduce<T(T)>::Reduce(const Source& source,
                      const std::string& id,
                      const std::string& funcName)
-    : detail::Skeleton(), _id(id), _funcName(funcName), _userSource(source), _program{}
+    : detail::Skeleton(), _id(id), _funcName(funcName), _userSource(source), _program{createPrepareAndBuildProgram()}
 {
 }
 
@@ -103,21 +103,17 @@ Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
                                     const Vector<T>& input,
                                     Args&&... args)
 {
-  size_t global_size = std::min( static_cast<size_t>(8192), input.size() );
+  const size_t global_size = std::min( static_cast<size_t>(8192), input.size() );
 
   prepareInput(input);
-
-  Vector<T> tmpOutput;
-  prepareOutput( tmpOutput,          input,     global_size );
-  prepareOutput( output.container(), tmpOutput, 1           );
-
-
   ASSERT(input.distribution().devices().size() == 1);
-  _program = createPrepareAndBuildProgram();
 
   // TODO: relax to multiple devices later
   auto&  device  = *(input.distribution().devices().front());
 
+  Vector<T> tmpOutput;
+  prepareOutput( tmpOutput,          input,     global_size );
+  prepareOutput( output.container(), tmpOutput, 1           );
 
 
   execute_first_step( device,
@@ -127,20 +123,11 @@ Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
                       global_size,
                       args... );
 
-
-//  tmpOutput.dataOnDeviceModified();
-
-//for( int i = 0; i < tmpOutput.size(); ++i)
-//  std::cout << "tmpOutput[" << i << "]: " << tmpOutput[i] << std::endl;
-
-  output.container()[0]=123;
   execute_second_step( device,
                        tmpOutput.deviceBuffer(device),
                        output.container().deviceBuffer(device),
                        global_size,
                        args... );
-
-
 
 
   // ... finally update modification status.
@@ -195,8 +182,6 @@ void Reduce<T(T)>::execute_first_step(const detail::Device& device,
                                       size_t global_size,
                                       Args&&... args)
 {
-//  ASSERT( level->inputPtr->distribution().isValid() );
-
   try {
     cl::Kernel kernel = _program->kernel(device, "SCL_REDUCE_1");
 
@@ -204,11 +189,11 @@ void Reduce<T(T)>::execute_first_step(const detail::Device& device,
 
     kernel.setArg(0, input.clBuffer());
     kernel.setArg(1, output.clBuffer());
-    kernel.setArg(2, static_cast<unsigned int>(data_size));
-    kernel.setArg(3, static_cast<unsigned int>(global_size));
+    kernel.setArg(2, static_cast<cl_uint>(data_size));
+    kernel.setArg(3, static_cast<cl_uint>(global_size));
 
-   // detail::kernelUtil::setKernelArgs(kernel, device, 4,
-   //                                   std::forward<Args>(args)...);
+    detail::kernelUtil::setKernelArgs(kernel, device, 4,
+                                      std::forward<Args>(args)...);
 
     auto keepAlive = detail::kernelUtil::keepAlive(device,
                                                    input.clBuffer(),
@@ -216,9 +201,7 @@ void Reduce<T(T)>::execute_first_step(const detail::Device& device,
                                                    std::forward<Args>(args)...);
 
     // after finishing the kernel invoke this function ...
-    auto invokeAfter =  [=] () {
-                                  (void)keepAlive;
-                               };
+    auto invokeAfter =  [keepAlive] () {};
 
     device.enqueue(kernel,
                    cl::NDRange(global_size), cl::NDRange(global_size)/*ANPASSEN!!!*/,
@@ -238,24 +221,21 @@ void Reduce<T(T)>::execute_second_step(const detail::Device& device,
                                              size_t data_size,
                                              Args&&... args)
 {
-  //ASSERT( level->inputPtr->distribution().isValid() );
-  //ASSERT: global_size < MAX_LOCAL_SIZE
-
-    try {
+  try {
     cl::Kernel kernel = _program->kernel(device, "SCL_REDUCE_2");
     const cl::Device dev{device.clDevice()};
 
     const size_t max_local_size = kernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(dev);
-    size_t global_size = std::min( data_size, max_local_size);
+    const size_t global_size = std::min( data_size, max_local_size);
 
     kernel.setArg(0, input.clBuffer() );
     kernel.setArg(1, output.clBuffer() );
     kernel.setArg(2, cl::__local(global_size * sizeof(T) ) );
-    kernel.setArg(3, static_cast<unsigned int>(data_size) );
-    kernel.setArg(4, static_cast<unsigned int>(global_size) );
+    kernel.setArg(3, static_cast<cl_uint>(data_size) );
+    kernel.setArg(4, static_cast<cl_uint>(global_size) );
 
-   // detail::kernelUtil::setKernelArgs(kernel, device, 4,
-   //                                   std::forward<Args>(args)...);
+    detail::kernelUtil::setKernelArgs(kernel, device, 5,
+                                      std::forward<Args>(args)...);
 
 
     auto keepAlive = detail::kernelUtil::keepAlive(device,
@@ -264,18 +244,7 @@ void Reduce<T(T)>::execute_second_step(const detail::Device& device,
                                                    std::forward<Args>(args)...);
 
     // after finishing the kernel invoke this function ...
-    auto invokeAfter =  [=] () {
-                                  (void)keepAlive;
-                               };
-
-//    void* buffer = static_cast<void*>(malloc(1 * sizeof(float)));
-//    detail::Event event{device.enqueueRead(input, buffer)};
-//    event.wait();
-
-//    for( int i=0; i < 100; ++i)
-//    std::cout << "INPUT[" << i << "]: " << static_cast<float*>(buffer)[i] << std::endl;
-
-
+    auto invokeAfter =  [keepAlive] () {};
 
     device.enqueue(kernel,
                    cl::NDRange(global_size), cl::NDRange(global_size),
