@@ -196,11 +196,6 @@ namespace skelcl {
     ASSERT_MESSAGE(false, "This function should never be called!");
   }
   
-  IndexPoint Matrix<IndexPoint>::operator()(int row, int col) {
-  	return IndexPoint(row, col);
-  }
-
-
 } // namespace skelcl
 
 

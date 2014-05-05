@@ -78,7 +78,7 @@ void invokeCallback(cl_event /*event*/, cl_int status, void * userData)
 {
   auto callback = static_cast<std::function<void()>*>(userData);
   (*callback)(); // invoke callback
-  delete callback; // TODO: try to avoid explicit delete
+  delete callback;
 
   if (status != CL_COMPLETE) {
     LOG_ERROR("Event returned with abnormal status (", cl::Error(status), ")");
@@ -108,7 +108,7 @@ Device::Device(const cl::Device& device,
     _context = cl::Context(devices, props);
 
     // create command queue for every device
-    _commandQueue = cl::CommandQueue(_context, _device, CL_QUEUE_PROFILING_ENABLE);
+    _commandQueue = cl::CommandQueue(_context, _device);
   } catch (cl::Error& err) {
     ABORT_WITH_ERROR(err);
   }
@@ -137,6 +137,7 @@ cl::Event Device::enqueue(const cl::Kernel& kernel,
   });
 #pragma GCC diagnostic pop
   ASSERT(globalSizeIsDivisiableByLocalSize());
+  
   cl::Event event;
   try {
     _commandQueue.enqueueNDRangeKernel(kernel, offset, global, local,
@@ -183,7 +184,7 @@ cl::Event Device::enqueueWrite(const  DeviceBuffer& buffer,
   }
 
   LOG_DEBUG_INFO("Enqueued write buffer for device ", _id,
-                 " (Bufferize: ", buffer.sizeInBytes(),
+                 " (size: ", buffer.sizeInBytes(),
                  ", clBuffer: ", buffer.clBuffer()(),
                  ", deviceOffset: 0",
                  ", hostPointer: ", static_cast<const void*>(
@@ -217,8 +218,7 @@ cl::Event Device::enqueueWrite(const  DeviceBuffer& buffer,
   }
 
   LOG_DEBUG_INFO("Enqueued write buffer for device ", _id,
-                 " (Buffersize: ", buffer.sizeInBytes(),
-                 ", size: ", size,
+                 " (size: ", size * buffer.elemSize(),
                  ", clBuffer: ", buffer.clBuffer()(),
                  ", deviceOffset: ", deviceOffset*buffer.elemSize(),
                  ", hostPointer: ", static_cast<void*const>(

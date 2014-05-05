@@ -44,7 +44,6 @@
 #include <string>
 
 #include <pvsutil/Assert.h>
-#include <pvsutil/Logger.h>
 
 #include "Device.h"
 #include "DeviceList.h"

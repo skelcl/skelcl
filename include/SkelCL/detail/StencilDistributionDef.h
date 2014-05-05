@@ -50,17 +50,21 @@ StencilDistribution<C<T>>::StencilDistribution(const unsigned int north,
 		const unsigned int east,
 		const unsigned int initialIterationsBeforeFirstSwap,
 		const DeviceList& deviceList) :
+        Distribution<C<T>>(deviceList),
 		_north(north), _west(west), _south(south), _east(east), _initialIterationsBeforeFirstSwap(
-				initialIterationsBeforeFirstSwap), Distribution<C<T>>(
-				deviceList) {
-
+                initialIterationsBeforeFirstSwap)
+{
 }
 
 template<template<typename > class C, typename T>
 template<typename U>
 StencilDistribution<C<T>>::StencilDistribution(
 		const StencilDistribution<C<U>>& rhs) :
-		Distribution<C<T>>(rhs) {
+	Distribution<C<T>>(rhs),
+	_north(rhs.getNorth()), _west(rhs.getWest()), _south(rhs.getSouth()), _east(rhs.getEast()),
+	_initialIterationsBeforeFirstSwap()
+	//_initialIterationsBeforeFirstSwap(rhs._initialIterationsBeforeFirstSwap)
+{
 }
 
 template<template<typename > class C, typename T>

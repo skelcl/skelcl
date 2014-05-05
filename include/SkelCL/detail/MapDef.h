@@ -51,7 +51,7 @@
 #include <cmath>
 
 #define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.h>
+#include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
 #include <pvsutil/Assert.h>
@@ -99,22 +99,16 @@ C<Tout>& Map<Tout(Tin)>::operator()(Out<C<Tout>> output,
                                     const C<Tin>& input,
                                     Args&&... args) const
 {
-LOG_INFO("start prepareInput");
   this->prepareInput(input);
 
-LOG_INFO("start prepareAdditionalInput");
   prepareAdditionalInput(std::forward<Args>(args)...);
 
-LOG_INFO("start prepareOutput");
   this->prepareOutput(output.container(), input);
 
-LOG_INFO("start execute");
   execute(output.container(), input, std::forward<Args>(args)...);
 
-LOG_INFO("start updateModifiedStatus");
   updateModifiedStatus(output, std::forward<Args>(args)...);
 
-LOG_INFO("start return");
   return output.container();
 }
 
@@ -160,17 +154,10 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
                                     (void)keepAlive;
                                  };
 
-      LOG_INFO("Map kernel started with: ", local, " local WIs and ", global, " global WIs");
-      auto event = devicePtr->enqueue(kernel,
+      devicePtr->enqueue(kernel,
                          cl::NDRange(global), cl::NDRange(local),
                          cl::NullRange, // offset
                          invokeAfter);
-      event.wait();
-
-						cl_int err = 0; 
-						auto start = event.template getProfilingInfo<CL_PROFILING_COMMAND_START>(&err); 
-						auto end = event.template getProfilingInfo<CL_PROFILING_COMMAND_END>(&err);
-						LOG_INFO("kernel execution: ", (end - start) / 1e6, "ms");
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
     }
@@ -575,7 +562,7 @@ Matrix<Tout>& Map<Tout(IndexPoint)>::operator()(Out<Matrix<Tout>> output,
 {
   // set default distribution if required
   if (!input.distribution().isValid()) {
-    input.setDistribution(detail::BlockDistribution<Matrix<Index>>());
+    input.setDistribution(detail::BlockDistribution<Matrix<IndexPoint>>());
   }
   // no need to further prepare index matrix
   

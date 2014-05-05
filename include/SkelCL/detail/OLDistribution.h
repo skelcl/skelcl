@@ -43,19 +43,20 @@
 
 #include "Distribution.h"
 #include "Padding.h"
+#include "../Index.h"
 
 namespace skelcl {
 
-template<typename > class Matrix;
-template<typename > class Vector;
+template<typename> class Matrix;
+template<typename> class Vector;
 
 namespace detail {
 
 class DeviceList;
 
-template<typename > class OLDistribution;
+template <typename> class OLDistribution;
 
-template<template<typename > class C, typename T>
+template <template<typename> class C, typename T>
 class OLDistribution<C<T>> : public Distribution<C<T>> {
 public:
 	OLDistribution(unsigned int overlapRadius = 1, detail::Padding padding =
@@ -92,6 +93,42 @@ private:
 	detail::Padding _padding;
 
 	T _neutral_element;
+};
+
+template <>
+class OLDistribution<Matrix<IndexPoint>> : public Distribution<Matrix<IndexPoint>> {
+public:
+	OLDistribution()
+	{ ASSERT(false); }
+
+        template <typename U>
+	OLDistribution(const OLDistribution<Matrix<U>>&)
+	{ ASSERT(false); }
+
+	~OLDistribution()
+	{ ASSERT(false); }
+
+	bool isValid() const
+	{ ASSERT(false); return false; }
+
+	void startUpload(Matrix<IndexPoint>&, Event*) const
+	{ ASSERT(false); }
+
+	void startDownload(Matrix<IndexPoint>&, Event*) const
+	{ ASSERT(false); }
+
+	size_t sizeForDevice(const Matrix<IndexPoint>&,
+			     const std::shared_ptr<detail::Device>&) const
+	{ ASSERT(false); return 0; }
+
+	unsigned int getOverlapRadius() const
+	{ ASSERT(false); return 0; }
+
+	detail::Padding getPadding() const
+	{ ASSERT(false); return detail::Padding::NEUTRAL; }
+
+	IndexPoint getNeutralElement() const
+	{ ASSERT(false); return IndexPoint{}; }
 };
 
 namespace ol_distribution_helper {

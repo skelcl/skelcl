@@ -113,8 +113,6 @@ double matrixMult(const size_t rowCountA, const size_t columnCountA,
   output.copyDataToHost();
   double elapsedTime = timer.stop();
   
-  printf("|||SkelCL_allpairs_%s;%zu;%zu;%zu;%s;%zu;%f\n", suffix.c_str(), rowCountA, 
-    columnCountA, columnCountB, deviceType.c_str(), deviceCount, elapsedTime);
   LOG_INFO("finished: matrix C (", output.rowCount(), " x ", 
            output.columnCount(), ") calculated, ", "elapsed time: ", 
            elapsedTime, " ms");

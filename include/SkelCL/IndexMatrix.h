@@ -36,6 +36,7 @@
 ///
 ///	\author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
+
 #ifndef INDEX_MATRIX_H_
 #define INDEX_MATRIX_H_
 
@@ -50,14 +51,14 @@
 
 namespace skelcl {
 
-///
+/// 
 /// \brief The IndexMatrix class is a special implementation of a Matrix with
 ///        IndexPoints as Elements. The implementation guaranties that no data
 ///        is transfered when using this version of the Matrix. OpenCL
 ///        functionality (global ids) is used to make the IndexPoints available
 ///        on the device. This implementation requires, that the Matrix is const
 ///        and can, therefore, not be modified after creation.
-///
+/// 
 typedef const Matrix<IndexPoint> IndexMatrix;
 
 template <>
@@ -158,3 +159,4 @@ private:
 #include "detail/IndexMatrixDef.h"
 
 #endif // INDEX_MATRIX_H_
+

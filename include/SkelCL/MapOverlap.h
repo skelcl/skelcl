@@ -57,50 +57,33 @@ template<typename Tin, typename Tout>
 class MapOverlap<Tout(Tin)> : public detail::Skeleton {
 
 public:
-	//Constructors
 	MapOverlap<Tout(Tin)>(const Source& source, unsigned int overlap_range = 1,
 			detail::Padding padding = detail::Padding::NEAREST,
 			Tin neutral_element = Tin(),
 			const std::string& func = std::string("func"));
 
-	// Ausführungsoperator
 	template<typename ... Args>
 	Matrix<Tout> operator()(const Matrix<Tin>& in, Args&&... args);
 
-	// Ausführungsoperator mit Referenz
 	template<typename ... Args>
 	Matrix<Tout>& operator()(Out<Matrix<Tout> > output, const Matrix<Tin>& in,
 			Args&&... args);
 
 private:
-	// Ausführen
 	template<typename ... Args>
 	void execute(Matrix<Tout>& output, const Matrix<Tin>& in, Args&&... args);
 
-	// Programm erstellen
 	detail::Program createAndBuildProgram() const;
 
-	// Eingabe vorbereiten
 	void prepareInput(const Matrix<Tin>& in);
 
-	// Ausgabe vorbereiten
 	void prepareOutput(Matrix<Tout>& output, const Matrix<Tin>& in);
 
-	/// Source code as defined by the application developer
 	std::string _userSource;
-
-	/// The range, in which the surrounding elements are to be included in the calculation
-	unsigned int _overlap_range;
-
-	/// Determines the padding method.
-	detail::Padding _padding;
-
-	/// The neutral element, which shall be used to fill the overlap region (only used if detail::Padding == NEUTRAL)
-	Tin _neutral_element;
-
-	/// Name of the main function defined in _userSource
 	std::string _funcName;
-
+	unsigned int _overlap_range;
+	detail::Padding _padding;
+	Tin _neutral_element;
 	detail::Program _program;
 };
 

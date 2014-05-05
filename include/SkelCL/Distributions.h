@@ -358,6 +358,20 @@ std::unique_ptr<Distribution<OutT>>
         new SingleDistribution<OutT>(*single));
     }
 
+    // overlap distribution
+    auto ol = dynamic_cast<const OLDistribution<InT>*>(&dist);
+    if (ol != nullptr) {
+      return std::unique_ptr<Distribution<OutT>>(
+        new OLDistribution<OutT>(*ol));
+    }
+
+    // stencil distribution
+    auto stencil = dynamic_cast<const StencilDistribution<InT>*>(&dist);
+    if (stencil != nullptr) {
+      return std::unique_ptr<Distribution<OutT>>(
+        new StencilDistribution<OutT>(*stencil) );
+    }
+
     // default distribution
     return std::unique_ptr<Distribution<OutT>>(
       new Distribution<OutT>(dist));

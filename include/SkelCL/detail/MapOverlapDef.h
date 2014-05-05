@@ -51,9 +51,6 @@
 #include <CL/cl.h>
 #undef __CL_ENABLE_EXCEPTIONS
 
-#include <ssedit/TempSourceFile.h>
-#include <ssedit/Function.h>
-
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
 
@@ -71,34 +68,35 @@
 
 namespace skelcl {
 
-//Konstruktor
 template<typename Tin, typename Tout>
 MapOverlap<Tout(Tin)>::MapOverlap(const Source& source,
 		unsigned int overlap_range, detail::Padding padding,
 		Tin neutral_element, const std::string& func) :
-		detail::Skeleton(), _userSource(source), _overlap_range(overlap_range), _padding(
-				padding), _neutral_element(neutral_element), _funcName(func), _program(
-				createAndBuildProgram()) {
+		detail::Skeleton(), _userSource(source), _funcName(func), _overlap_range(overlap_range),
+		_padding(padding), _neutral_element(neutral_element),
+		_program(createAndBuildProgram())
+{
 	LOG_DEBUG_INFO("Create new MapOverlap object (", this, ")");
 }
 
-// Ausführungsoperator
 template<typename Tin, typename Tout>
 template<typename ... Args>
 Matrix<Tout> MapOverlap<Tout(Tin)>::operator()(const Matrix<Tin>& in,
-		Args&&... args) {
+		Args&&... args)
+{
 	Matrix<Tout> output;
 	this->operator()(out(output), in, std::forward<Args>(args)...);
 	return output;
 }
 
-// Ausführungsoperator mit Referenz
 template<typename Tin, typename Tout>
 template<typename ... Args>
 Matrix<Tout>& MapOverlap<Tout(Tin)>::operator()(Out<Matrix<Tout>> output,
-		const Matrix<Tin>& in, Args&&... args) {
+		const Matrix<Tin>& in, Args&&... args)
+{
 	ASSERT(in.rowCount() > 0);
 	ASSERT(in.columnCount() > 0);
+
 	prepareInput(in);
 
 	prepareAdditionalInput(std::forward<Args>(args)...);
@@ -106,19 +104,19 @@ Matrix<Tout>& MapOverlap<Tout(Tin)>::operator()(Out<Matrix<Tout>> output,
 	prepareOutput(output.container(), in);
 
 	execute(output.container(), in, std::forward<Args>(args)...);
+
 	updateModifiedStatus(output, std::forward<Args>(args)...);
 
 	return output.container();
 }
 
-// Ausführen
 template<typename Tin, typename Tout>
 template<typename ... Args>
 void MapOverlap<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
-		Args&&... args) {
+		Args&&... args)
+{
 	ASSERT(in.distribution().isValid());
-	ASSERT(
-			output.rowCount() == in.rowCount()
+	ASSERT(output.rowCount() == in.rowCount()
 					&& output.columnCount() == in.columnCount());
 
 	for (auto& devicePtr : in.distribution().devices()) {
@@ -145,17 +143,15 @@ void MapOverlap<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
 		LOG_DEBUG_INFO("local: ", local[0], ",", local[1], " global: ",
 				global[0], ",", global[1]);
 
-		unsigned int tileWidth = sqrt(workgroupSize) + 2 * _overlap_range + 1;
+		unsigned int tileWidth = local[0] + 2 * _overlap_range + 1;
 
 		try {
 			int j = 0;
 			kernel.setArg(j++, inputBuffer.clBuffer());
 			kernel.setArg(j++, outputBuffer.clBuffer());
-			kernel.setArg(j++, tileWidth);
-			kernel.setArg(j++, tileWidth * tileWidth * sizeof(Tin), NULL); //Alloziere Local Memory
-			kernel.setArg(j++, elements);   // elements
-			kernel.setArg(j++, _overlap_range); // overlap_range
-			kernel.setArg(j++, static_cast<cl_uint>(output.columnCount())); // number of columns
+			kernel.setArg(j++, tileWidth * tileWidth * sizeof(Tin), NULL); // allocate local memory
+			kernel.setArg(j++, elements);
+			kernel.setArg(j++, static_cast<cl_uint>(output.columnCount()));
 
 			detail::kernelUtil::setKernelArgs(kernel, *devicePtr, j++,
 					std::forward<Args>(args)...);
@@ -186,13 +182,10 @@ detail::Program MapOverlap<Tout(Tin)>::createAndBuildProgram() const {
 
 	std::stringstream temp;
 
-	//detail::Device firstDev = *(detail::globalDeviceList.at(0).get());
-
-	//int maxWorkgroupSize = sqrt(firstDev.maxWorkGroupSize());
-
-	//temp << "#define TILE_WIDTH " << maxWorkgroupSize + 2*_overlap_range+1 << std::endl;
+	temp << "#define SCL_OVERLAP_RANGE (" << _overlap_range << ")\n"
+	     << "#define SCL_TILE_WIDTH (get_local_size(0) + " << "2*" << _overlap_range << "+1)\n";
 	if (_padding == detail::Padding::NEUTRAL) {
-		temp << "#define NEUTRAL " << _neutral_element << std::endl;
+		temp << "#define NEUTRAL (" << _neutral_element << ")\n";
 	}
 
 	// create program
@@ -200,8 +193,7 @@ detail::Program MapOverlap<Tout(Tin)>::createAndBuildProgram() const {
 	s.append(temp.str());
 
 	// helper structs and functions
-	s.append(
-			R"(
+	s.append(R"(
 
 typedef float SCL_TYPE_0;
 typedef float SCL_TYPE_1;
@@ -215,96 +207,17 @@ typedef struct {
     __local SCL_TYPE_1* data;
     int local_row;
     int local_column;
-    int offset_north;
-    int offset_west;
-    int tile_width;
 } input_matrix_t;
 
-/*
- * DeviceFunctions
- */
+SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y)
+{
+    int offsetNorth = SCL_OVERLAP_RANGE * SCL_TILE_WIDTH;
+    int currentIndex = matrix->local_row * SCL_TILE_WIDTH + matrix->local_column;
+    int shift = x - y * SCL_TILE_WIDTH;
 
-/*SCL_TYPE_0 getElem2D(input_matrix_t* vector, int x, int y){
-    int col = get_local_id(1) % vector->cols;
-    return vector->data[vector->row*vector->cols+col];
-}/*
-
-//Working with input_matrix_t. Tested for Neutral.
-/*SCL_TYPE_0 getElem2DGlobal(input_matrix_t* vector, int x, int y) {
-
-    int cols = vector->cols;
-    int col = get_global_id(0) % cols;
-
-#ifdef NEUTRAL
-    if((col+x)<0){
-        //return 255;
-        return NEUTRAL;
-    }
-    //Hier ist nur rechts daneben
-    else if((col+x)>=cols){
-        //return 255;
-        return NEUTRAL;
-    }
-    //Standardfall
-    return vector->data[vector->row * cols + col + x+y*cols];
-#else
-    if((col+x)<0){
-        //return 255;
-        return vector->data[vector->row * cols + col -col+y*cols];
-    }
-    //Hier ist nur rechts daneben
-    else if((col+x)>=cols){
-        //return 255;
-        return vector->data[vector->row * cols + col + cols-col-1+y*cols];
-    }
-    //Standardfall
-    return vector->data[vector->row * cols + col + x+y*cols];
-#endif
-}*/
-
-//In case, global memory is used (has to be specified by the MapOverlap-class. The user cannot choose.
-/*SCL_TYPE_0 getElem2DGlobal(__global SCL_TYPE_0* vector, int x, int y, int cols) {
-    int col = get_global_id(0) % cols;
-#ifdef NEUTRAL
-    if((col+x)<0){
-        //return 255;
-        return NEUTRAL;
-    }
-    //Hier ist nur rechts daneben
-    else if((col+x)>=cols){
-        //return 255;
-        return NEUTRAL;
-    }
-    //Standardfall
-    return vector[x+y*cols];
-#else
-    if((col+x)<0){
-        //return 255;
-        return vector[-col+y*cols];
-    }
-    //Hier ist nur rechts daneben
-    else if((col+x)>=cols){
-        //return 255;
-        return vector[cols-col-1+y*cols];
-    }
-    //Standardfall
-    return vector[x+y*cols];
-#endif
-}*/
-
-//In case, local memory is used
-SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y){
-    int offsetNorth = matrix->offset_north * matrix->tile_width;
-    int currentIndex = matrix->local_row * matrix->tile_width + matrix->local_column;
-    int shift = x - y * matrix->tile_width;
-
-    return matrix->data[currentIndex+offsetNorth+shift+matrix->offset_west];
+    return matrix->data[currentIndex + offsetNorth + shift + SCL_OVERLAP_RANGE];
 }
 
-//In case, local memory is used
-/*SCL_TYPE_0 getElem2D(__local SCL_TYPE_0* vector, int x, int y){
-    return vector[x*TILE_WIDTH+y];
-}*/
 
 )");
 

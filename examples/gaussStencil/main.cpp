@@ -18,12 +18,14 @@
 #include <SkelCL/Stencil.h>
 #include <SkelCL/detail/Padding.h>
 
+#include <chrono>
+
 using namespace skelcl;
 
 long long get_time() {
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	return (tv.tv_sec * 1000000) + tv.tv_usec;
+    auto time = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+      time.time_since_epoch()).count();
 }
 
 void writePPM(Matrix<float>& img, const std::string filename) {
@@ -98,30 +100,28 @@ int main(int argc, char** argv) {
 	long long time1;
 	long long time2;
 	long long time3;
-	long long time4;
-	long long time5;
-	int i;
+    long long time4;
 
 	using namespace pvsutil::cmdline;
 	pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
 
-	auto deviceCount = Arg<int>(Flags(Long("device_count")),
-			Description("Number of devices used by SkelCL."), Default(1));
+    auto deviceCount = Arg<unsigned int>(Flags(Long("device_count")),
+            Description("Number of devices used by SkelCL."), Default(1u));
 
 	auto deviceType = Arg<device_type>(Flags(Long("device_type")),
 			Description("Device type: ANY, CPU, "
 					"GPU, ACCELERATOR"), Default(device_type::GPU));
 
-	auto rangeNorth = Arg<int>(Flags(Long("rangeNorth")),
-			Description("The range in north direction"), Default(5));
-	auto rangeSouth = Arg<int>(Flags(Long("rangeSouth")),
-			Description("The range in south direction"), Default(5));
-	auto rangeEast = Arg<int>(Flags(Long("rangeEast")),
-			Description("The range in east direction"), Default(5));
-	auto rangeWest = Arg<int>(Flags(Long("rangeWest")),
-			Description("The range in west direction"), Default(5));
-	auto iterationen = Arg<int>(Flags(Long("iterationen")),
-			Description("The number of iterations"), Default(1));
+    auto rangeNorth = Arg<unsigned int>(Flags(Long("rangeNorth")),
+            Description("The range in north direction"), Default(5u));
+    auto rangeSouth = Arg<unsigned int>(Flags(Long("rangeSouth")),
+            Description("The range in south direction"), Default(5u));
+    auto rangeEast = Arg<unsigned int>(Flags(Long("rangeEast")),
+            Description("The range in east direction"), Default(5u));
+    auto rangeWest = Arg<unsigned int>(Flags(Long("rangeWest")),
+            Description("The range in west direction"), Default(5u));
+    auto iterationen = Arg<unsigned int>(Flags(Long("iterationen")),
+            Description("The number of iterations"), Default(1u));
 	auto iterationenBetweenSwaps = Arg<int>(Flags(Long("iterationenSwap")),
 			Description("The number of iterations between Swaps"), Default(-1));
 	auto inFile = Arg<std::string>(Flags(Long("inFile")),
@@ -134,14 +134,13 @@ int main(int argc, char** argv) {
 
 	std::stringstream out("_");
 
-	out
-			<< static_cast<std::string>(inFile).substr(0,
+    out     << static_cast<std::string>(inFile).substr(0,
 					static_cast<std::string>(inFile).find(".")) << "_n_"
 			<< rangeNorth << "_w_" << rangeWest << "_s_" << rangeSouth << "_e_"
 			<< rangeEast << "_iter_" << iterationen << "_iterBS_"
 			<< iterationenBetweenSwaps << "_devs_" << deviceCount << ".pgm";
 
-	int range = rangeNorth > rangeSouth ? rangeNorth : rangeSouth;
+    auto range = rangeNorth > rangeSouth ? rangeNorth : rangeSouth;
 	range = range > rangeEast ? range : rangeEast;
 	range = range > rangeWest ? range : rangeWest;
 
@@ -159,7 +158,7 @@ int main(int argc, char** argv) {
 
 	/* set up kernel to weight the pixels */
 	/* (KERNEL_SIZE - offset -1) is the CORRECT version */
-	for (i = -offset; i <= ((2 * range + 1) - offset - 1); i++) {
+    for (auto i = -offset; i <= ((2 * static_cast<int>(range) + 1) - offset - 1); i++) {
 		kernelVec[i + offset] = exp(-i * i / (2 * a * a));
 	}
 
@@ -179,27 +178,24 @@ int main(int argc, char** argv) {
 	time2 = get_time();
 
 	skelcl::Stencil<float(float)> s(std::ifstream { "./gauss2D.cl" },
-			static_cast<unsigned int>(rangeNorth),
-			static_cast<unsigned int>(rangeWest),
-			static_cast<unsigned int>(rangeSouth),
-			static_cast<unsigned int>(rangeEast), detail::Padding::NEAREST, 255,
-			"func", static_cast<int>(iterationenBetweenSwaps));
+            static_cast<unsigned int>(rangeNorth),
+            static_cast<unsigned int>(rangeWest),
+            static_cast<unsigned int>(rangeSouth),
+            static_cast<unsigned int>(rangeEast),
+            detail::Padding::NEAREST, 255,
+            "func", static_cast<unsigned int>(iterationenBetweenSwaps));
 	time3 = get_time();
-	Matrix<float> outputImage = s(iterationen, inputImage, kernelVec,
-			static_cast<unsigned int>(range));
+    Matrix<float> outputImage = s(iterationen, inputImage, kernelVec,
+                                  static_cast<int>(range));
 	time4 = get_time();
-	Matrix<float>::iterator itr = outputImage.begin();
-
-	//Get time
-	time5 = get_time();
 
 	printf("Init time : %.12f\n", (float) (time1 - time0) / 1000000);
 	printf("Input time : %.12f\n", (float) (time2 - time1) / 1000000);
 	printf("Creation time : %.12f\n", (float) (time3 - time2) / 1000000);
 	printf("Exec time : %.12f\n", (float) (time4 - time3) / 1000000);
-	printf("Total time : %.12f\n", (float) (time5 - time0) / 1000000);
+    printf("Total time : %.12f\n", (float) (time4 - time0) / 1000000);
 	printf("Total without init time : %.12f\n",
-			(float) (time5 - time1) / 1000000);
+            (float) (time4 - time1) / 1000000);
 
 	writePPM(outputImage, out.str());
 

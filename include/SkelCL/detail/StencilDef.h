@@ -53,9 +53,6 @@
 #include <CL/cl.h>
 #undef __CL_ENABLE_EXCEPTIONS
 
-#include <ssedit/TempSourceFile.h>
-#include <ssedit/Function.h>
-
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
 
@@ -114,9 +111,8 @@ template<typename Tin, typename Tout>
 void Stencil<Tout(Tin)>::add(const Source& source, unsigned int north,
 		unsigned int west, unsigned int south, unsigned int east,
 		detail::Padding padding, Tin neutral_element, const std::string& func) {
-	StencilInfo<Tout(Tin)> info(source, north, west, south, east, padding,
-			neutral_element, func);
-	_stencilInfos.push_back(info);
+    _stencilInfos.emplace_back(source, north, west, south, east, padding,
+                               neutral_element, func);
 }
 
 // Ausführungsoperator
@@ -365,7 +361,7 @@ void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
 
 template<typename Tin, typename Tout>
 unsigned int Stencil<Tout(Tin)>::determineIterationsBetweenDataSwaps(
-		const Matrix<Tin>& in, unsigned int iterLeft) {
+        const Matrix<Tin>& /*in*/, unsigned int iterLeft) {
 	//User chose a value
 	if (iterLeft <= _iterBetSwaps)
 		return iterLeft;

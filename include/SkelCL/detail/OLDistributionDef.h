@@ -41,6 +41,8 @@
 #ifndef OL_DISTRIBUTION_DEF_H_
 #define OL_DISTRIBUTION_DEF_H_
 
+#include <pvsutil/Logger.h>
+
 namespace skelcl {
 
 namespace detail {
@@ -49,14 +51,20 @@ template<template<typename > class C, typename T>
 OLDistribution<C<T>>::OLDistribution(const unsigned int overlapRadius,
 		const detail::Padding padding, const T neutral_element,
 		const DeviceList& deviceList) :
+                Distribution<C<T>>(deviceList),
 		_overlap_radius(overlapRadius), _padding(padding), _neutral_element(
-				neutral_element), Distribution<C<T>>(deviceList) {
+				neutral_element)
+{
 }
 
 template<template<typename > class C, typename T>
 template<typename U>
 OLDistribution<C<T>>::OLDistribution(const OLDistribution<C<U>>& rhs) :
-		Distribution<C<T>>(rhs) {
+        Distribution<C<T>>(rhs),
+        _overlap_radius(rhs.getOverlapRadius()), _padding(rhs.getPadding()),
+	_neutral_element()
+        //_neutral_element(rhs.getNeutralElement())
+{
 }
 
 template<template<typename > class C, typename T>
@@ -139,7 +147,6 @@ template<typename T>
 size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 		const typename Vector<T>::size_type size, const DeviceList& devices,
 		unsigned int overlapRadius) {
-	LOG_DEBUG("Vector Version");
 	auto id = devicePtr->id();
 	if (id < devices.size() - 1) {
 		auto s = size / devices.size();
@@ -189,8 +196,7 @@ void startUpload(Vector<T>& vector, Event* events, unsigned int overlapRadius,
 		paddingBack.resize(overlapRadius, neutralElement);
 		break;
 	case Padding::NEAREST_INITIAL:
-		LOG_ERROR(
-				"The MapOverlap skeleton works with the NEAREST and NEUTRAL mode");
+		LOG_ERROR("The MapOverlap skeleton works with the NEAREST and NEUTRAL mode");
 		break;
 	}
 
@@ -250,8 +256,8 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 	// (override this in differnt case later)
 	auto newSize = overlapRadius * columnCount;
 
-	typename Matrix<T>::host_buffer_type paddingTop(newSize, neutralElement);
-	typename Matrix<T>::host_buffer_type paddingBottom(newSize, neutralElement);
+	std::vector<T> paddingTop(newSize, neutralElement);
+	std::vector<T> paddingBottom(newSize, neutralElement);
 
 	if (padding == detail::Padding::NEAREST) {
 		paddingTop.clear();
@@ -260,9 +266,9 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
 		paddingBottom.resize(0);
 		for (unsigned int row = 0; row < overlapRadius; row++) {
 			for (unsigned int col = 0; col < columnCount; col++) {
-				T valFront = matrix(row, col);
-				T valBack = matrix(
-						matrix.size().rowCount() - overlapRadius + row, col);
+                auto& valFront = matrix({row, col});
+                auto& valBack = matrix(
+                    {matrix.size().rowCount() - overlapRadius + row, col});
 				paddingTop.push_back(valFront);
 				paddingBottom.push_back(valBack);
 			}

@@ -18,12 +18,14 @@
 #include <SkelCL/Stencil.h>
 #include <SkelCL/detail/Padding.h>
 
+#include <chrono>
+
 using namespace skelcl;
 
 long long get_time() {
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	return (tv.tv_sec * 1000000) + tv.tv_usec;
+    auto time = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+      time.time_since_epoch()).count();
 }
 
 void writePPM(Matrix<float>& img, const std::string filename) {

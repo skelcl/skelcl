@@ -30,12 +30,13 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
-
+ 
 ///
 /// \file Program.cpp
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
+
 #include <algorithm>
 #include <fstream>
 #include <iterator>
@@ -61,14 +62,18 @@
 namespace {
 
 std::string binaryFilename(const std::string& hash,
-		const std::shared_ptr<skelcl::detail::Device>& devicePtr) {
-	std::stringstream filename;
-	// escape spaces in device name
-	std::string devName = devicePtr->name();
-	std::replace(devName.begin(), devName.end(), ' ', '_');
-	filename << "." << hash << "-" << devName << "-" << devicePtr->id()
-			<< ".skelcl";
-	return filename.str();
+                           const std::shared_ptr<skelcl::detail::Device>&
+                                devicePtr)
+{
+  std::stringstream filename;
+  // escape spaces in device name
+  std::string devName = devicePtr->name();
+  std::replace( devName.begin(), devName.end(), ' ', '_');
+  filename << "." << hash
+           << "-" << devName
+           << "-" << devicePtr->id()
+           << ".skelcl";
+  return filename.str();
 }
 
 } // namespace
@@ -130,22 +135,25 @@ void Program::renameType(const int i, const std::string& typeName)
   _source.redefineTypedef(identifier.str(), typeName);
 }
 
-bool Program::loadBinary() {
-	// if hash is empty no binary is loaded (maybe be more gentle and just return)
-	ASSERT(!_hash.empty());
+bool Program::loadBinary()
+{
+  // if hash is empty no binary is loaded (maybe be more gentle and just return)
+  ASSERT(!_hash.empty());
 
-	for (auto& devicePtr : globalDeviceList) {
-		std::ifstream binaryFile(binaryFilename(_hash, devicePtr),
-				std::ios_base::in | std::ios_base::binary | std::ios_base::ate);
-		if (binaryFile.fail()) {
-			_clPrograms.clear();
-			return false;
-		}
+  for (auto& devicePtr : globalDeviceList) {
+    std::ifstream binaryFile(binaryFilename(_hash, devicePtr),
+                               std::ios_base::in
+                             | std::ios_base::binary
+                             | std::ios_base::ate);
+    if (binaryFile.fail()) {
+      _clPrograms.clear();
+      return false;
+    }
 
-		// get the size of the file
+    // get the size of the file
 		std::ifstream::pos_type size = binaryFile.tellg();
 		// allocate memory
-		std::unique_ptr<char[]> binary(new char[size]);
+    std::unique_ptr<char[]> binary(new char[size]);
 		// set position in file to the beginning
 		binaryFile.seekg(0, std::ios::beg);
 		// read the hole file
@@ -153,16 +161,16 @@ bool Program::loadBinary() {
 		// close it
 		binaryFile.close();
 		// push the binary on the vector
-		cl::Program::Binaries binaries(1, std::make_pair(binary.get(), size));
-		std::vector<cl::Device> devices { devicePtr->clDevice() };
-		_clPrograms.push_back(
-				cl::Program(devicePtr->clContext(), devices, binaries));
+    cl::Program::Binaries binaries(1, std::make_pair(binary.get(), size));
+    std::vector<cl::Device> devices{ devicePtr->clDevice() };
+    _clPrograms.push_back( cl::Program( devicePtr->clContext(),
+                                        devices, binaries ) );
 
-		LOG_DEBUG_INFO("Load binary for device ", devicePtr->id(),
-				" from file ", binaryFilename(_hash, devicePtr));
-	}
-	ASSERT(_clPrograms.size() == globalDeviceList.size());
-	return true;
+    LOG_DEBUG_INFO("Load binary for device ", devicePtr->id(),
+                   " from file ", binaryFilename(_hash, devicePtr));
+  }
+  ASSERT(_clPrograms.size() == globalDeviceList.size());
+  return true;
 }
 
 void Program::build()
@@ -201,8 +209,9 @@ void Program::build()
 }
 
 cl::Kernel Program::kernel(const Device& device,
-		const std::string& name) const {
-	return cl::Kernel(_clPrograms[device.id()], name.c_str());
+                           const std::string& name) const
+{
+  return cl::Kernel(_clPrograms[device.id()], name.c_str());
 }
 
 void Program::createProgramsFromSource()
@@ -225,37 +234,38 @@ void Program::createProgramsFromSource()
                                                                   s.length()))
                           );
       });
+
 }
 
-void Program::saveBinary() {
-	if (_hash.empty())
-		return;
-	// don't save binary, expect the user has explicitly requested so
-	if (util::envVarValue("SKELCL_SAVE_BINARY") != "YES")
-		return;
+void Program::saveBinary()
+{
+  if (_hash.empty()) return;
+  // don't save binary, expect the user has explicitly requested so
+  if (util::envVarValue("SKELCL_SAVE_BINARY") != "YES") return;
 
-	for (auto& devicePtr : globalDeviceList) {
-		try {
-			auto size = _clPrograms[devicePtr->id()].getInfo<
-					CL_PROGRAM_BINARY_SIZES>();
-			ASSERT(size.size() == 1);
+  for (auto& devicePtr : globalDeviceList) {
+    try {
+      auto size   = _clPrograms[
+                      devicePtr->id()].getInfo<CL_PROGRAM_BINARY_SIZES>();
+      ASSERT(size.size() == 1);
 
-			std::unique_ptr<char[]> charPtr(new char[size.front()]);
+      std::unique_ptr<char[]> charPtr(new char[size.front()]);
 
-			std::vector<char *> binary { charPtr.get() };
+      std::vector<char *> binary{ charPtr.get() };
 
-			_clPrograms[devicePtr->id()].getInfo(CL_PROGRAM_BINARIES, &binary);
+      _clPrograms[devicePtr->id()].getInfo(CL_PROGRAM_BINARIES, &binary);
 
-			std::ofstream outfile(binaryFilename(_hash, devicePtr),
-					std::ios_base::out | std::ios_base::trunc
-							| std::ios_base::binary);
-			outfile.write(binary.front(), static_cast<long>(size.front()));
-			LOG_DEBUG_INFO("Saved binary for device ", devicePtr->id(),
-					" to file ", binaryFilename(_hash, devicePtr));
-		} catch (cl::Error err) {
-			ABORT_WITH_ERROR(err);
-		}
-	}
+      std::ofstream outfile(binaryFilename(_hash, devicePtr),
+                              std::ios_base::out
+                            | std::ios_base::trunc
+                            | std::ios_base::binary);
+      outfile.write(binary.front(), static_cast<long>(size.front()));
+      LOG_DEBUG_INFO("Saved binary for device ", devicePtr->id(),
+                     " to file ", binaryFilename(_hash, devicePtr));
+    } catch (cl::Error err) {
+      ABORT_WITH_ERROR(err);
+    }
+  }
 }
 
 } // namespace detail

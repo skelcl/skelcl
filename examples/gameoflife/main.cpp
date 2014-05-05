@@ -18,12 +18,14 @@
 #include <SkelCL/Stencil.h>
 #include <SkelCL/detail/Padding.h>
 
+#include <chrono>
+
 using namespace skelcl;
 
 long long get_time() {
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	return (tv.tv_sec * 1000000) + tv.tv_usec;
+    auto time = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+      time.time_since_epoch()).count();
 }
 
 int main(int argc, char** argv) {
@@ -52,12 +54,10 @@ int main(int argc, char** argv) {
 
 	int numcols = size;
 	int numrows = size;
-	timeval t1;
-	gettimeofday(&t1, NULL);
-	srand(t1.tv_usec * t1.tv_sec);
+
 	std::vector<int> img(1, 1);
 
-	for (unsigned int i = 0; i < numcols * numrows; i++) {
+    for (auto i = 0; i < numcols * numrows; i++) {
 		img.push_back(random() > (INT_MAX / 2));
 	}
 
