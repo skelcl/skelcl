@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Public Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Public Header Files\cmdline">
+      <UniqueIdentifier>{2eb67dde-e141-47d6-b5dd-ea0a4ef3317a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public Header Files\detail">
+      <UniqueIdentifier>{865b989c-7698-4271-8f29-ae534f996c24}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\pvsutil\cmdline\Default.h">
+      <Filter>Public Header Files\cmdline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pvsutil\cmdline\Description.h">
+      <Filter>Public Header Files\cmdline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pvsutil\cmdline\Flags.h">
+      <Filter>Public Header Files\cmdline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pvsutil\cmdline\Version.h">
+      <Filter>Public Header Files\cmdline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pvsutil\cmdline\Arg.h">
+      <Filter>Public Header Files\cmdline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pvsutil\detail\LoggerDef.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pvsutil\detail\pvsutilDll.h">
+      <Filter>Public Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pvsutil\Assert.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pvsutil\CLArgParser.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pvsutil\Logger.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pvsutil\Timer.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\Assert.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CLArgParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Description.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Flags.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Timer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Version.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Arg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

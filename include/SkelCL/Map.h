@@ -45,6 +45,7 @@
 
 #include "detail/MapHelper.h"
 #include "detail/Skeleton.h"
+#include "detail/skelclDll.h"
 
 namespace skelcl {
 
@@ -412,8 +413,8 @@ private:
 ///         version the user-defined function must be void, i.e. return nothing.
 /// 
 template<>
-class Map<void(Index)> : public detail::Skeleton,
-                         private detail::MapHelper<void(Index)> {
+class SKELCL_DLL Map<void(Index)> : public detail::Skeleton,
+                                    private detail::MapHelper<void(Index)> {
 public:
   /// 
   /// \brief Constructor taking the source code used of the user-defined
@@ -423,8 +424,7 @@ public:
   /// \param funcName The name of the user-defined function which should be
   ///                 invoked by the Map skeleton.
   /// 
-  Map<void(Index)>(const Source& source,
-                   const std::string& funcName = std::string("func"));
+  Map(const Source& source, const std::string& funcName = std::string("func"));
 
   /// 
   /// \brief  Executes the skeleton on the index space described by the input
@@ -594,11 +594,10 @@ private:
 };
 
 template<>
-class Map<void(IndexPoint)> : public detail::Skeleton,
-                              private detail::MapHelper<void(IndexPoint)> {
+class SKELCL_DLL Map<void(IndexPoint)>
+  : public detail::Skeleton, private detail::MapHelper<void(IndexPoint)> {
 public:
-  Map<void(IndexPoint)>(const Source& source,
-                        const std::string& funcName = std::string("func"));
+  Map(const Source& source, const std::string& funcName = std::string("func"));
   
   template <typename... Args>
   void operator()(const Matrix<IndexPoint>& input,

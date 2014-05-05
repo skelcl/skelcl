@@ -181,9 +181,9 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
       size * significances.getSignificance(deviceID) );
     // add rest ...
     size_t r = size;
-    for (const auto& devicePtr : devices) {
+    for (const auto& devPtr : devices) {
       r -= static_cast<size_t>(
-             size * significances.getSignificance(devicePtr->id()));
+             size * significances.getSignificance(devPtr->id()));
     }
     return (s+r);
   }
@@ -205,8 +205,8 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
                size.rowCount() * significances.getSignificance(deviceID) );
     // add rest ...
     auto r = size.rowCount();
-    for (const auto& devicePtr : devices) {
-      r -= size.rowCount() * significances.getSignificance(devicePtr->id());
+    for (const auto& devPtr : devices) {
+      r -= size.rowCount() * significances.getSignificance(devPtr->id());
     }
     return (s+r) * size.columnCount();
   }

@@ -50,11 +50,11 @@ protected:
     _platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
 
     _device = devices[0];
-  };
+  }
 
   ~DeviceTest() {
     // tear down
-  };
+  }
   cl::Platform  _platform;
   cl::Device    _device;
 };

@@ -17,7 +17,7 @@ if (${UNIX})
 
   # more restructive flags for compiling the SkelCL code. These flags are added in addition to the above
   set (SKELCL_CXX_FLAGS "-Weffc++ -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Werror -pedantic-errors -Wfatal-errors"
-      CACHE STRING "More strict flags used to compile the SSE sources.")
+      CACHE STRING "More strict flags used to compile the SkelCL sources.")
 endif (${UNIX})
 
 # include custom cmake modules (e.g. FindOpenCL.cmake)
@@ -30,7 +30,7 @@ project (SkelCL)
 if (NOT TARGET pvsutil)
  add_subdirectory (libraries/pvsutil)
 endif (NOT TARGET pvsutil)
-add_subdirectory (libraries/ssedit)
+add_subdirectory (libraries/stooling)
 
 # specify options and provide common variables
 option (BUILD_SHARED_LIBS
@@ -47,21 +47,21 @@ find_package (OpenCL)
 set (SKELCL_COMMON_INCLUDE_DIR
       "${PROJECT_SOURCE_DIR}/include"
       "${PROJECT_SOURCE_DIR}/libraries/pvsutil/include"
-      "${PROJECT_SOURCE_DIR}/libraries/ssedit/include"
-      "${SSEDIT_COMMON_INCLUDE_DIR}" CACHE INTERNAL
+      "${PROJECT_SOURCE_DIR}/libraries/stooling/include"
+      "${STOOLING_COMMON_INCLUDE_DIR}" CACHE INTERNAL
      "Common include directories used by SkelCL.")
 set (SKELCL_COMMON_LIBS
       ${OPENCL_LIBRARIES}
       crypto
       pvsutil
-      ssedit
-      "${SSEDIT_COMMON_LIBS}" CACHE INTERNAL
+      stooling
+      "${STOOLING_COMMON_LIBS}" CACHE INTERNAL
      "Common libraries used by SkelCL.")
 set (SKELCL_COMMON_LIB_DIR
       "${OPENCL_LIB_DIR}"
       "${PROJECT_BINARY_DIR}/libraries/pvsutil/lib"
-      "${PROJECT_BINARY_DIR}/libraries/ssedit/lib"
-      "${SSEDIT_COMMON_LIB_DIR}" CACHE INTERNAL
+      "${PROJECT_BINARY_DIR}/libraries/stooling/lib"
+      "${STOOLING_COMMON_LIB_DIR}" CACHE INTERNAL
      "Common library directories used by SkelCL.")
 
 # set default build type explicitly to Debug

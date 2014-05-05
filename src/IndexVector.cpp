@@ -65,10 +65,11 @@
 
 namespace skelcl {
   
-  Vector<Index>::Vector(const value_type size,
-                        const detail::Distribution<Vector<Index>>& distribution)
+  Vector<Index>::Vector(const value_type size)//,
+                        //const detail::Distribution<Vector<Index>>& distribution)
   : _maxIndex(size-1),
-  _distribution(detail::cloneAndConvert<Index>(distribution))
+    //_distribution(detail::cloneAndConvert<Index>(distribution))
+    _distribution(new skelcl::detail::Distribution < Vector < Index >> ())
   {
     LOG_DEBUG_INFO("Created new IndexVector object (", this, ") with ",
                    getDebugInfo());
@@ -76,7 +77,7 @@ namespace skelcl {
   
   Vector<Index>::Vector(const Vector<Index>& rhs)
   : _maxIndex(rhs._maxIndex),
-  _distribution(detail::cloneAndConvert<Index>(rhs.distribution()))
+    _distribution(detail::cloneAndConvert<Vector<Index>>(rhs.distribution()))
   {
     LOG_DEBUG_INFO("Created new IndexVector object (", this, ") by copying (",
                    &rhs, ") with ", getDebugInfo());
@@ -103,7 +104,7 @@ namespace skelcl {
     return _maxIndex+1;
   }
   
-  typename detail::Sizes Vector<Index>::sizes() const
+  detail::Sizes Vector<Index>::sizes() const
   {
     ASSERT(_distribution != nullptr);
     

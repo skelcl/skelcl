@@ -132,10 +132,12 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
     auto& outputBuffer= output.deviceBuffer(*devicePtr);
     auto& inputBuffer = input.deviceBuffer(*devicePtr);
 
-    cl_uint elements  = inputBuffer.size();
-    cl_uint local     = std::min(this->workGroupSize(),
-                                 devicePtr->maxWorkGroupSize());
-    cl_uint global    = detail::util::ceilToMultipleOf(elements, local);
+    cl_uint elements  = static_cast<cl_uint>( inputBuffer.size() );
+    cl_uint local     = static_cast<cl_uint>(
+                          std::min(this->workGroupSize(),
+                                   devicePtr->maxWorkGroupSize()) );
+    cl_uint global    = static_cast<cl_uint>(
+                          detail::util::ceilToMultipleOf(elements, local) );
 
     try {
       cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
@@ -259,10 +261,12 @@ void Map<void(Tin)>::execute(const C<Tin>& input,
   for (auto& devicePtr : input.distribution().devices()) {
     auto& inputBuffer  = input.deviceBuffer(*devicePtr);
 
-    cl_uint elements   = inputBuffer.size();
-    cl_uint local      = std::min(this->workGroupSize(),
-                                  devicePtr->maxWorkGroupSize());
-    cl_uint global     = detail::util::ceilToMultipleOf(elements, local);
+    cl_uint elements  = static_cast<cl_uint>( inputBuffer.size() );
+    cl_uint local     = static_cast<cl_uint>(
+                          std::min(this->workGroupSize(),
+                                   devicePtr->maxWorkGroupSize()) );
+    cl_uint global    = static_cast<cl_uint>(
+                          detail::util::ceilToMultipleOf(elements, local) );
 
     try {
       cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
@@ -396,9 +400,11 @@ void Map<Tout(Index)>::execute(Vector<Tout>& output,
   for (auto& devicePtr : input.distribution().devices()) {
     auto& outputBuffer = output.deviceBuffer(*devicePtr);
 
-    cl_uint local      = std::min(this->workGroupSize(),
-                                  devicePtr->maxWorkGroupSize());
-    cl_uint global     = detail::util::ceilToMultipleOf(sizes[i], local);
+    cl_uint local     = static_cast<cl_uint>(
+                          std::min(this->workGroupSize(),
+                                   devicePtr->maxWorkGroupSize()) );
+    cl_uint global    = static_cast<cl_uint>(
+                          detail::util::ceilToMultipleOf(sizes[i], local) );
 
     try {
       cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
@@ -507,9 +513,11 @@ void Map<void(Index)>::execute(const Vector<Index>& input,
   cl_uint offset = 0;
   for (auto& devicePtr : input.distribution().devices()) {
 
-    cl_uint local      = std::min(this->workGroupSize(),
-                                  devicePtr->maxWorkGroupSize());
-    cl_uint global     = detail::util::ceilToMultipleOf(sizes[i], local);
+    cl_uint local      = static_cast<cl_uint>(
+                            std::min(this->workGroupSize(),
+                                     devicePtr->maxWorkGroupSize()) );
+    cl_uint global     = static_cast<cl_uint>( 
+                            detail::util::ceilToMultipleOf(sizes[i], local) );
 
     try {
       cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
@@ -596,14 +604,18 @@ void Map<Tout(IndexPoint)>::execute(Matrix<Tout>& output,
     auto& outputBuffer = output.deviceBuffer(*devicePtr);
     
     auto elements = input.distribution().sizeForDevice(input, devicePtr);
-    cl_uint colCount = input.size().columnCount();
-    cl_uint rowCount = elements / colCount;
+    cl_uint colCount = static_cast<cl_uint>( input.size().columnCount() );
+    cl_uint rowCount = static_cast<cl_uint>( elements / colCount );
     
-    size_t wgSize      = detail::util::floorPow2( sqrt(this->workGroupSize()) );
-    cl_uint local      = std::min(wgSize,
-                                  devicePtr->maxWorkGroupSize());
-    cl_uint colGlobal  = detail::util::ceilToMultipleOf(colCount, local);
-    cl_uint rowGlobal  = detail::util::ceilToMultipleOf(rowCount, local);
+    size_t wgSize      = detail::util::floorPow2(
+                          static_cast<int>(sqrt(this->workGroupSize()) ) );
+    cl_uint local      = static_cast<cl_uint>( 
+                            std::min(wgSize,
+                                     devicePtr->maxWorkGroupSize()) );
+    cl_uint colGlobal  = static_cast<cl_uint>( 
+                            detail::util::ceilToMultipleOf(colCount, local) );
+    cl_uint rowGlobal  = static_cast<cl_uint>( 
+                            detail::util::ceilToMultipleOf(rowCount, local) );
     
     try {
       cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
@@ -725,12 +737,17 @@ void Map<void(IndexPoint)>::execute(const Matrix<IndexPoint>& input,
     auto colCount = input.size().columnCount();
     auto rowCount = elements / colCount;
     
-    size_t wgSize      =  detail::util::floorPow2(sqrt(this->workGroupSize()));
-    cl_uint local      = std::min(wgSize,
-                                  devicePtr->maxWorkGroupSize());
+    size_t wgSize      = static_cast<size_t>(
+                            detail::util::floorPow2(
+                              static_cast<int>(sqrt(this->workGroupSize())) ) );
+    cl_uint local      = static_cast<cl_uint>(
+                            std::min(wgSize,
+                                     devicePtr->maxWorkGroupSize()) );
     
-    cl_uint colGlobal  = detail::util::ceilToMultipleOf(colCount, local);
-    cl_uint rowGlobal  = detail::util::ceilToMultipleOf(rowCount, local);
+    cl_uint colGlobal  = static_cast<cl_uint>(
+                            detail::util::ceilToMultipleOf(colCount, local) );
+    cl_uint rowGlobal  = static_cast<cl_uint>(
+                            detail::util::ceilToMultipleOf(rowCount, local) );
     
     try {
       cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));

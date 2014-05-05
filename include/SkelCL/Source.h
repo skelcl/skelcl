@@ -45,6 +45,8 @@
 #include <sstream>
 #include <vector>
 
+#include "detail/skelclDll.h"
+
 namespace skelcl {
 
 ///
@@ -56,7 +58,7 @@ namespace skelcl {
 /// containing the source code or an istream, from which the content it is 
 /// pointing to  is interpreted to be the source code.
 ///
-class Source {
+class SKELCL_DLL Source {
 public:
   Source();
 
@@ -109,7 +111,7 @@ private:
 
 namespace detail {
 
-class CommonDefinitions {
+class SKELCL_DLL CommonDefinitions {
 public:
   enum Level : unsigned int {
     PRAGMA,
@@ -124,16 +126,18 @@ public:
 
   static Source getSource();
 
-  CommonDefinitions(const CommonDefinitions&) = delete;
-  CommonDefinitions& operator=(const CommonDefinitions&) = delete;
 
 private:
-  CommonDefinitions();
+  CommonDefinitions();// = delete;
+
+
+  CommonDefinitions(const CommonDefinitions&);// = delete;
+  CommonDefinitions& operator=(const CommonDefinitions&) ;// = delete;
 
   std::vector<Source> _sources;
 };
 
-class RegisterCommonDefinition {
+class SKELCL_DLL RegisterCommonDefinition {
 public:
   RegisterCommonDefinition(const char* definition,
                            CommonDefinitions::Level level

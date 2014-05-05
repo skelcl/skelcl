@@ -52,11 +52,13 @@
 #include <CL/cl.h>
 #undef __CL_ENABLE_EXCEPTIONS
 
-#include <ssedit/TempSourceFile.h>
-#include <ssedit/Function.h>
+//#include <ssedit/TempSourceFile.h>
+//#include <ssedit/Function.h>
 
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
+
+#include <stooling/SourceCode.h>
 
 #include "../Distributions.h"
 #include "../Matrix.h"
@@ -72,7 +74,6 @@
 
 namespace skelcl {
 
-// Konstruktor
 template<typename Tleft, typename Tright, typename Tout>
 AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip)
     : detail::Skeleton(),
@@ -81,6 +82,8 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const 
       _funcReduce(reduce.func()),
       _funcZip(zip.func()),
       _idReduce(reduce.id()),
+      _srcUser(),
+      _funcUser(),
       _C(32), _R(8), _S(16), // parameters
       _program(createAndBuildProgramSpecial())
 {
@@ -90,6 +93,11 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const 
 template<typename Tleft, typename Tright, typename Tout>
 AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::string& func)
     : detail::Skeleton(),
+      _srcReduce(),
+      _srcZip(),
+      _funcReduce(),
+      _funcZip(),
+      _idReduce(),
       _srcUser(source),
       _funcUser(func),
       _C(16), _R(16), _S(1),
@@ -98,7 +106,6 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::st
     LOG_DEBUG("Create new AllPairs object (", this, ")");
 }
 
-// Ausführungsoperator
 template<typename Tleft, typename Tright, typename Tout>
 template <typename... Args>
 Matrix<Tout> AllPairs<Tout(Tleft, Tright)>::operator()(const Matrix<Tleft>& left,
@@ -110,7 +117,6 @@ Matrix<Tout> AllPairs<Tout(Tleft, Tright)>::operator()(const Matrix<Tleft>& left
     return output;
 }
 
-// Ausführungsoperator mit Referenz
 template<typename Tleft, typename Tright, typename Tout>
 template <typename... Args>
 Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > output,
@@ -135,7 +141,6 @@ Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > outp
     return output.container();
 }
 
-// Ausführen
 template<typename Tleft, typename Tright, typename Tout>
 template <typename... Args>
 void AllPairs<Tout(Tleft, Tright)>::execute(Matrix<Tout>& output,
@@ -151,15 +156,23 @@ void AllPairs<Tout(Tleft, Tright)>::execute(Matrix<Tout>& output,
         auto& leftBuffer   = left.deviceBuffer(*devicePtr);
         auto& rightBuffer  = right.deviceBuffer(*devicePtr);
 
-        cl_uint elements[2]   = { static_cast<cl_uint>(outputBuffer.size() / output.columnCount()),
+        cl_uint elements[2]   = { static_cast<cl_uint>(
+                                    outputBuffer.size() / output.columnCount()),
                                   static_cast<cl_uint>(output.columnCount()) };
         cl_uint local[2]      = {_C, _R}; // C, R
-        cl_uint global[2]     = {static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements[1], local[0])),
-                                 static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements[0], local[1]*_S))/_S}; // SUBTILES
-        cl_uint dimension     = left.columnCount();
+        cl_uint global[2]     = {static_cast<cl_uint>(
+                                  detail::util::ceilToMultipleOf(elements[1],
+                                                                 local[0])),
+                                 static_cast<cl_uint>(
+                                  detail::util::ceilToMultipleOf(elements[0],
+                                                                 local[1]*_S))
+                                   /_S}; // SUBTILES
+        cl_uint dimension     = static_cast<cl_uint>( left.columnCount() );
 
-        LOG_DEBUG("dim: ", dimension, " height: ", elements[0], " width: ",elements[1]);
-        LOG_DEBUG("local: ", local[0],",", local[1], " global: ", global[0],",",global[1]);
+        LOG_DEBUG("dim: ", dimension, " height: ",
+                  elements[0], " width: ",elements[1]);
+        LOG_DEBUG("local: ", local[0],",", local[1],
+                  " global: ", global[0],",",global[1]);
 
         try {
             cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_ALLPAIRS"));
@@ -196,7 +209,6 @@ void AllPairs<Tout(Tleft, Tright)>::execute(Matrix<Tout>& output,
     LOG_INFO("AllPairs kernel started");
 }
 
-// Programm erstellen
 template<typename Tleft, typename Tright, typename Tout>
 detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() const
 {
@@ -206,28 +218,12 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
                     "Tried to create program with empty user zip source." );
 
     // _srcReduce: replace func by TMP_REDUCE
-    ssedit::TempSourceFile reduceTemp(_srcReduce);
-
-    auto func = reduceTemp.findFunction(_funcReduce); ASSERT(func.isValid());
-    reduceTemp.commitRename(func, "TMP_REDUCE");
-    reduceTemp.writeCommittedChanges();
-    reduceTemp.removeOpenCLFix();
-
-    std::ifstream rFile(reduceTemp.getFileName());
-    std::string rSource( (std::istreambuf_iterator<char>(rFile)),
-                         std::istreambuf_iterator<char>() );
+    stooling::SourceCode rSource(_srcReduce);
+    rSource.renameFunction(_funcReduce, "TMP_REDUCE");
 
     // _srcZip: replace func by TMP_ZIP
-    ssedit::TempSourceFile zipTemp(_srcZip);
-
-    func = zipTemp.findFunction(_funcReduce); ASSERT(func.isValid());
-    zipTemp.commitRename(func, "TMP_ZIP");
-    zipTemp.writeCommittedChanges();
-    zipTemp.removeOpenCLFix();
-
-    std::ifstream zFile(zipTemp.getFileName());
-    std::string zSource( (std::istreambuf_iterator<char>(zFile)),
-                         std::istreambuf_iterator<char>() );
+    stooling::SourceCode zSource(_srcZip);
+    zSource.renameFunction(_funcReduce, "TMP_ZIP");
 
     // create program
     std::string s(Matrix<Tout>::deviceFunctions());
@@ -238,12 +234,12 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     s.append("\n");
 
     // reduce user source
-    s.append(rSource);
+    s.append(rSource.code());
 
     s.append("\n");
 
     // zip user source
-    s.append(zSource);
+    s.append(zSource.code());
 
     s.append("\n");
 
@@ -261,13 +257,15 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     auto program = detail::Program(s, detail::util::hash("//AllPairs\n"
                                                          + Matrix<Tout>::deviceFunctions()
                                                          + _idReduce
-                                                         + rSource
-                                                         + zSource));
+                                                         + rSource.code()
+                                                         + zSource.code()));
     // modify program
     if (!program.loadBinary()) {
-        program.transferParameters("TMP_REDUCE", 2, "SCL_ALLPAIRS"); // problem: reduce parameter a und zip parameter a
+        // problem: reduce parameter a und zip parameter a
+        program.transferParameters("TMP_REDUCE", 2, "SCL_ALLPAIRS"); 
         program.transferArguments("TMP_REDUCE", 2, "USR_REDUCE");
-        program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS"); // reihenfolge? erst args von reduce dann zip?
+        // TODO: Order? first args from reduce than zip??
+        program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS");
         program.transferArguments("TMP_ZIP", 2, "USR_ZIP");
 
         program.renameFunction("TMP_REDUCE", "USR_REDUCE");
@@ -345,7 +343,6 @@ SCL_TYPE_1 getElementFromColumn(rmatrix_t* matrix, const unsigned int element_id
     return program;
 }
 
-// Eingabe vorbereiten
 template<typename Tleft, typename Tright, typename Tout>
 void AllPairs<Tout(Tleft, Tright)>::prepareInput(const Matrix<Tleft>& left,
                                                  const Matrix<Tright>& right)
@@ -412,7 +409,6 @@ void AllPairs<Tout(Tleft, Tright)>::prepareInput(const Matrix<Tleft>& left,
     right.startUpload();
 }
 
-// Ausgabe vorbereiten
 template<typename Tleft, typename Tright, typename Tout>
 void AllPairs<Tout(Tleft, Tright)>::prepareOutput(Matrix<Tout>& output,
                                                   const Matrix<Tleft>& left,

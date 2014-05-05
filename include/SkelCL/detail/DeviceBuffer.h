@@ -48,12 +48,13 @@
 #undef  __CL_ENABLE_EXCEPTIONS
 
 #include "Device.h"
+#include "skelclDll.h"
 
 namespace skelcl {
 
 namespace detail {
 
-class DeviceBuffer {
+class SKELCL_DLL DeviceBuffer {
 public:
   typedef size_t size_type;
 

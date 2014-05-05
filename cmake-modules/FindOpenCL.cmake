@@ -35,11 +35,9 @@ ELSE (APPLE)
     # The AMD SDK currently installs both x86 and x86_64 libraries
     # This is only a hack to find out architecture
     IF( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64" )
-      SET(OPENCL_LIB_DIR "$ENV{ATISTREAMSDKROOT}/lib/x86_64")
-      SET(OPENCL_LIB_DIR "$ENV{ATIINTERNALSTREAMSDKROOT}/lib/x86_64")
+      SET(OPENCL_LIB_DIR "$ENV{AMDAPPSDKROOT}/lib/x86_64")
     ELSE (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
-      SET(OPENCL_LIB_DIR "$ENV{ATISTREAMSDKROOT}/lib/x86")
-      SET(OPENCL_LIB_DIR "$ENV{ATIINTERNALSTREAMSDKROOT}/lib/x86")
+      SET(OPENCL_LIB_DIR "$ENV{AMDAPPSDKROOT}/lib/x86")
     ENDIF( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64" )
 
     # find out if the user asked for a 64-bit build, and use the corresponding 
@@ -54,8 +52,8 @@ ELSE (APPLE)
     GET_FILENAME_COMPONENT(_OPENCL_INC_CAND ${OPENCL_LIB_DIR}/../../include ABSOLUTE)
 
     # On Win32 search relative to the library
-    FIND_PATH(OPENCL_INCLUDE_DIRS CL/cl.h PATHS "${_OPENCL_INC_CAND}" $ENV{CUDA_INC_PATH} $ENV{CUDA_PATH}/include)
-    FIND_PATH(_OPENCL_CPP_INCLUDE_DIRS CL/cl.hpp PATHS "${_OPENCL_INC_CAND}" $ENV{CUDA_INC_PATH} $ENV{CUDA_PATH}/include)
+    FIND_PATH(OPENCL_INCLUDE_DIRS CL/cl.h PATHS "${PROJECT_SOURCE_DIR}/include" "${_OPENCL_INC_CAND}" $ENV{CUDA_INC_PATH} $ENV{CUDA_PATH}/include)
+    FIND_PATH(_OPENCL_CPP_INCLUDE_DIRS CL/cl.hpp PATHS "${PROJECT_SOURCE_DIR}/include" "${_OPENCL_INC_CAND}" $ENV{CUDA_INC_PATH} $ENV{CUDA_PATH}/include)
 
   ELSE (WIN32)
 
@@ -70,8 +68,8 @@ ELSE (APPLE)
     # The AMD SDK currently does not place its headers
     # in /usr/include, therefore also search relative
     # to the library
-    FIND_PATH(OPENCL_INCLUDE_DIRS CL/cl.h PATHS ${_OPENCL_INC_CAND} "/usr/local/cuda/include")
-    FIND_PATH(_OPENCL_CPP_INCLUDE_DIRS CL/cl.hpp PATHS ${_OPENCL_INC_CAND} "/usr/local/cuda/include")
+    FIND_PATH(OPENCL_INCLUDE_DIRS CL/cl.h PATHS "${PROJECT_SOURCE_DIR}/include" ${_OPENCL_INC_CAND} "/usr/local/cuda/include")
+    FIND_PATH(_OPENCL_CPP_INCLUDE_DIRS CL/cl.hpp PATHS "${PROJECT_SOURCE_DIR}/include" ${_OPENCL_INC_CAND} "/usr/local/cuda/include")
 
   ENDIF (WIN32)
 

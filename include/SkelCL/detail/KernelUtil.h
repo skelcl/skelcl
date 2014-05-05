@@ -56,6 +56,8 @@
 #include "Device.h"
 #include "DeviceBuffer.h"
 
+#include "skelclDll.h"
+
 namespace skelcl {
 
 namespace detail {
@@ -123,9 +125,9 @@ void setKernelArgs(cl::Kernel& kernel,
                    T&& value,
                    Args&&... args);
 
-void setKernelArgs(cl::Kernel& kernel,
-                   const Device& device,
-                   size_t index);
+SKELCL_DLL void setKernelArgs(cl::Kernel& kernel,
+                              const Device& device,
+                              size_t index);
 
 // Definitions
 
@@ -148,7 +150,8 @@ void setKernelArgs(cl::Kernel& kernel,
                    Args&&... args)
 {
   try {
-    kernel.setArg( index, vector.deviceBuffer(device).clBuffer() );
+    kernel.setArg( static_cast<cl_uint>(index),
+                   vector.deviceBuffer(device).clBuffer() );
   } catch (cl::Error& err) {
     LOG_ERROR("Error while setting argument ", index,
       " (Vector version called)");
@@ -176,7 +179,8 @@ void setKernelArgs(cl::Kernel& kernel,
                    Args&&... args)
 {
   try {
-    kernel.setArg( index, matrix.deviceBuffer(device).clBuffer() );
+    kernel.setArg( static_cast<cl_uint>(index),
+                   matrix.deviceBuffer(device).clBuffer() );
   } catch (cl::Error& err) {
     LOG_ERROR("Error while setting argument ", index,
       " (Matrix version called)");
@@ -196,7 +200,7 @@ void setKernelArgs(cl::Kernel& kernel,
                    Args&&... args)
 {
   try {
-    kernel.setArg( index, sizes[device.id()]);
+    kernel.setArg( static_cast<cl_uint>(index), sizes[device.id()] );
   } catch (cl::Error& err) {
     LOG_ERROR("Error while setting argument ", index,
       " (Sizes version called)");
@@ -213,7 +217,8 @@ void setKernelArgs(cl::Kernel& kernel,
                    Args&&... args)
 {
   try {
-    kernel.setArg( index, cl::__local(local.getSizeInBytes()) );
+    kernel.setArg( static_cast<cl_uint>(index),
+                   cl::__local(local.getSizeInBytes()) );
   } catch (cl::Error& err) {
     LOG_ERROR("Error while setting argument ", index,
         " (Local version called)");
@@ -230,7 +235,7 @@ void setKernelArgs(cl::Kernel& kernel,
                    Args&&... args)
 {
   try {
-    kernel.setArg( index, value );
+    kernel.setArg( static_cast<cl_uint>(index), value );
   } catch (cl::Error& err) {
     LOG_ERROR("Error while setting argument ", index,
       " (Default version called)");

@@ -1,7 +1,6 @@
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SKELCL_CXX_FLAGS}")
 
 # set include dir
-include_directories ("${PROJECT_SOURCE_DIR}/include")
 include_directories (${SKELCL_COMMON_INCLUDE_DIR})
 
 link_directories (${SKELCL_COMMON_LIB_DIR})
@@ -103,13 +102,4 @@ set (SKELCL_HEADERS
 # specify library target
 add_library (SkelCL ${SKELCL_SOURCES} ${SKELCL_HEADERS})
 target_link_libraries (SkelCL ${SKELCL_COMMON_LIBS})
-
-# specify install
-if (OS_LINUX)
-  # specify install into directory DESTINATION/lib
-  install (TARGETS SkelCL
-           LIBRARY DESTINATION lib
-           ARCHIVE DESTINATION lib
-          )
-endif (OS_LINUX)
 

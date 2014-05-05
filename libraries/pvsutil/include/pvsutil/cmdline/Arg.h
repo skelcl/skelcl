@@ -49,6 +49,8 @@
 #include "Flags.h"
 #include "Default.h"
 
+#include "../detail/pvsutilDll.h"
+
 namespace pvsutil {
 
 namespace cmdline {
@@ -62,12 +64,13 @@ template <class T>
 const bool hasArgument<T>::value = true;
 
 template <>
-const bool hasArgument<bool>::value;
-// initialization of hasArgument<bool>::value as false in .cpp file
+struct PVSUTIL_API hasArgument<bool> { const static bool value; };
+
+// const bool hasArgument<bool>::value;
 
 }
 
-class BaseArg {
+class PVSUTIL_API BaseArg {
 public:
   const std::vector<Short>& shortFlags() const;
   const std::vector<Long>&   longFlags() const;
@@ -80,7 +83,7 @@ public:
   virtual bool hasArgument() const = 0;
   virtual void printValue(std::ostream& output) const = 0;
 
-  virtual ~BaseArg() {};
+  virtual ~BaseArg() {}
 protected:
   BaseArg(const Flags& flags, const Description& des, bool mandatory, bool set);
 

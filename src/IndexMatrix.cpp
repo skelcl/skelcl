@@ -62,11 +62,12 @@
 
 namespace skelcl {
   
-  Matrix<IndexPoint>::Matrix(const size_type size,
-                             const detail::Distribution<Matrix<IndexPoint>>&
-                             distribution)
-  : _maxIndex{size.rowCount()-1, size.columnCount()-1},
-  _distribution(detail::cloneAndConvert<IndexPoint>(distribution))
+  Matrix<IndexPoint>::Matrix(const size_type size)//,
+    //const detail::Distribution<Matrix<IndexPoint>>&
+    //distribution)
+    : _maxIndex{ size.rowCount() - 1, size.columnCount() - 1 },
+    //_distribution(detail::cloneAndConvert<IndexPoint>(distribution))
+    _distribution(new skelcl::detail::Distribution < Matrix < IndexPoint >> ())
   {
     LOG_DEBUG_INFO("Created new IndexMatrix object (", this, ") with ",
                    getDebugInfo());
@@ -93,7 +94,7 @@ namespace skelcl {
     return {_maxIndex.rowID()+1, _maxIndex.columnID()+1};
   }
   
-  typename detail::Sizes Matrix<IndexPoint>::sizes() const
+  detail::Sizes Matrix<IndexPoint>::sizes() const
   {
     ASSERT(_distribution != nullptr);
     

@@ -36,11 +36,13 @@
 
 #include <cstring>
 
+#include "skelclDll.h"
+
 namespace skelcl {
 
 namespace detail {
 
-class DeviceID {
+class SKELCL_DLL DeviceID {
 public:
   typedef size_t id_type;
 

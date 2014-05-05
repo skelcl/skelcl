@@ -284,6 +284,9 @@ namespace detail {
 /// \return A pointer to a newly created identical distribution as the given
 ///         argument where the template argument U is replaced by T.
 /// 
+#if 0
+// This solution does not work in visual studio, but enforces, that OutT and
+// InT are of the same container type ...
 template <typename T, typename U, template <typename> class C>
 std::unique_ptr<Distribution<C<T>>>
     cloneAndConvert(const Distribution<C<U>>& dist)
@@ -327,6 +330,39 @@ std::unique_ptr<Distribution<C<T>>>
   return std::unique_ptr<Distribution<C<T>>>(
             new Distribution<C<T>>(dist) );
 }
+#else
+// This solution works in visual studio, but does not enforce, that OutT and
+// InT are of the same container type ...
+template <typename OutT, typename InT>
+std::unique_ptr<Distribution<OutT>>
+  cloneAndConvert(const Distribution<InT>& dist)
+{
+    // block distribution
+    auto block = dynamic_cast<const BlockDistribution<InT>*>(&dist);
+    if (block != nullptr) {
+      return std::unique_ptr<Distribution<OutT>>(
+        new BlockDistribution<OutT>(*block));
+    }
+
+    // copy distribution
+    auto copy = dynamic_cast<const CopyDistribution<InT>*>(&dist);
+    if (copy != nullptr) {
+      return std::unique_ptr<Distribution<OutT>>(
+        new CopyDistribution<OutT>(*copy));
+    }
+
+    // single distribution
+    auto single = dynamic_cast<const SingleDistribution<InT>*>(&dist);
+    if (single != nullptr) {
+      return std::unique_ptr<Distribution<OutT>>(
+        new SingleDistribution<OutT>(*single));
+    }
+
+    // default distribution
+    return std::unique_ptr<Distribution<OutT>>(
+      new Distribution<OutT>(dist));
+}
+#endif
 
 } // namespace detail
 

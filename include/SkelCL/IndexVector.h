@@ -46,27 +46,24 @@
 #include "Index.h"
 
 #include "detail/DeviceList.h"
+#include "detail/skelclDll.h"
 
 namespace skelcl {
 
 typedef const Vector<Index> IndexVector;
 
 template <>
-class Vector<Index> {
+class SKELCL_DLL Vector<Index> {
 public:
   typedef Index value_type;
 //  typedef ?? const_iterator;
   typedef size_t size_type;
 
-  Vector() = delete;
-
-  Vector(const value_type size,
-         const detail::Distribution<Vector<Index>>& distribution
-                                    = detail::Distribution<Vector<Index>>());
+  Vector(const value_type size);// ,
+         //const detail::Distribution<Vector<Index>>& distribution
+         //                           = detail::Distribution<Vector<Index>>());
   Vector(const Vector<Index>& rhs);
-  Vector(Vector<Index>&& rhs) = delete;
-  Vector<Index>& operator=(const Vector<Index>&) = delete;
-  Vector<Index>& operator=(Vector<Index>&& rhs) = delete;
+
   ~Vector();
 
   // TODO: vector interface
@@ -120,6 +117,11 @@ public:
   void dataOnHostModified() const;
 
 private:
+  Vector();// = delete;
+  Vector(Vector<Index> && rhs);// = delete;
+  Vector<Index>& operator=(const Vector<Index>&);// = delete;
+  Vector<Index>& operator=(Vector<Index> && rhs);// = delete;
+
   ///
   /// \brief Formates information about the current instance into a string,
   ///        used for Debug purposes

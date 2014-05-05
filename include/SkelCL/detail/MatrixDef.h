@@ -71,202 +71,194 @@ RegisterMatrixDeviceFunctions<T>::RegisterMatrixDeviceFunctions() {
 			detail::CommonDefinitions::Level::GENERATED_DEFINITION);
 }
 
-template<typename T>
-Matrix<T>::Matrix() :
-		_size( { 0, 0 }), _distribution(new detail::Distribution<Matrix<T>>()), _hostBufferUpToDate(
-				true), _deviceBuffersUpToDate(false), _hostBuffer(), _deviceBuffers() {
-	(void) registerMatrixDeviceFunctions;
-    LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
-			getDebugInfo());
+
+template <typename T>
+Matrix<T>::Matrix()
+  : _size( {0,0} ),
+    _distribution(new detail::Distribution<Matrix<T>>()),
+    _hostBufferUpToDate(true),
+    _deviceBuffersUpToDate(false),
+    _hostBuffer(),
+    _deviceBuffers()
+{
+  (void)registerMatrixDeviceFunctions;
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+      getDebugInfo());
 }
 
-template<typename T>
-Matrix<T>::Matrix(const size_type size, const value_type& value,
-		const detail::Distribution<Matrix<T>>& distribution) :
-		_size(size), _distribution(detail::cloneAndConvert<T>(distribution)), _hostBufferUpToDate(
-				true), _deviceBuffersUpToDate(false), _hostBuffer(
-				_size.elemCount(), value), _deviceBuffers() {
-	(void) registerMatrixDeviceFunctions;
-    LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
-			getDebugInfo());
+template <typename T>
+Matrix<T>::Matrix(const size_type size,
+                  const value_type& value,
+                  const detail::Distribution<Matrix<T>>& distribution)
+  : _size(size),
+    _distribution(detail::cloneAndConvert<Matrix<T>>(distribution)),
+    _hostBufferUpToDate(true),
+    _deviceBuffersUpToDate(false),
+    _hostBuffer( _size.elemCount(), value ),
+    _deviceBuffers()
+{
+  (void)registerMatrixDeviceFunctions;
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+      getDebugInfo());
+}
+
+template <typename T>
+Matrix<T>::Matrix(const std::vector<T>& vector,
+                  const size_type::size_type columnCount,
+                  const detail::Distribution<Matrix<T>>& distribution)
+  : _size({0,0}),
+    _distribution(detail::cloneAndConvert<Matrix<T>>(distribution)),
+    _hostBufferUpToDate(true),
+    _deviceBuffersUpToDate(false),
+    _hostBuffer(vector),
+    _deviceBuffers()
+{
+  (void)registerMatrixDeviceFunctions;
+  auto rowCount = vector.size() / columnCount;
+  if (vector.size() % columnCount == 0) {
+    _size = { rowCount, columnCount };
+  } else {
+    _size = { rowCount + 1, columnCount };
+    _hostBuffer.resize(_size.elemCount());
+  }
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+      getDebugInfo());
 }
 
 template<typename T>
 Matrix<T>::Matrix(const std::vector<T>& vector,
-		const size_type::size_type columnCount,
-		const detail::Distribution<Matrix<T>>& distribution) :
-		_size( { 0, 0 }), _distribution(
-				detail::cloneAndConvert<T>(distribution)), _hostBufferUpToDate(
-				true), _deviceBuffersUpToDate(false), _hostBuffer(vector), _deviceBuffers() {
-	(void) registerMatrixDeviceFunctions;
-	auto rowCount = vector.size() / columnCount;
-	if (vector.size() % columnCount == 0) {
-		_size = {rowCount, columnCount};
-	} else {
-		_size = {rowCount + 1, columnCount};
-		_hostBuffer.resize(_size.elemCount());
-	}
-    LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
-			getDebugInfo());
+                  const size_type size,
+                  const detail::Distribution<Matrix<T>>& distribution)
+  : _size(size),
+    _distribution(detail::cloneAndConvert<Matrix<T>>(distribution)),
+    _hostBufferUpToDate(true),
+    _deviceBuffersUpToDate(false),
+    _hostBuffer(vector),
+    _deviceBuffers()
+{
+  (void)registerMatrixDeviceFunctions;
+  _hostBuffer.resize(size.elemCount());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+      getDebugInfo());
 }
 
-template<typename T>
-Matrix<T>::Matrix(const std::vector<T>& vector, const size_type size,
-		const detail::Distribution<Matrix<T>>& distribution) :
-		_size(size), _distribution(detail::cloneAndConvert<T>(distribution)), _hostBufferUpToDate(
-				true), _deviceBuffersUpToDate(false), _hostBuffer(vector), _deviceBuffers() {
-	(void) registerMatrixDeviceFunctions;
-	_hostBuffer.resize(size.elemCount());
-	LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
-			getDebugInfo());
+template <typename T>
+Matrix<T>
+  Matrix<T>::from2DVector(const std::vector<std::vector<T>>& input,
+                          const detail::Distribution<Matrix<T>>& distribution)
+{
+  Matrix<T> matrix;
+  matrix._size = {input.size(), input[0].size()};
+  matrix._distribution = detail::cloneAndConvert<Matrix<T>>(distribution);
+  matrix._hostBufferUpToDate = true;
+  matrix._deviceBuffersUpToDate = false;
+  matrix._hostBuffer.resize(matrix._size.elemCount());
+  // start at the beginning
+  auto iter = matrix._hostBuffer.begin();
+  // for each row ...
+  for (size_t row = 0; row < input.size(); ++row) {
+    // ... copy the row into the host buffer ...
+    std::copy(input[row].begin(), input[row].end(),
+              iter);
+    // ... advance pointer in host buffer
+    std::advance(iter, matrix._size.columnCount());
+  }
+  LOG_DEBUG_INFO("Created new Matrix object (", &matrix, " with ",
+      matrix.getDebugInfo());
+  return matrix;
 }
 
-template<typename T>
-Matrix<T> Matrix<T>::from2DVector(const std::vector<std::vector<T>>& input,
-		const detail::Distribution<Matrix<T>>& distribution) {
-	Matrix<T> matrix;
-	matrix._size = {input.size(), input[0].size()};
-	matrix._distribution = detail::cloneAndConvert<T>(distribution);
-	matrix._hostBufferUpToDate = true;
-	matrix._deviceBuffersUpToDate = false;
-	matrix._hostBuffer.resize(matrix._size.elemCount());
-	// start at the beginning
-	auto iter = matrix._hostBuffer.begin();
-	// for each row ...
-	for (size_t row = 0; row < input.size(); ++row) {
-		// ... copy the row into the host buffer ...
-		std::copy(input[row].begin(), input[row].end(), iter);
-		// ... advance pointer in host buffer
-		std::advance(iter, matrix._size.columnCount());
-	}
-	LOG_DEBUG_INFO("Created new Matrix object (", &matrix, " with ",
-			matrix.getDebugInfo());
-	return matrix;
-}
-
-template<typename T>
-template<typename InputIterator>
+template <typename T>
+template <typename InputIterator>
 Matrix<T>::Matrix(InputIterator first, InputIterator last,
-		const size_type::size_type columnCount,
-		const detail::Distribution<Matrix<T>>& distribution) :
-		_size( { 0, 0 }), _distribution(
-				detail::cloneAndConvert<T>(distribution)), _hostBufferUpToDate(
-				true), _deviceBuffersUpToDate(false), _hostBuffer(), _deviceBuffers() {
-	(void) registerMatrixDeviceFunctions;
-	auto size = std::distance(first, last);
-	auto rowCount = size / columnCount;
-	if (size % columnCount == 0) {
-		_size = {rowCount, columnCount};
-	} else {
-		_size = {rowCount + 1, columnCount};
-	}
-	_hostBuffer.assign(first, last);
-	_hostBuffer.resize(_size.elemCount());
-	LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
-			getDebugInfo());
+                  const size_type::size_type columnCount,
+                  const detail::Distribution<Matrix<T>>& distribution)
+  : _size( {0,0} ),
+    _distribution(detail::cloneAndConvert<Matrix<T>>(distribution)),
+    _hostBufferUpToDate(true),
+    _deviceBuffersUpToDate(false),
+    _hostBuffer(),
+    _deviceBuffers()
+{
+  (void)registerMatrixDeviceFunctions;
+  auto size = std::distance(first, last);
+  auto rowCount = size / columnCount;
+  if (size % columnCount == 0) {
+    _size = { rowCount, columnCount };
+  } else {
+    _size = { rowCount + 1, columnCount };
+  }
+  _hostBuffer.assign(first, last);
+  _hostBuffer.resize(_size.elemCount());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+      getDebugInfo());
 }
 
-template<typename T>
-template<typename InputIterator>
-Matrix<T>::Matrix(InputIterator first, InputIterator last, const size_type size,
-		const detail::Distribution<Matrix<T>>& distribution) :
-		_size(size), _distribution(detail::cloneAndConvert<T>(distribution)), _hostBufferUpToDate(
-				true), _deviceBuffersUpToDate(false), _hostBuffer(first, last), _deviceBuffers() {
-	(void) registerMatrixDeviceFunctions;
-	_hostBuffer.resize(size.elemCount());
-	LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
-			getDebugInfo());
+template <typename T>
+template <typename InputIterator>
+Matrix<T>::Matrix(InputIterator first, InputIterator last,
+                  const size_type size,
+                  const detail::Distribution<Matrix<T>>& distribution)
+  : _size(size),
+    _distribution(detail::cloneAndConvert<Matrix<T>>(distribution)),
+    _hostBufferUpToDate(true),
+    _deviceBuffersUpToDate(false),
+    _hostBuffer(first, last),
+    _deviceBuffers()
+{
+  (void)registerMatrixDeviceFunctions;
+  _hostBuffer.resize(size.elemCount());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+      getDebugInfo());
 }
 
-template<typename T>
-Matrix<T>::Matrix(Matrix<T> && rhs) :
-		_size(std::move(rhs._size)), _distribution(
-				std::move(rhs._distribution)), _hostBufferUpToDate(
-				std::move(rhs._hostBufferUpToDate)), _deviceBuffersUpToDate(
-				std::move(rhs._deviceBuffersUpToDate)), _hostBuffer(
-				std::move(rhs._hostBuffer)), _deviceBuffers(
-				std::move(rhs._deviceBuffers)) {
-	(void) registerMatrixDeviceFunctions;
-	_size = {0, 0};
-	_hostBuffer.clear();
+template <typename T>
+Matrix<T>::Matrix(Matrix<T>&& rhs)
+  : _size(std::move(rhs._size)),
+    _distribution(std::move(rhs._distribution)),
+    _hostBufferUpToDate(std::move(rhs._hostBufferUpToDate)),
+    _deviceBuffersUpToDate(std::move(rhs._deviceBuffersUpToDate)),
+    _hostBuffer(std::move(rhs._hostBuffer)),
+    _deviceBuffers(std::move(rhs._deviceBuffers))
+{
+  (void)registerMatrixDeviceFunctions;
+  rhs._size = {0, 0};
+  rhs._hostBuffer.clear();
 
-	LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
-			getDebugInfo());
+  LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
+      getDebugInfo());
 }
 
-template<typename T>
-Matrix<T>& Matrix<T>::operator=(Matrix<T> && rhs) {
-	_size = std::move(rhs._size);
-	_distribution = std::move(rhs._distribution);
-	_hostBufferUpToDate = std::move(rhs._hostBufferUpToDate);
-	_deviceBuffersUpToDate = std::move(rhs._deviceBuffersUpToDate);
-	_hostBuffer = std::move(rhs._hostBuffer);
-	_deviceBuffers = std::move(rhs._deviceBuffers);
+template <typename T>
+Matrix<T>& Matrix<T>::operator=(Matrix<T>&& rhs)
+{
+  _size                   = std::move(rhs._size);
+  _distribution           = std::move(rhs._distribution);
+  _hostBufferUpToDate     = std::move(rhs._hostBufferUpToDate);
+  _deviceBuffersUpToDate  = std::move(rhs._deviceBuffersUpToDate);
+  _hostBuffer             = std::move(rhs._hostBuffer);
+  _deviceBuffers          = std::move(rhs._deviceBuffers);
 
-    rhs._size = {0, 0};
-	rhs._hostBufferUpToDate = false;
-	rhs._deviceBuffersUpToDate = false;
-	LOG_DEBUG_INFO("Move assignment to Matrix object (", this, ") from (", &rhs,
-			") now with ", getDebugInfo());
-	return *this;
+  rhs._size = 0;
+  rhs._hostBufferUpToDate = false;
+  rhs._deviceBuffersUpToDate = false;
+  LOG_DEBUG_INFO("Move assignment to Matrix object (", this, ") from (",
+                  &rhs,") now with ", getDebugInfo());
+  return *this;
 }
 
-template<typename T>
-Matrix<T>::~Matrix() {
-	LOG_DEBUG_INFO("Matrix object (", this, ") with ", getDebugInfo(),
-			" destroyed");
+template <typename T>
+Matrix<T>::~Matrix()
+{
+  LOG_DEBUG_INFO("Matrix object (", this, ") with ", getDebugInfo(),
+      " destroyed");
 }
 
-template<typename T>
-typename Matrix<T>::iterator Matrix<T>::begin() {
-	copyDataToHost();
-	return _hostBuffer.begin();
-}
-
-template<typename T>
-typename Matrix<T>::const_iterator Matrix<T>::begin() const {
-	copyDataToHost();
-	return _hostBuffer.begin();
-}
-
-template<typename T>
-typename Matrix<T>::iterator Matrix<T>::end() {
-	copyDataToHost();
-	return _hostBuffer.end();
-}
-
-template<typename T>
-typename Matrix<T>::const_iterator Matrix<T>::end() const {
-	copyDataToHost();
-	return _hostBuffer.end();
-}
-
-template<typename T>
-typename Matrix<T>::iterator Matrix<T>::row_begin(
-		typename coordinate::index_type rowIndex) {
-	copyDataToHost();
-	auto n = rowIndex * _size.columnCount();
-	if (n < _size.elemCount()) {
-		auto it = _hostBuffer.begin();
-		std::advance(it, n);
-		return it;
-	} else {
-		return _hostBuffer.end();
-	}
-}
-
-template<typename T>
-typename Matrix<T>::const_iterator Matrix<T>::row_begin(
-		typename coordinate::index_type rowIndex) const {
-	copyDataToHost();
-	auto n = rowIndex * _size.columnCount();
-	if (n < _size.elemCount()) {
-		auto it = _hostBuffer.begin();
-		std::advance(it, n);
-		return it;
-	} else {
-		return _hostBuffer.end();
-	}
+template <typename T>
+typename Matrix<T>::iterator Matrix<T>::begin()
+{
+  copyDataToHost();
+  return _hostBuffer.begin();
 }
 
 template<typename T>
@@ -578,26 +570,28 @@ detail::Distribution<Matrix<T>>& Matrix<T>::distribution() const {
 	return *_distribution;
 }
 
-template<typename T>
-template<typename U>
-void Matrix<T>::setDistribution(
-		const detail::Distribution<Matrix<U>>& origDistribution) const {
-	ASSERT(origDistribution.isValid());
-	// convert and set distribution
-	this->setDistribution(detail::cloneAndConvert<T>(origDistribution));
+template <typename T>
+template <typename U>
+void Matrix<T>::setDistribution(const detail::Distribution<Matrix<U>>&
+                                    origDistribution) const
+{
+  ASSERT(origDistribution.isValid());
+  // convert and set distribution
+  this->setDistribution(detail::cloneAndConvert<Matrix<T>>(origDistribution));
 }
 
-template<typename T>
-template<typename U>
-void Matrix<T>::setDistribution(
-		const std::unique_ptr<detail::Distribution<Matrix<U>>>&
-		origDistribution ) const
-		{
-			ASSERT(origDistribution != nullptr);
-			ASSERT(origDistribution.isValid());
-			// convert and set distribution
-			this->setDistribution(detail::cloneAndConvert<T>(origDistribution));
-		}
+template <typename T>
+template <typename U>
+void
+  Matrix<T>::setDistribution(
+              const std::unique_ptr<detail::Distribution<Matrix<U>>>&
+                  origDistribution ) const
+{
+  ASSERT(origDistribution != nullptr);
+  ASSERT(origDistribution.isValid());
+  // convert and set distribution
+  this->setDistribution(detail::cloneAndConvert<Matrix<T>>(origDistribution));
+}
 
 template<typename T>
 void Matrix<T>::setDistribution(std::unique_ptr<detail::Distribution<Matrix<T>>>&&
@@ -746,10 +740,14 @@ std::string Matrix<T>::deviceFunctions() {
 	std::string type = detail::util::typeToString<T>();
 	std::stringstream s;
 
-	// found "double" => enable double
-	if (type.find("double") != std::string::npos) {
-		s << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
-	}
+  // found "double" => enable double
+  if (type.find("double") != std::string::npos) {
+    s << "#if defined(cl_khr_fp64)\n"
+         "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n"
+         "#elif defined(cl_amd_fp64)\n"
+         "#pragma OPENCL EXTENSION cl_amd_fp64 : enable\n"
+         "#endif\n";
+  }
 
 	//s << "typedef struct {	float x; float y; float z; float w; } data_t; \n" ;
   s << "typedef float4 data_t;\n";
@@ -778,15 +776,17 @@ std::string Matrix<T>::getInfo() const {
 	return s.str();
 }
 
-template<typename T>
-std::string Matrix<T>::getDebugInfo() const {
-	std::stringstream s;
-	s << getInfo() << std::boolalpha << ", deviceBuffersCreated: "
-			<< (!_deviceBuffers.empty()) << ", hostBufferUpToDate: "
-			<< _hostBufferUpToDate << ", deviceBuffersUpToDate: "
-			<< _deviceBuffersUpToDate << ", hostBuffer: "
-			<< &_hostBuffer.front();
-	return s.str();
+template <typename T>
+std::string Matrix<T>::getDebugInfo() const
+{
+  std::stringstream s;
+  s << getInfo()
+    << std::boolalpha
+    << ", deviceBuffersCreated: "  << (!_deviceBuffers.empty())
+    << ", hostBufferUpToDate: "    << _hostBufferUpToDate
+    << ", deviceBuffersUpToDate: " << _deviceBuffersUpToDate
+    << ", hostBuffer: "            << _hostBuffer.data();
+  return s.str();
 }
 
 } // namespace skelcl

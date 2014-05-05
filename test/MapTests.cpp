@@ -55,15 +55,15 @@ protected:
     //    pvsutil::Logger::Severity::DebugInfo );
 
     skelcl::init(skelcl::nDevices(1));
-  };
+  }
 
   ~MapTest() {
     skelcl::terminate();
-  };
+  }
 };
 
 TEST_F(MapTest, CreateMapWithString) {
-  skelcl::Map<float(float)> m {"float func(float f){ return -f; }"};
+  skelcl::Map<float(float)> m{"float func(float f){ return -f; }"};
 }
 
 TEST_F(MapTest, CreateMapWithFile) {
@@ -131,7 +131,7 @@ TEST_F(MapTest, SimpleMultiDeviceMap) {
 TEST_F(MapTest, SimpleMultiDeviceMap2) {
   skelcl::terminate();
   skelcl::init(skelcl::nDevices(2));
-  skelcl::Map<int(float)> m{ "float func(float f) \
+  skelcl::Map<int(float)> m{ "int func(float f) \
     { return skelcl_get_device_id(); }" };
 
   skelcl::Vector<float> input(10);

@@ -50,6 +50,8 @@
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#include "skelclDll.h"
+
 namespace skelcl {
 
 namespace detail {
@@ -64,7 +66,7 @@ class DeviceBuffer;
 /// This class encapsulates functionality like starting data transfers, kernel
 /// executions, querying information about the device, etc.
 ///
-class Device {
+class SKELCL_DLL Device {
 public:
   typedef size_t id_type;
   typedef std::shared_ptr<Device> ptr_type;
@@ -77,11 +79,6 @@ public:
     ACCELERATOR = CL_DEVICE_TYPE_ACCELERATOR,
     DEFAULT     = CL_DEVICE_TYPE_DEFAULT
   };
-  
-  ///
-  /// \brief No default constuction allowed
-  ///
-  Device() = delete;
 
   ///
   /// \brief Constructs a new Device object encapsulating the given OpenCL
@@ -99,17 +96,17 @@ public:
   ///
   /// \brief Default copy constructor
   ///
-  Device(const Device&) = default;
+  //Device(const Device&) = default;
 
   ///
   /// \brief Default assignment operator
   ///
-  Device& operator=(const Device&) = default;
+  //Device& operator=(const Device&) = default;
 
   ///
   /// \brief Default destructor
   ///
-  ~Device() = default;
+  //~Device() = default;
 
   ///
   /// \brief Enqueues the execution of an OpenCL kernel object on the device
@@ -335,13 +332,21 @@ public:
   bool supportsDouble() const;
 
 private:
+  ///
+  /// \brief No default constuction allowed
+  ///
+  Device();// = delete;
+
   cl::Device        _device;
   cl::Context       _context;
   cl::CommandQueue  _commandQueue;
   id_type           _id;
 };
 
+SKELCL_DLL
 std::istream& operator>>(std::istream& stream, Device::Type& type);
+
+SKELCL_DLL
 std::ostream& operator<<(std::ostream& stream, const Device::Type& type);
 
 template <typename RandomAccessIterator>
@@ -388,16 +393,6 @@ cl::Event Device::enqueueRead(const DeviceBuffer& buffer,
                      size, deviceOffset, hostOffset);
 }
 
-#if 0
-// unclear where used and why defined as a free function, same functionality in
-// DeviceList::barrier
-// free helper functions
-template <typename DeviceIterator>
-void barrier(DeviceIterator begin, DeviceIterator end) {
-  std::for_each( begin, end,
-                 std::mem_fn(&skelcl::detail::Device::wait) );
-}
-#endif
 } // namespace detail
 
 } // namespace skelcl

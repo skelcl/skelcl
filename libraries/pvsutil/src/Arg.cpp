@@ -42,6 +42,8 @@
 
 #include "pvsutil/cmdline/Arg.h"
 
+#include "pvsutil/detail/pvsutilDll.h"
+
 namespace pvsutil {
 
 namespace cmdline {
@@ -50,8 +52,7 @@ namespace helper {
 
 // initialization of hasArgument<T>::value as true in .h file
 
-template <>
-const bool hasArgument<bool>::value = false;
+PVSUTIL_API const bool hasArgument<bool>::value = false;
 
 } // namespace helper
 

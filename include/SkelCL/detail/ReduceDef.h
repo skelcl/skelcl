@@ -196,9 +196,10 @@ void Reduce<T(T)>::execute(const detail::Device& device,
   auto& outputBuffer= level->outputPtr->deviceBuffer(device);
   auto& inputBuffer = level->inputPtr->deviceBuffer(device);
 
-  cl_uint elements  = level->inputPtr->size();
-  cl_uint local     = level->workGroupSize;
-  cl_uint global    = level->workGroupSize * level->workGroupCount;
+  cl_uint elements  = static_cast<cl_uint>( level->inputPtr->size() );
+  cl_uint local     = static_cast<cl_uint>( level->workGroupSize );
+  cl_uint global    = static_cast<cl_uint>( level->workGroupSize
+                                          * level->workGroupCount );
 
   try {
     cl::Kernel kernel(level->program->kernel(device, "SCL_REDUCE"));
@@ -259,8 +260,8 @@ size_t
     auto maxWorkGroupCount = workGroupStepWidth;
     auto count =   (inputSize / workGroupStepWidth) // round up
                  + ( (inputSize % workGroupStepWidth != 0) ? 1 : 0 );
-    auto workGroupCount = std::min(maxWorkGroupCount, count);
-    return workGroupCount;
+    // return workGroupCount
+    return std::min(maxWorkGroupCount, count);
   }
 }
 
@@ -299,8 +300,7 @@ std::shared_ptr<typename Reduce<T(T)>::Level>
           const detail::Device& device,
           const Vector<T>& input,
           const Vector<T>& output,
-          const std::shared_ptr<Reduce<T(T)>::Level>& firstLevel
-                                              )
+          const std::shared_ptr<typename Reduce<T(T)>::Level>& firstLevel)
 {
   auto level = std::make_shared<typename Reduce<T(T)>::Level>();
 
@@ -347,6 +347,15 @@ std::shared_ptr<skelcl::detail::Program>
   program->build();
   return program;
 }
+
+template <typename T>
+Reduce<T(T)>::Level::Level()
+  : workGroupSize(),
+    workGroupCount(),
+    inputPtr(),
+    outputPtr(),
+    program()
+{}
 
 } // namespace skelcl
 

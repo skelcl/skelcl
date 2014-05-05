@@ -64,8 +64,8 @@ typedef float SCL_TYPE_0;
 
 #define ACCUM_LOCAL(s, i, j) \
 { \
-    int x = ((__local SCL_TYPE_0*)(s))[(size_t)(i)]; \
-    int y = ((__local SCL_TYPE_0*)(s))[(size_t)(j)]; \
+    SCL_TYPE_0 x = ((__local SCL_TYPE_0*)(s))[(size_t)(i)]; \
+    SCL_TYPE_0 y = ((__local SCL_TYPE_0*)(s))[(size_t)(j)]; \
     ((__local SCL_TYPE_0*)(s))[(size_t)(i)] = SCL_FUNC(x, y); \
 }
 
