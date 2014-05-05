@@ -6,7 +6,7 @@ echo "(y)es (n)o "
 read ANSWER
 if [[ "$ANSWER" == 'y' ]]; then
   set -x #echo on
-  sudo apt-get install build-essential git cmake cmake-curses-gui
+  sudo zypper install gcc-c++ cmake
   set +x #echo off
 fi
 
@@ -14,14 +14,15 @@ echo "Install SkelCL dependencies? (requires sudo access)"
 echo "(y)es or (n)o "
 read ANSWER
 if [[ "$ANSWER" == 'y' ]]; then
+  set -x #echo on
+  sudo zypper install libopenssl-devel Mesa-libGL-devel
+  set +x #echo off
+
   if [ -d "$DIR/libraries/stooling/libraries/llvm" ]; then
     echo "Skip intallation of llvm, because the 'libraries/stooling/libraries/llvm' directory already exists."
   else
     set -x #echo on
-    sudo apt-get install libssl-dev libglu1-mesa-dev llvm-3.3-dev clang-3.3 libclang-3.3-dev
-    mkdir $DIR/libraries/stooling/libraries/llvm
-    ln -s `llvm-config-3.3 --includedir` $DIR/libraries/stooling/libraries/llvm/include
-    ln -s `llvm-config-3.3 --libdir` $DIR/libraries/stooling/libraries/llvm/lib
+    sudo zypper install llvm-clang-devel llvm-devel libLLVM
     set +x #echo off
   fi
 
