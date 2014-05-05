@@ -103,7 +103,7 @@ Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
                                     const Vector<T>& input,
                                     Args&&... args)
 {
-  const size_t global_size = std::min( static_cast<size_t>(8192), input.size() );
+  const size_t global_size = 8192;
 
   prepareInput(input);
   ASSERT(input.distribution().devices().size() == 1);
@@ -123,10 +123,12 @@ Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
                       global_size,
                       args... );
 
+  size_t new_data_size = std::min( global_size, input.size() );
+
   execute_second_step( device,
                        tmpOutput.deviceBuffer(device),
                        output.container().deviceBuffer(device),
-                       global_size,
+                       new_data_size,
                        args... );
 
 
@@ -185,7 +187,12 @@ void Reduce<T(T)>::execute_first_step(const detail::Device& device,
   try {
     cl::Kernel kernel = _program->kernel(device, "SCL_REDUCE_1");
 
-    const cl::Device dev{device.clDevice()};
+    const size_t max_local_size = kernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device.clDevice());
+    const size_t local_size     = std::min( this->workGroupSize(),
+                                            max_local_size );
+
+    if( global_size < local_size)
+        global_size = local_size;
 
     kernel.setArg(0, input.clBuffer());
     kernel.setArg(1, output.clBuffer());
@@ -204,7 +211,7 @@ void Reduce<T(T)>::execute_first_step(const detail::Device& device,
     auto invokeAfter =  [keepAlive] () {};
 
     device.enqueue(kernel,
-                   cl::NDRange(global_size), cl::NDRange(1), // verbessern
+                   cl::NDRange(global_size), cl::NDRange(local_size),
                    cl::NullRange, // offset
                    invokeAfter);
   } catch (cl::Error& err) {
@@ -223,16 +230,15 @@ void Reduce<T(T)>::execute_second_step(const detail::Device& device,
 {
   try {
     cl::Kernel kernel = _program->kernel(device, "SCL_REDUCE_2");
-    const cl::Device dev{device.clDevice()};
 
-    const size_t max_local_size = kernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(dev);
-    const size_t global_size = std::min( data_size, max_local_size);
+    const size_t max_local_size = kernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device.clDevice());
+    const size_t local_size    = std::min( data_size, max_local_size);
 
     kernel.setArg(0, input.clBuffer() );
     kernel.setArg(1, output.clBuffer() );
-    kernel.setArg(2, cl::__local(global_size * sizeof(T) ) );
+    kernel.setArg(2, cl::__local(local_size * sizeof(T) ) );
     kernel.setArg(3, static_cast<cl_uint>(data_size) );
-    kernel.setArg(4, static_cast<cl_uint>(global_size) );
+    kernel.setArg(4, static_cast<cl_uint>(local_size) );
 
     detail::kernelUtil::setKernelArgs(kernel, device, 5,
                                       std::forward<Args>(args)...);
@@ -246,8 +252,9 @@ void Reduce<T(T)>::execute_second_step(const detail::Device& device,
     // after finishing the kernel invoke this function ...
     auto invokeAfter =  [keepAlive] () {};
 
+    ASSERT( local_size <= data_size);
     device.enqueue(kernel,
-                   cl::NDRange(global_size), cl::NDRange(global_size),
+                   cl::NDRange(local_size), cl::NDRange(local_size),
                    cl::NullRange, // offset
                    invokeAfter);
 

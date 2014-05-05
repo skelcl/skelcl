@@ -55,7 +55,8 @@ __kernel void SCL_REDUCE_1 (
     const unsigned int  GLOBAL_SIZE) 
 {
     const int my_pos = get_global_id(0);
-    
+    if (my_pos > DATA_SIZE) return;
+        
     const unsigned int modul = GLOBAL_SIZE;
 
     int res = SCL_IN[my_pos];
@@ -77,18 +78,16 @@ __kernel void SCL_REDUCE_1 (
 __kernel void SCL_REDUCE_2 (
     const __global SCL_TYPE_0* SCL_IN,
           __global SCL_TYPE_0* SCL_OUT,
-          __local  SCL_TYPE_0* LOCAL_BUF, // hat Größe LOCAL_SIZE
+          __local  SCL_TYPE_0* LOCAL_BUF, // has size LOCAL_SIZE
           unsigned int         DATA_SIZE,
     const unsigned int         LOCAL_SIZE)    
 {
-    // ASSERT: NUR EINE WG GESTARTET
-
     const int my_pos  = get_global_id(0);
-    //if (my_pos >= DATA_SIZE) return;
     
     int modul;
     
-//------------------------------------- VORVERARBEITUNG --------------------------------
+    
+    // preprocessing phase
 
     modul = LOCAL_SIZE;
 
@@ -106,7 +105,8 @@ __kernel void SCL_REDUCE_2 (
 
     DATA_SIZE = min( LOCAL_SIZE, DATA_SIZE );
     
-//-----------------      jetzt noch <=LOCAL_SIZE Elemente -> gespeichert in LOCAL_BUF       ---------------------------
+    
+    // less than LOCAL_SIZE elements remaining
 
     int active;
     
