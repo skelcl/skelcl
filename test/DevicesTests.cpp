@@ -43,11 +43,11 @@
 class DeviceListTest : public ::testing::Test {
 protected:
   DeviceListTest() {
-  };
+  }
 
   ~DeviceListTest() {
     // tear down
-  };
+  }
 };
 
 TEST_F(DeviceListTest, Instance) {

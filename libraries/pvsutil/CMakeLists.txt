@@ -2,9 +2,14 @@ cmake_minimum_required (VERSION 2.6)
 
 # set compiler and options
 if (${UNIX})
-  # assume these flags are valid for any unix compiler (they are at least for g++ and clang++)
-  set (CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra"
-		  CACHE STRING "Flags used by the compiler during all build types.")
+  if (${APPLE})
+    set (CMAKE_CXX_COMPILER "clang++" CACHE STRING "CXX Compiler.")
+    set (CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++ -DGTEST_USE_OWN_TR1_TUPLE=1 -Wall -Wextra"
+      CACHE STRING "Flags used by the compiler during all build types.")
+  else (${APPLE})
+    set (CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra"
+      CACHE STRING "Flags used by the compiler during all build types.")
+  endif (${APPLE})
 
   # more restructive flags for compiling the SkelCL code. These flags are added in addition to the above
   set (PVSUTIL_CXX_FLAGS "-Weffc++ -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Werror -pedantic-errors -Wfatal-errors"

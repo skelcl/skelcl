@@ -77,13 +77,13 @@ bool isEqual(T lhs, T rhs) {
 
 // multiply two matrices
 template<typename T>
-double matrixMult(const int rowCountA, const int columnCountA, 
-                  const int columnCountB, const int checkResult,
+double matrixMult(const size_t rowCountA, const size_t columnCountA, 
+                  const size_t columnCountB, const bool checkResult,
                   const std::string& zipFunc, const std::string& reduceFunc, 
                   const std::string& func, const std::string& deviceType, 
-                  int deviceCount) {
+                  size_t deviceCount) {
   
-  const int rowCountB = columnCountA;
+  size_t rowCountB = columnCountA;
   LOG_INFO("started: multiplication of matrices A (", rowCountA, " x ", 
            columnCountA, ") and B (", rowCountB, " x ", columnCountB, ")");
   
@@ -113,7 +113,7 @@ double matrixMult(const int rowCountA, const int columnCountA,
   output.copyDataToHost();
   double elapsedTime = timer.stop();
   
-  printf("|||SkelCL_allpairs_%s;%d;%d;%d;%s;%d;%f\n", suffix.c_str(), rowCountA, 
+  printf("|||SkelCL_allpairs_%s;%zu;%zu;%zu;%s;%zu;%f\n", suffix.c_str(), rowCountA, 
     columnCountA, columnCountB, deviceType.c_str(), deviceCount, elapsedTime);
   LOG_INFO("finished: matrix C (", output.rowCount(), " x ", 
            output.columnCount(), ") calculated, ", "elapsed time: ", 
@@ -143,18 +143,18 @@ double matrixMult(const int rowCountA, const int columnCountA,
   return elapsedTime;
 }
 
-double matrixMultFloat(const int rowCountA, const int columnCountA, 
-                       const int columnCountB, const int checkResult, 
-                       const std::string& deviceType, int deviceCount) {
+double matrixMultFloat(const size_t rowCountA, const size_t columnCountA, 
+                       const size_t columnCountB, const bool checkResult, 
+                       const std::string& deviceType, size_t deviceCount) {
   std::string zipFunc = "float func(float x, float y){ return x*y; }";
   std::string reduceFunc = "float func(float x, float y){ return x+y; }";
   return matrixMult<float>(rowCountA, columnCountA, columnCountB, checkResult, 
                            zipFunc, reduceFunc, "", deviceType, deviceCount);
 }
 
-double matrixMultFloatAlt(const int rowCountA, const int columnCountA, 
-                          const int columnCountB, const int checkResult, 
-                          const std::string& deviceType, int deviceCount) {
+double matrixMultFloatAlt(const size_t rowCountA, const size_t columnCountA, 
+                          const size_t columnCountB, const bool checkResult, 
+                          const std::string& deviceType, size_t deviceCount) {
   std::string func = "float func(lmatrix_t* row, rmatrix_t* col, "\
                                 "const unsigned int dim) {" \
                         "float res = 0;" \
@@ -167,18 +167,18 @@ double matrixMultFloatAlt(const int rowCountA, const int columnCountA,
                            "", "", func, deviceType, deviceCount);
 }
 
-double matrixMultDouble(const int rowCountA, const int columnCountA, 
-                        const int columnCountB, const int checkResult, 
-                        const std::string& deviceType, int deviceCount) {
+double matrixMultDouble(const size_t rowCountA, const size_t columnCountA, 
+                        const size_t columnCountB, const bool checkResult, 
+                        const std::string& deviceType, size_t deviceCount) {
   std::string zipFunc = "double func(double x, double y){ return x*y; }";
   std::string reduceFunc = "double func(double x, double y){ return x+y; }";
   return matrixMult<double>(rowCountA, columnCountA, columnCountB, checkResult,
                             zipFunc, reduceFunc, "", deviceType, deviceCount);
 }
 
-double matrixMultDoubleAlt(const int rowCountA, const int columnCountA, 
-                           const int columnCountB, const int checkResult, 
-                           const std::string& deviceType, int deviceCount) {
+double matrixMultDoubleAlt(const size_t rowCountA, const size_t columnCountA, 
+                           const size_t columnCountB, const bool checkResult, 
+                           const std::string& deviceType, size_t deviceCount) {
   std::string func = "double func(lmatrix_t* row, rmatrix_t* col, "\
                                  "const unsigned int dim) {" \
                         "double res = 0;" \
@@ -201,31 +201,31 @@ int main(int argc, char* argv[])
   pvsutil::CLArgParser cmd(Description("Matrix multiplication example "
                                        "in SkelCL"));
 
-  auto rowCountA = Arg<int>(Flags(Short('d'), Long("row_count_A")),
-                            Description("Row count of left matrix"));
+  auto rowCountA = Arg<size_t>(Flags(Short('d'), Long("row_count_A")),
+                               Description("Row count of left matrix"));
 
-  auto colCountA = Arg<int>(Flags(Short('m'), Long("col_count_A")),
-                            Description("Column count of left matrix"));
+  auto colCountA = Arg<size_t>(Flags(Short('m'), Long("col_count_A")),
+                               Description("Column count of left matrix"));
 
-  auto colCountB = Arg<int>(Flags(Short('n'), Long("col_count_B")),
-                            Description("Column count of right matrix"));
+  auto colCountB = Arg<size_t>(Flags(Short('n'), Long("col_count_B")),
+                               Description("Column count of right matrix"));
 
   auto checkResult = Arg<bool>(Flags(Short('c'), Long("check_result")),
                                Description("Check result"),
                                Default(false));
 
-  auto repetitions = Arg<int>(Flags(Short('r'), Long("repetitions")),
-                              Description("Number of repetitions"),
-                              Default(1));
+  auto repetitions = Arg<size_t>(Flags(Short('r'), Long("repetitions")),
+                                 Description("Number of repetitions"),
+                                 Default<size_t>(1));
 
   auto deviceType = Arg<device_type>(Flags(Long("device_type")),
                                      Description("Device type: ANY, CPU, "
                                                  "GPU, ACCELERATOR"),
                                      Default(device_type::ANY));
 
-  auto deviceCount = Arg<int>(Flags(Long("device_count")),
-                              Description("Device Count"),
-                              Default(1));
+  auto deviceCount = Arg<size_t>(Flags(Long("device_count")),
+                                 Description("Device Count"),
+                                 Default<size_t>(1));
 
   auto useDoublePrecision = Arg<bool>(Flags(Long("use_double")),
                                       Description("Use double precision for "
@@ -246,7 +246,7 @@ int main(int argc, char* argv[])
 
   init(nDevices(deviceCount).deviceType(deviceType)); // initialize SkelCL
   double totalTime = 0.0;
-  for (int i = 0; i < repetitions; i++) {
+  for (size_t i = 0; i < repetitions; i++) {
     if (useAltKernel && useDoublePrecision) {
       totalTime += matrixMultDoubleAlt(rowCountA, colCountA, colCountB,
                                        checkResult, deviceArg, deviceCount);

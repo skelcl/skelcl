@@ -56,10 +56,11 @@
 #include "detail/DeviceBuffer.h"
 #include "detail/Distribution.h"
 #include "detail/Padding.h"
+#include "detail/skelclDll.h"
 
 namespace skelcl {
 
-class MatrixSize {
+class SKELCL_DLL MatrixSize {
 public:
   typedef size_t size_type;
 
@@ -167,19 +168,9 @@ public:
               = detail::Distribution<Matrix<T>>());
 
   ///
-  /// \brief  Explicit deleted copy constructor
-  ///
-  Matrix(const Matrix<T>&) = delete;
-
-  ///
   /// \brief   Move constructor
   ///
   Matrix(Matrix<T>&& rhs);
-
-  ///
-  /// \brief  Explicit deleted assignment operator
-  ///
-  Matrix<T>& operator=(const Matrix<T>&) = delete;
 
   ///
   /// \brief  Move assignment operator
@@ -293,6 +284,16 @@ public:
   static std::string deviceFunctions();
 
 private:
+  ///
+  /// \brief  Explicit deleted copy constructor
+  ///
+  Matrix(const Matrix<T>&);// = delete;
+
+  ///
+  /// \brief  Explicit deleted assignment operator
+  ///
+  Matrix<T>& operator=(const Matrix<T>&);// = delete;
+
   std::string getInfo() const;
   std::string getDebugInfo() const;
 

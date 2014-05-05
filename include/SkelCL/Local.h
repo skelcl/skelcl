@@ -42,9 +42,11 @@
 
 #include <cstring>
 
+#include "detail/skelclDll.h"
+
 namespace skelcl {
 
-class Local {
+class SKELCL_DLL Local {
 public:
   Local(size_t sizeInBytes);
 
@@ -54,7 +56,7 @@ private:
   size_t _sizeInBytes;
 };
 
-Local local(size_t sizeInBytes);
+SKELCL_DLL Local local(size_t sizeInBytes);
 
 } // namespace skelcl
 

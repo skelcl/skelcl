@@ -40,6 +40,8 @@
 #ifndef INDEX_H_
 #define INDEX_H_
 
+#include "detail/skelclDll.h"
+
 #include <cstring>
 #include <utility>
 
@@ -49,7 +51,7 @@ namespace skelcl {
 /// \brief  This class defines an Index, i.e. an unsigned integer representing a
 ///         value in a one-dimensional index space.
 /// 
-class Index {
+class SKELCL_DLL Index {
 public:
   /// 
   /// \brief  Actual type used to store the unsigned integer representing the
@@ -69,11 +71,11 @@ public:
   /// 
   Index(const index_type index);
   
-  Index(const Index& rhs) = default;
-  Index(Index&& rhs) = default;
-  Index& operator=(const Index& rhs) = default;
-  Index& operator=(Index&& rhs) = default;
-  ~Index() = default;
+  //Index(const Index& rhs) = default;
+  //Index(Index&& rhs) = default;
+  //Index& operator=(const Index& rhs) = default;
+  //Index& operator=(Index&& rhs) = default;
+  //~Index() = default;
 
   /// 
   /// \brief Equality operator. Two Index objects are equal if and only if the
@@ -123,7 +125,7 @@ private:
 ///        unsigned integers representing a value in a two-dimensional index
 ///        space.
 /// 
-class IndexPoint {
+class SKELCL_DLL IndexPoint {
 public:
   /// 
   /// \brief Actual type used to store the pair of unsigned integers
@@ -165,7 +167,7 @@ public:
   IndexPoint(const IndexPoint& rhs) = default;
   IndexPoint& operator=(const IndexPoint& rhs) = default;
   IndexPoint& operator=(IndexPoint&& rhs);
-  ~IndexPoint() = default;
+  //~IndexPoint() = default;
 
   /// 
   /// \brief Equality operator. Two IndexPoint objects are equal if and only if

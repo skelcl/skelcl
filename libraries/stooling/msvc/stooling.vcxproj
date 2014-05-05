@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{76D2E899-5A9C-47AC-853A-592342D76765}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>stooling</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\msvc\Defaults.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\msvc\Defaults.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\msvc\Defaults.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\msvc\Defaults.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(LLVM_HOME)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LLVM_HOME)\build\Debug\lib;$(LLVM_HOME)\lib\x86\Debug;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(LLVM_HOME)\include;$(LLVM_HOME)\tools\clang\include;$(LLVM_HOME)\build\include;$(LLVM_HOME)\build\tools\clang\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LLVM_HOME)\build\Debug\lib;$(LLVM_HOME)\lib\x86_64\Debug;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(LLVM_HOME)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LLVM_HOME)\build\Release\lib;$(LLVM_HOME)\lib\x86\Release;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(LLVM_HOME)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LLVM_HOME)\build\Release\lib;$(LLVM_HOME)\lib\x86_64\Release;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;STOOLING_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>clangTooling.lib;clangRewriteFrontend.lib;clangRewriteCore.lib;clangFrontendTool.lib;clangFrontend.lib;clangParse.lib;clangSema.lib;clangAnalysis.lib;clangDriver.lib;clangStaticAnalyzerCheckers.lib;clangStaticAnalyzerFrontend.lib;clangStaticAnalyzerCore.lib;clangEdit.lib;clangFormat.lib;clangSerialization.lib;clangASTMatchers.lib;clangAST.lib;clangLex.lib;clangBasic.lib;LLVMBitReader.lib;LLVMBitWriter.lib;LLVMMCParser.lib;LLVMMC.lib;LLVMOption.lib;LLVMCore.lib;LLVMSupport.lib;LLVMTransformUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;STOOLING_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>clangTooling.lib;clangRewriteFrontend.lib;clangRewriteCore.lib;clangFrontendTool.lib;clangFrontend.lib;clangParse.lib;clangSema.lib;clangAnalysis.lib;clangDriver.lib;clangStaticAnalyzerCheckers.lib;clangStaticAnalyzerFrontend.lib;clangStaticAnalyzerCore.lib;clangEdit.lib;clangFormat.lib;clangSerialization.lib;clangASTMatchers.lib;clangAST.lib;clangLex.lib;clangBasic.lib;LLVMBitReader.lib;LLVMBitWriter.lib;LLVMMCParser.lib;LLVMMC.lib;LLVMOption.lib;LLVMCore.lib;LLVMSupport.lib;LLVMTransformUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;STOOLING_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>clangTooling.lib;clangRewriteFrontend.lib;clangRewriteCore.lib;clangFrontendTool.lib;clangFrontend.lib;clangParse.lib;clangSema.lib;clangAnalysis.lib;clangDriver.lib;clangStaticAnalyzerCheckers.lib;clangStaticAnalyzerFrontend.lib;clangStaticAnalyzerCore.lib;clangEdit.lib;clangFormat.lib;clangSerialization.lib;clangASTMatchers.lib;clangAST.lib;clangLex.lib;clangBasic.lib;LLVMBitReader.lib;LLVMBitWriter.lib;LLVMMCParser.lib;LLVMMC.lib;LLVMOption.lib;LLVMCore.lib;LLVMSupport.lib;LLVMTransformUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;STOOLING_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>clangTooling.lib;clangRewriteFrontend.lib;clangRewriteCore.lib;clangFrontendTool.lib;clangFrontend.lib;clangParse.lib;clangSema.lib;clangAnalysis.lib;clangDriver.lib;clangStaticAnalyzerCheckers.lib;clangStaticAnalyzerFrontend.lib;clangStaticAnalyzerCore.lib;clangEdit.lib;clangFormat.lib;clangSerialization.lib;clangASTMatchers.lib;clangAST.lib;clangLex.lib;clangBasic.lib;LLVMBitReader.lib;LLVMBitWriter.lib;LLVMMCParser.lib;LLVMMC.lib;LLVMOption.lib;LLVMCore.lib;LLVMSupport.lib;LLVMTransformUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\stooling\detail\stoolingDll.h" />
+    <ClInclude Include="..\include\stooling\SourceCode.h" />
+    <ClInclude Include="..\src\CustomToolInvocation.h" />
+    <ClInclude Include="..\src\FixKernelParameterCallback.h" />
+    <ClInclude Include="..\src\FixStringCall.h" />
+    <ClInclude Include="..\src\GetParameterTypeNamesCallback.h" />
+    <ClInclude Include="..\src\RedefineTypedefCallback.h" />
+    <ClInclude Include="..\src\RefactoringTool.h" />
+    <ClInclude Include="..\src\RenameFunctionCallback.h" />
+    <ClInclude Include="..\src\RenameTypedefCallback.h" />
+    <ClInclude Include="..\src\TransferArgumentsCallback.h" />
+    <ClInclude Include="..\src\TransferParametersCallback.h" />
+    <ClInclude Include="..\src\Utilities.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\CustomToolInvocation.cpp" />
+    <ClCompile Include="..\src\FixKernelParameterCallback.cpp" />
+    <ClCompile Include="..\src\GetParameterTypeNamesCallback.cpp" />
+    <ClCompile Include="..\src\RedefineTypedefCallback.cpp" />
+    <ClCompile Include="..\src\RefactoringTool.cpp" />
+    <ClCompile Include="..\src\RenameFunctionCallback.cpp" />
+    <ClCompile Include="..\src\RenameTypedefCallback.cpp" />
+    <ClCompile Include="..\src\SourceCode.cpp" />
+    <ClCompile Include="..\src\TransferArgumentsCallback.cpp" />
+    <ClCompile Include="..\src\TransferParametersCallback.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

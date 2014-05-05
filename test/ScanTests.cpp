@@ -54,11 +54,11 @@ protected:
         pvsutil::Logger::Severity::DebugInfo );
 
     skelcl::init(skelcl::nDevices(1));
-  };
+  }
 
   ~ScanTest() {
     skelcl::terminate();
-  };
+  }
 };
 
 TEST_F(ScanTest, CreateScanWithString) {

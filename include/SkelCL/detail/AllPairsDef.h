@@ -52,11 +52,13 @@
 #include <CL/cl.h>
 #undef __CL_ENABLE_EXCEPTIONS
 
-#include <ssedit/TempSourceFile.h>
-#include <ssedit/Function.h>
+//#include <ssedit/TempSourceFile.h>
+//#include <ssedit/Function.h>
 
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
+
+#include <stooling/SourceCode.h>
 
 #include "../Distributions.h"
 #include "../Matrix.h"
@@ -80,6 +82,8 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const 
       _funcReduce(reduce.func()),
       _funcZip(zip.func()),
       _idReduce(reduce.id()),
+      _srcUser(),
+      _funcUser(),
       _C(32), _R(8), _S(16), // parameters
       _program(createAndBuildProgramSpecial())
 {
@@ -89,6 +93,11 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const 
 template<typename Tleft, typename Tright, typename Tout>
 AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::string& func)
     : detail::Skeleton(),
+      _srcReduce(),
+      _srcZip(),
+      _funcReduce(),
+      _funcZip(),
+      _idReduce(),
       _srcUser(source),
       _funcUser(func),
       _C(16), _R(16), _S(1),
@@ -147,17 +156,23 @@ void AllPairs<Tout(Tleft, Tright)>::execute(Matrix<Tout>& output,
         auto& leftBuffer   = left.deviceBuffer(*devicePtr);
         auto& rightBuffer  = right.deviceBuffer(*devicePtr);
 
-        cl_uint elements[2]   = { static_cast<cl_uint>(outputBuffer.size() / output.columnCount()),
+        cl_uint elements[2]   = { static_cast<cl_uint>(
+                                    outputBuffer.size() / output.columnCount()),
                                   static_cast<cl_uint>(output.columnCount()) };
         cl_uint local[2]      = {_C, _R}; // C, R
-        cl_uint global[2]     = {static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements[1], local[0])),
-                                 static_cast<cl_uint>(detail::util::ceilToMultipleOf(detail::util::devideAndRoundUp(elements[0], _S), local[1]))};
-                                //static_cast<cl_uint>(detail::util::ceilToMultipleOf(elements[0], local[1]*_S))/_S}; // is the same
+        cl_uint global[2]     = {static_cast<cl_uint>(
+                                  detail::util::ceilToMultipleOf(elements[1],
+                                                                 local[0])),
+                                 static_cast<cl_uint>(
+                                  detail::util::ceilToMultipleOf(elements[0],
+                                                                 local[1]*_S))
+                                   /_S}; // SUBTILES
+        cl_uint dimension     = static_cast<cl_uint>( left.columnCount() );
 
-        cl_uint dimension     = left.columnCount();
-
-        LOG_DEBUG("dim: ", dimension, " height: ", elements[0], " width: ",elements[1]);
-        LOG_DEBUG("local: ", local[0],",", local[1], " global: ", global[0],",",global[1]);
+        LOG_DEBUG("dim: ", dimension, " height: ",
+                  elements[0], " width: ",elements[1]);
+        LOG_DEBUG("local: ", local[0],",", local[1],
+                  " global: ", global[0],",",global[1]);
 
         try {
             cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_ALLPAIRS"));
@@ -203,28 +218,12 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
                     "Tried to create program with empty user zip source." );
 
     // _srcReduce: replace func by TMP_REDUCE
-    ssedit::TempSourceFile reduceTemp(_srcReduce);
-
-    auto func = reduceTemp.findFunction(_funcReduce); ASSERT(func.isValid());
-    reduceTemp.commitRename(func, "TMP_REDUCE");
-    reduceTemp.writeCommittedChanges();
-    reduceTemp.removeOpenCLFix();
-
-    std::ifstream rFile(reduceTemp.getFileName());
-    std::string rSource( (std::istreambuf_iterator<char>(rFile)),
-                         std::istreambuf_iterator<char>() );
+    stooling::SourceCode rSource(_srcReduce);
+    rSource.renameFunction(_funcReduce, "TMP_REDUCE");
 
     // _srcZip: replace func by TMP_ZIP
-    ssedit::TempSourceFile zipTemp(_srcZip);
-
-    func = zipTemp.findFunction(_funcReduce); ASSERT(func.isValid());
-    zipTemp.commitRename(func, "TMP_ZIP");
-    zipTemp.writeCommittedChanges();
-    zipTemp.removeOpenCLFix();
-
-    std::ifstream zFile(zipTemp.getFileName());
-    std::string zSource( (std::istreambuf_iterator<char>(zFile)),
-                         std::istreambuf_iterator<char>() );
+    stooling::SourceCode zSource(_srcZip);
+    zSource.renameFunction(_funcReduce, "TMP_ZIP");
 
     // create program
     std::string s(Matrix<Tout>::deviceFunctions());
@@ -235,12 +234,12 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     s.append("\n");
 
     // reduce user source
-    s.append(rSource);
+    s.append(rSource.code());
 
     s.append("\n");
 
     // zip user source
-    s.append(zSource);
+    s.append(zSource.code());
 
     s.append("\n");
 
@@ -258,13 +257,15 @@ detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() co
     auto program = detail::Program(s, detail::util::hash("//AllPairs\n"
                                                          + Matrix<Tout>::deviceFunctions()
                                                          + _idReduce
-                                                         + rSource
-                                                         + zSource));
+                                                         + rSource.code()
+                                                         + zSource.code()));
     // modify program
     if (!program.loadBinary()) {
-        program.transferParameters("TMP_REDUCE", 2, "SCL_ALLPAIRS"); // problem: reduce parameter a und zip parameter a
+        // problem: reduce parameter a und zip parameter a
+        program.transferParameters("TMP_REDUCE", 2, "SCL_ALLPAIRS"); 
         program.transferArguments("TMP_REDUCE", 2, "USR_REDUCE");
-        program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS"); // reihenfolge? erst args von reduce dann zip?
+        // TODO: Order? first args from reduce than zip??
+        program.transferParameters("TMP_ZIP", 2, "SCL_ALLPAIRS");
         program.transferArguments("TMP_ZIP", 2, "USR_ZIP");
 
         program.renameFunction("TMP_REDUCE", "USR_REDUCE");

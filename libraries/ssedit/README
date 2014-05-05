@@ -1,9 +1,0 @@
-The ssedit library is part of SkelCL.
-ssedit is a simple source editor for OpenCL programs based on libclang.
-
-SkelCL is free software. For licensing details look at the LICENSE.txt
-and LICENSE-academic.txt files in the SkelCL root directory, or contact
-the main developer Michel Steuwer (michel.steuwer@uni-muenster.de).
-
-For details about the SkelCL project visit: http://skelcl.uni-muenster.de
-

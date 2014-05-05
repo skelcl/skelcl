@@ -35,10 +35,17 @@
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
+#ifdef _MSC_VER
+
+#else
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
+#endif
 
 #include <gtest/gtest.h>
 
-#pragma GCC diagnostic pop
+#ifdef _MSC_VER
 
+#else
+#pragma GCC diagnostic pop
+#endif

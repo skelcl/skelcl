@@ -42,11 +42,13 @@
 
 #include <string>
 
+#include "../detail/pvsutilDll.h"
+
 namespace pvsutil {
 
 namespace cmdline {
 
-class Description {
+class PVSUTIL_API Description {
 public:
   Description(const char* description);
   Description(const std::string& description);

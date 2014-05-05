@@ -43,11 +43,13 @@
 #include <string>
 #include <vector>
 
+#include "../detail/pvsutilDll.h"
+
 namespace pvsutil {
 
 namespace cmdline {
 
-class Short {
+class PVSUTIL_API Short {
 public:
   Short(const char c);
 
@@ -58,7 +60,7 @@ private:
   std::string _name;
 };
 
-class Long {
+class PVSUTIL_API Long {
 public:
   Long(const char* name);
   Long(const std::string& name);
@@ -70,7 +72,7 @@ private:
   std::string _name;
 };
 
-class Flags {
+class PVSUTIL_API Flags {
 public:
   template <class... Args>
   Flags(const Short& shortFlag, Args... args);

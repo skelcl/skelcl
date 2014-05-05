@@ -130,10 +130,12 @@ void Zip<Tout(Tleft, Tright)>::execute(C<Tout>& output,
     auto& leftBuffer  = left.deviceBuffer(*devicePtr);
     auto& rightBuffer = right.deviceBuffer(*devicePtr);
 
-    cl_uint elements  = leftBuffer.size();
-    cl_uint local     = std::min(this->workGroupSize(),
-                                 devicePtr->maxWorkGroupSize());
-    cl_uint global    = detail::util::ceilToMultipleOf(elements, local);
+    cl_uint elements  = static_cast<cl_uint>( leftBuffer.size() );
+    cl_uint local     = static_cast<cl_uint>(
+                          std::min(this->workGroupSize(),
+                                   devicePtr->maxWorkGroupSize()) );
+    cl_uint global    = static_cast<cl_uint>(
+                          detail::util::ceilToMultipleOf(elements, local) );
 
     try {
       cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_ZIP"));
@@ -313,10 +315,12 @@ void Zip<void(Tleft, Tright)>::execute(const C<Tleft>& left,
     auto& leftBuffer  = left.deviceBuffer(*devicePtr);
     auto& rightBuffer = right.deviceBuffer(*devicePtr);
 
-    cl_uint elements  = leftBuffer.size();
-    cl_uint local     = std::min(this->workGroupSize(),
-                                 devicePtr->maxWorkGroupSize());
-    cl_uint global    = detail::util::ceilToMultipleOf(elements, local);
+    cl_uint elements  = static_cast<cl_uint>( leftBuffer.size() );
+    cl_uint local     = static_cast<cl_uint>(
+                          std::min(this->workGroupSize(),
+                                   devicePtr->maxWorkGroupSize()) );
+    cl_uint global    = static_cast<cl_uint>(
+                          detail::util::ceilToMultipleOf(elements, local) );
 
     try {
       cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_ZIP"));

@@ -42,11 +42,13 @@
 
 #include <string>
 
+#include "../detail/pvsutilDll.h"
+
 namespace pvsutil {
 
 namespace cmdline {
 
-class Version {
+class PVSUTIL_API Version {
 public:
   Version();
   Version(const char* version);

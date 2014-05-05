@@ -1,0 +1,8 @@
+libraries/gtest
+libraries/llvm
+libraries/pvsutil
+msvc/*.sdf
+msvc/*.suo
+msvc/Debug
+msvc/Release
+msvc/x64

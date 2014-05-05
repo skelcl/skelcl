@@ -50,13 +50,13 @@
 class ZipTest : public ::testing::Test {
 protected:
   ZipTest() {
-//    pvsutil::Logger.setLoggingLevel(pvsutil::Severity::Debug);
+    pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
     skelcl::init(skelcl::nDevices(1));
-  };
+  }
 
   ~ZipTest() {
     skelcl::terminate();
-  };
+  }
 };
 
 TEST_F(ZipTest, CreateZipWithString) {

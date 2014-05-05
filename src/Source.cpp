@@ -130,8 +130,13 @@ RegisterCommonDefinition::RegisterCommonDefinition(const char* definition,
 {
   // if definition contains the string "double" enable double
   if (std::string(definition).find("double") != std::string::npos) {
-    CommonDefinitions::append("#pragma OPENCL EXTENSION cl_khr_fp64 : enable",
-                              CommonDefinitions::PRAGMA);
+    CommonDefinitions::append(
+        "#if defined(cl_khr_fp64)\n"
+        "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n"
+        "#elif defined(cl_amd_fp64)\n"
+        "#pragma OPENCL EXTENSION cl_amd_fp64 : enable\n"
+        "#endif\n",
+        CommonDefinitions::PRAGMA);
   }
   CommonDefinitions::append(definition, l);
 }
