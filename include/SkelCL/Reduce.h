@@ -51,11 +51,16 @@
 
 namespace skelcl {
 
-template <typename> class Out;
-template <typename> class Vector;
-namespace detail { class DeviceList; }
+template <typename>
+class Out;
+template <typename>
+class Vector;
+namespace detail {
+class DeviceList;
+}
 
-template <typename> class Reduce;
+template <typename>
+class Reduce;
 
 ///
 /// \class Reduce
@@ -74,7 +79,7 @@ template <typename> class Reduce;
 /// common using + as a symbol for the given function and using infix notation:
 /// y = x[0] + x[1] + x[2] ... + x[n-1].
 ///
-template<typename T>
+template <typename T>
 class Reduce<T(T)> : public detail::Skeleton {
 public:
   ///
@@ -91,8 +96,7 @@ public:
   ///        funcName Name of the 'main' function (the starting point) of the
   ///                 given source code
   ///
-  Reduce(const Source& source,
-         const std::string& id = "0",
+  Reduce(const Source& source, const std::string& id = "0",
          const std::string& funcName = "func");
 
   ///
@@ -139,20 +143,22 @@ public:
   ///               function declaration.
   ///
   template <typename... Args>
-  Vector<T>& operator()(Out<Vector<T>> output,
-                        const Vector<T>& input,
+  Vector<T>& operator()(Out<Vector<T>> output, const Vector<T>& input,
                         Args&&... args);
 
-  const std::string source() const {
-      return _userSource;
+  const std::string source() const
+  {
+    return _userSource;
   }
 
-  const std::string func() const {
-      return _funcName;
+  const std::string func() const
+  {
+    return _funcName;
   }
 
-  const std::string id() const {
-      return _id;
+  const std::string id() const
+  {
+    return _id;
   }
 
 private:
@@ -173,8 +179,7 @@ private:
   ///        size   After the call, the output vector is guaranteed to be able
   ///               to store at least size many elements
   ///
-  void prepareOutput(Vector<T>& output,
-                     const Vector<T>& input,
+  void prepareOutput(Vector<T>& output, const Vector<T>& input,
                      const size_t size);
 
   ///
@@ -188,21 +193,16 @@ private:
   template <typename... Args>
   void execute_first_step(const detail::Device& device,
                           const detail::DeviceBuffer& input,
-                                detail::DeviceBuffer& output,
-                                size_t data_size,
-                                size_t global_size,
-                                Args&&... args);
+                          detail::DeviceBuffer& output, size_t data_size,
+                          size_t global_size, Args&&... args);
 
   template <typename... Args>
   void execute_second_step(const detail::Device& device,
                            const detail::DeviceBuffer& input,
-                                 detail::DeviceBuffer& output,
-                                 size_t data_size,
-                                 Args&&... args);
+                           detail::DeviceBuffer& output, size_t data_size,
+                           Args&&... args);
 
-
-  std::shared_ptr<skelcl::detail::Program>
-    createPrepareAndBuildProgram();
+  skelcl::detail::Program createPrepareAndBuildProgram();
 
   /// Literal describing the identity of type T in respect to the operation
   /// performed by the reduction and described in function named _funcName
@@ -215,9 +215,7 @@ private:
   std::string _userSource;
 
   /// Program
-  std::shared_ptr<skelcl::detail::Program> _program;
-
-
+  skelcl::detail::Program _program;
 };
 
 } // namespace skelcl
