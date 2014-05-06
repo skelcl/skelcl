@@ -240,32 +240,8 @@ void Reduce<T(T)>::execute_second_step(const detail::Device& device,
     kernel.setArg(3, static_cast<cl_uint>(data_size) );
     kernel.setArg(4, static_cast<cl_uint>(local_size) );
 
-<<<<<<< HEAD
     detail::kernelUtil::setKernelArgs(kernel, device, 5,
                                       std::forward<Args>(args)...);
-=======
-template <typename T>
-size_t
-  Reduce<T(T)>::determineFirstLevelWorkGroupCount(const detail::Device& device,
-                                                  const Vector<T>& input,
-                                                  const size_t workGroupSize)
-{
-  auto inputSize          = input.deviceBuffer(device).size();
-  auto workGroupStepWidth = 2 * workGroupSize;
-  if (inputSize <= workGroupStepWidth) {
-    return 0; // no first level necessary
-  } else {
-    // max so many work groups, that the results can be handled
-    // in a single step
-    auto maxWorkGroupCount = workGroupStepWidth;
-    auto count =   (inputSize / workGroupStepWidth) // round up
-                 + ( (inputSize % workGroupStepWidth != 0) ? 1 : 0 );
-    // return workGroupCount
-    return std::min(maxWorkGroupCount, count);
-  }
-}
->>>>>>> 4eff6a5b1e371f8ee30b5dc99400355ff3449e86
-
 
     auto keepAlive = detail::kernelUtil::keepAlive(device,
                                                    input.clBuffer(),
@@ -275,33 +251,11 @@ size_t
     // after finishing the kernel invoke this function ...
     auto invokeAfter =  [keepAlive] () {};
 
-<<<<<<< HEAD
     ASSERT( local_size <= data_size);
     device.enqueue(kernel,
                    cl::NDRange(local_size), cl::NDRange(local_size),
                    cl::NullRange, // offset
                    invokeAfter);
-=======
-template <typename T>
-std::shared_ptr<typename Reduce<T(T)>::Level>
-  Reduce<T(T)>::determineSecondLevelParameters(
-          const detail::Device& device,
-          const Vector<T>& input,
-          const Vector<T>& output,
-          const std::shared_ptr<typename Reduce<T(T)>::Level>& firstLevel)
-{
-  auto level = std::make_shared<typename Reduce<T(T)>::Level>();
-
-  level->workGroupSize  = determineWorkGroupSize( device );
-  level->workGroupCount = 1;
-  if (firstLevel) {
-    level->inputPtr     = &output;
-  } else {
-    level->inputPtr     = &input;
-  }
-  level->outputPtr      = &output;
->>>>>>> 4eff6a5b1e371f8ee30b5dc99400355ff3449e86
-
 
   } catch (cl::Error& err) {
     ABORT_WITH_ERROR(err);
