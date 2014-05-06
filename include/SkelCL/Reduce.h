@@ -51,11 +51,16 @@
 
 namespace skelcl {
 
-template <typename> class Out;
-template <typename> class Vector;
-namespace detail { class DeviceList; }
+template <typename>
+class Out;
+template <typename>
+class Vector;
+namespace detail {
+class DeviceList;
+}
 
-template <typename> class Reduce;
+template <typename>
+class Reduce;
 
 ///
 /// \class Reduce
@@ -74,7 +79,7 @@ template <typename> class Reduce;
 /// common using + as a symbol for the given function and using infix notation:
 /// y = x[0] + x[1] + x[2] ... + x[n-1].
 ///
-template<typename T>
+template <typename T>
 class Reduce<T(T)> : public detail::Skeleton {
 public:
   ///
@@ -91,8 +96,7 @@ public:
   ///        funcName Name of the 'main' function (the starting point) of the
   ///                 given source code
   ///
-  Reduce(const Source& source,
-         const std::string& id = "0",
+  Reduce(const Source& source, const std::string& id = "0",
          const std::string& funcName = "func");
 
   ///
@@ -139,41 +143,25 @@ public:
   ///               function declaration.
   ///
   template <typename... Args>
-  Vector<T>& operator()(Out<Vector<T>> output,
-                        const Vector<T>& input,
+  Vector<T>& operator()(Out<Vector<T>> output, const Vector<T>& input,
                         Args&&... args);
 
-  const std::string source() const {
-      return _userSource;
+  const std::string source() const
+  {
+    return _userSource;
   }
 
-  const std::string func() const {
-      return _funcName;
+  const std::string func() const
+  {
+    return _funcName;
   }
 
-  const std::string id() const {
-      return _id;
+  const std::string id() const
+  {
+    return _id;
   }
 
 private:
-  ///
-  /// \brief This struct describes one level of the reduce algorithm
-  ///
-  /// The reduce algorithm is executed in two levels. The first level reduces 
-  /// the input vector to an appropriate number of elements. Afterwards the
-  /// second level reduces this intermediate vector further to a single value.
-  ///
-  struct Level {
-    Level();
-    Level(const Level& rhs) = delete;
-    Level& operator=(const Level& rhs) = delete;
-
-    size_t            workGroupSize;
-    size_t            workGroupCount;
-    const Vector<T>*  inputPtr; //just observing not owning: raw pointer is fine
-    const Vector<T>*  outputPtr;//just observing not owning: raw pointer is fine
-    std::shared_ptr<skelcl::detail::Program> program;
-  };
 
   ///
   /// \brief Prepares the input for kernel execution
@@ -191,8 +179,7 @@ private:
   ///        size   After the call, the output vector is guaranteed to be able
   ///               to store at least size many elements
   ///
-  void prepareOutput(Vector<T>& output,
-                     const Vector<T>& input,
+  void prepareOutput(Vector<T>& output, const Vector<T>& input,
                      const size_t size);
 
   ///
@@ -204,75 +191,18 @@ private:
   ///        args   Additional arguments
   ///
   template <typename... Args>
-  void execute(const detail::Device& device,
-               const std::shared_ptr<Level>& level,
-               Args&&... args);
+  void execute_first_step(const detail::Device& device,
+                          const detail::DeviceBuffer& input,
+                          detail::DeviceBuffer& output, size_t data_size,
+                          size_t global_size, Args&&... args);
 
-  /// 
-  /// \brief This function determines an appropriate work group size for the
-  ///        given device
-  ///
-  /// \param The device for which the work group size should be determined
-  ///
-  /// \return An appropriate work group size for the given device
-  ///
-  size_t determineWorkGroupSize(const detail::Device& device);
+  template <typename... Args>
+  void execute_second_step(const detail::Device& device,
+                           const detail::DeviceBuffer& input,
+                           detail::DeviceBuffer& output, size_t data_size,
+                           Args&&... args);
 
-  ///
-  /// \brief This function determines the number of work groups to be started
-  ///        in the first level of the reduce algorithm for a given device.
-  ///
-  /// \param device         The device the work group number is determined for
-  ///        input          The input vector is used to determine the number 
-  ///                       of elements to be reduced by the given device
-  ///        workGroupSize  The size of a work group, as determined by the 
-  ///                       function determineWorkGroupSize
-  ///
-  /// \return Number of work groups to be started in the first level of the 
-  ///         reduce algorithm for this device
-  ///
-  size_t determineFirstLevelWorkGroupCount(const detail::Device& device,
-                                           const Vector<T>& input,
-                                           const size_t workGroupSize);
-
-  ///
-  /// \brief This function determines appropriate values for execution the 
-  ///        first level of the reduce algorithm on the given device.
-  ///        If no first level should be executed nullptr is returned.
-  ///
-  /// \param device The device the parameters are determined for
-  ///        input  The input vector of the first level
-  ///        output The output vector of the first level
-  ///
-  /// \return A pointer pointing to an appropriate filled level object, or
-  ///         nullptr if the first level should be skipped
-  ///
-  std::shared_ptr<Level>
-    determineFirstLevelParameters(const detail::Device& device,
-                                  const Vector<T>& input,
-                                  const Vector<T>& output);
-
-  ///
-  /// \brief This function determines appropriate values for execution the 
-  ///        second level of the reduce algorithm on the given device
-  ///
-  /// \param device     The device the parameters are determined for
-  ///        input      The input vector of the first level
-  ///        output     The output vector of the first level
-  ///        firstLevel The parameters used for the execution of the
-  ///                   first level, might be nullptr if no first level was 
-  ///                   executed
-  ///
-  /// \return A pointer pointing to an appropriate filled level object
-  ///
-  std::shared_ptr<Level>
-    determineSecondLevelParameters(const detail::Device& device,
-                                   const Vector<T>& input,
-                                   const Vector<T>& output,
-                                   const std::shared_ptr<Level>& firstLevel);
-
-  std::shared_ptr<skelcl::detail::Program>
-    createPrepareAndBuildProgram(const std::string& preamble);
+  skelcl::detail::Program createPrepareAndBuildProgram();
 
   /// Literal describing the identity of type T in respect to the operation
   /// performed by the reduction and described in function named _funcName
@@ -283,6 +213,9 @@ private:
 
   /// Source code as defined by the application developer
   std::string _userSource;
+
+  /// Program
+  skelcl::detail::Program _program;
 };
 
 } // namespace skelcl
