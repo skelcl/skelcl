@@ -43,6 +43,8 @@
 #include <SkelCL/Vector.h>
 #include <SkelCL/Reduce.h>
 
+#include <iostream>
+
 #include "Test.h"
 
 class ReduceTest : public ::testing::Test {
@@ -61,19 +63,21 @@ TEST_F(ReduceTest, CreateReduce) {
   skelcl::Reduce<float(float)> r("float func(float x, float y){ return x+y; }");
 }
 
+
 TEST_F(ReduceTest, SimpleReduce) {
   skelcl::Reduce<float(float)> r("float func(float x, float y){ return x+y; }");
 
-  skelcl::Vector<float> input(1024);
+  skelcl::Vector<float> input(100);
   for (size_t i = 0; i < input.size(); ++i) {
     input[i] = i;
   }
 
   skelcl::Vector<float> output = r(input);
 
-  EXPECT_LE(1, output.size());
-  EXPECT_EQ(523776, output[0]);
+  EXPECT_LE(1,    output.size());
+  EXPECT_EQ(4950, output[0]);
 }
+
 
 TEST_F(ReduceTest, SimpleReduce2) {
   skelcl::Reduce<int(int)> r("int func(int x, int y){ return x+y; }");
@@ -89,12 +93,12 @@ TEST_F(ReduceTest, SimpleReduce2) {
   EXPECT_EQ(1258491, output[0]);
 }
 
-/*
-TEST_F(ReduceTest, SimpleReduce3) {
+
+
+TEST_F(ReduceTest, LongReduce) {
   skelcl::Reduce<int(int)> r("int func(int x, int y){ return x+y; }");
 
-  skelcl::Vector<int>::size_type n = 10000000;
-  skelcl::Vector<int> input(n);
+  skelcl::Vector<int> input(100000000);
   for (unsigned int i = 0; i < input.size(); ++i) {
     input[i] = 1;
   }
@@ -102,6 +106,44 @@ TEST_F(ReduceTest, SimpleReduce3) {
   skelcl::Vector<int> output = r(input);
 
   EXPECT_LE(1, output.size());
-  EXPECT_EQ(n, output[0]);
+  EXPECT_EQ(100000000, output[0]);
 }
-*/
+
+
+
+TEST_F(ReduceTest, nSizesReduce1) {
+  skelcl::Reduce<float(float)> r("float func(float x, float y){ return x+y; }");
+
+  const int N = 256;
+
+  skelcl::Vector<float> input;
+  skelcl::Vector<float> output;
+
+  for( int i = 1; i < N; ++i )
+  {
+    input.resize(i, 1);
+    output = r(input);
+   
+    EXPECT_EQ(input.size(), output[0]);
+  }
+}
+
+
+TEST_F(ReduceTest, nSizesReduce2) {
+    skelcl::Reduce<float(float)> r("float func(float x, float y){ return x+y; }");
+  
+    const int N = 256;
+  
+    skelcl::Vector<float> input;
+    skelcl::Vector<float> output;
+  
+    for( int i = 8192; i < (8192 + N); ++i )
+    {
+      input.resize(i, 1);
+      output = r(input);
+      
+      EXPECT_EQ(input.size(), output[0]);
+    }
+ }
+
+
