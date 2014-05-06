@@ -22,174 +22,144 @@
 
 using namespace skelcl;
 
-long long get_time() {
+long long now()
+{
   auto time = std::chrono::high_resolution_clock::now();
   return std::chrono::duration_cast<std::chrono::milliseconds>(
-    time.time_since_epoch()).count();
+      time.time_since_epoch()).count();
 }
 
-void writePPM(Matrix<float>& img, const std::string filename) {
-	std::ofstream outputFile(filename.c_str());
+void writePPM(Matrix<int>& img, const std::string filename)
+{
+  std::ofstream outputFile(filename.c_str());
+  outputFile << "P2\n"
+             << "#Creator: sbr\n" << img.columnCount() << " " << img.rowCount()
+             << "\n255\n";
 
-	outputFile << "P2\n" << "#Creator: sbr\n" << img.columnCount() << " "
-			<< img.rowCount() << "\n255\n";
-
-	Matrix<float>::iterator itr;
-
-	for (itr = img.begin(); itr != img.end(); ++itr) {
-		outputFile << *itr << "\n";
-	}
+  for (auto itr = img.begin(); itr != img.end(); ++itr) {
+    outputFile << *itr << "\n";
+  }
 }
 
-void writePPM(Matrix<int>& img, const std::string filename) {
-	std::ofstream outputFile(filename.c_str());
-	outputFile << "P2\n" << "#Creator: sbr\n" << img.columnCount() << " "
-			<< img.rowCount() << "\n255\n";
-	Matrix<int>::iterator itr = img.begin();
-	for (itr = img.begin(); itr != img.end(); ++itr) {
-		outputFile << *itr << "\n";
-	}
+int readPPM(const std::string inFile, std::vector<int>& img)
+{
+  img.clear();
+  int numrows = 0, numcols = 0;
+  std::ifstream infile(inFile);
+
+  auto getNextLine = [](std::ifstream & infile)->std::string
+  {
+    std::string inputLine;
+    while(true) {
+      getline(infile, inputLine);
+      // read until a line is not a comment
+      if (inputLine[0] != '#') break;
+    }
+    return inputLine;
+  };
+
+
+  auto version = getNextLine(infile);
+
+  auto line = getNextLine(infile);
+  std::stringstream sstream(line);
+  sstream >> numcols >> numrows;
+   
+  getNextLine(infile); // skip the next line (max value)
+
+  if (version == "P2") {
+    int i;
+    while (getline(infile, line)) {
+      std::stringstream ss(line);
+      ss >> i;
+      img.push_back(i);
+    }
+  } else {
+    ASSERT_MESSAGE(false, "Wrong version of input graphics");
+  }
+  return numcols;
 }
 
-void writePPM(std::vector<float>& img, const std::string filename) {
-	std::ofstream outputFile(filename.c_str());
+int main(int argc, char** argv)
+{
+  using namespace pvsutil::cmdline;
 
-	outputFile << "P2\n" << "#Creator: sbr\n" << 640 << " " << 400 << "\n255\n";
+  pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
 
-	std::vector<float>::iterator itr;
-	for (itr = img.begin(); itr != img.end(); ++itr) {
-		outputFile << *itr << "\n";
-	}
+  auto deviceCount =
+      Arg<int>(Flags(Long("device_count")),
+               Description("Number of devices used by SkelCL."), Default(1));
+
+  auto deviceType = Arg<device_type>(Flags(Long("device_type")),
+                                     Description("Device type: ANY, CPU, "
+                                                 "GPU, ACCELERATOR"),
+                                     Default(device_type::ANY));
+
+  auto range = Arg<int>(Flags(Long("range")), Description("The Overlap radius"),
+                        Default(5));
+
+  auto inFile = Arg<std::string>(Flags(Long("inFile")),
+                                 Description("Filename of the input file"),
+                                 Default(std::string("lena.pgm")));
+
+  auto iterations = Arg<int>(Flags(Long("iterations"), Short('i')),
+                             Description("Number of iterations."), Default(1));
+
+  cmd.add(&deviceCount, &deviceType, &range, &inFile, &iterations);
+  cmd.parse(argc, argv);
+
+  // pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
+
+  std::stringstream outFile;
+  outFile << inFile.getValue().substr(0, inFile.getValue().find(".")) << "_"
+          << range << "_devs_" << deviceCount << ".pgm";
+
+
+  skelcl::Vector<float> kernelVec(2 * range + 1);
+  auto fwhm = 5;
+  auto offset = (2 * range + 1) / 2;
+  auto a = (fwhm / 2.354);
+  for (auto i = -offset; i <= ((2 * range + 1) - offset - 1); i++) {
+    kernelVec[i + offset] = exp(-i * i / (2 * a * a));
+  }
+
+  std::vector<int> img;
+  int numcols = readPPM(inFile, img);
+
+  auto time0 = now();
+
+  skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
+
+  auto time1 = now();
+
+  Matrix<int> inputImage(img, numcols);
+
+  skelcl::MapOverlap<int(int)> s(std::ifstream{"./gauss2D.cl"},
+                                 range.getValue(), detail::Padding::NEAREST,
+                                 0);
+
+  auto time2 = now();
+
+  for (auto iter = 0; iter < iterations; iter++) {
+    inputImage = s(inputImage, kernelVec, range.getValue());
+    inputImage.copyDataToHost();
+    inputImage.resize(inputImage.size());
+  }
+
+  auto time3 = now();
+
+  inputImage.copyDataToHost();
+
+  auto time5 = now();
+
+  printf("Init time : %.12f\n", (float)(time1 - time0) / 1000000);
+  printf("Creation time : %.12f\n", (float)(time2 - time1) / 1000000);
+  printf("Exec time : %.12f\n", (float)(time3 - time2) / 1000000);
+  printf("Total time : %.12f\n", (float)(time5 - time0) / 1000000);
+  printf("Total without init time : %.12f\n", (float)(time5 - time1) / 1000000);
+
+  writePPM(inputImage, outFile.str());
+
+  skelcl::terminate();
 }
 
-int readPPM(const std::string inFile, std::vector<float>& img) {
-	img.clear();
-	int numrows = 0, numcols = 0;
-	std::ifstream infile(inFile);
-
-	std::stringstream ss;
-	std::string inputLine = "";
-
-	// First line : version
-	getline(infile, inputLine);
-
-	// Second line : comment
-	getline(infile, inputLine);
-
-	// Continue with a stringstream
-	getline(infile, inputLine);
-	std::stringstream ss2(inputLine);
-	//	// Third line : size
-	ss2 >> numcols >> numrows;
-
-	getline(infile, inputLine);
-
-	int i;
-	while (getline(infile, inputLine)) {
-		std::stringstream ss(inputLine);
-		ss >> i;
-		img.push_back(i);
-	}
-
-	infile.close();
-	return numcols;
-}
-
-int main(int argc, char** argv) {
-	long long time0;
-	long long time1;
-	long long time2;
-	long long time3;
-	long long time5;
-
-	int i;
-	using namespace pvsutil::cmdline;
-	pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
-
-	auto deviceCount = Arg<int>(Flags(Long("device_count")),
-			Description("Number of devices used by SkelCL."), Default(1));
-
-	auto deviceType = Arg<device_type>(Flags(Long("device_type")),
-			Description("Device type: ANY, CPU, "
-					"GPU, ACCELERATOR"), Default(device_type::GPU));
-
-	auto range = Arg<int>(Flags(Long("range")),
-			Description("The Overlap radius"), Default(5));
-
-	auto inFile = Arg<std::string>(Flags(Long("inFile")),
-			Description("Filename of the input file"),
-			Default(std::string("lena4096.pgm")));
-	auto iterationen = Arg<int>(Flags(Long("iterationen")),
-			Description("Number of iterations."), Default(1));
-
-	cmd.add(&deviceCount, &deviceType, &range, &inFile, &iterationen);
-	cmd.parse(argc, argv);
-
-	std::stringstream out("_");
-
-	out
-			<< static_cast<std::string>(inFile).substr(0,
-					static_cast<std::string>(inFile).find(".")) << "_" << range
-			<< "_devs_" << deviceCount << ".pgm";
-
-	//calculate the kernel
-	int fwhm = 5;
-	int offset = (2 * range + 1) / 2;
-
-	/*
-	 * Given as parameter
-	 * FWHM = 2 sqrt(2 ln2) sigma ~ 2.35 sigma
-	 */
-	float a = (fwhm / 2.354);
-
-	skelcl::Vector<float> kernelVec(2 * range + 1);
-
-	/* set up kernel to weight the pixels */
-	/* (KERNEL_SIZE - offset -1) is the CORRECT version */
-	for (i = -offset; i <= ((2 * range + 1) - offset - 1); i++) {
-		kernelVec[i + offset] = exp(-i * i / (2 * a * a));
-	}
-
-	//Read pgm-File
-	std::vector<float> img(1);
-
-	int numcols = readPPM(inFile, img);
-
-	time0 = get_time();
-
-	skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
-
-	time1 = get_time();
-
-	Matrix<float> inputImage(img, numcols);
-
-	skelcl::MapOverlap<float(float)> s(std::ifstream { "./gauss2D.cl" },
-			static_cast<unsigned int>(range), detail::Padding::NEAREST, 255);
-
-	time2 = get_time();
-
-	for (unsigned int iter = 0; iter < static_cast<unsigned int>(iterationen);
-			iter++) {
-		inputImage = s(inputImage, kernelVec, static_cast<unsigned int>(range));
-		inputImage.copyDataToHost();
-		inputImage.resize(inputImage.size());
-	}
-
-	time3 = get_time();
-
-	Matrix<float>::iterator itr = inputImage.begin();
-
-	//Get time
-	time5 = get_time();
-	printf("Init time : %.12f\n", (float) (time1 - time0) / 1000000);
-	printf("Creation time : %.12f\n", (float) (time2 - time1) / 1000000);
-	printf("Exec time : %.12f\n", (float) (time3 - time2) / 1000000);
-	printf("Total time : %.12f\n", (float) (time5 - time0) / 1000000);
-	printf("Total without init time : %.12f\n",
-			(float) (time5 - time1) / 1000000);
-
-    writePPM(inputImage, out.str());
-
-	skelcl::terminate();
-
-}
