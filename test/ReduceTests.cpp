@@ -43,15 +43,20 @@
 #include <SkelCL/Vector.h>
 #include <SkelCL/Reduce.h>
 
+#include <SkelCL/detail/Device.h>
+
+
 #include <iostream>
 
 #include "Test.h"
+
+typedef skelcl::detail::Device::Type device_type;
 
 class ReduceTest : public ::testing::Test {
 protected:
   ReduceTest() {
     //pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
-    skelcl::init(skelcl::nDevices(1));
+    skelcl::init(skelcl::nDevices(1).deviceType(device_type::GPU));
   }
 
   ~ReduceTest() {
