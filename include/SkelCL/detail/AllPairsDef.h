@@ -74,7 +74,6 @@
 
 namespace skelcl {
 
-// Konstruktor
 template<typename Tleft, typename Tright, typename Tout>
 AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip)
     : detail::Skeleton(),
@@ -107,7 +106,6 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::st
     LOG_DEBUG("Create new AllPairs object (", this, ")");
 }
 
-// Ausführungsoperator
 template<typename Tleft, typename Tright, typename Tout>
 template <typename... Args>
 Matrix<Tout> AllPairs<Tout(Tleft, Tright)>::operator()(const Matrix<Tleft>& left,
@@ -119,7 +117,6 @@ Matrix<Tout> AllPairs<Tout(Tleft, Tright)>::operator()(const Matrix<Tleft>& left
     return output;
 }
 
-// Ausführungsoperator mit Referenz
 template<typename Tleft, typename Tright, typename Tout>
 template <typename... Args>
 Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > output,
@@ -144,7 +141,6 @@ Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > outp
     return output.container();
 }
 
-// Ausführen
 template<typename Tleft, typename Tright, typename Tout>
 template <typename... Args>
 void AllPairs<Tout(Tleft, Tright)>::execute(Matrix<Tout>& output,
@@ -213,7 +209,6 @@ void AllPairs<Tout(Tleft, Tright)>::execute(Matrix<Tout>& output,
     LOG_INFO("AllPairs kernel started");
 }
 
-// Programm erstellen
 template<typename Tleft, typename Tright, typename Tout>
 detail::Program AllPairs<Tout(Tleft, Tright)>::createAndBuildProgramSpecial() const
 {
@@ -348,7 +343,6 @@ SCL_TYPE_1 getElementFromColumn(rmatrix_t* matrix, const unsigned int element_id
     return program;
 }
 
-// Eingabe vorbereiten
 template<typename Tleft, typename Tright, typename Tout>
 void AllPairs<Tout(Tleft, Tright)>::prepareInput(const Matrix<Tleft>& left,
                                                  const Matrix<Tright>& right)
@@ -415,7 +409,6 @@ void AllPairs<Tout(Tleft, Tright)>::prepareInput(const Matrix<Tleft>& left,
     right.startUpload();
 }
 
-// Ausgabe vorbereiten
 template<typename Tleft, typename Tright, typename Tout>
 void AllPairs<Tout(Tleft, Tright)>::prepareOutput(Matrix<Tout>& output,
                                                   const Matrix<Tleft>& left,

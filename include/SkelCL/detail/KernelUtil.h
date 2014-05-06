@@ -56,6 +56,8 @@
 #include "Device.h"
 #include "DeviceBuffer.h"
 
+#include "skelclDll.h"
+
 namespace skelcl {
 
 namespace detail {
@@ -119,9 +121,9 @@ void setKernelArgs(cl::Kernel& kernel,
                    T&& value,
                    Args&&... args);
 
-void setKernelArgs(cl::Kernel& kernel,
-                   const Device& device,
-                   size_t index);
+SKELCL_DLL void setKernelArgs(cl::Kernel& kernel,
+                              const Device& device,
+                              size_t index);
 
 // Definitions
 

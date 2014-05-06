@@ -56,7 +56,7 @@ class ReduceTest : public ::testing::Test {
 protected:
   ReduceTest() {
     //pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
-    skelcl::init(skelcl::nDevices(1).deviceType(device_type::GPU));
+    skelcl::init(skelcl::nDevices(1));
   }
 
   ~ReduceTest() {

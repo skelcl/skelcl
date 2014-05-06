@@ -69,7 +69,8 @@ void Matrix<IndexPoint>::setDistribution(const detail::Distribution<Matrix<U>>&
                                             origDistribution) const
 {
   ASSERT(origDistribution.isValid());
-  this->setDistribution(detail::cloneAndConvert<IndexPoint>(origDistribution));
+  this->setDistribution(
+    detail::cloneAndConvert<Matrix<IndexPoint>>(origDistribution));
 }
 
 template <typename U>
@@ -80,7 +81,8 @@ void
 {
   ASSERT(newDistribution != nullptr);
   ASSERT(newDistribution->isValid());
-  this->setDistribution(detail::cloneAndConvert<IndexPoint>(*newDistribution));
+  this->setDistribution(
+    detail::cloneAndConvert<Matrix<IndexPoint>>(*newDistribution));
 }
 
 } // namespace skelcl

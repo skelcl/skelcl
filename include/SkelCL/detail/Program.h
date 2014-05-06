@@ -52,22 +52,23 @@
 
 #include "Device.h"
 #include "Util.h"
+#include "skelclDll.h"
 
 namespace skelcl {
 
 namespace detail {
 
-class Program {
+class SKELCL_DLL Program {
 public:
   Program() = delete;
 
   Program(const std::string& source, const std::string& hash = "");
 
-  Program(const Program&) = default;
+  Program(const Program&) = delete;
 
   Program(Program&&);
 
-  Program& operator=(const Program&) = default;
+  Program& operator=(const Program&) = delete;
 
   Program& operator=(Program&&);
 

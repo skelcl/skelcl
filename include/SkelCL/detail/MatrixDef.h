@@ -93,7 +93,7 @@ Matrix<T>::Matrix(const size_type size,
                   const value_type& value,
                   const detail::Distribution<Matrix<T>>& distribution)
   : _size(size),
-    _distribution(detail::cloneAndConvert<T>(distribution)),
+    _distribution(detail::cloneAndConvert<Matrix<T>>(distribution)),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer( _size.elemCount(), value ),
@@ -109,7 +109,7 @@ Matrix<T>::Matrix(const std::vector<T>& vector,
                   const size_type::size_type columnCount,
                   const detail::Distribution<Matrix<T>>& distribution)
   : _size({0,0}),
-    _distribution(detail::cloneAndConvert<T>(distribution)),
+    _distribution(detail::cloneAndConvert<Matrix<T>>(distribution)),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(vector),
@@ -132,7 +132,7 @@ Matrix<T>::Matrix(const std::vector<T>& vector,
                   const size_type size,
                   const detail::Distribution<Matrix<T>>& distribution)
   : _size(size),
-    _distribution(detail::cloneAndConvert<T>(distribution)),
+    _distribution(detail::cloneAndConvert<Matrix<T>>(distribution)),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(vector),
@@ -151,7 +151,7 @@ Matrix<T>
 {
   Matrix<T> matrix;
   matrix._size = {input.size(), input[0].size()};
-  matrix._distribution = detail::cloneAndConvert<T>(distribution);
+  matrix._distribution = detail::cloneAndConvert<Matrix<T>>(distribution);
   matrix._hostBufferUpToDate = true;
   matrix._deviceBuffersUpToDate = false;
   matrix._hostBuffer.resize(matrix._size.elemCount());
@@ -176,7 +176,7 @@ Matrix<T>::Matrix(InputIterator first, InputIterator last,
                   const size_type::size_type columnCount,
                   const detail::Distribution<Matrix<T>>& distribution)
   : _size( {0,0} ),
-    _distribution(detail::cloneAndConvert<T>(distribution)),
+    _distribution(detail::cloneAndConvert<Matrix<T>>(distribution)),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(),
@@ -202,7 +202,7 @@ Matrix<T>::Matrix(InputIterator first, InputIterator last,
                   const size_type size,
                   const detail::Distribution<Matrix<T>>& distribution)
   : _size(size),
-    _distribution(detail::cloneAndConvert<T>(distribution)),
+    _distribution(detail::cloneAndConvert<Matrix<T>>(distribution)),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(first, last),
@@ -224,8 +224,8 @@ Matrix<T>::Matrix(Matrix<T>&& rhs)
     _deviceBuffers(std::move(rhs._deviceBuffers))
 {
   (void)registerMatrixDeviceFunctions;
-  _size = {0, 0};
-  _hostBuffer.clear();
+  rhs._size = {0, 0};
+  rhs._hostBuffer.clear();
 
   LOG_DEBUG_INFO("Created new Matrix object (", this, ") with ",
       getDebugInfo());
@@ -664,7 +664,7 @@ void Matrix<T>::setDistribution(const detail::Distribution<Matrix<U>>&
 {
   ASSERT(origDistribution.isValid());
   // convert and set distribution
-  this->setDistribution(detail::cloneAndConvert<T>(origDistribution));
+  this->setDistribution(detail::cloneAndConvert<Matrix<T>>(origDistribution));
 }
 
 template <typename T>
@@ -677,7 +677,7 @@ void
   ASSERT(origDistribution != nullptr);
   ASSERT(origDistribution.isValid());
   // convert and set distribution
-  this->setDistribution(detail::cloneAndConvert<T>(origDistribution));
+  this->setDistribution(detail::cloneAndConvert<Matrix<T>>(origDistribution));
 }
 
 template <typename T>
@@ -883,7 +883,7 @@ std::string Matrix<T>::getDebugInfo() const
     << ", deviceBuffersCreated: "  << (!_deviceBuffers.empty())
     << ", hostBufferUpToDate: "    << _hostBufferUpToDate
     << ", deviceBuffersUpToDate: " << _deviceBuffersUpToDate
-    << ", hostBuffer: "            << &_hostBuffer.front();
+    << ", hostBuffer: "            << _hostBuffer.data();
   return s.str();
 }
 

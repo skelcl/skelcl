@@ -1,0 +1,487 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D0047F85190D876B00B0D26C /* CustomToolInvocation.h in Headers */ = {isa = PBXBuildFile; fileRef = D0047F6B190D876B00B0D26C /* CustomToolInvocation.h */; };
+		D0047F86190D876B00B0D26C /* stoolingDll.h in Headers */ = {isa = PBXBuildFile; fileRef = D0047F6D190D876B00B0D26C /* stoolingDll.h */; };
+		D0047F87190D876B00B0D26C /* RefactoringTool.h in Headers */ = {isa = PBXBuildFile; fileRef = D0047F6E190D876B00B0D26C /* RefactoringTool.h */; };
+		D0047F88190D876B00B0D26C /* SourceCode.h in Headers */ = {isa = PBXBuildFile; fileRef = D0047F6F190D876B00B0D26C /* SourceCode.h */; };
+		D0047F89190D876B00B0D26C /* Utilities.h in Headers */ = {isa = PBXBuildFile; fileRef = D0047F70190D876B00B0D26C /* Utilities.h */; };
+		D0047F8A190D876B00B0D26C /* CustomToolInvocation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0047F73190D876B00B0D26C /* CustomToolInvocation.cpp */; };
+		D0047F8B190D876B00B0D26C /* FixKernelParameterCallback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0047F74190D876B00B0D26C /* FixKernelParameterCallback.cpp */; };
+		D0047F8C190D876B00B0D26C /* FixKernelParameterCallback.h in Headers */ = {isa = PBXBuildFile; fileRef = D0047F75190D876B00B0D26C /* FixKernelParameterCallback.h */; };
+		D0047F8D190D876B00B0D26C /* FixStringCall.h in Headers */ = {isa = PBXBuildFile; fileRef = D0047F76190D876B00B0D26C /* FixStringCall.h */; };
+		D0047F8E190D876B00B0D26C /* GetParameterTypeNamesCallback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0047F77190D876B00B0D26C /* GetParameterTypeNamesCallback.cpp */; };
+		D0047F8F190D876B00B0D26C /* GetParameterTypeNamesCallback.h in Headers */ = {isa = PBXBuildFile; fileRef = D0047F78190D876B00B0D26C /* GetParameterTypeNamesCallback.h */; };
+		D0047F90190D876B00B0D26C /* RedefineTypedefCallback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0047F79190D876B00B0D26C /* RedefineTypedefCallback.cpp */; };
+		D0047F91190D876B00B0D26C /* RedefineTypedefCallback.h in Headers */ = {isa = PBXBuildFile; fileRef = D0047F7A190D876B00B0D26C /* RedefineTypedefCallback.h */; };
+		D0047F92190D876B00B0D26C /* RefactoringTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0047F7B190D876B00B0D26C /* RefactoringTool.cpp */; };
+		D0047F93190D876B00B0D26C /* RenameFunctionCallback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0047F7C190D876B00B0D26C /* RenameFunctionCallback.cpp */; };
+		D0047F94190D876B00B0D26C /* RenameFunctionCallback.h in Headers */ = {isa = PBXBuildFile; fileRef = D0047F7D190D876B00B0D26C /* RenameFunctionCallback.h */; };
+		D0047F95190D876B00B0D26C /* RenameTypedefCallback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0047F7E190D876B00B0D26C /* RenameTypedefCallback.cpp */; };
+		D0047F96190D876B00B0D26C /* RenameTypedefCallback.h in Headers */ = {isa = PBXBuildFile; fileRef = D0047F7F190D876B00B0D26C /* RenameTypedefCallback.h */; };
+		D0047F97190D876B00B0D26C /* SourceCode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0047F80190D876B00B0D26C /* SourceCode.cpp */; };
+		D0047F98190D876B00B0D26C /* TransferArgumentsCallback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0047F81190D876B00B0D26C /* TransferArgumentsCallback.cpp */; };
+		D0047F99190D876B00B0D26C /* TransferArgumentsCallback.h in Headers */ = {isa = PBXBuildFile; fileRef = D0047F82190D876B00B0D26C /* TransferArgumentsCallback.h */; };
+		D0047F9A190D876B00B0D26C /* TransferParametersCallback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0047F83190D876B00B0D26C /* TransferParametersCallback.cpp */; };
+		D0047F9B190D876B00B0D26C /* TransferParametersCallback.h in Headers */ = {isa = PBXBuildFile; fileRef = D0047F84190D876B00B0D26C /* TransferParametersCallback.h */; };
+		D0047FD1190D90CC00B0D26C /* libclang.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FBD190D90CB00B0D26C /* libclang.a */; };
+		D0047FD2190D90CC00B0D26C /* libclangAnalysis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FBE190D90CB00B0D26C /* libclangAnalysis.a */; };
+		D0047FD3190D90CC00B0D26C /* libclangAST.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FBF190D90CB00B0D26C /* libclangAST.a */; };
+		D0047FD4190D90CC00B0D26C /* libclangASTMatchers.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FC0190D90CB00B0D26C /* libclangASTMatchers.a */; };
+		D0047FD5190D90CC00B0D26C /* libclangBasic.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FC1190D90CB00B0D26C /* libclangBasic.a */; };
+		D0047FD6190D90CC00B0D26C /* libclangDriver.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FC2190D90CB00B0D26C /* libclangDriver.a */; };
+		D0047FD7190D90CC00B0D26C /* libclangEdit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FC3190D90CB00B0D26C /* libclangEdit.a */; };
+		D0047FD8190D90CC00B0D26C /* libclangFormat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FC4190D90CB00B0D26C /* libclangFormat.a */; };
+		D0047FD9190D90CC00B0D26C /* libclangFrontend.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FC5190D90CB00B0D26C /* libclangFrontend.a */; };
+		D0047FDA190D90CC00B0D26C /* libclangFrontendTool.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FC6190D90CB00B0D26C /* libclangFrontendTool.a */; };
+		D0047FDB190D90CC00B0D26C /* libclangLex.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FC7190D90CC00B0D26C /* libclangLex.a */; };
+		D0047FDC190D90CC00B0D26C /* libclangParse.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FC8190D90CC00B0D26C /* libclangParse.a */; };
+		D0047FDD190D90CC00B0D26C /* libclangRewriteCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FC9190D90CC00B0D26C /* libclangRewriteCore.a */; };
+		D0047FDE190D90CC00B0D26C /* libclangRewriteFrontend.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FCA190D90CC00B0D26C /* libclangRewriteFrontend.a */; };
+		D0047FDF190D90CC00B0D26C /* libclangSema.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FCB190D90CC00B0D26C /* libclangSema.a */; };
+		D0047FE0190D90CC00B0D26C /* libclangSerialization.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FCC190D90CC00B0D26C /* libclangSerialization.a */; };
+		D0047FE1190D90CC00B0D26C /* libclangStaticAnalyzerCheckers.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FCD190D90CC00B0D26C /* libclangStaticAnalyzerCheckers.a */; };
+		D0047FE2190D90CC00B0D26C /* libclangStaticAnalyzerCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FCE190D90CC00B0D26C /* libclangStaticAnalyzerCore.a */; };
+		D0047FE3190D90CC00B0D26C /* libclangStaticAnalyzerFrontend.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FCF190D90CC00B0D26C /* libclangStaticAnalyzerFrontend.a */; };
+		D0047FE4190D90CC00B0D26C /* libclangTooling.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FD0190D90CC00B0D26C /* libclangTooling.a */; };
+		D0047FEB190D911700B0D26C /* libLLVMBitReader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FE5190D911700B0D26C /* libLLVMBitReader.a */; };
+		D0047FEC190D911700B0D26C /* libLLVMBitWriter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FE6190D911700B0D26C /* libLLVMBitWriter.a */; };
+		D0047FED190D911700B0D26C /* libLLVMCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FE7190D911700B0D26C /* libLLVMCore.a */; };
+		D0047FEE190D911700B0D26C /* libLLVMMC.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FE8190D911700B0D26C /* libLLVMMC.a */; };
+		D0047FEF190D911700B0D26C /* libLLVMMCParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FE9190D911700B0D26C /* libLLVMMCParser.a */; };
+		D0047FF0190D911700B0D26C /* libLLVMSupport.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FEA190D911700B0D26C /* libLLVMSupport.a */; };
+		D0047FF2190D923100B0D26C /* libLLVMOption.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FF1190D923100B0D26C /* libLLVMOption.a */; };
+		D0047FF4190D93B600B0D26C /* libLLVMTransformUtils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FF3190D93B600B0D26C /* libLLVMTransformUtils.a */; };
+		D0047FF6190D948000B0D26C /* libncurses.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D0047FF5190D948000B0D26C /* libncurses.dylib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		D0047F59190D871800B0D26C /* stooling.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = stooling.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		D0047F6B190D876B00B0D26C /* CustomToolInvocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomToolInvocation.h; sourceTree = "<group>"; };
+		D0047F6D190D876B00B0D26C /* stoolingDll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stoolingDll.h; sourceTree = "<group>"; };
+		D0047F6E190D876B00B0D26C /* RefactoringTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RefactoringTool.h; sourceTree = "<group>"; };
+		D0047F6F190D876B00B0D26C /* SourceCode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SourceCode.h; sourceTree = "<group>"; };
+		D0047F70190D876B00B0D26C /* Utilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utilities.h; sourceTree = "<group>"; };
+		D0047F73190D876B00B0D26C /* CustomToolInvocation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CustomToolInvocation.cpp; sourceTree = "<group>"; };
+		D0047F74190D876B00B0D26C /* FixKernelParameterCallback.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FixKernelParameterCallback.cpp; sourceTree = "<group>"; };
+		D0047F75190D876B00B0D26C /* FixKernelParameterCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FixKernelParameterCallback.h; sourceTree = "<group>"; };
+		D0047F76190D876B00B0D26C /* FixStringCall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FixStringCall.h; sourceTree = "<group>"; };
+		D0047F77190D876B00B0D26C /* GetParameterTypeNamesCallback.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GetParameterTypeNamesCallback.cpp; sourceTree = "<group>"; };
+		D0047F78190D876B00B0D26C /* GetParameterTypeNamesCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GetParameterTypeNamesCallback.h; sourceTree = "<group>"; };
+		D0047F79190D876B00B0D26C /* RedefineTypedefCallback.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RedefineTypedefCallback.cpp; sourceTree = "<group>"; };
+		D0047F7A190D876B00B0D26C /* RedefineTypedefCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RedefineTypedefCallback.h; sourceTree = "<group>"; };
+		D0047F7B190D876B00B0D26C /* RefactoringTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RefactoringTool.cpp; sourceTree = "<group>"; };
+		D0047F7C190D876B00B0D26C /* RenameFunctionCallback.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenameFunctionCallback.cpp; sourceTree = "<group>"; };
+		D0047F7D190D876B00B0D26C /* RenameFunctionCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenameFunctionCallback.h; sourceTree = "<group>"; };
+		D0047F7E190D876B00B0D26C /* RenameTypedefCallback.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenameTypedefCallback.cpp; sourceTree = "<group>"; };
+		D0047F7F190D876B00B0D26C /* RenameTypedefCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenameTypedefCallback.h; sourceTree = "<group>"; };
+		D0047F80190D876B00B0D26C /* SourceCode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SourceCode.cpp; sourceTree = "<group>"; };
+		D0047F81190D876B00B0D26C /* TransferArgumentsCallback.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TransferArgumentsCallback.cpp; sourceTree = "<group>"; };
+		D0047F82190D876B00B0D26C /* TransferArgumentsCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TransferArgumentsCallback.h; sourceTree = "<group>"; };
+		D0047F83190D876B00B0D26C /* TransferParametersCallback.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TransferParametersCallback.cpp; sourceTree = "<group>"; };
+		D0047F84190D876B00B0D26C /* TransferParametersCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TransferParametersCallback.h; sourceTree = "<group>"; };
+		D0047FBB190D8FE200B0D26C /* libclang.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libclang.dylib; path = ../../libraries/stooling/libraries/llvm/lib/libclang.dylib; sourceTree = "<group>"; };
+		D0047FBD190D90CB00B0D26C /* libclang.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclang.a; path = ../../libraries/stooling/libraries/llvm/lib/libclang.a; sourceTree = "<group>"; };
+		D0047FBE190D90CB00B0D26C /* libclangAnalysis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangAnalysis.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangAnalysis.a; sourceTree = "<group>"; };
+		D0047FBF190D90CB00B0D26C /* libclangAST.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangAST.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangAST.a; sourceTree = "<group>"; };
+		D0047FC0190D90CB00B0D26C /* libclangASTMatchers.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangASTMatchers.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangASTMatchers.a; sourceTree = "<group>"; };
+		D0047FC1190D90CB00B0D26C /* libclangBasic.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangBasic.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangBasic.a; sourceTree = "<group>"; };
+		D0047FC2190D90CB00B0D26C /* libclangDriver.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangDriver.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangDriver.a; sourceTree = "<group>"; };
+		D0047FC3190D90CB00B0D26C /* libclangEdit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangEdit.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangEdit.a; sourceTree = "<group>"; };
+		D0047FC4190D90CB00B0D26C /* libclangFormat.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangFormat.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangFormat.a; sourceTree = "<group>"; };
+		D0047FC5190D90CB00B0D26C /* libclangFrontend.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangFrontend.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangFrontend.a; sourceTree = "<group>"; };
+		D0047FC6190D90CB00B0D26C /* libclangFrontendTool.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangFrontendTool.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangFrontendTool.a; sourceTree = "<group>"; };
+		D0047FC7190D90CC00B0D26C /* libclangLex.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangLex.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangLex.a; sourceTree = "<group>"; };
+		D0047FC8190D90CC00B0D26C /* libclangParse.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangParse.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangParse.a; sourceTree = "<group>"; };
+		D0047FC9190D90CC00B0D26C /* libclangRewriteCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangRewriteCore.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangRewriteCore.a; sourceTree = "<group>"; };
+		D0047FCA190D90CC00B0D26C /* libclangRewriteFrontend.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangRewriteFrontend.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangRewriteFrontend.a; sourceTree = "<group>"; };
+		D0047FCB190D90CC00B0D26C /* libclangSema.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangSema.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangSema.a; sourceTree = "<group>"; };
+		D0047FCC190D90CC00B0D26C /* libclangSerialization.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangSerialization.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangSerialization.a; sourceTree = "<group>"; };
+		D0047FCD190D90CC00B0D26C /* libclangStaticAnalyzerCheckers.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangStaticAnalyzerCheckers.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangStaticAnalyzerCheckers.a; sourceTree = "<group>"; };
+		D0047FCE190D90CC00B0D26C /* libclangStaticAnalyzerCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangStaticAnalyzerCore.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangStaticAnalyzerCore.a; sourceTree = "<group>"; };
+		D0047FCF190D90CC00B0D26C /* libclangStaticAnalyzerFrontend.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangStaticAnalyzerFrontend.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangStaticAnalyzerFrontend.a; sourceTree = "<group>"; };
+		D0047FD0190D90CC00B0D26C /* libclangTooling.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTooling.a; path = ../../libraries/stooling/libraries/llvm/lib/libclangTooling.a; sourceTree = "<group>"; };
+		D0047FE5190D911700B0D26C /* libLLVMBitReader.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMBitReader.a; path = ../../libraries/stooling/libraries/llvm/lib/libLLVMBitReader.a; sourceTree = "<group>"; };
+		D0047FE6190D911700B0D26C /* libLLVMBitWriter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMBitWriter.a; path = ../../libraries/stooling/libraries/llvm/lib/libLLVMBitWriter.a; sourceTree = "<group>"; };
+		D0047FE7190D911700B0D26C /* libLLVMCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCore.a; path = ../../libraries/stooling/libraries/llvm/lib/libLLVMCore.a; sourceTree = "<group>"; };
+		D0047FE8190D911700B0D26C /* libLLVMMC.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMC.a; path = ../../libraries/stooling/libraries/llvm/lib/libLLVMMC.a; sourceTree = "<group>"; };
+		D0047FE9190D911700B0D26C /* libLLVMMCParser.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMCParser.a; path = ../../libraries/stooling/libraries/llvm/lib/libLLVMMCParser.a; sourceTree = "<group>"; };
+		D0047FEA190D911700B0D26C /* libLLVMSupport.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMSupport.a; path = ../../libraries/stooling/libraries/llvm/lib/libLLVMSupport.a; sourceTree = "<group>"; };
+		D0047FF1190D923100B0D26C /* libLLVMOption.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMOption.a; path = ../../libraries/stooling/libraries/llvm/lib/libLLVMOption.a; sourceTree = "<group>"; };
+		D0047FF3190D93B600B0D26C /* libLLVMTransformUtils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMTransformUtils.a; path = ../../libraries/stooling/libraries/llvm/lib/libLLVMTransformUtils.a; sourceTree = "<group>"; };
+		D0047FF5190D948000B0D26C /* libncurses.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libncurses.dylib; path = usr/lib/libncurses.dylib; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D0047F56190D871800B0D26C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D0047FF6190D948000B0D26C /* libncurses.dylib in Frameworks */,
+				D0047FF4190D93B600B0D26C /* libLLVMTransformUtils.a in Frameworks */,
+				D0047FF2190D923100B0D26C /* libLLVMOption.a in Frameworks */,
+				D0047FEB190D911700B0D26C /* libLLVMBitReader.a in Frameworks */,
+				D0047FEC190D911700B0D26C /* libLLVMBitWriter.a in Frameworks */,
+				D0047FED190D911700B0D26C /* libLLVMCore.a in Frameworks */,
+				D0047FEE190D911700B0D26C /* libLLVMMC.a in Frameworks */,
+				D0047FEF190D911700B0D26C /* libLLVMMCParser.a in Frameworks */,
+				D0047FF0190D911700B0D26C /* libLLVMSupport.a in Frameworks */,
+				D0047FD1190D90CC00B0D26C /* libclang.a in Frameworks */,
+				D0047FD2190D90CC00B0D26C /* libclangAnalysis.a in Frameworks */,
+				D0047FD3190D90CC00B0D26C /* libclangAST.a in Frameworks */,
+				D0047FD4190D90CC00B0D26C /* libclangASTMatchers.a in Frameworks */,
+				D0047FD5190D90CC00B0D26C /* libclangBasic.a in Frameworks */,
+				D0047FD6190D90CC00B0D26C /* libclangDriver.a in Frameworks */,
+				D0047FD7190D90CC00B0D26C /* libclangEdit.a in Frameworks */,
+				D0047FD8190D90CC00B0D26C /* libclangFormat.a in Frameworks */,
+				D0047FD9190D90CC00B0D26C /* libclangFrontend.a in Frameworks */,
+				D0047FDA190D90CC00B0D26C /* libclangFrontendTool.a in Frameworks */,
+				D0047FDB190D90CC00B0D26C /* libclangLex.a in Frameworks */,
+				D0047FDC190D90CC00B0D26C /* libclangParse.a in Frameworks */,
+				D0047FDD190D90CC00B0D26C /* libclangRewriteCore.a in Frameworks */,
+				D0047FDE190D90CC00B0D26C /* libclangRewriteFrontend.a in Frameworks */,
+				D0047FDF190D90CC00B0D26C /* libclangSema.a in Frameworks */,
+				D0047FE0190D90CC00B0D26C /* libclangSerialization.a in Frameworks */,
+				D0047FE1190D90CC00B0D26C /* libclangStaticAnalyzerCheckers.a in Frameworks */,
+				D0047FE2190D90CC00B0D26C /* libclangStaticAnalyzerCore.a in Frameworks */,
+				D0047FE3190D90CC00B0D26C /* libclangStaticAnalyzerFrontend.a in Frameworks */,
+				D0047FE4190D90CC00B0D26C /* libclangTooling.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D0047F50190D871800B0D26C = {
+			isa = PBXGroup;
+			children = (
+				D0047F69190D876B00B0D26C /* include */,
+				D0047F71190D876B00B0D26C /* src */,
+				D0047FF7190D94A600B0D26C /* Libraries */,
+				D0047F5A190D871800B0D26C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D0047F5A190D871800B0D26C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D0047F59190D871800B0D26C /* stooling.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D0047F69190D876B00B0D26C /* include */ = {
+			isa = PBXGroup;
+			children = (
+				D0047F6A190D876B00B0D26C /* stooling */,
+			);
+			name = include;
+			path = ../../libraries/stooling/include;
+			sourceTree = "<group>";
+		};
+		D0047F6A190D876B00B0D26C /* stooling */ = {
+			isa = PBXGroup;
+			children = (
+				D0047F6B190D876B00B0D26C /* CustomToolInvocation.h */,
+				D0047F6C190D876B00B0D26C /* detail */,
+				D0047F6E190D876B00B0D26C /* RefactoringTool.h */,
+				D0047F6F190D876B00B0D26C /* SourceCode.h */,
+				D0047F70190D876B00B0D26C /* Utilities.h */,
+			);
+			path = stooling;
+			sourceTree = "<group>";
+		};
+		D0047F6C190D876B00B0D26C /* detail */ = {
+			isa = PBXGroup;
+			children = (
+				D0047F6D190D876B00B0D26C /* stoolingDll.h */,
+			);
+			path = detail;
+			sourceTree = "<group>";
+		};
+		D0047F71190D876B00B0D26C /* src */ = {
+			isa = PBXGroup;
+			children = (
+				D0047F73190D876B00B0D26C /* CustomToolInvocation.cpp */,
+				D0047F74190D876B00B0D26C /* FixKernelParameterCallback.cpp */,
+				D0047F75190D876B00B0D26C /* FixKernelParameterCallback.h */,
+				D0047F76190D876B00B0D26C /* FixStringCall.h */,
+				D0047F77190D876B00B0D26C /* GetParameterTypeNamesCallback.cpp */,
+				D0047F78190D876B00B0D26C /* GetParameterTypeNamesCallback.h */,
+				D0047F79190D876B00B0D26C /* RedefineTypedefCallback.cpp */,
+				D0047F7A190D876B00B0D26C /* RedefineTypedefCallback.h */,
+				D0047F7B190D876B00B0D26C /* RefactoringTool.cpp */,
+				D0047F7C190D876B00B0D26C /* RenameFunctionCallback.cpp */,
+				D0047F7D190D876B00B0D26C /* RenameFunctionCallback.h */,
+				D0047F7E190D876B00B0D26C /* RenameTypedefCallback.cpp */,
+				D0047F7F190D876B00B0D26C /* RenameTypedefCallback.h */,
+				D0047F80190D876B00B0D26C /* SourceCode.cpp */,
+				D0047F81190D876B00B0D26C /* TransferArgumentsCallback.cpp */,
+				D0047F82190D876B00B0D26C /* TransferArgumentsCallback.h */,
+				D0047F83190D876B00B0D26C /* TransferParametersCallback.cpp */,
+				D0047F84190D876B00B0D26C /* TransferParametersCallback.h */,
+			);
+			name = src;
+			path = ../../libraries/stooling/src;
+			sourceTree = "<group>";
+		};
+		D0047FF7190D94A600B0D26C /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				D0047FF5190D948000B0D26C /* libncurses.dylib */,
+				D0047FF3190D93B600B0D26C /* libLLVMTransformUtils.a */,
+				D0047FF1190D923100B0D26C /* libLLVMOption.a */,
+				D0047FE5190D911700B0D26C /* libLLVMBitReader.a */,
+				D0047FE6190D911700B0D26C /* libLLVMBitWriter.a */,
+				D0047FE7190D911700B0D26C /* libLLVMCore.a */,
+				D0047FE8190D911700B0D26C /* libLLVMMC.a */,
+				D0047FE9190D911700B0D26C /* libLLVMMCParser.a */,
+				D0047FEA190D911700B0D26C /* libLLVMSupport.a */,
+				D0047FBD190D90CB00B0D26C /* libclang.a */,
+				D0047FBE190D90CB00B0D26C /* libclangAnalysis.a */,
+				D0047FBF190D90CB00B0D26C /* libclangAST.a */,
+				D0047FC0190D90CB00B0D26C /* libclangASTMatchers.a */,
+				D0047FC1190D90CB00B0D26C /* libclangBasic.a */,
+				D0047FC2190D90CB00B0D26C /* libclangDriver.a */,
+				D0047FC3190D90CB00B0D26C /* libclangEdit.a */,
+				D0047FC4190D90CB00B0D26C /* libclangFormat.a */,
+				D0047FC5190D90CB00B0D26C /* libclangFrontend.a */,
+				D0047FC6190D90CB00B0D26C /* libclangFrontendTool.a */,
+				D0047FC7190D90CC00B0D26C /* libclangLex.a */,
+				D0047FC8190D90CC00B0D26C /* libclangParse.a */,
+				D0047FC9190D90CC00B0D26C /* libclangRewriteCore.a */,
+				D0047FCA190D90CC00B0D26C /* libclangRewriteFrontend.a */,
+				D0047FCB190D90CC00B0D26C /* libclangSema.a */,
+				D0047FCC190D90CC00B0D26C /* libclangSerialization.a */,
+				D0047FCD190D90CC00B0D26C /* libclangStaticAnalyzerCheckers.a */,
+				D0047FCE190D90CC00B0D26C /* libclangStaticAnalyzerCore.a */,
+				D0047FCF190D90CC00B0D26C /* libclangStaticAnalyzerFrontend.a */,
+				D0047FD0190D90CC00B0D26C /* libclangTooling.a */,
+				D0047FBB190D8FE200B0D26C /* libclang.dylib */,
+			);
+			name = Libraries;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D0047F57190D871800B0D26C /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D0047F8C190D876B00B0D26C /* FixKernelParameterCallback.h in Headers */,
+				D0047F99190D876B00B0D26C /* TransferArgumentsCallback.h in Headers */,
+				D0047F94190D876B00B0D26C /* RenameFunctionCallback.h in Headers */,
+				D0047F8F190D876B00B0D26C /* GetParameterTypeNamesCallback.h in Headers */,
+				D0047F87190D876B00B0D26C /* RefactoringTool.h in Headers */,
+				D0047F91190D876B00B0D26C /* RedefineTypedefCallback.h in Headers */,
+				D0047F86190D876B00B0D26C /* stoolingDll.h in Headers */,
+				D0047F96190D876B00B0D26C /* RenameTypedefCallback.h in Headers */,
+				D0047F88190D876B00B0D26C /* SourceCode.h in Headers */,
+				D0047F8D190D876B00B0D26C /* FixStringCall.h in Headers */,
+				D0047F85190D876B00B0D26C /* CustomToolInvocation.h in Headers */,
+				D0047F89190D876B00B0D26C /* Utilities.h in Headers */,
+				D0047F9B190D876B00B0D26C /* TransferParametersCallback.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D0047F58190D871800B0D26C /* stooling */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D0047F66190D871800B0D26C /* Build configuration list for PBXNativeTarget "stooling" */;
+			buildPhases = (
+				D0047F55190D871800B0D26C /* Sources */,
+				D0047F56190D871800B0D26C /* Frameworks */,
+				D0047F57190D871800B0D26C /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = stooling;
+			productName = stooling;
+			productReference = D0047F59190D871800B0D26C /* stooling.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D0047F51190D871800B0D26C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = "Michel Steuwer";
+			};
+			buildConfigurationList = D0047F54190D871800B0D26C /* Build configuration list for PBXProject "stooling" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = D0047F50190D871800B0D26C;
+			productRefGroup = D0047F5A190D871800B0D26C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D0047F58190D871800B0D26C /* stooling */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D0047F55190D871800B0D26C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D0047F90190D876B00B0D26C /* RedefineTypedefCallback.cpp in Sources */,
+				D0047F95190D876B00B0D26C /* RenameTypedefCallback.cpp in Sources */,
+				D0047F98190D876B00B0D26C /* TransferArgumentsCallback.cpp in Sources */,
+				D0047F8E190D876B00B0D26C /* GetParameterTypeNamesCallback.cpp in Sources */,
+				D0047F97190D876B00B0D26C /* SourceCode.cpp in Sources */,
+				D0047F93190D876B00B0D26C /* RenameFunctionCallback.cpp in Sources */,
+				D0047F8A190D876B00B0D26C /* CustomToolInvocation.cpp in Sources */,
+				D0047F9A190D876B00B0D26C /* TransferParametersCallback.cpp in Sources */,
+				D0047F8B190D876B00B0D26C /* FixKernelParameterCallback.cpp in Sources */,
+				D0047F92190D876B00B0D26C /* RefactoringTool.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D0047F64190D871800B0D26C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					../../libraries/stooling/libraries/llvm/include/,
+					../../libraries/stooling/include/,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		D0047F65190D871800B0D26C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					../../libraries/stooling/libraries/llvm/include/,
+					../../libraries/stooling/include/,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		D0047F67190D871800B0D26C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_ENABLE_CPP_RTTI = NO;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/michel/skelcl/libraries/stooling/libraries/llvm/lib,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		D0047F68190D871800B0D26C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_ENABLE_CPP_RTTI = NO;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/michel/skelcl/libraries/stooling/libraries/llvm/lib,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D0047F54190D871800B0D26C /* Build configuration list for PBXProject "stooling" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D0047F64190D871800B0D26C /* Debug */,
+				D0047F65190D871800B0D26C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D0047F66190D871800B0D26C /* Build configuration list for PBXNativeTarget "stooling" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D0047F67190D871800B0D26C /* Debug */,
+				D0047F68190D871800B0D26C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D0047F51190D871800B0D26C /* Project object */;
+}

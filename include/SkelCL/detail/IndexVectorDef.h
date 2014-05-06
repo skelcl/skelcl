@@ -69,7 +69,8 @@ void Vector<Index>::setDistribution(const detail::Distribution<Vector<U>>&
 {
   ASSERT(origDistribution.isValid());
   // convert and set distribution
-  this->setDistribution(detail::cloneAndConvert<Index>(origDistribution));
+  this->setDistribution(
+    detail::cloneAndConvert<Vector<Index>>(origDistribution));
 }
 
 template <typename U>
@@ -81,7 +82,8 @@ void
   ASSERT(origDistribution != nullptr);
   ASSERT(origDistribution->isValid());
   // convert and set distribution
-  this->setDistribution(detail::cloneAndConvert<Index>(*origDistribution));
+  this->setDistribution(
+    detail::cloneAndConvert<Vector<Index>>(*origDistribution));
 }
 
 } // namespace skelcl

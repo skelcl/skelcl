@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:ssedit.xcodeproj">
+      location = "self:stooling.xcodeproj">
    </FileRef>
 </Workspace>

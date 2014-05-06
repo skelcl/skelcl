@@ -43,8 +43,12 @@ public:
 
   ~RefactoringTool();
 
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR >= 4)
+  typedef std::set<clang::tooling::Replacement> Replacements;
+#else
   typedef std::set<clang::tooling::Replacement,
                    clang::tooling::Replacement::Less> Replacements;
+#endif
 
   void run(const std::string& code,
            clang::tooling::FrontendActionFactory *actionFactory);

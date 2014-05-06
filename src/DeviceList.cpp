@@ -56,12 +56,13 @@
 #include "SkelCL/detail/DeviceID.h"
 #include "SkelCL/detail/DeviceProperties.h"
 #include "SkelCL/detail/PlatformID.h"
+#include "SkelCL/detail/skelclDll.h"
 
 namespace skelcl {
 
 namespace detail {
 
-DeviceList globalDeviceList;
+SKELCL_DLL DeviceList globalDeviceList;
 
 DeviceList::DeviceList()
   : _devices()

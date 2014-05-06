@@ -40,6 +40,8 @@
 #ifndef ASSERT_H_
 #define ASSERT_H_
 
+#include "detail/pvsutilDll.h"
+
 #ifdef NDEBUG
 
 #define ASSERT(e) (void(0))
@@ -78,10 +80,10 @@ namespace assert_impl {
 ///        expressionString The expression as a string to be printed as part of
 ///                         the error message
 ///
-void ASSERT_IMPL(const char* file,
-                 const int   line,
-                 const bool  expression,
-                 const char* expressionString);
+PVSUTIL_API void ASSERT_IMPL(const char* file,
+                             const int   line,
+                             const bool  expression,
+                             const char* expressionString);
 
 ///
 /// \brief If expression evaluates to false an error message is printed and the
@@ -102,11 +104,11 @@ void ASSERT_IMPL(const char* file,
 ///        formatString A formated String to be printed as part of the error
 ///                     message. The String is evaluated by vsnprintf.
 ///
-void ASSERT_IMPL(const char* file,
-                 const int   line,
-                 const bool  expression,
-                 const char* expressionString,
-                 const char* formatString, ...);
+PVSUTIL_API void ASSERT_IMPL(const char* file,
+                             const int   line,
+                             const bool  expression,
+                             const char* expressionString,
+                             const char* formatString, ...);
 
 } // namespace assert_impl
 

@@ -90,7 +90,7 @@ Vector<T>::Vector(const size_type size,
                   const value_type& value,
                   const detail::Distribution<Vector<T>>& distribution)
   : _size(size),
-    _distribution(detail::cloneAndConvert<T>(distribution)),
+    _distribution(detail::cloneAndConvert<Vector<T>>(distribution)),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(size, value),
@@ -122,7 +122,7 @@ Vector<T>::Vector(InputIterator first,
                   InputIterator last,
                   const detail::Distribution<Vector<T>>& distribution)
   : _size(std::distance(first, last)),
-    _distribution(detail::cloneAndConvert<T>(distribution)),
+    _distribution(detail::cloneAndConvert<Vector<T>>(distribution)),
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(first, last),
@@ -136,7 +136,7 @@ Vector<T>::Vector(InputIterator first,
 template <typename T>
 Vector<T>::Vector(const Vector<T>& rhs)
   : _size(rhs._size),
-    _distribution(detail::cloneAndConvert<T>(rhs.distribution())),
+    _distribution(detail::cloneAndConvert<Vector<T>>(rhs.distribution())),
     _hostBufferUpToDate(rhs._hostBufferUpToDate),
     _deviceBuffersUpToDate(rhs._deviceBuffersUpToDate),
     _hostBuffer(rhs._hostBuffer),
@@ -169,7 +169,7 @@ Vector<T>& Vector<T>::operator=(const Vector<T>& rhs)
 {
   if (this == &rhs) return *this; // handle self assignment
   _size                   = rhs._size;
-  _distribution           = detail::cloneAndConvert<T>(rhs._distribution);
+  _distribution = detail::cloneAndConvert<Vector<T>>(rhs._distribution);
   _hostBufferUpToDate     = rhs._hostBufferUpToDate;
   _deviceBuffersUpToDate  = rhs._deviceBuffersUpToDate;
   _hostBuffer             = rhs._hostBuffer;
@@ -284,7 +284,7 @@ typename Vector<T>::size_type Vector<T>::max_size() const
 }
 
 template <typename T>
-void Vector<T>::resize( Vector<T>::size_type sz, T c )
+void Vector<T>::resize( typename Vector<T>::size_type sz, T c )
 {
   _size = sz;
   if (_hostBufferUpToDate) {
@@ -309,13 +309,13 @@ bool Vector<T>::empty() const
 }
 
 template <typename T>
-void Vector<T>::reserve( Vector<T>::size_type n )
+void Vector<T>::reserve( typename Vector<T>::size_type n )
 {
   return _hostBuffer.reserve(n);
 }
 
 template <typename T>
-typename Vector<T>::reference Vector<T>::operator[]( Vector<T>::size_type n )
+typename Vector<T>::reference Vector<T>::operator[]( typename Vector<T>::size_type n )
 {
   copyDataToHost();
   return _hostBuffer.operator[](n);
@@ -323,14 +323,14 @@ typename Vector<T>::reference Vector<T>::operator[]( Vector<T>::size_type n )
 
 template <typename T>
 typename Vector<T>::const_reference
-  Vector<T>::operator[]( Vector<T>::size_type n ) const
+  Vector<T>::operator[]( typename Vector<T>::size_type n ) const
 {
   copyDataToHost();
   return _hostBuffer.operator[](n);
 }
 
 template <typename T>
-typename Vector<T>::reference Vector<T>::at( Vector<T>::size_type n )
+typename Vector<T>::reference Vector<T>::at( typename Vector<T>::size_type n )
 {
   copyDataToHost();
   return _hostBuffer.at(n);
@@ -338,7 +338,7 @@ typename Vector<T>::reference Vector<T>::at( Vector<T>::size_type n )
 
 template <typename T>
 typename Vector<T>::const_reference
-  Vector<T>::at( Vector<T>::size_type n ) const
+  Vector<T>::at( typename Vector<T>::size_type n ) const
 {
   copyDataToHost();
   return _hostBuffer.at(n);
@@ -380,7 +380,7 @@ void Vector<T>::assign( InputIterator first, InputIterator last )
 }
 
 template <typename T>
-void Vector<T>::assign( Vector<T>::size_type n, const T& u )
+void Vector<T>::assign( typename Vector<T>::size_type n, const T& u )
 {
   _hostBuffer.assign(n, u);
 }
@@ -400,7 +400,7 @@ void Vector<T>::pop_back()
 }
 
 template <typename T>
-typename Vector<T>::iterator Vector<T>::insert( Vector<T>::iterator position,
+typename Vector<T>::iterator Vector<T>::insert( typename Vector<T>::iterator position,
                                                 const T& x )
 {
   ++_size;
@@ -408,8 +408,8 @@ typename Vector<T>::iterator Vector<T>::insert( Vector<T>::iterator position,
 }
 
 template <typename T>
-void Vector<T>::insert( Vector<T>::iterator position,
-                        Vector<T>::size_type n,
+void Vector<T>::insert( typename Vector<T>::iterator position,
+                        typename Vector<T>::size_type n,
                         const T& x )
 {
   _size += n;
@@ -418,7 +418,7 @@ void Vector<T>::insert( Vector<T>::iterator position,
 
 template <typename T>
 template <class InputIterator>
-void Vector<T>::insert( Vector<T>::iterator position,
+void Vector<T>::insert( typename Vector<T>::iterator position,
                         InputIterator first,
                         InputIterator last )
 {
@@ -428,15 +428,15 @@ void Vector<T>::insert( Vector<T>::iterator position,
 }
 
 template <typename T>
-typename Vector<T>::iterator Vector<T>::erase( Vector<T>::iterator position )
+typename Vector<T>::iterator Vector<T>::erase( typename Vector<T>::iterator position )
 {
   --_size;
   return _hostBuffer.erase(position);
 }
 
 template <typename T>
-typename Vector<T>::iterator Vector<T>::erase( Vector<T>::iterator first,
-                                               Vector<T>::iterator last )
+typename Vector<T>::iterator Vector<T>::erase( typename Vector<T>::iterator first,
+                                               typename Vector<T>::iterator last )
 {
   _size -= std::distance(first, last);
   return _hostBuffer.erase(first, last);
@@ -480,7 +480,7 @@ void Vector<T>::setDistribution(const detail::Distribution<Vector<U>>&
 {
   ASSERT(origDistribution.isValid());
   // convert and set distribution
-  this->setDistribution(detail::cloneAndConvert<T>(origDistribution));
+  this->setDistribution(detail::cloneAndConvert<Vector<T>>(origDistribution));
 }
 
 template <typename T>
@@ -492,7 +492,7 @@ void Vector<T>::setDistribution(
   ASSERT(origDistribution != nullptr);
   ASSERT(origDistribution->isValid());
   // convert and set distribution
-  this->setDistribution(detail::cloneAndConvert<T>(*origDistribution));
+  this->setDistribution(detail::cloneAndConvert<Vector<T>>(*origDistribution));
 }
 
 template <typename T>
@@ -692,7 +692,7 @@ std::string Vector<T>::getDebugInfo() const
     << ", deviceBuffersCreated: "  << (!_deviceBuffers.empty())
     << ", hostBufferUpToDate: "    << _hostBufferUpToDate
     << ", deviceBuffersUpToDate: " << _deviceBuffersUpToDate
-    << ", hostBuffer: "            << &_hostBuffer.front();
+    << ", hostBuffer: "            << _hostBuffer.data();
   return s.str();
 }
 

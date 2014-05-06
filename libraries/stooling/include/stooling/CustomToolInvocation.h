@@ -39,7 +39,7 @@ class CustomToolInvocation {
 public:
   CustomToolInvocation(const std::string& code,
                        const std::vector<std::string>& args
-                        = { "-x", "cl" });
+                          = std::vector<std::string>({ "-x", "cl" }));
 
   ~CustomToolInvocation();
 

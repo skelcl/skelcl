@@ -43,9 +43,11 @@
 
 #include "pvsutil/Logger.h"
 
+#include "pvsutil/detail/pvsutilDll.h"
+
 namespace pvsutil {
 
-Logger defaultLogger;
+PVSUTIL_API Logger defaultLogger;
 
 Logger::Logger()
   : _startTime(std::chrono::high_resolution_clock::now()),

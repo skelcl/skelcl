@@ -47,12 +47,13 @@
 #undef  __CL_ENABLE_EXCEPTIONS
 
 #include "Device.h"
+#include "skelclDll.h"
 
 namespace skelcl {
 
 namespace detail {
 
-class DeviceProperties {
+class SKELCL_DLL DeviceProperties {
 public:
   static DeviceProperties nDevices(size_t n);
 

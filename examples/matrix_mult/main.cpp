@@ -216,7 +216,7 @@ int main(int argc, char* argv[])
 
   auto repetitions = Arg<size_t>(Flags(Short('r'), Long("repetitions")),
                                  Description("Number of repetitions"),
-                                 Default(1UL));
+                                 Default<size_t>(1));
 
   auto deviceType = Arg<device_type>(Flags(Long("device_type")),
                                      Description("Device type: ANY, CPU, "
@@ -225,7 +225,7 @@ int main(int argc, char* argv[])
 
   auto deviceCount = Arg<size_t>(Flags(Long("device_count")),
                                  Description("Device Count"),
-                                 Default(1UL));
+                                 Default<size_t>(1));
 
   auto useDoublePrecision = Arg<bool>(Flags(Long("use_double")),
                                       Description("Use double precision for "

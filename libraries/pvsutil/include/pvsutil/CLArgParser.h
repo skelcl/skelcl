@@ -50,19 +50,21 @@
 #include "cmdline/Description.h"
 #include "cmdline/Version.h"
 
+#include "detail/pvsutilDll.h"
+
 #ifdef __clang__
 # define NORETURN_ATTRIBUTE [[ noreturn ]]
 #else
 # ifdef __GNUC__
 #   define NORETURN_ATTRIBUTE __attribute__((noreturn))
 # else
-#   define NORETURN
+#   define NORETURN_ATTRIBUTE
 # endif
 #endif
 
 namespace pvsutil {
 
-class CLArgParser {
+class PVSUTIL_API CLArgParser {
 public:
   CLArgParser(cmdline::Description&& des,
               cmdline::Version&& ver = cmdline::Version(),

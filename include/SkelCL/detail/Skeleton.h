@@ -43,11 +43,13 @@
 #include "../Distributions.h"
 #include "../Out.h"
 
+#include "skelclDll.h"
+
 namespace skelcl {
 
 namespace detail {
 
-class Skeleton {
+class SKELCL_DLL Skeleton {
 public:
   Skeleton();
 

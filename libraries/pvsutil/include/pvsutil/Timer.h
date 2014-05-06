@@ -42,9 +42,11 @@
 
 #include <chrono>
 
+#include "detail/pvsutilDll.h"
+
 namespace pvsutil {
   
-class Timer {
+class PVSUTIL_API Timer {
 public:
   typedef std::chrono::milliseconds::rep time_type;
   

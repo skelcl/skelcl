@@ -46,32 +46,28 @@
 #include <sstream>
 #include <string>
 
-#ifndef NPROFILING
-#include <sys/time.h>
-#endif
-
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
 #include "../Assert.h"
+#include "pvsutilDll.h"
 
 namespace pvsutil {
 
 namespace logger_impl {
 
-std::string getErrorString(cl_int err);
+PVSUTIL_API std::string getErrorString(cl_int err);
 
-std::string formatHeader(const Logger& logger,
-                         Logger::Severity::Type severity,
-                         const char*    file,
-                         const int      line);
+PVSUTIL_API std::string formatHeader(const Logger& logger,
+                                     Logger::Severity::Type severity,
+                                     const char*    file,
+                                     const int      line);
 
 } // namespace logger_impl
 
 template <typename... Args>
-void Logger::log(Severity::Type severity,
-                 const char* file, int line,
+void Logger::log(Severity::Type severity, const char* file, int line,
                  Args&&... args)
 {
   if (severity <= _severity) {
@@ -81,7 +77,8 @@ void Logger::log(Severity::Type severity,
 }
 
 template <typename... Args>
-void Logger::logArgs(std::ostream& output, const cl::Error& err, Args&&... args)
+void Logger::logArgs(std::ostream& output, const cl::Error& err,
+                     Args&&... args)
 {
   output << "OpenCL error: " << logger_impl::getErrorString(err.err())
          << " " << err.what();

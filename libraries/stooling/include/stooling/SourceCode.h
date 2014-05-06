@@ -4,20 +4,22 @@
 #include <string>
 #include <vector>
 
+#include "detail/stoolingDll.h"
+
 namespace stooling {
 
 class RefactoringTool;
 
-class SourceCode {
+class STOOLING_API SourceCode {
 public:
+  SourceCode() = delete;
+
   SourceCode(const std::string& source);
 
   SourceCode(const SourceCode& rhs);
-
   SourceCode(SourceCode&& rhs);
 
   SourceCode& operator=(const SourceCode& rhs);
-
   SourceCode& operator=(SourceCode&& rhs);
   
   ~SourceCode();
@@ -44,7 +46,6 @@ public:
   std::vector<std::string> parameterTypeNames(const std::string& funcName) const;
 
 private:
-  SourceCode();
 
   std::string       _source;
   RefactoringTool*  _tool;
