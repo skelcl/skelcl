@@ -5,16 +5,16 @@
 BINARYDIR := Debug
 
 #Toolchain
-CC := $(HOME)/local/bin/clang
-CXX := $(HOME)/local/bin/clang++
+CC := /u/msteu_01/local/bin/clang
+CXX := /u/msteu_01/local/bin/clang++
 LD := $(CXX)
 AR := ar
 OBJCOPY := objcopy
 
 #Additional flags
 PREPROCESSOR_MACROS := DEBUG
-INCLUDE_DIRS :=/home/m_haid02/skelcl/include /home/m_haid02/skelcl/libraries/pvsutil/include /home/m_haid02/skelcl/libraries/ssedit/include /home/m_haid02/skelcl/libraries/stooling/include /home/m_haid02/skelcl/libraries/ssedit/libraries/libclang/include
-LIBRARY_DIRS :=/home/m_haid02/skelcl/build/src /home/m_haid02/skelcl/build/libraries/pvsutil/src /home/m_haid02/skelcl/build/libraries/ssedit/src 
+INCLUDE_DIRS :=/u/msteu_01/skelcl/include /u/msteu_01/skelcl/libraries/pvsutil/include /u/msteu_01/skelcl/libraries/ssedit/include /u/msteu_01/skelcl/libraries/stooling/include /u/msteu_01/skelcl/libraries/ssedit/libraries/libclang/include
+LIBRARY_DIRS :=/u/msteu_01/skelcl/buildDebug/src /u/msteu_01/skelcl/buildDebug/libraries/pvsutil/src /u/msteu_01/skelcl/buildDebug/libraries/ssedit/src 
 LIBRARY_NAMES :=SkelCL pvsutil ssedit
 ADDITIONAL_LINKER_INPUTS :=
 MACOS_FRAMEWORKS :=
@@ -22,7 +22,7 @@ MACOS_FRAMEWORKS :=
 CFLAGS := -ggdb -ffunction-sections -O3 -std=c++11
 CXXFLAGS := -ggdb -ffunction-sections -O3 -std=c++11 
 ASFLAGS :=
-LDFLAGS := -Wl,-gc-sections -rpath /home/m_haid02/skelcl/libraries/ssedit/libraries/libclang/lib
+LDFLAGS := -Wl,-gc-sections -rpath /u/msteu_01/skelcl/libraries/ssedit/libraries/libclang/lib
 COMMONFLAGS :=
 
 START_GROUP := -Wl,--start-group
