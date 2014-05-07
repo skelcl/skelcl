@@ -68,132 +68,136 @@
 
 namespace skelcl {
 
-template<typename Tin, typename Tout>
+template <typename Tin, typename Tout>
 MapOverlap<Tout(Tin)>::MapOverlap(const Source& source,
-		unsigned int overlap_range, detail::Padding padding,
-		Tin neutral_element, const std::string& func) :
-		detail::Skeleton(), _userSource(source), _funcName(func), _overlap_range(overlap_range),
-		_padding(padding), _neutral_element(neutral_element),
-		_program(createAndBuildProgram())
+                                  unsigned int overlap_range,
+                                  detail::Padding padding, Tin neutral_element,
+                                  const std::string& func)
+  : detail::Skeleton(), _userSource(source), _funcName(func),
+    _overlap_range(overlap_range), _padding(padding),
+    _neutral_element(neutral_element), _program(createAndBuildProgram())
 {
-	LOG_DEBUG_INFO("Create new MapOverlap object (", this, ")");
+  LOG_DEBUG_INFO("Create new MapOverlap object (", this, ")");
 }
 
-template<typename Tin, typename Tout>
-template<typename ... Args>
+template <typename Tin, typename Tout>
+template <typename... Args>
 Matrix<Tout> MapOverlap<Tout(Tin)>::operator()(const Matrix<Tin>& in,
-		Args&&... args)
+                                               Args&&... args)
 {
-	Matrix<Tout> output;
-	this->operator()(out(output), in, std::forward<Args>(args)...);
+  Matrix<Tout> output;
+  this->operator()(out(output), in, std::forward<Args>(args)...);
 	return output;
 }
 
-template<typename Tin, typename Tout>
-template<typename ... Args>
-Matrix<Tout>& MapOverlap<Tout(Tin)>::operator()(Out<Matrix<Tout>> output,
-		const Matrix<Tin>& in, Args&&... args)
+template <typename Tin, typename Tout>
+template <typename... Args>
+Matrix<Tout>& MapOverlap<Tout(Tin)>::
+    operator()(Out<Matrix<Tout>> output, const Matrix<Tin>& in, Args&&... args)
 {
-	ASSERT(in.rowCount() > 0);
-	ASSERT(in.columnCount() > 0);
+  ASSERT(in.rowCount() > 0);
+  ASSERT(in.columnCount() > 0);
 
-	prepareInput(in);
+  prepareInput(in);
 
-	prepareAdditionalInput(std::forward<Args>(args)...);
+  prepareAdditionalInput(std::forward<Args>(args)...);
 
 	prepareOutput(output.container(), in);
 
 	execute(output.container(), in, std::forward<Args>(args)...);
 
-	updateModifiedStatus(output, std::forward<Args>(args)...);
+  updateModifiedStatus(output, std::forward<Args>(args)...);
 
-	return output.container();
+  return output.container();
 }
 
-template<typename Tin, typename Tout>
-template<typename ... Args>
+template <typename Tin, typename Tout>
+template <typename... Args>
 void MapOverlap<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
-		Args&&... args)
+                                    Args&&... args)
 {
-	ASSERT(in.distribution().isValid());
-	ASSERT(output.rowCount() == in.rowCount()
-					&& output.columnCount() == in.columnCount());
+  ASSERT(in.distribution().isValid());
+  ASSERT(output.rowCount() == in.rowCount() &&
+         output.columnCount() == in.columnCount());
 
-	for (auto& devicePtr : in.distribution().devices()) {
-		cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_MAPOVERLAP"));
+  for (auto& devicePtr : in.distribution().devices()) {
+    cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_MAPOVERLAP"));
 
-		cl_uint workgroupSize =
-				static_cast<cl_uint>(detail::kernelUtil::determineWorkgroupSizeForKernel(
-						kernel, *devicePtr));
+    cl_uint workgroupSize = static_cast<cl_uint>(
+        detail::kernelUtil::determineWorkgroupSizeForKernel(kernel,
+                                                            *devicePtr));
 
-		auto& outputBuffer = output.deviceBuffer(*devicePtr);
-		auto& inputBuffer = in.deviceBuffer(*devicePtr);
+    auto& outputBuffer = output.deviceBuffer(*devicePtr);
+    auto& inputBuffer = in.deviceBuffer(*devicePtr);
 
-		cl_uint elements = static_cast<cl_uint>(inputBuffer.size()
-				- 2 * _overlap_range * in.columnCount());
-		cl_uint local[2] =
-				{ static_cast<cl_uint>(sqrt(workgroupSize)), local[0] };
-		cl_uint global[2] = {
-				static_cast<cl_uint>(detail::util::ceilToMultipleOf(
-						in.columnCount(), local[0])),
-				static_cast<cl_uint>(detail::util::ceilToMultipleOf(
-						elements / in.rowCount(), local[1])) };
+    cl_uint elements = static_cast<cl_uint>(
+        inputBuffer.size() - 2 * _overlap_range * in.columnCount());
+    cl_uint local[2] = {static_cast<cl_uint>(sqrt(workgroupSize)), local[0]};
+    cl_uint global[2] = {static_cast<cl_uint>(detail::util::ceilToMultipleOf(
+                             in.columnCount(), local[0])),
+                         static_cast<cl_uint>(detail::util::ceilToMultipleOf(
+                             elements / in.rowCount(), local[1]))};
 
-		LOG_DEBUG_INFO("elements: ", elements, " overlap: ", _overlap_range);
-		LOG_DEBUG_INFO("local: ", local[0], ",", local[1], " global: ",
-				global[0], ",", global[1]);
+    LOG_DEBUG_INFO("elements: ", elements, " overlap: ", _overlap_range);
+    LOG_DEBUG_INFO("local: ", local[0], ",", local[1], " global: ", global[0],
+                   ",", global[1]);
 
-		unsigned int tileWidth = local[0] + 2 * _overlap_range + 1;
+    unsigned int tileWidth = local[0] + 2 * _overlap_range;
 
-		try {
-			int j = 0;
-			kernel.setArg(j++, inputBuffer.clBuffer());
-			kernel.setArg(j++, outputBuffer.clBuffer());
-			kernel.setArg(j++, tileWidth * tileWidth * sizeof(Tin), NULL); // allocate local memory
-			kernel.setArg(j++, elements);
-			kernel.setArg(j++, static_cast<cl_uint>(output.columnCount()));
+    try
+    {
+      int j = 0;
+      kernel.setArg(j++, inputBuffer.clBuffer());
+      kernel.setArg(j++, outputBuffer.clBuffer());
+      kernel.setArg(j++, tileWidth * tileWidth * sizeof(Tin),
+                    NULL); // allocate local memory
+      kernel.setArg(j++, elements);
+      kernel.setArg(j++, static_cast<cl_uint>(output.columnCount()));
 
-			detail::kernelUtil::setKernelArgs(kernel, *devicePtr, j++,
-					std::forward<Args>(args)...);
+      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, j++,
+                                        std::forward<Args>(args)...);
 
-			// keep buffers and arguments alive / mark them as in use
-			auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
-					inputBuffer.clBuffer(), outputBuffer.clBuffer(),
-					std::forward<Args>(args)...);
+      // keep buffers and arguments alive / mark them as in use
+      auto keepAlive = detail::kernelUtil::keepAlive(
+          *devicePtr, inputBuffer.clBuffer(), outputBuffer.clBuffer(),
+          std::forward<Args>(args)...);
 
-			// after finishing the kernel invoke this function ...
-			auto invokeAfter = [=] () {(void)keepAlive;};
-			auto event = devicePtr->enqueue(kernel,
-					cl::NDRange(global[0], global[1]),
-					cl::NDRange(local[0], local[1]), cl::NullRange, // offset
-					invokeAfter);
-
-		} catch (cl::Error& err) {
-			ABORT_WITH_ERROR(err);
-		}
-	}
-	LOG_INFO("MapOverlap kernel started");
+      // after finishing the kernel invoke this function ...
+      auto invokeAfter = [=]() { (void)keepAlive; };
+      auto event = devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
+                                      cl::NDRange(local[0], local[1]),
+                                      cl::NullRange, // offset
+                                      invokeAfter);
+    }
+    catch (cl::Error& err)
+    {
+      ABORT_WITH_ERROR(err);
+    }
+  }
+  LOG_INFO("MapOverlap kernel started");
 }
 
-template<typename Tin, typename Tout>
-detail::Program MapOverlap<Tout(Tin)>::createAndBuildProgram() const {
-	ASSERT_MESSAGE(!_userSource.empty(),
-			"Tried to create program with empty user source.");
+template <typename Tin, typename Tout>
+detail::Program MapOverlap<Tout(Tin)>::createAndBuildProgram() const
+{
+  ASSERT_MESSAGE(!_userSource.empty(),
+                 "Tried to create program with empty user source.");
 
-	std::stringstream temp;
+  std::stringstream temp;
 
-	temp << "#define SCL_OVERLAP_RANGE (" << _overlap_range << ")\n"
-	     << "#define SCL_TILE_WIDTH (get_local_size(0) + " << "2*" << _overlap_range << "+1)\n";
-	if (_padding == detail::Padding::NEUTRAL) {
-		temp << "#define NEUTRAL (" << _neutral_element << ")\n";
-	}
+  temp << "#define SCL_OVERLAP_RANGE (" << _overlap_range << ")\n"
+       << "#define SCL_TILE_WIDTH (get_local_size(0) + "
+       << "2*" << _overlap_range << ")\n";
+  if (_padding == detail::Padding::NEUTRAL) {
+    temp << "#define NEUTRAL (" << _neutral_element << ")\n";
+  }
 
-	// create program
-	std::string s(Matrix<Tout>::deviceFunctions());
-	s.append(temp.str());
+  // create program
+  std::string s(Matrix<Tout>::deviceFunctions());
+  s.append(temp.str());
 
-	// helper structs and functions
-	s.append(R"(
+  // helper structs and functions
+  s.append(R"(
 
 typedef float SCL_TYPE_0;
 typedef float SCL_TYPE_1;
@@ -221,20 +225,17 @@ SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y)
 
 )");
 
-	// user source
+  // user source
 	s.append(_userSource);
 
-	// allpairs skeleton source
-	s.append(
+  // allpairs skeleton source
+  s.append(
 #include "MapOverlapKernel.cl"
-	);
+      );
 
-	auto program = detail::Program(s,
-			detail::util::hash(
-					"//MapOverlap\n" + Matrix<Tout>::deviceFunctions()
-							+ _userSource + _funcName));
+  auto program = detail::Program(s, detail::util::hash("//MapOverlap\n" + s));
 
-	// modify program
+  // modify program
 	if (!program.loadBinary()) {
 		program.transferParameters(_funcName, 1, "SCL_MAPOVERLAP");
 		program.transferArguments(_funcName, 1, "USR_FUNC");
@@ -244,43 +245,40 @@ SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y)
 		program.adjustTypes<Tin, Tout>();
 	}
 	program.build();
-	//Get time
+
 	return program;
 }
 
-// Eingabe vorbereiten
-template<typename Tin, typename Tout>
-void MapOverlap<Tout(Tin)>::prepareInput(const Matrix<Tin>& in) {
-	// set distribution
-	in.setDistribution(
-			detail::OLDistribution<Matrix<Tin>>(_overlap_range, _padding,
-					_neutral_element));
+template <typename Tin, typename Tout>
+void MapOverlap<Tout(Tin)>::prepareInput(const Matrix<Tin>& in)
+{
+  // set distribution
+  in.setDistribution(detail::OLDistribution<Matrix<Tin>>(
+      _overlap_range, _padding, _neutral_element));
 
-	// create buffers if required
-	in.createDeviceBuffers();
+  // create buffers if required
+  in.createDeviceBuffers();
 
-	// copy data to devices
-	in.startUpload();
-
+  // copy data to devices
+  in.startUpload();
 }
 
 // Ausgabe vorbereiten
-template<typename Tin, typename Tout>
+template <typename Tin, typename Tout>
 void MapOverlap<Tout(Tin)>::prepareOutput(Matrix<Tout>& output,
-		const Matrix<Tin>& in) {
-	// set size
-	if (output.rowCount() != in.rowCount())
-		output.resize(
-				typename Matrix<Tout>::size_type(in.rowCount(),
-						in.columnCount()));
+                                          const Matrix<Tin>& in)
+{
+  // set size
+  if (output.rowCount() != in.rowCount())
+    output.resize(
+        typename Matrix<Tout>::size_type(in.rowCount(), in.columnCount()));
 
-	// adopt distribution from in input
-	output.setDistribution(in.distribution()); // richtiger typ (Tout)?
+  // adopt distribution from in input
+  output.setDistribution(in.distribution()); // richtiger typ (Tout)?
 
-	//create buffers if required
-	output.createDeviceBuffers();
+  //create buffers if required
+  output.createDeviceBuffers();
 }
-
 }
 
 #endif /* MAPOVERLAPDEF_H_ */

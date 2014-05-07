@@ -128,8 +128,8 @@ int main(int argc, char** argv)
   cmd.parse(argc, argv);
 
   std::stringstream outFile("_");
-  out << inFile.getValue().substr(0, inFile.getValue().find("."))
-      << "_" << range << "_devs_" << deviceCount << ".pgm";
+  outFile << inFile.getValue().substr(0, inFile.getValue().find("."))
+          << "_" << range << "_devs_" << deviceCount << ".pgm";
 
 	auto fwhm = 5;
 	auto offset = (2 * range + 1) / 2;

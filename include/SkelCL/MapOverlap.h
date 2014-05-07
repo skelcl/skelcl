@@ -48,43 +48,46 @@
 
 namespace skelcl {
 
-template<typename > class Matrix;
-template<typename > class Out;
+template <typename>
+class Matrix;
+template <typename>
+class Out;
 
-template<typename > class MapOverlap;
+template <typename>
+class MapOverlap;
 
-template<typename Tin, typename Tout>
+template <typename Tin, typename Tout>
 class MapOverlap<Tout(Tin)> : public detail::Skeleton {
 
 public:
-	MapOverlap<Tout(Tin)>(const Source& source, unsigned int overlap_range = 1,
-			detail::Padding padding = detail::Padding::NEAREST,
-			Tin neutral_element = Tin(),
-			const std::string& func = std::string("func"));
+  MapOverlap<Tout(Tin)>(const Source& source, unsigned int overlap_range = 1,
+                        detail::Padding padding = detail::Padding::NEAREST,
+                        Tin neutral_element = Tin(),
+                        const std::string& func = std::string("func"));
 
-	template<typename ... Args>
-	Matrix<Tout> operator()(const Matrix<Tin>& in, Args&&... args);
+  template <typename... Args>
+  Matrix<Tout> operator()(const Matrix<Tin>& in, Args&&... args);
 
-	template<typename ... Args>
-	Matrix<Tout>& operator()(Out<Matrix<Tout> > output, const Matrix<Tin>& in,
-			Args&&... args);
+  template <typename... Args>
+  Matrix<Tout>& operator()(Out<Matrix<Tout>> output, const Matrix<Tin>& in,
+                           Args&&... args);
 
 private:
-	template<typename ... Args>
-	void execute(Matrix<Tout>& output, const Matrix<Tin>& in, Args&&... args);
+  template <typename... Args>
+  void execute(Matrix<Tout>& output, const Matrix<Tin>& in, Args&&... args);
 
-	detail::Program createAndBuildProgram() const;
+  detail::Program createAndBuildProgram() const;
 
-	void prepareInput(const Matrix<Tin>& in);
+  void prepareInput(const Matrix<Tin>& in);
 
-	void prepareOutput(Matrix<Tout>& output, const Matrix<Tin>& in);
+  void prepareOutput(Matrix<Tout>& output, const Matrix<Tin>& in);
 
-	std::string _userSource;
-	std::string _funcName;
-	unsigned int _overlap_range;
-	detail::Padding _padding;
-	Tin _neutral_element;
-	detail::Program _program;
+  std::string _userSource;
+  std::string _funcName;
+  unsigned int _overlap_range;
+  detail::Padding _padding;
+  Tin _neutral_element;
+  detail::Program _program;
 };
 
 } //namespace skelcl

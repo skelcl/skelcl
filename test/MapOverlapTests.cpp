@@ -51,7 +51,7 @@ class MapOverlapTest : public ::testing::Test {
 protected:
   MapOverlapTest() {
     //pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
-    skelcl::init(skelcl::nDevices(1));
+    skelcl::init(skelcl::nDevices(1).deviceType(skelcl::device_type::GPU));
   };
 
   ~MapOverlapTest() {
@@ -60,10 +60,11 @@ protected:
 };
 
 TEST_F(MapOverlapTest, CreateMapOverlapWithString) {
-  skelcl::MapOverlap<float(float)> m {"float func(__local float* f) \
-    { return -f[0]; }", 1};
+  skelcl::MapOverlap<float(float)> m {"float func(input_matrix_t* f) \
+    { return -getData(f, 0, 0); }", 1};
 }
 
+#if 0
 TEST_F(MapOverlapTest, SimpleMapOverlap) {
   skelcl::MapOverlap<int(int)> m{
     "int func(__local int* f){ return f[0]; }", 1 };
@@ -161,32 +162,128 @@ TEST_F(MapOverlapTest, SimpleMultiDeviceMapOverlap2) {
   }
   EXPECT_EQ(input[input.size()-2]+input[input.size()-1]+0, output.back());
 }
+#endif
 
-TEST_F(MapOverlapTest, SimpleMatrixMapOverlap) {
-//  pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
-  skelcl::terminate();
-  skelcl::init(skelcl::nDevices(1));
+TEST_F(MapOverlapTest, SimpleMatrixRightShift) {
   skelcl::MapOverlap<int(int)> m{
-    "int func(__local int* f){ return f[0]; }", 1 };
+      "int func(input_matrix_t* f){ return getData(f, -1, 0); }", 1};
 
-  skelcl::Matrix<int> input( skelcl::MatrixSize{10, 10} );
-  for (size_t i = 0; i < input.size().columnCount(); ++i) {
-    for (size_t j = 0; j < input.size().rowCount(); ++j) {
-      input[i][j] = i*j;
-      LOG_DEBUG("input[", i, "][", j, "] = ", i*j);
+  size_t size = 1000;
+
+  skelcl::Matrix<int> input( skelcl::MatrixSize{size, size} );
+  for (size_t i = 0; i < input.size().rowCount(); ++i) { // y direction
+    for (size_t j = 0; j < input.size().columnCount(); ++j) { // x direction
+      input[i][j] = (i*j)+i;
     }
   }
-  EXPECT_EQ(10, input.size().rowCount());
-  EXPECT_EQ(10, input.size().columnCount());
 
   skelcl::Matrix<int> output = m(input);
 
-  EXPECT_EQ(10, output.size().rowCount());
-  EXPECT_EQ(10, output.size().columnCount());
-  for (size_t i = 0; i < output.size().columnCount(); ++i) {
-    for (size_t j = 0; j < output.size().rowCount(); ++j) {
-      LOG_DEBUG("input[", i, "][", j, "] = ", i*j);
-      EXPECT_EQ(input[i][j], output[i][j]);
+  EXPECT_EQ(size, output.size().rowCount());
+  EXPECT_EQ(size, output.size().columnCount());
+
+  for (size_t i = 0; i < output.size().rowCount(); ++i) {
+    EXPECT_EQ(input[i][0], output[i][0]);
+  }
+
+  for (size_t i = 0; i < output.size().rowCount(); ++i) {
+    for (size_t j = 1; j < output.size().columnCount(); ++j) {
+      EXPECT_EQ(input[i][j-1], output[i][j]);
+    }
+  }
+}
+
+TEST_F(MapOverlapTest, SimpleMatrixLeftShift) {
+  skelcl::MapOverlap<int(int)> m{
+      "int func(input_matrix_t* f){ return getData(f, +1, 0); }", 1};
+
+  size_t size = 10;
+
+  skelcl::Matrix<int> input( skelcl::MatrixSize{size, size} );
+  for (size_t i = 0; i < input.size().rowCount(); ++i) {
+    for (size_t j = 0; j < input.size().columnCount(); ++j) {
+      input[i][j] = (i*j)+i;
+    }
+  }
+
+  skelcl::Matrix<int> output = m(input);
+
+  EXPECT_EQ(size, output.size().rowCount());
+  EXPECT_EQ(size, output.size().columnCount());
+
+  for (size_t i = 0; i < output.size().rowCount(); ++i) {
+    for (size_t j = 0; j < output.size().columnCount() - 1; ++j) {
+      EXPECT_EQ(input[i][j+1], output[i][j]);
+    }
+  }
+
+  for (size_t i = 0; i < output.size().rowCount(); ++i) {
+    size_t j = output.size().columnCount() - 1;
+    EXPECT_EQ(input[i][j], output[i][j]);
+  }
+}
+
+TEST_F(MapOverlapTest, SimpleMatrixUpShift) {
+  skelcl::MapOverlap<int(int)> m{
+      "int func(input_matrix_t* f){ return getData(f, 0, +1); }", 1};
+
+  size_t size = 10;
+
+  skelcl::Matrix<int> input( skelcl::MatrixSize{size, size} );
+  for (size_t i = 0; i < input.size().rowCount(); ++i) {
+    for (size_t j = 0; j < input.size().columnCount(); ++j) {
+      input[i][j] = (i*j)+i;
+    }
+  }
+
+  skelcl::Matrix<int> output = m(input);
+
+  EXPECT_EQ(size, output.size().rowCount());
+  EXPECT_EQ(size, output.size().columnCount());
+
+  for (size_t j = 0; j < output.size().columnCount(); ++j) {
+    EXPECT_EQ(input[0][j], output[0][j]);
+    if (input[0][j] != output[0][j]) {
+      EXPECT_EQ(-1, j);
+    }
+  }
+
+  for (size_t i = 1; i < output.size().rowCount(); ++i) {
+    for (size_t j = 0; j < output.size().columnCount(); ++j) {
+      EXPECT_EQ(input[i-1][j], output[i][j]);
+    }
+  }
+}
+
+TEST_F(MapOverlapTest, SimpleMatrixDownShift) {
+  skelcl::MapOverlap<int(int)> m{
+      "int func(input_matrix_t* f){ return getData(f, 0, -1); }", 1};
+
+  size_t size = 10;
+
+  skelcl::Matrix<int> input( skelcl::MatrixSize{size, size} );
+  for (size_t i = 0; i < input.size().rowCount(); ++i) {
+    for (size_t j = 0; j < input.size().columnCount(); ++j) {
+      input[i][j] = (i*j)+i;
+    }
+  }
+
+  skelcl::Matrix<int> output = m(input);
+
+  EXPECT_EQ(size, output.size().rowCount());
+  EXPECT_EQ(size, output.size().columnCount());
+
+  for (size_t i = 0; i < output.size().rowCount() - 1; ++i) {
+    for (size_t j = 0; j < output.size().columnCount(); ++j) {
+      EXPECT_EQ(input[i+1][j], output[i][j]);
+    }
+  }
+
+  for (size_t j = 0; j < output.size().columnCount(); ++j) {
+    size_t i = output.size().rowCount() - 1;
+    EXPECT_EQ(input[i][j], output[i][j]);
+    if (input[i][j] != output[i][j]) {
+      EXPECT_EQ(-1, j);
     }
   }
 }
