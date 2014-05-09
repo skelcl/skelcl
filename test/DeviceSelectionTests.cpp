@@ -48,7 +48,7 @@
 
 class DeviceSelectionTest : public ::testing::Test {
 protected:
-  DeviceSelectionTest() {
+  DeviceSelectionTest() : cpuCount(0), gpuCount(0) {
     //skelcl::detail::defaultLogger.setLoggingLevel(
     //    skelcl::detail::Logger::Severity::Debug);
 
@@ -77,8 +77,8 @@ protected:
     skelcl::terminate();
   }
 
-  int cpuCount = 0;
-  int gpuCount = 0;
+  int cpuCount;
+  int gpuCount;
 };
 
 using namespace skelcl;
