@@ -51,7 +51,7 @@ class MapOverlapTest : public ::testing::Test {
 protected:
   MapOverlapTest() {
     //pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Debug);
-    skelcl::init(skelcl::nDevices(1).deviceType(skelcl::device_type::GPU));
+    skelcl::init(skelcl::nDevices(1).deviceType(skelcl::device_type::CPU));
   };
 
   ~MapOverlapTest() {
@@ -197,12 +197,12 @@ TEST_F(MapOverlapTest, SimpleMatrixLeftShift) {
   skelcl::MapOverlap<int(int)> m{
       "int func(input_matrix_t* f){ return getData(f, +1, 0); }", 1};
 
-  size_t size = 10;
+  size_t size = 31;
 
   skelcl::Matrix<int> input( skelcl::MatrixSize{size, size} );
   for (size_t i = 0; i < input.size().rowCount(); ++i) {
     for (size_t j = 0; j < input.size().columnCount(); ++j) {
-      input[i][j] = (i*j)+i;
+      input[i][j] = j;
     }
   }
 
@@ -218,8 +218,8 @@ TEST_F(MapOverlapTest, SimpleMatrixLeftShift) {
   }
 
   for (size_t i = 0; i < output.size().rowCount(); ++i) {
-    size_t j = output.size().columnCount() - 1;
-    EXPECT_EQ(input[i][j], output[i][j]);
+    // size_t j = output.size().columnCount() - 1;
+    EXPECT_EQ(input[i][30], output[i][30]);
   }
 }
 
