@@ -167,6 +167,7 @@ TEST_F(MapOverlapTest, SimpleMultiDeviceMapOverlap2) {
 #endif
 
 
+#if 0
 const auto print = [](skelcl::Matrix<int>& m, std::string name) {
   std::cout << name << "\n";
   auto i = 0u;
@@ -179,6 +180,7 @@ const auto print = [](skelcl::Matrix<int>& m, std::string name) {
     }
   }
 };
+#endif
 
 TEST_F(MapOverlapTest, SimpleMatrixRightShift) {
   skelcl::MapOverlap<int(int)> m{
