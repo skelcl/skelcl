@@ -40,48 +40,88 @@
 #include <SkelCL/detail/DeviceProperties.h>
 #include <SkelCL/detail/DeviceList.h>
 
+#define __CL_ENABLE_EXCEPTIONS
+#include <CL/cl.hpp>
+#undef  __CL_ENABLE_EXCEPTIONS
+
 #include "Test.h"
 
 class DeviceSelectionTest : public ::testing::Test {
 protected:
-  DeviceSelectionTest() {
-    // skelcl::detail::defaultLogger.setLoggingLevel(skelcl::detail::Logger::Severity::Debug);
+  DeviceSelectionTest() : cpuCount(0), gpuCount(0) {
+    //skelcl::detail::defaultLogger.setLoggingLevel(
+    //    skelcl::detail::Logger::Severity::Debug);
+
+    std::vector<cl::Platform> platforms;
+    cl::Platform::get(&platforms);
+    if (platforms.size() > 0) {
+      // for each platform ...
+      for (auto& platform : platforms) {
+        // .. get all devices ..
+        std::vector<cl::Device> devices;
+        platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+
+        for (auto& device : devices) {
+          auto type = device.getInfo<CL_DEVICE_TYPE>();
+          if (type == CL_DEVICE_TYPE_CPU) {
+            cpuCount++;
+          } else if (type == CL_DEVICE_TYPE_GPU) {
+            gpuCount++;
+          }
+        }
+      }
+    }
   }
 
   ~DeviceSelectionTest() {
     skelcl::terminate();
   }
+
+  int cpuCount;
+  int gpuCount;
 };
 
 using namespace skelcl;
 
 TEST_F(DeviceSelectionTest, SelectAll) {
-  skelcl::init(allDevices());
-  EXPECT_GT(skelcl::detail::globalDeviceList.size(), 0);
+  if (cpuCount + gpuCount > 0) {
+    skelcl::init(allDevices());
+    EXPECT_GE(skelcl::detail::globalDeviceList.size(), cpuCount + gpuCount);
+  }
 }
 
 TEST_F(DeviceSelectionTest, SelectAllGPUs) {
-  skelcl::init( allDevices().deviceType(device_type::GPU) );
-  EXPECT_GT(skelcl::detail::globalDeviceList.size(), 0);
-  for (auto& device : skelcl::detail::globalDeviceList) {
-    EXPECT_TRUE( device->isType(device_type::GPU) );
+  if (cpuCount + gpuCount > 0) {
+    skelcl::init( allDevices().deviceType(device_type::GPU) );
+    EXPECT_EQ(skelcl::detail::globalDeviceList.size(), gpuCount);
+    for (auto& device : skelcl::detail::globalDeviceList) {
+      EXPECT_TRUE( device->isType(device_type::GPU) );
+    }
   }
 }
 
 TEST_F(DeviceSelectionTest, SelectOne) {
-  skelcl::init(nDevices(1));
-  EXPECT_EQ(skelcl::detail::globalDeviceList.size(), 1);
+  if (cpuCount + gpuCount > 0) {
+    skelcl::init(nDevices(1));
+    EXPECT_EQ(skelcl::detail::globalDeviceList.size(), 1);
+  }
 }
 
 TEST_F(DeviceSelectionTest, SelectOneGPU) {
-  skelcl::init(nDevices(1).deviceType(device_type::GPU));
-  ASSERT_EQ(skelcl::detail::globalDeviceList.size(), 1);
-  EXPECT_TRUE(skelcl::detail::globalDeviceList.front()->isType(skelcl::device_type::GPU));
+  if (cpuCount + gpuCount > 0) {
+    skelcl::init(nDevices(1).deviceType(device_type::GPU));
+    if (gpuCount > 0) {
+      ASSERT_EQ(skelcl::detail::globalDeviceList.size(), 1);
+      EXPECT_TRUE(skelcl::detail::globalDeviceList.front()->isType(skelcl::device_type::GPU));
+    }
+  }
 }
 
 TEST_F(DeviceSelectionTest, SelectFirstDeviceOfFirstPlatform)
 {
-  skelcl::init(skelcl::platform(0), skelcl::device(0));
-  ASSERT_EQ(skelcl::detail::globalDeviceList.size(), 1);
+  if (cpuCount + gpuCount > 0) {
+    skelcl::init(skelcl::platform(0), skelcl::device(0));
+    ASSERT_EQ(skelcl::detail::globalDeviceList.size(), 1);
+  }
 }
 

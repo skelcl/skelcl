@@ -6,7 +6,7 @@ echo "(y)es (n)o "
 read ANSWER
 if [[ "$ANSWER" == 'y' ]]; then
   set -x #echo on
-  sudo apt-get install build-essential git cmake cmake-curses-gui
+  sudo apt-get install build-essential git cmake cmake-curses-gui unzip
   set +x #echo off
 fi
 

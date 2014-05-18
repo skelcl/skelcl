@@ -1,0 +1,44 @@
+language: cpp
+
+compiler:
+  - gcc
+  - clang
+
+before_install:
+  - sudo apt-get update -qq
+
+  # install OpenCL 2.9 from AMD
+  - wget --content-disposition --trust-server-names --post-data='amd_developer_central_nonce=6a655af5ac&_wp_http_referer=/tools-and-sdks/opencl-zone/opencl-tools-sdks/amd-accelerated-parallel-processing-app-sdk/&f=QU1ELUFQUC1TREstdjIuOS1sbng2NC50Z3o=' http://developer.amd.com/tools-and-sdks/opencl-zone/opencl-tools-sdks/amd-accelerated-parallel-processing-app-sdk/
+  - tar xf AMD-APP-SDK-v2.9-lnx64.tgz
+  - sudo ./Install-AMD-APP.sh
+
+  # install tools for the build
+  - sudo apt-get install -y build-essential git cmake cmake-curses-gui unzip
+
+  # install dependencies
+  - sudo apt-get install -y libssl-dev libglu1-mesa-dev llvm-3.3-dev clang-3.3 libclang-3.3-dev
+  - mkdir libraries/stooling/libraries/llvm
+  - ln -s `llvm-config-3.3 --includedir` libraries/stooling/libraries/llvm/include
+  - ln -s `llvm-config-3.3 --libdir` libraries/stooling/libraries/llvm/lib
+
+  # install gtest
+  - wget http://googletest.googlecode.com/files/gtest-1.7.0.zip
+  - unzip -q gtest-1.7.0.zip
+  - mv gtest-1.7.0 libraries/gtest
+  - rm gtest-1.7.0.zip
+
+before_script: mkdir build
+
+script: cd build && cmake .. && make && make test
+
+branches:
+  only:
+    - master
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always
+
+env:
+  - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/AMDAPP/lib/x86_64:/opt/AMDAPP/lib/x86 AMDAPPSDKROOT=/opt/AMDAPP
