@@ -31,7 +31,7 @@
  *                                                                           *
  *****************************************************************************/
 
-int func(input_matrix_t* img, __global float* kernelVec, int range)
+int func(input_matrix_t img, __global float* kernelVec, int range)
 {
   float sum = 0.0f;
   float norm = 0.0f;

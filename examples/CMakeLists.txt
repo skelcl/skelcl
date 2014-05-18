@@ -18,3 +18,4 @@ add_subdirectory (gameoflife)
 add_subdirectory (gameoflifeStencil)
 add_subdirectory (heatStencil)
 add_subdirectory (heat)
+

@@ -91,7 +91,7 @@ TEST_F(DeviceSelectionTest, SelectAll) {
 }
 
 TEST_F(DeviceSelectionTest, SelectAllGPUs) {
-  if (cpuCount + gpuCount > 0) {
+  if (gpuCount > 0) {
     skelcl::init( allDevices().deviceType(device_type::GPU) );
     EXPECT_EQ(skelcl::detail::globalDeviceList.size(), gpuCount);
     for (auto& device : skelcl::detail::globalDeviceList) {
@@ -108,12 +108,10 @@ TEST_F(DeviceSelectionTest, SelectOne) {
 }
 
 TEST_F(DeviceSelectionTest, SelectOneGPU) {
-  if (cpuCount + gpuCount > 0) {
+  if (gpuCount > 0) {
     skelcl::init(nDevices(1).deviceType(device_type::GPU));
-    if (gpuCount > 0) {
-      ASSERT_EQ(skelcl::detail::globalDeviceList.size(), 1);
-      EXPECT_TRUE(skelcl::detail::globalDeviceList.front()->isType(skelcl::device_type::GPU));
-    }
+    ASSERT_EQ(skelcl::detail::globalDeviceList.size(), 1);
+    EXPECT_TRUE(skelcl::detail::globalDeviceList.front()->isType(skelcl::device_type::GPU));
   }
 }
 

@@ -124,6 +124,7 @@ void setOL( const C<T>& c)
   c.setDistribution( std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
         new skelcl::detail::OLDistribution<C<T>>() ) );
 }
+
 /// 
 /// \brief  Factory function to create a CopyDistribution with the types of the
 ///         given container.

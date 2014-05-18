@@ -32,7 +32,7 @@
  *****************************************************************************/
 
 ///
-///	\author Stefan Breuer<s_breu03@uni-muenster.de>
+/// \author Stefan Breuer<s_breu03@uni-muenster.de>
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 #include <algorithm>
@@ -46,10 +46,6 @@
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/IndexMatrix.h>
 #include <SkelCL/MapOverlap.h>
-#include <SkelCL/Stencil.h>
-#include <SkelCL/detail/Padding.h>
-
-#include <chrono>
 
 using namespace skelcl;
 
