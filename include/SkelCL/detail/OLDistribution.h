@@ -60,7 +60,7 @@ template <template<typename> class C, typename T>
 class OLDistribution<C<T>> : public Distribution<C<T>> {
 public:
 	OLDistribution(unsigned int overlapRadius = 1, detail::Padding padding =
-			detail::Padding::NEUTRAL, T neutral_element = T(),
+			detail::Padding::NEAREST, T neutral_element = T(),
 			const DeviceList& deviceList = globalDeviceList);
 
 	template<typename U>
@@ -101,7 +101,7 @@ public:
 	OLDistribution()
 	{ ASSERT(false); }
 
-        template <typename U>
+  template <typename U>
 	OLDistribution(const OLDistribution<Matrix<U>>&)
 	{ ASSERT(false); }
 
@@ -143,21 +143,23 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 		const typename Matrix<T>::size_type size, const DeviceList& devices,
 		unsigned int overlapRadius);
 
-template<typename T>
+template <typename T>
 void startUpload(Vector<T>& vector, Event* events, unsigned int overlapRadius,
-		detail::Padding padding, T neutralElement, detail::DeviceList devices);
+                 detail::Padding padding, const T& neutralElement,
+                 const detail::DeviceList& devices);
 
-template<typename T>
+template <typename T>
 void startUpload(Matrix<T>& vector, Event* events, unsigned int overlapRadius,
-		detail::Padding padding, T neutralElement, detail::DeviceList devices);
+                 detail::Padding padding, const T& neutralElement,
+                 const detail::DeviceList& devices);
 
-template<typename T>
+template <typename T>
 void startDownload(Vector<T>& vector, Event* events, unsigned int overlapRadius,
-		detail::DeviceList devices);
+                   const detail::DeviceList& devices);
 
-template<typename T>
+template <typename T>
 void startDownload(Matrix<T>& vector, Event* events, unsigned int overlapRadius,
-		detail::DeviceList devices);
+                   const detail::DeviceList& devices);
 
 } // namespace ol_distribution_helper
 

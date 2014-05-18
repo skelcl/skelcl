@@ -1,9 +1,40 @@
-/*
- * glaettenMapOverlap.cpp
- *
- *  Created on: 02.03.2011
- *      Author: Stefan Breuer
- */
+/*****************************************************************************
+ * Copyright (c) 2011-2012 The skelcl Team as listed in CREDITS.txt          *
+ * http://skelcl.uni-muenster.de                                             *
+ *                                                                           *
+ * This file is part of skelcl.                                              *
+ * skelcl is available under multiple licenses.                              *
+ * The different licenses are subject to terms and condition as provided     *
+ * in the files specifying the license. See "LICENSE.txt" for details        *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ * skelcl is free software: you can redistribute it and/or modify            *
+ * it under the terms of the GNU General Public License as published by      *
+ * the Free Software Foundation, either version 3 of the License, or         *
+ * (at your option) any later version. See "LICENSE-gpl.txt" for details.    *
+ *                                                                           *
+ * skelcl is distributed in the hope that it will be useful,                 *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of            *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the              *
+ * GNU General Public License for more details.                              *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ * For non-commercial academic use see the license specified in the file     *
+ * "LICENSE-academic.txt".                                                   *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ * If you are interested in other licensing models, including a commercial-  *
+ * license, please contact the author at michel.steuwer@uni-muenster.de      *
+ *                                                                           *
+ *****************************************************************************/
+
+///
+///	\author Stefan Breuer<s_breu03@uni-muenster.de>
+/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+///
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -22,31 +53,26 @@
 
 using namespace skelcl;
 
-long long now()
+template <typename T>
+void writePPM(Matrix<T>& img, const std::string& filename)
 {
-  auto time = std::chrono::high_resolution_clock::now();
-  return std::chrono::duration_cast<std::chrono::milliseconds>(
-      time.time_since_epoch()).count();
-}
-
-void writePPM(Matrix<int>& img, const std::string filename)
-{
-  std::ofstream outputFile(filename.c_str());
+  std::ofstream outputFile(filename);
   outputFile << "P2\n"
-             << "#Creator: sbr\n" << img.columnCount() << " " << img.rowCount()
-             << "\n255\n";
+             << "#Creator: skelcl\n" << img.columnCount() << " "
+             << img.rowCount() << "\n255\n";
 
-  for (auto itr = img.begin(); itr != img.end(); ++itr) {
-    outputFile << *itr << "\n";
+  for (auto& pixel : img) {
+    outputFile << pixel << "\n";
   }
 }
 
-int readPPM(const std::string inFile, std::vector<int>& img)
+template <typename T>
+Matrix<T> readPPM(const std::string& inFile)
 {
-  img.clear();
-  int numrows = 0, numcols = 0;
+  auto numrows = 0u, numcols = 0u;
   std::ifstream infile(inFile);
 
+  // function to get next line which is not a comment
   auto getNextLine = [](std::ifstream & infile)->std::string
   {
     std::string inputLine;
@@ -58,32 +84,34 @@ int readPPM(const std::string inFile, std::vector<int>& img)
     return inputLine;
   };
 
-
   auto version = getNextLine(infile);
 
   auto line = getNextLine(infile);
-  std::stringstream sstream(line);
-  sstream >> numcols >> numrows;
+  std::stringstream(line) >> numcols >> numrows;
    
   getNextLine(infile); // skip the next line (max value)
 
+  Matrix<T> inputImage({numrows, numcols});
+  auto iter = inputImage.begin();
+
   if (version == "P2") {
-    int i;
     while (getline(infile, line)) {
-      std::stringstream ss(line);
-      ss >> i;
-      img.push_back(i);
+      std::stringstream(line) >> *iter;
+      ++iter;
     }
   } else {
     ASSERT_MESSAGE(false, "Wrong version of input graphics");
   }
-  return numcols;
+
+  return inputImage;
 }
+
 
 int main(int argc, char** argv)
 {
   using namespace pvsutil::cmdline;
 
+  // specify command line flags
   pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
 
   auto deviceCount =
@@ -95,71 +123,41 @@ int main(int argc, char** argv)
                                                  "GPU, ACCELERATOR"),
                                      Default(device_type::ANY));
 
-  auto range = Arg<int>(Flags(Long("range")), Description("The Overlap radius"),
-                        Default(5));
+  auto range = Arg<int>(Flags(Long("range"), Short('r')),
+                        Description("The Overlap radius"), Default(5));
 
   auto inFile = Arg<std::string>(Flags(Long("inFile")),
                                  Description("Filename of the input file"),
                                  Default(std::string("lena.pgm")));
 
-  auto iterations = Arg<int>(Flags(Long("iterations"), Short('i')),
-                             Description("Number of iterations."), Default(1));
-
-  cmd.add(&deviceCount, &deviceType, &range, &inFile, &iterations);
+  cmd.add(&deviceCount, &deviceType, &range, &inFile);
   cmd.parse(argc, argv);
 
-  // pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
+  // initialize skelcl
+  skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
 
+  // build output file name: <inputFilename>_<range>_devs_<deviceCount>.pgm
   std::stringstream outFile;
   outFile << inFile.getValue().substr(0, inFile.getValue().find(".")) << "_"
           << range << "_devs_" << deviceCount << ".pgm";
 
-
-  skelcl::Vector<float> kernelVec(2 * range + 1);
+  // vector of weights for the gaussian blur
+  skelcl::Vector<float> weigths(2 * range + 1);
   auto fwhm = 5;
   auto offset = (2 * range + 1) / 2;
   auto a = (fwhm / 2.354);
   for (auto i = -offset; i <= ((2 * range + 1) - offset - 1); i++) {
-    kernelVec[i + offset] = exp(-i * i / (2 * a * a));
+    weigths[i + offset] = exp(-i * i / (2 * a * a));
   }
 
-  std::vector<int> img;
-  int numcols = readPPM(inFile, img);
-
-  auto time0 = now();
-
-  skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
-
-  auto time1 = now();
-
-  Matrix<int> inputImage(img, numcols);
+  // read image in a skelcl::Matrix of ints
+  auto inputImage = readPPM<int>(inFile);
 
   skelcl::MapOverlap<int(int)> s(std::ifstream{"./gauss2D.cl"},
-                                 range.getValue(), detail::Padding::NEAREST,
-                                 0);
+                                 range.getValue(), detail::Padding::NEAREST, 0);
 
-  auto time2 = now();
-
-  for (auto iter = 0; iter < iterations; iter++) {
-    inputImage = s(inputImage, kernelVec, range.getValue());
-    inputImage.copyDataToHost();
-    inputImage.resize(inputImage.size());
-  }
-
-  auto time3 = now();
-
-  inputImage.copyDataToHost();
-
-  auto time5 = now();
-
-  printf("Init time : %.12f\n", (float)(time1 - time0) / 1000000);
-  printf("Creation time : %.12f\n", (float)(time2 - time1) / 1000000);
-  printf("Exec time : %.12f\n", (float)(time3 - time2) / 1000000);
-  printf("Total time : %.12f\n", (float)(time5 - time0) / 1000000);
-  printf("Total without init time : %.12f\n", (float)(time5 - time1) / 1000000);
+  inputImage = s(inputImage, weigths, range.getValue());
 
   writePPM(inputImage, outFile.str());
-
-  skelcl::terminate();
 }
 

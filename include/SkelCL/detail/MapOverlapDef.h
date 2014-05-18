@@ -213,20 +213,13 @@ typedef struct {
     int local_column;
 } input_matrix_t;
 
-SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y)
+SCL_TYPE_1 getData(input_matrix_t matrix, int x, int y)
 {
-    //int offsetNorth = SCL_OVERLAP_RANGE * SCL_TILE_WIDTH;
-    //int currentIndex = matrix->local_row * SCL_TILE_WIDTH + matrix->local_column;
-    //int shift = x - y * SCL_TILE_WIDTH;
-
-    //return matrix->data[currentIndex + offsetNorth + shift + SCL_OVERLAP_RANGE];
-    const unsigned int l_col = matrix->local_column;
-    const unsigned int l_row = matrix->local_row;
-    if (get_global_id(0) == 30) printf("id: 30; index: %d\n", ((y + l_row) + SCL_OVERLAP_RANGE) * SCL_TILE_WIDTH + SCL_OVERLAP_RANGE + (l_col + x));
-    if (get_global_id(0) == 30) printf("x: %d; y: %d\n", x, y);
-  return matrix->data[((y + l_row) + SCL_OVERLAP_RANGE) * SCL_TILE_WIDTH + SCL_OVERLAP_RANGE + (l_col + x)];
+  const unsigned int l_col = matrix.local_column;
+  const unsigned int l_row = matrix.local_row;
+  int index = ((y + l_row) + SCL_OVERLAP_RANGE) * SCL_TILE_WIDTH + SCL_OVERLAP_RANGE + (l_col + x);
+  return matrix.data[index];
 }
-
 
 )");
 

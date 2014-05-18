@@ -77,29 +77,29 @@ __kernel void SCL_MAPOVERLAP(__global SCL_TYPE_0* SCL_IN,
   // everybody copies one item
   SCL_SHARED[localIndex(0, 0)] = SCL_IN[globalIndex(0, 0, SCL_COLS)];
 
+  barrier(CLK_LOCAL_MEM_FENCE);
+
   // the first row copies the north region
   if (l_row == 0) {
-    for (m = 0; m < SCL_OVERLAP_RANGE; m++) {
+    for (m = 1; m <= SCL_OVERLAP_RANGE; m++) {
       SCL_SHARED[localIndex(-m, 0)] = SCL_IN[globalIndex(-m, 0, SCL_COLS)];
     }
   }
 
   // the last row copies the south region
   if (l_row == get_local_size(1) - 1) {
-    for (m = 0; m < SCL_OVERLAP_RANGE; m++) {
+    for (m = 1; m <= SCL_OVERLAP_RANGE; m++) {
       SCL_SHARED[localIndex(m, 0)] = SCL_IN[globalIndex(m, 0, SCL_COLS)];
     }
   }
 
   // the second row copies the west and east regions
   if (l_row == 1 && col < SCL_COLS) {
-    printf("id: %d\n", col);
     // Fill columns of local memory left of the mapped elements when padding
     // elements to the left are needed
     if (col < SCL_OVERLAP_RANGE) {
-      printf("col < SCL_OVERLAP_RANGE id: %d\n", col);
-      for (i = -SCL_OVERLAP_RANGE; i < (int)get_local_size(1) + SCL_OVERLAP_RANGE;
-           i++) {
+      for (i = -SCL_OVERLAP_RANGE;
+           i < (int)get_local_size(1) + SCL_OVERLAP_RANGE; i++) {
 #ifdef NEUTRAL
         SCL_SHARED[localIndex(i - 1, -SCL_OVERLAP_RANGE)] = NEUTRAL;
 #else // NEAREST
@@ -110,7 +110,6 @@ __kernel void SCL_MAPOVERLAP(__global SCL_TYPE_0* SCL_IN,
     }
     // Fill columns of local memory left of the mapped elements
     else if (l_col < SCL_OVERLAP_RANGE) {
-      printf("l_col < SCL_OVERLAP_RANGE id: %d\n", col);
       for (i = -SCL_OVERLAP_RANGE;
            i < (int)get_local_size(1) + SCL_OVERLAP_RANGE; i++) {
         SCL_SHARED[localIndex(i - 1, -SCL_OVERLAP_RANGE)] =
@@ -121,22 +120,18 @@ __kernel void SCL_MAPOVERLAP(__global SCL_TYPE_0* SCL_IN,
     // Fill columns of local memory right of the mapped elements when padding
     // elements to the right are needed
     if (col >= (SCL_COLS - SCL_OVERLAP_RANGE)) {
-      printf("col < SCL_COLS - SCL_OVERLAP_RANGE id: %d\n", col);
       for (i = -SCL_OVERLAP_RANGE;
            i < (int)get_local_size(1) + SCL_OVERLAP_RANGE; i++) {
 #ifdef NEUTRAL
         SCL_SHARED[localIndex(i - 1, +SCL_OVERLAP_RANGE)] = NEUTRAL;
 #else // NEAREST
-            int v = SCL_IN[globalIndex(i - 1, +(SCL_COLS - col - 1), SCL_COLS)];
-        printf("i :%d, value: %d\n", i, v);
-        printf("rowOffset: %d, colOffset: %d, index: %d\n", i - 1, +SCL_OVERLAP_RANGE, localIndex(i - 1, SCL_OVERLAP_RANGE));
-        SCL_SHARED[localIndex(i - 1, +SCL_OVERLAP_RANGE)] = v;
+        SCL_SHARED[localIndex(i - 1, +SCL_OVERLAP_RANGE)] =
+            SCL_IN[globalIndex(i - 1, +(SCL_COLS - col - 1), SCL_COLS)];
 #endif
       }
     }
     // Fill columns of local memory right of the mapped elements
     else if (l_col >= (int)(get_local_size(0) - SCL_OVERLAP_RANGE)) {
-      printf("l_col < get_local_size(0) - SCL_OVERLAP_RANGE id: %d\n", col);
       for (i = -SCL_OVERLAP_RANGE;
            i < (int)get_local_size(1) + SCL_OVERLAP_RANGE; i++) {
         SCL_SHARED[localIndex(i - 1, +SCL_OVERLAP_RANGE)] =
@@ -148,12 +143,8 @@ __kernel void SCL_MAPOVERLAP(__global SCL_TYPE_0* SCL_IN,
   barrier(CLK_LOCAL_MEM_FENCE);
 
   if (row < SCL_ELEMENTS / SCL_COLS && col < SCL_COLS) {
-    int value = USR_FUNC(&Mm);
-    if (get_global_id(0) == 30) {printf("global value: %d\n", value);}
-    SCL_OUT[globalIndex(0, 0, SCL_COLS)] = value;
+    SCL_OUT[globalIndex(0, 0, SCL_COLS)] = USR_FUNC(Mm);
   }
-
 }
-
 )"
 
