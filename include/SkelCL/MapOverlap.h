@@ -32,94 +32,66 @@
  *****************************************************************************/
 
 ///
-/// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
+/// \file MapOverlap.h
 ///
+///	\author Stefan Breuer<s_breu03@uni-muenster.de>
+///
+#ifndef MapOverlap_H_
+#define MapOverlap_H_
 
-#include <SkelCL/SkelCL.h>
-#include <SkelCL/detail/Device.h>
-#include <SkelCL/detail/DeviceProperties.h>
-#include <SkelCL/detail/DeviceList.h>
+#include <istream>
+#include <string>
 
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-#undef  __CL_ENABLE_EXCEPTIONS
+#include "detail/Padding.h"
+#include "detail/Skeleton.h"
+#include "detail/Program.h"
 
-#include "Test.h"
+namespace skelcl {
 
-class DeviceSelectionTest : public ::testing::Test {
-protected:
-  DeviceSelectionTest() : cpuCount(0), gpuCount(0) {
-    //skelcl::detail::defaultLogger.setLoggingLevel(
-    //    skelcl::detail::Logger::Severity::Debug);
+template <typename>
+class Matrix;
+template <typename>
+class Out;
 
-    std::vector<cl::Platform> platforms;
-    cl::Platform::get(&platforms);
-    if (platforms.size() > 0) {
-      // for each platform ...
-      for (auto& platform : platforms) {
-        // .. get all devices ..
-        std::vector<cl::Device> devices;
-        platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+template <typename>
+class MapOverlap;
 
-        for (auto& device : devices) {
-          auto type = device.getInfo<CL_DEVICE_TYPE>();
-          if (type == CL_DEVICE_TYPE_CPU) {
-            cpuCount++;
-          } else if (type == CL_DEVICE_TYPE_GPU) {
-            gpuCount++;
-          }
-        }
-      }
-    }
-  }
+template <typename Tin, typename Tout>
+class MapOverlap<Tout(Tin)> : public detail::Skeleton {
 
-  ~DeviceSelectionTest() {
-    skelcl::terminate();
-  }
+public:
+  MapOverlap<Tout(Tin)>(const Source& source, unsigned int overlap_range = 1,
+                        detail::Padding padding = detail::Padding::NEAREST,
+                        Tin neutral_element = Tin(),
+                        const std::string& func = std::string("func"));
 
-  int cpuCount;
-  int gpuCount;
+  template <typename... Args>
+  Matrix<Tout> operator()(const Matrix<Tin>& in, Args&&... args);
+
+  template <typename... Args>
+  Matrix<Tout>& operator()(Out<Matrix<Tout>> output, const Matrix<Tin>& in,
+                           Args&&... args);
+
+private:
+  template <typename... Args>
+  void execute(Matrix<Tout>& output, const Matrix<Tin>& in, Args&&... args);
+
+  detail::Program createAndBuildProgram() const;
+
+  void prepareInput(const Matrix<Tin>& in);
+
+  void prepareOutput(Matrix<Tout>& output, const Matrix<Tin>& in);
+
+  std::string _userSource;
+  std::string _funcName;
+  unsigned int _overlap_range;
+  detail::Padding _padding;
+  Tin _neutral_element;
+  detail::Program _program;
 };
 
-using namespace skelcl;
+} //namespace skelcl
 
-TEST_F(DeviceSelectionTest, SelectAll) {
-  if (cpuCount + gpuCount > 0) {
-    skelcl::init(allDevices());
-    EXPECT_GE(skelcl::detail::globalDeviceList.size(), cpuCount + gpuCount);
-  }
-}
+#include "detail/MapOverlapDef.h"
 
-TEST_F(DeviceSelectionTest, SelectAllGPUs) {
-  if (gpuCount > 0) {
-    skelcl::init( allDevices().deviceType(device_type::GPU) );
-    EXPECT_EQ(skelcl::detail::globalDeviceList.size(), gpuCount);
-    for (auto& device : skelcl::detail::globalDeviceList) {
-      EXPECT_TRUE( device->isType(device_type::GPU) );
-    }
-  }
-}
-
-TEST_F(DeviceSelectionTest, SelectOne) {
-  if (cpuCount + gpuCount > 0) {
-    skelcl::init(nDevices(1));
-    EXPECT_EQ(skelcl::detail::globalDeviceList.size(), 1);
-  }
-}
-
-TEST_F(DeviceSelectionTest, SelectOneGPU) {
-  if (gpuCount > 0) {
-    skelcl::init(nDevices(1).deviceType(device_type::GPU));
-    ASSERT_EQ(skelcl::detail::globalDeviceList.size(), 1);
-    EXPECT_TRUE(skelcl::detail::globalDeviceList.front()->isType(skelcl::device_type::GPU));
-  }
-}
-
-TEST_F(DeviceSelectionTest, SelectFirstDeviceOfFirstPlatform)
-{
-  if (cpuCount + gpuCount > 0) {
-    skelcl::init(skelcl::platform(0), skelcl::device(0));
-    ASSERT_EQ(skelcl::detail::globalDeviceList.size(), 1);
-  }
-}
-
+#endif /* MAPOVERLAP_H_ */

@@ -70,6 +70,10 @@ void setKernelArgs(cl::Kernel& kernel,
                    size_t index,
                    Args&&... args);
 
+size_t getKernelGroupSize(cl::Kernel kernel, const Device& device);
+
+size_t determineWorkgroupSizeForKernel(cl::Kernel kernel, const Device& device);
+
 // Declarations
 
 template <typename T, typename... Args>

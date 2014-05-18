@@ -51,7 +51,7 @@
 #include <cmath>
 
 #define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.h>
+#include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
 #include <pvsutil/Assert.h>
@@ -562,7 +562,7 @@ Matrix<Tout>& Map<Tout(IndexPoint)>::operator()(Out<Matrix<Tout>> output,
 {
   // set default distribution if required
   if (!input.distribution().isValid()) {
-    input.setDistribution(detail::BlockDistribution<Matrix<Index>>());
+    input.setDistribution(detail::BlockDistribution<Matrix<IndexPoint>>());
   }
   // no need to further prepare index matrix
   

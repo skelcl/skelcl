@@ -44,6 +44,7 @@
 
 #include "detail/Distribution.h"
 #include "detail/BlockDistribution.h"
+#include "detail/OLDistribution.h"
 #include "detail/CopyDistribution.h"
 #include "detail/SingleDistribution.h"
 
@@ -105,6 +106,22 @@ void setBlock( const C<T>& c)
 {
   c.setDistribution( std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
         new skelcl::detail::BlockDistribution<C<T>>() ) );
+}
+
+
+template <template <typename> class C, typename T>
+std::unique_ptr<skelcl::detail::Distribution<C<T>>>
+    OL( const C<T>& /*c*/ )
+{
+  return std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
+            new skelcl::detail::OLDistribution<C<T>>() );
+}
+
+template <template <typename> class C, typename T>
+void setOL( const C<T>& c)
+{
+  c.setDistribution( std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
+        new skelcl::detail::OLDistribution<C<T>>() ) );
 }
 
 /// 
@@ -295,6 +312,13 @@ std::unique_ptr<Distribution<C<T>>>
             new SingleDistribution<C<T>>(*single) );
   }
 
+  // overlap distribution
+  auto ol = dynamic_cast<const OLDistribution<C<U>>*>(&dist);
+  if (ol != nullptr) {
+    return std::unique_ptr<Distribution<C<T>>>(
+            new OLDistribution<C<T>>(*ol) );
+  }
+
   // default distribution
   return std::unique_ptr<Distribution<C<T>>>(
             new Distribution<C<T>>(dist) );
@@ -325,6 +349,13 @@ std::unique_ptr<Distribution<OutT>>
     if (single != nullptr) {
       return std::unique_ptr<Distribution<OutT>>(
         new SingleDistribution<OutT>(*single));
+    }
+
+    // overlap distribution
+    auto ol = dynamic_cast<const OLDistribution<InT>*>(&dist);
+    if (ol != nullptr) {
+      return std::unique_ptr<Distribution<OutT>>(
+        new OLDistribution<OutT>(*ol));
     }
 
     // default distribution

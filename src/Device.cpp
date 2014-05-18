@@ -78,7 +78,7 @@ void invokeCallback(cl_event /*event*/, cl_int status, void * userData)
 {
   auto callback = static_cast<std::function<void()>*>(userData);
   (*callback)(); // invoke callback
-  delete callback; // TODO: try to avoid explicit delete
+  delete callback;
 
   if (status != CL_COMPLETE) {
     LOG_ERROR("Event returned with abnormal status (", cl::Error(status), ")");

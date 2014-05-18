@@ -36,6 +36,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/IndexVector.h
       ../include/SkelCL/SkelCL.h
       ../include/SkelCL/Map.h
+      ../include/SkelCL/MapOverlap.h
       ../include/SkelCL/Matrix.h
       ../include/SkelCL/Out.h
       ../include/SkelCL/Reduce.h
@@ -65,7 +66,11 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/MapDef.h
       ../include/SkelCL/detail/MapHelper.h
       ../include/SkelCL/detail/MapHelperDef.h
+      ../include/SkelCL/detail/MapOverlapDef.h
+      ../include/SkelCL/detail/MapOverlapKernel.cl
       ../include/SkelCL/detail/MatrixDef.h
+      ../include/SkelCL/detail/OLDistribution.h
+      ../include/SkelCL/detail/OLDistributionDef.h
       ../include/SkelCL/detail/OverlapDistribution.h
       ../include/SkelCL/detail/OverlapDistributionDef.h
       ../include/SkelCL/detail/Padding.h

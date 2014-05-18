@@ -241,7 +241,7 @@ Matrix<T>& Matrix<T>::operator=(Matrix<T>&& rhs)
   _hostBuffer             = std::move(rhs._hostBuffer);
   _deviceBuffers          = std::move(rhs._deviceBuffers);
 
-  rhs._size = 0;
+  rhs._size = {0,0};
   rhs._hostBufferUpToDate = false;
   rhs._deviceBuffersUpToDate = false;
   LOG_DEBUG_INFO("Move assignment to Matrix object (", this, ") from (",

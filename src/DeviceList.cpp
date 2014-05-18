@@ -118,6 +118,7 @@ void DeviceList::init(DeviceProperties properties)
   } catch (cl::Error& err) {
     ABORT_WITH_ERROR(err);
   }
+  ASSERT_MESSAGE(!_devices.empty(), "None OpenCL device was selected.");
   LOG_INFO("Using ", _devices.size(), " OpenCL device(s) in total");
 }
 
