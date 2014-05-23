@@ -8,7 +8,7 @@ before_install:
   - sudo apt-get update -qq
 
   # install OpenCL 2.9 from AMD
-  - wget --content-disposition --trust-server-names --post-data='amd_developer_central_nonce=b093897a97&_wp_http_referer=/tools-and-sdks/opencl-zone/opencl-tools-sdks/amd-accelerated-parallel-processing-app-sdk/&f=QU1ELUFQUC1TREstdjIuOS1sbng2NC50Z3o=' http://developer.amd.com/tools-and-sdks/opencl-zone/opencl-tools-sdks/amd-accelerated-parallel-processing-app-sdk/
+  - wget https://dl.dropboxusercontent.com/s/e9dihwobjt806op/AMD-APP-SDK-v2.9-lnx64.tgz
   - tar xf AMD-APP-SDK-v2.9-lnx64.tgz
   - sudo ./Install-AMD-APP.sh
 
