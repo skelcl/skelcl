@@ -167,11 +167,11 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
 
 template <typename Tin, typename Tout>
 detail::Program
-  Map<Tout(Tin)>::createAndBuildProgram(const std::string& source,
-                                        const std::string& funcName) const
+    Map<Tout(Tin)>::createAndBuildProgram(const std::string& source,
+                                          const std::string& funcName) const
 {
   ASSERT_MESSAGE(!source.empty(),
-    "Tried to create program with empty user source.");
+                 "Tried to create program with empty user source.");
 
   // create program
   // first: device specific functions
@@ -287,11 +287,11 @@ void Map<void(Tin)>::execute(const C<Tin>& input,
 
 template <typename Tin>
 detail::Program
-  Map<void(Tin)>::createAndBuildProgram(const std::string& source,
-                                        const std::string& funcName) const
+    Map<void(Tin)>::createAndBuildProgram(const std::string& source,
+                                          const std::string& funcName) const
 {
   ASSERT_MESSAGE(!source.empty(),
-    "Tried to create program with empty user source.");
+                 "Tried to create program with empty user source.");
 
   // create program
   // first: device specific functions
@@ -333,8 +333,7 @@ __kernel void SCL_MAP(
 
 // ## Map<Index, Tout> ################################################
 template <typename Tout>
-Map<Tout(Index)>::Map(const Source& source,
-                      const std::string& funcName)
+Map<Tout(Index)>::Map(const Source& source, const std::string& funcName)
   : Skeleton(),
     detail::MapHelper<Tout(Index)>(createAndBuildProgram(source, funcName))
 {
@@ -375,8 +374,7 @@ Vector<Tout>& Map<Tout(Index)>::operator()(Out<Vector<Tout>> output,
 
 template <typename Tout>
 template <typename... Args>
-void Map<Tout(Index)>::execute(Vector<Tout>& output,
-                               const Vector<Index>& input,
+void Map<Tout(Index)>::execute(Vector<Tout>& output, const Vector<Index>& input,
                                Args&&... args) const
 {
   ASSERT( output.size() >= input.size() );
@@ -387,33 +385,29 @@ void Map<Tout(Index)>::execute(Vector<Tout>& output,
   for (auto& devicePtr : input.distribution().devices()) {
     auto& outputBuffer = output.deviceBuffer(*devicePtr);
 
-    cl_uint local     = static_cast<cl_uint>(
-                          std::min(this->workGroupSize(),
-                                   devicePtr->maxWorkGroupSize()) );
-    cl_uint global    = static_cast<cl_uint>(
-                          detail::util::ceilToMultipleOf(sizes[i], local) );
+    cl_uint local = static_cast<cl_uint>(
+        std::min(this->workGroupSize(), devicePtr->maxWorkGroupSize()));
+    cl_uint global =
+        static_cast<cl_uint>(detail::util::ceilToMultipleOf(sizes[i], local));
 
     try {
       cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
 
       kernel.setArg(0, outputBuffer.clBuffer());
-      kernel.setArg(1, offset);
+      kernel.setArg(1, static_cast<cl_uint>(output.size()));
+      kernel.setArg(2, offset);
 
-      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 2,
+      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 3,
                                         std::forward<Args>(args)...);
 
-      auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
-                                                     std::forward<Args>(args)...);
+      auto keepAlive = detail::kernelUtil::keepAlive(
+          *devicePtr, std::forward<Args>(args)...);
 
       // after finishing the kernel invoke this function ...
-      auto invokeAfter =  [=] () {
-                                    (void)keepAlive;
-                                 };
+      auto invokeAfter = [=]() { (void)keepAlive; };
 
-      devicePtr->enqueue(kernel,
-                         cl::NDRange(global), cl::NDRange(local),
-                         cl::NullRange,
-                         invokeAfter);
+      devicePtr->enqueue(kernel, cl::NDRange(global), cl::NDRange(local),
+                         cl::NullRange, invokeAfter);
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
     }
@@ -425,11 +419,11 @@ void Map<Tout(Index)>::execute(Vector<Tout>& output,
 
 template <typename Tout>
 detail::Program
-  Map<Tout(Index)>::createAndBuildProgram(const std::string& source,
-                                          const std::string& funcName) const
+    Map<Tout(Index)>::createAndBuildProgram(const std::string& source,
+                                            const std::string& funcName) const
 {
   ASSERT_MESSAGE(!source.empty(),
-    "Tried to create program with empty user source.");
+                 "Tried to create program with empty user source.");
 
   // create program
   // first: device specific functions
@@ -447,9 +441,12 @@ typedef float SCL_TYPE_0;
 
 __kernel void SCL_MAP(
           __global SCL_TYPE_0*  SCL_OUT,
+    const unsigned int          SCL_OUT_SIZE,
     const unsigned int          SCL_OFFSET)
 {
-  SCL_OUT[get_global_id(0)] = SCL_FUNC(get_global_id(0)+SCL_OFFSET);
+  if (get_global_id(0) < SCL_OUT_SIZE) {
+    SCL_OUT[get_global_id(0)] = SCL_FUNC(get_global_id(0)+SCL_OFFSET);
+  }
 }
 )");
   auto program = detail::Program(s, detail::util::hash(s));
@@ -500,31 +497,28 @@ void Map<void(Index)>::execute(const Vector<Index>& input,
   cl_uint offset = 0;
   for (auto& devicePtr : input.distribution().devices()) {
 
-    cl_uint local      = static_cast<cl_uint>(
-                            std::min(this->workGroupSize(),
-                                     devicePtr->maxWorkGroupSize()) );
-    cl_uint global     = static_cast<cl_uint>( 
-                            detail::util::ceilToMultipleOf(sizes[i], local) );
+    cl_uint local = static_cast<cl_uint>(
+        std::min(this->workGroupSize(), devicePtr->maxWorkGroupSize()));
+    cl_uint global =
+        static_cast<cl_uint>(detail::util::ceilToMultipleOf(sizes[i], local));
 
     try {
       cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
 
-      kernel.setArg(0, offset);
+      kernel.setArg(0, sizes[i]);
+      kernel.setArg(1, offset);
 
-      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 1,
+      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 2,
                                         std::forward<Args>(args)...);
 
-      auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
-                                                     std::forward<Args>(args)...
-                                                    );
+      auto keepAlive = detail::kernelUtil::keepAlive(
+          *devicePtr, std::forward<Args>(args)...);
 
       // after finishing the kernel invoke this function ...
-      auto invokeAfter =  [=] () { (void)keepAlive; };
+      auto invokeAfter = [=]() { (void)keepAlive; };
 
-      devicePtr->enqueue(kernel,
-                         cl::NDRange(global), cl::NDRange(local),
-                         cl::NullRange,
-                         invokeAfter);
+      devicePtr->enqueue(kernel, cl::NDRange(global), cl::NDRange(local),
+                         cl::NullRange, invokeAfter);
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
     }
@@ -537,10 +531,9 @@ void Map<void(Index)>::execute(const Vector<Index>& input,
 
 // ## Map<IndexPoint, Tout> ################################################
 template <typename Tout>
-Map<Tout(IndexPoint)>::Map(const Source& source,
-                           const std::string& funcName)
-: Skeleton(),
-  detail::MapHelper<Tout(IndexPoint)>(createAndBuildProgram(source, funcName))
+Map<Tout(IndexPoint)>::Map(const Source& source, const std::string& funcName)
+  : Skeleton(),
+    detail::MapHelper<Tout(IndexPoint)>(createAndBuildProgram(source, funcName))
 {
 }
 
@@ -591,27 +584,27 @@ void Map<Tout(IndexPoint)>::execute(Matrix<Tout>& output,
     auto& outputBuffer = output.deviceBuffer(*devicePtr);
     
     auto elements = input.distribution().sizeForDevice(input, devicePtr);
-    cl_uint colCount = static_cast<cl_uint>( input.size().columnCount() );
-    cl_uint rowCount = static_cast<cl_uint>( elements / colCount );
-    
-    size_t wgSize      = detail::util::floorPow2(
-                          static_cast<int>(sqrt(this->workGroupSize()) ) );
-    cl_uint local      = static_cast<cl_uint>( 
-                            std::min(wgSize,
-                                     devicePtr->maxWorkGroupSize()) );
-    cl_uint colGlobal  = static_cast<cl_uint>( 
-                            detail::util::ceilToMultipleOf(colCount, local) );
-    cl_uint rowGlobal  = static_cast<cl_uint>( 
-                            detail::util::ceilToMultipleOf(rowCount, local) );
-    
+    cl_uint colCount = static_cast<cl_uint>(input.size().columnCount());
+    cl_uint rowCount = static_cast<cl_uint>(elements / colCount);
+
+    size_t wgSize =
+        detail::util::floorPow2(static_cast<int>(sqrt(this->workGroupSize())));
+    cl_uint local =
+        static_cast<cl_uint>(std::min(wgSize, devicePtr->maxWorkGroupSize()));
+    cl_uint colGlobal =
+        static_cast<cl_uint>(detail::util::ceilToMultipleOf(colCount, local));
+    cl_uint rowGlobal =
+        static_cast<cl_uint>(detail::util::ceilToMultipleOf(rowCount, local));
+
     try {
       cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
       
       kernel.setArg(0, outputBuffer.clBuffer());
-      kernel.setArg(1, rowOffset);
-      kernel.setArg(2, colCount);
+      kernel.setArg(1, static_cast<cl_uint>(output.size().elemCount()));
+      kernel.setArg(2, rowOffset);
+      kernel.setArg(3, colCount);
       
-      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 3,
+      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 4,
                                         std::forward<Args>(args)...);
       
       auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
@@ -620,13 +613,10 @@ void Map<Tout(IndexPoint)>::execute(Matrix<Tout>& output,
                                                     );
       
       // after finishing the kernel invoke this function ...
-      auto invokeAfter =  [=] () { (void)keepAlive; };
-      
-      devicePtr->enqueue(kernel,
-                         cl::NDRange(rowGlobal, colGlobal),
-                         cl::NDRange(local, local),
-                         cl::NullRange,
-                         invokeAfter);
+      auto invokeAfter = [=]() { (void)keepAlive; };
+
+      devicePtr->enqueue(kernel, cl::NDRange(rowGlobal, colGlobal),
+                         cl::NDRange(local, local), cl::NullRange, invokeAfter);
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
     }
@@ -637,11 +627,8 @@ void Map<Tout(IndexPoint)>::execute(Matrix<Tout>& output,
 }
 
 template <typename Tout>
-detail::Program
-  Map<Tout(IndexPoint)>::createAndBuildProgram(
-                                               const std::string& source,
-                                               const std::string& funcName
-                                              ) const
+detail::Program Map<Tout(IndexPoint)>::createAndBuildProgram(
+    const std::string& source, const std::string& funcName) const
 {
   ASSERT_MESSAGE(!source.empty(),
                  "Tried to create program with empty user source.");
@@ -661,19 +648,22 @@ typedef struct {
   // last: append skeleton implementation source
   s.append(R"(
            
-           typedef float SCL_TYPE_0;
+typedef float SCL_TYPE_0;
            
-           __kernel void SCL_MAP(__global SCL_TYPE_0*  SCL_OUT,
-                                 const unsigned int          SCL_ROW_OFFSET,
-                                 const unsigned int          SCL_COL_COUNT)
-  {
+__kernel void SCL_MAP(__global SCL_TYPE_0*  SCL_OUT,
+                      const unsigned int    SCL_OUT_SIZE,
+                      const unsigned int    SCL_ROW_OFFSET,
+                      const unsigned int    SCL_COL_COUNT)
+{
+  if ( (get_global_id(0) * SCL_COL_COUNT + get_global_id(1)) < SCL_OUT_SIZE ) {
     // dim 1 is the columns, dim 0 the rows
     IndexPoint p;
     p.x = get_global_id(1);
     p.y = get_global_id(0) + SCL_ROW_OFFSET;
     SCL_OUT[get_global_id(0) * SCL_COL_COUNT + get_global_id(1)] = SCL_FUNC(p);
   }
-           )");
+}
+)");
   auto program = detail::Program(s, detail::util::hash(s));
   
   // modify program
@@ -721,43 +711,37 @@ void Map<void(IndexPoint)>::execute(const Matrix<IndexPoint>& input,
   cl_uint rowOffset = 0;
   for (auto& devicePtr : input.distribution().devices()) {
     auto elements = input.distribution().sizeForDevice(input, devicePtr);
-    auto colCount = input.size().columnCount();
-    auto rowCount = elements / colCount;
-    
-    size_t wgSize      = static_cast<size_t>(
-                            detail::util::floorPow2(
-                              static_cast<int>(sqrt(this->workGroupSize())) ) );
-    cl_uint local      = static_cast<cl_uint>(
-                            std::min(wgSize,
-                                     devicePtr->maxWorkGroupSize()) );
-    
-    cl_uint colGlobal  = static_cast<cl_uint>(
-                            detail::util::ceilToMultipleOf(colCount, local) );
-    cl_uint rowGlobal  = static_cast<cl_uint>(
-                            detail::util::ceilToMultipleOf(rowCount, local) );
-    
+    cl_uint colCount = input.size().columnCount();
+    cl_uint rowCount = elements / colCount;
+
+    size_t wgSize = static_cast<size_t>(
+        detail::util::floorPow2(static_cast<int>(sqrt(this->workGroupSize()))));
+    cl_uint local =
+        static_cast<cl_uint>(std::min(wgSize, devicePtr->maxWorkGroupSize()));
+
+    cl_uint colGlobal =
+        static_cast<cl_uint>(detail::util::ceilToMultipleOf(colCount, local));
+    cl_uint rowGlobal =
+        static_cast<cl_uint>(detail::util::ceilToMultipleOf(rowCount, local));
+
     try {
       cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
-      
-      kernel.setArg(0, rowOffset);
-      
-      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 1,
+
+      kernel.setArg(0, colCount);
+      kernel.setArg(1, rowCount);
+      kernel.setArg(2, rowOffset);
+
+      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 3,
                                         std::forward<Args>(args)...);
-      
-      auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
-                                                     std::forward<Args>(args)...
-                                                    );
-      
+
+      auto keepAlive = detail::kernelUtil::keepAlive(
+          *devicePtr, std::forward<Args>(args)...);
+
       // after finishing the kernel invoke this function ...
-      auto invokeAfter =  [=] () {
-        (void)keepAlive;
-      };
-      
-      devicePtr->enqueue(kernel,
-                         cl::NDRange(rowGlobal, colGlobal),
-                         cl::NDRange(local, local),
-                         cl::NullRange,
-                         invokeAfter);
+      auto invokeAfter = [=]() { (void)keepAlive; };
+
+      devicePtr->enqueue(kernel, cl::NDRange(rowGlobal, colGlobal),
+                         cl::NDRange(local, local), cl::NullRange, invokeAfter);
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
     }
@@ -770,3 +754,4 @@ void Map<void(IndexPoint)>::execute(const Matrix<IndexPoint>& input,
 } // namespace skelcl
 
 #endif // MAP_DEF_H_
+
