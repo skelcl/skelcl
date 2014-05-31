@@ -511,9 +511,8 @@ public:
   ///            be inserted. \c pos may be the end() iterator
   /// \param first Start of the range of elements to be inserted
   /// \param last End of the range of elements to be inserted
-  /// \return Iterator pointing to the first inserted value
   template <class InputIterator>
-  iterator insert(iterator pos, InputIterator first, InputIterator last);
+  void insert(iterator pos, InputIterator first, InputIterator last);
 
   /// \brief Remove the specified element from the Vector.
   ///

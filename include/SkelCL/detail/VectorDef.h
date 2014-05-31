@@ -418,13 +418,11 @@ typename Vector<T>::iterator
 
 template <typename T>
 template <class InputIterator>
-typename Vector<T>::iterator
-    Vector<T>::insert(typename Vector<T>::iterator position,
-                      InputIterator first, InputIterator last)
+void Vector<T>::insert(typename Vector<T>::iterator position,
+                       InputIterator first, InputIterator last)
 {
-  auto iter = _hostBuffer.insert(position, first, last);
+  _hostBuffer.insert(position, first, last);
   _size = _hostBuffer.size();
-  return iter
 // TODO This is NOT Compiling !?!?: _size += std::distance(first, last);
 }
 
