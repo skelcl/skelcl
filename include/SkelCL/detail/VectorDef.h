@@ -400,17 +400,17 @@ void Vector<T>::pop_back()
 }
 
 template <typename T>
-typename Vector<T>::iterator Vector<T>::insert( typename Vector<T>::iterator position,
-                                                const T& x )
+typename Vector<T>::iterator
+    Vector<T>::insert(typename Vector<T>::iterator position, const T& x)
 {
   ++_size;
   return _hostBuffer.insert(position, x);
 }
 
 template <typename T>
-void Vector<T>::insert( typename Vector<T>::iterator position,
-                        typename Vector<T>::size_type n,
-                        const T& x )
+typename Vector<T>::iterator
+    Vector<T>::insert(typename Vector<T>::iterator position,
+                      typename Vector<T>::size_type n, const T& x)
 {
   _size += n;
   return _hostBuffer.insert(position, n, x);
@@ -418,17 +418,19 @@ void Vector<T>::insert( typename Vector<T>::iterator position,
 
 template <typename T>
 template <class InputIterator>
-void Vector<T>::insert( typename Vector<T>::iterator position,
-                        InputIterator first,
-                        InputIterator last )
+typename Vector<T>::iterator
+    Vector<T>::insert(typename Vector<T>::iterator position,
+                      InputIterator first, InputIterator last)
 {
-  _hostBuffer.insert(position, first, last);
+  auto iter = _hostBuffer.insert(position, first, last);
   _size = _hostBuffer.size();
+  return iter
 // TODO This is NOT Compiling !?!?: _size += std::distance(first, last);
 }
 
 template <typename T>
-typename Vector<T>::iterator Vector<T>::erase( typename Vector<T>::iterator position )
+typename Vector<T>::iterator
+    Vector<T>::erase(typename Vector<T>::iterator position)
 {
   --_size;
   return _hostBuffer.erase(position);
@@ -458,12 +460,6 @@ void Vector<T>::clear()
 {
   _hostBuffer.clear();
   _size = 0;
-}
-
-template <typename T>
-typename Vector<T>::allocator_type Vector<T>::get_allocator() const
-{
-  return _hostBuffer.get_allocator();
 }
 
 template <typename T>

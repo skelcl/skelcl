@@ -457,7 +457,7 @@ public:
   /// \param first Begin of the range to copy the elements from
   /// \param last  End of the range to copy the elements from
   template <class InputIterator>
-  void assign( InputIterator first, InputIterator last );
+  void assign(InputIterator first, InputIterator last);
 
   /// \brief Replaces the contents of the Vector with \c count copies of
   ///        \c value.
@@ -465,13 +465,13 @@ public:
   /// \b Complexity Linear in \c count
   /// \param count The new size of the Vector
   /// \param value  The value to initialize the elements of the Vector with
-  void assign( size_type count, const T& value );
+  void assign(size_type count, const T& value);
 
   /// \brief Appends a copy of the given element value to the end of the Vector.
   ///
   /// \b Complexity Amortized constant.
   /// \param value The value of the element to append
-  void push_back( const T& value );
+  void push_back(const T& value);
 
   /// \brief Removes the last element of the Vector.
   ///
@@ -488,99 +488,138 @@ public:
   ///            be inserted. \c pos may be the end() iterator.
   /// \param value Element value to insert
   /// \return Iterator pointing to the inserted value
-  iterator insert( iterator pos, const T& value );
+  iterator insert(iterator pos, const T& value);
 
+  /// \brief Inserts \c count copy of \c value at the specified location in the
+  ///        Vector.
   ///
-  /// \brief same semantics as std::vector
-  ///
-  void insert( iterator pos, size_type n, const T& value );
+  /// \b Complexity Linear in \c count plus linear in the distance between
+  ///               \c pos and end of the Vector
+  /// \param pos Iterator to the location before which the copy of \c value will
+  ///            be inserted. \c pos may be the end() iterator
+  /// \param count How many times value should be inserted into the Vector
+  /// \param value Element value to insert
+  /// \return Iterator pointing to the first inserted value
+  iterator insert( iterator pos, size_type count, const T& value );
 
+  /// \brief Inserts elements from range <tt>[first, last)</tt> at the
+  ///        specified location in the Vector.
   ///
-  /// \brief same semantics as std::vector
-  ///
+  /// \b Complexity Linear in \c std::distance(first, last) plus linear in the
+  ///               distance between \c pos and end of the Vector
+  /// \param pos Iterator to the location before which the elements will
+  ///            be inserted. \c pos may be the end() iterator
+  /// \param first Start of the range of elements to be inserted
+  /// \param last End of the range of elements to be inserted
+  /// \return Iterator pointing to the first inserted value
   template <class InputIterator>
-  void insert(iterator position, InputIterator first, InputIterator last);
+  iterator insert(iterator pos, InputIterator first, InputIterator last);
 
+  /// \brief Remove the specified element from the Vector.
   ///
-  /// \brief same semantics as std::vector
-  ///
-  iterator erase( iterator position );
+  /// \b Complexity Linear in the distance between pos and end()
+  /// \param pos Iterator to the element to remove
+  /// \return Iterator following the removed element
+  iterator erase(iterator pos);
 
+  /// \brief Remove the specified element in the range <tt>[first, last)</tt>
+  ///        from the Vector.
   ///
-  /// \brief same semantics as std::vector
-  ///
-  iterator erase( iterator first, iterator last );
+  /// \b Complexity Linear in the distance between first and end()
+  /// \param first Iterator to the first element to remove
+  /// \param last Iterator to the last element to remove
+  /// \return Iterator following the last removed element
+  iterator erase(iterator first, iterator last);
 
-  // TODO: should probably not be implemented
+  /// \brief Exchanges the contents of the Vectors with those of \c rhs.
+  ///
+  /// Does not invoke any move, copy, or swap operations on individual elements.
+  ///
+  /// \b Complexity Constant
+  /// \param rhs Vector to exchange the contents with
   void swap( Vector<T>& rhs );
 
+  /// \brief Removes all elements from the Vector.
   ///
-  /// \brief same semantics as std::vector
-  ///
+  /// \b Complexity Linear in the size of the Vector.
   void clear();
 
-  // TODO: should probably not be implemented
-  allocator_type get_allocator() const;
-
+  /// \brief Returns the current distribution of the vector.
   ///
-  /// \brief Returns a pointer to the current distribution of the vector.
-  ///
-  /// \return A pointer to the current distribution of the vector, of nullptr
-  ///         if no distribution is set
-  ///
+  /// \b Complexity Constant
+  /// \return A reference to the current distribution of the vector
   detail::Distribution<Vector<T>>& distribution() const;
 
-  ///
-  /// \brief Changes the distribution of the vector
+  /// \brief Set a new distribution to the vector
   ///
   /// Changing the distribution might lead to data transfer between the host and
-  /// the devices.
+  /// the devices later on.
   ///
+  /// \b Complexity Constant
   /// \param distribution The new distribution to be set. After this call
   ///                     distribution is the new selected distribution of the
   ///                     vector
-  ///
   template <typename U>
-  void setDistribution(const detail::Distribution<Vector<U>>&
-                          distribution) const;
+  void setDistribution(const detail::Distribution<Vector<U>>& distribution)
+      const;
 
+  /// \brief Set a new distribution to the vector
+  ///
+  /// Changing the distribution might lead to data transfer between the host and
+  /// the devices later on.
+  ///
+  /// \b Complexity Constant
+  /// \param distribution The new distribution to be set. After this call
+  ///                     distribution is the new selected distribution of the
+  ///                     vector
   template <typename U>
   void setDistribution(const std::unique_ptr<detail::Distribution<Vector<U>>>&
-                          newDistribution) const;
+                           distribution) const;
 
-  void setDistribution(std::unique_ptr<detail::Distribution<Vector<T>>>&&
-                          newDistribution) const;
-
+  /// \brief Set a new distribution to the vector
   ///
-  /// \brief Create buffers on the devices involved in the current distribution
+  /// Changing the distribution might lead to data transfer between the host and
+  /// the devices later on.
+  ///
+  /// \b Complexity Constant
+  /// \param distribution The new distribution to be set. After this call
+  ///                     distribution is the new selected distribution of the
+  ///                     vector
+  void setDistribution(
+      std::unique_ptr<detail::Distribution<Vector<T>>>&& distribution) const;
+
+  /// \brief Create buffers on the devices involved in the current distribution.
   ///
   /// This function is a no-op if the buffers are already created. If you want
   /// to force the creation, e.g. replace existing buffers, use
-  /// forceCreateDeviceBuffers
+  /// forceCreateDeviceBuffers()
   ///
+  /// \b Complexity Linear in the number of device (usually small)
   void createDeviceBuffers() const;
 
-  ///
   /// \brief Forces the creation of buffers on the devices involved in the
-  ///        current distribution, even if this means replacing existing buffers
-  ///
+  ///        current distribution, even if this means replacing existing
+  ///        buffers.
+  //
   /// If you want to create the buffers only if no buffers are already created
-  /// use createDeviceBuffers
+  /// use createDeviceBuffers()
   ///
+  /// \b Complexity Linear in the number of devices (usually small)
   void forceCreateDeviceBuffers() const;
 
-  ///
   /// \brief Starts copying data from the host to the devices involved in the
   ///        current distribution.
   ///
   /// This function returns immediately and does not wait until the copy
   /// operation is finished. The event object returned can be used to wait
   /// explicitly for the copy operation to complete. For an blocking version use
-  /// copyDataToDevices
+  /// copyDataToDevices().
+  ///
+  /// \b Complexity Linear in the number of devices (usually small). This
+  ///               function does not block until the operation is finished.
   ///
   /// \return An event object which can be used to explicitly wait for the copy
   ///         operation to complete
-  ///
   detail::Event startUpload() const;
 
   ///
@@ -588,63 +627,44 @@ public:
   ///        distribution.
   ///
   /// This function blocks until the copy operation is finished. For an
-  /// unblocking version use startUpload.
+  /// unblocking version use startUpload().
   ///
+  /// \b Complexity Linear in the size of the vector.
   void copyDataToDevices() const;
 
-  ///
   /// \brief Starts copying data from the devices involved in the current
-  ///        distribution to the host
+  ///        distribution to the host.
   ///
   /// This function returns immediately and does not wait until the copy
   /// operation is finished. The event object returned can be used to wait
   /// explicitly for the copy operation to complete. For an blocking version use
-  /// copyDataToHost
+  /// copyDataToHost().
+  ///
+  /// \b Complexity Linear in the number of devices (usually small). This
+  ///               function does not block until the operation is finished.
   ///
   /// \return An event object which can be used to explicitly wait for the copy
   ///         operation to complete
-  ///
   detail::Event startDownload() const;
 
-  ///
   /// \brief Copies data from the devices involved in the current distribution
   ///        to the host
   ///
   /// This function blocks until the copy operation is finished. For an
-  /// unblocking version use startDownload.
+  /// unblocking version use startDownload().
   ///
+  /// \b Complexity Linear in the size of the vector.
   void copyDataToHost() const;
 
-  ///
   /// \brief Marks the data on the device as been modified
   ///
+  /// \b Complexity Constant
   void dataOnDeviceModified() const;
 
-  ///
   /// \brief Marks the data on the host as been modified
   ///
+  /// \b Complexity Constant
   void dataOnHostModified() const;
-
-  ///
-  /// \brief Returns the buffer for the given device used to store elements of
-  ///        the vector accordingly to the current distribution.
-  ///
-  /// \param device The device for which the buffer should be returned.
-  ///               The device must be part of the current distribution and the
-  ///               device buffers have to be already created, otherwise the
-  ///               behavior is undefined.
-  ///
-  /// \return A reference to the buffer object used for the given device.
-  ///         Be careful if you use auto to use auto& to capture the reference
-  ///         and not making an implicit copy by using plain auto.
-  ///
-  const detail::DeviceBuffer& deviceBuffer(const detail::Device& device) const;
-
-  detail::DeviceBuffer& deviceBuffer(const detail::Device& device);
-
-  host_buffer_type& hostBuffer() const;
-
-  static std::string deviceFunctions();
 
   /// \brief Returns if the elements stored on the host are up to date, or if
   ///        the elements are outdated because the elements on the devices have
@@ -664,22 +684,46 @@ public:
   ///         elements are available on the devices.
   bool devicesAreUpToDate() const;
 
+  /// \brief Returns the buffer for the given device used to store elements of
+  ///        the vector accordingly to the current distribution.
+  ///
+  /// \param device The device for which the buffer should be returned.
+  ///               The device must be part of the current distribution and the
+  ///               device buffers have to be already created, otherwise the
+  ///               behavior is undefined.
+  ///
+  /// \return A reference to the buffer object used for the given device.
+  ///         Be careful if you use auto to use auto& to capture the reference
+  ///         and not making an implicit copy by using plain auto.
+  const detail::DeviceBuffer& deviceBuffer(const detail::Device& device) const;
+
+  /// \brief Returns a reference to the underlying object storing the elements
+  ///        on the given device
+  ///
+  /// \b Complexity Constant
+  /// \param device The device for which the storage object should be returned
+  /// \return A reference to the underlying object storing the elements on the
+  ///         given device
+  detail::DeviceBuffer& deviceBuffer(const detail::Device& device);
+
+  /// \brief Returns a reference to the underlying object storing the elements
+  ///        on the host
+  ///
+  /// \b Complexity Constant
+  /// \return A reference to the underlying object storing the elements on the
+  ///         host
+  host_buffer_type& hostBuffer() const;
+
+  /// \brief Returns the source code of helper functions simplifying access to
+  ///        the vector on the device.
+  ///
+  /// \b Complexity Constant
+  /// \return Source code of the helper functions
+  static std::string deviceFunctions();
+
 private:
-  ///
-  /// \brief Formates information about the current instance into a string,
-  ///        used for Debug purposes
-  ///
-  /// \return A formated string with information about the current instance
-  ///
   std::string getInfo() const;
 
-  ///
-  /// \brief Formates even more information about the current instance into a
-  ///        string, as compared to getInfo, used for Debug purposes
-  ///
-  /// \return A formated string with information about the current instance,
-  ///         contains all information from getInfo and more.
-  ///
   std::string getDebugInfo() const;
 
   static RegisterVectorDeviceFunctions<T> registerVectorDeviceFunctions;
