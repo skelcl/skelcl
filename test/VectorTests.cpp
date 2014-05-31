@@ -42,6 +42,8 @@
 #include <SkelCL/Vector.h>
 
 #include "Test.h"
+/// \cond
+/// Don't show this test in doxygen
 
 class VectorTest : public ::testing::Test {
 protected:
@@ -191,4 +193,6 @@ TEST_F(VectorTest, CompleteInitialization) {
   EXPECT_EQ(23,   positions[23*768+42]._x);
   EXPECT_EQ(42,   positions[23*768+42]._y);
 }
+
+/// \endcond
 

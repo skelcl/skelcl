@@ -47,6 +47,8 @@
 #include <SkelCL/Map.h>
 
 #include "Test.h"
+/// \cond
+/// Don't show this test in doxygen
 
 class MapTest : public ::testing::Test {
 protected:
@@ -411,4 +413,6 @@ TEST_F(MapTest, MapDouble4) {
     }
   }
 }
+
+/// \endcond
 

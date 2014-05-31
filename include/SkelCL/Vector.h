@@ -56,6 +56,8 @@
 
 namespace skelcl {
 
+/// \cond
+/// Don't show detail namespace in doxygen
 namespace detail {
 
   class Event;
@@ -75,13 +77,33 @@ namespace detail {
   };
 
 } // namespace detail
+/// \endcond
 
+
+/// \cond
+/// Don't show detail namespace in doxygen
+/// TODO: move into detail namespace?
 template <typename T>
 class RegisterVectorDeviceFunctions {
 public:
   RegisterVectorDeviceFunctions();
 };
+/// \endcond
 
+///
+/// \defgroup vector Vector
+/// \brief One dimensional container data structures
+///
+/// \ingroup containers
+///
+
+///
+/// \brief The Vector class is a one dimensional container which makes its data
+///        accessible on the host as well as on the devices.
+///
+/// \ingroup containers
+/// \ingroup vector
+///
 template <typename T>
 class Vector {
 public:

@@ -48,22 +48,101 @@
 
 namespace skelcl {
 
+/// \cond
+/// Don't show this forward declarations in doxygen
 class Source;
 template <typename> class Out;
 template <typename> class Vector;
 
 template<typename> class Scan;
+/// \endcond
 
+///
+/// \defgroup scan Scan Skeleton
+///
+/// \brief The Scan skeleton describes a calculation on a Vector performed in
+///        parallel on a device. Given a binary user-defined function the input
+///        Vector is transformed into an out Vector by performing a scan
+///        (a.k.a. prefix sum) operation.
+///
+/// \ingroup skeletons
+///
+
+///
+/// \brief An instance of the Reduce class describes a scan (a.k.a. prefix sum)
+///        calculation customized by a given binary user-defined function.
+///
+/// \tparam T Type of the input and output data of the skeleton.
+///
+/// \ingroup skeletons
+/// \ingroup scan
+///
 template<typename T>
 class Scan<T(T)> : public detail::Skeleton {
 public:
+  ///
+  /// \brief Constructor taking the source code to customize the Scan
+  ///        skeleton.
+  ///
+  /// \param source   Source code used to customize the skeleton.
+  ///
+  /// \param id       Identity for he function named by funcName and defined in
+  ///                 source. Meaning: if func is the name of the function
+  ///                 defined in source, func(x, id) = x and func(id, x) = x
+  ///                 for every possible value of x
+  ///
+  /// \param funcName Name of the 'main' function (the starting point) of the
+  ///                 given source code
+  ///
   Scan(const Source& source,
        const std::string& id = "0",
        const std::string& funcName = std::string("func"));
 
+  ///
+  /// \brief Function call operator. Executes the skeleton on the data provided
+  ///        as argument input and args. The resulting data is returned as a
+  ///        moved copy.
+  ///
+  /// \param input The input data for the skeleton managed inside a Vector.
+  ///              If no distribution is set the Single distribution using the
+  ///              device with id 0 is used.
+  ///              Currently only the Single distribution is supported for the
+  ///              input Vector! This will certainly be advanced in a future
+  ///              version.
+  ///
+  /// \param args  Additional arguments which are passed to the function
+  ///              named by funcName and defined in the source code at created.
+  ///              The individual arguments must be passed in the same order
+  ///              here as they where defined in the funcName function
+  ///              declaration.
+  ///
   template <typename... Args>
   Vector<T> operator()(const Vector<T>& input, Args&&... args);
 
+  ///
+  /// \brief Function call operator. Executes the skeleton on the data provided
+  ///        as argument input and args. The resulting data is stored in the
+  ///        provided Vector output. A reference to the output Vector is
+  ///        returned to allow for chaining skeleton calls.
+  ///
+  /// \param output The Vector storing the result of the execution of the
+  ///               skeleton. A reference to this container is also returned.
+  ///               The Vector might be resized to fit the result.
+  ///               The distribution of the container might change.
+  ///
+  /// \param input The input data for the skeleton managed inside a Vector.
+  ///              If no distribution is set the Single distribution using the
+  ///              device with id 0 is used.
+  ///              Currently only the Single distribution is supported for the
+  ///              input Vector! This will certainly be advanced in a future
+  ///              version.
+  ///
+  /// \param args  Additional arguments which are passed to the function
+  ///              named by funcName and defined in the source code at created.
+  ///              The individual arguments must be passed in the same order
+  ///              here as they where defined in the funcName function
+  ///              declaration.
+  ///
   template <typename... Args>
   Vector<T>& operator()(Out<Vector<T>> output,
                         const Vector<T>& input,

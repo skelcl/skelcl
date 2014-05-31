@@ -35,7 +35,7 @@
 ///  Matrix.h
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
-/// \author Matthiass Buss
+/// \author Matthias Buss
 ///
 
 #ifndef MATRIX_H_
@@ -60,21 +60,118 @@
 
 namespace skelcl {
 
+///
+/// \brief This class defines a two dimensional size for a Matrix.
+///
+/// The number of rows and the number of columns are stored.
+/// Objects of this type can be compared against each other.
+///
 class SKELCL_DLL MatrixSize {
 public:
   typedef size_t size_type;
 
+  ///
+  /// \brief Create a new MatrixSize object with the given number of rows and
+  ///        number of columns.
+  ///
+  /// \param rowCount The number of rows.
+  /// \param columnCount The number of columns.
+  ///
   MatrixSize(size_type rowCount, size_type columnCount);
 
+  ///
+  /// \brief Returns the total number of elements.
+  ///        I.e. rowCount() * columnCount().
+  ///
+  /// \return rowCount() * columnCount()
+  ///
   size_type elemCount() const;
+
+  ///
+  /// \brief Returns the number of rows.
+  ///
+  /// \return The number of rows.
+  ///
   size_type rowCount() const;
+
+  ///
+  /// \brief Returns the number of columns.
+  ///
+  /// \return The number of columns.
+  ///
   size_type columnCount() const;
 
+  ///
+  /// \brief Compares two MatrixSizes for equality.
+  ///
+  /// \param rhs The MatrixSize to compare with.
+  ///
+  /// \return Returns true if and only if rowCount() is equal for this and rhs
+  ///         and columnCount() is equal for this and rhs.
+  ///
   bool operator==(const MatrixSize& rhs) const;
+
+  ///
+  /// \brief Compares two MatrixSizes for inequality.
+  ///
+  /// \param rhs The MatrixSize to compare with.
+  ///
+  /// \return Returns !(this == rhs)
+  ///
   bool operator!=(const MatrixSize& rhs) const;
+
+  ///
+  /// \brief Compares if this is greater than rhs.
+  ///
+  /// \param rhs The MatrixSize to compare with.
+  ///
+  /// \return Returns true if columnCount() is equal for this and rhs and
+  ///         rowCount() for this is greater than for rhs.
+  ///         Returns also true if columnCount() for this is greater than
+  ///         for rhs and rowCount() for this is greater or equal than
+  ///         for rhs.
+  ///         Returns false otherwise.
+  ///
   bool operator> (const MatrixSize& rhs) const;
+
+  ///
+  /// \brief Compares if this is less than rhs.
+  ///
+  /// \param rhs The MatrixSize to compare with.
+  ///
+  /// \return Returns true if columnCount() is equal for this and rhs and
+  ///         rowCount() for this is less than for rhs.
+  ///         Returns also true if columnCount() for this is less than for
+  ///         rhs and rowCount() for this is less or equal than for rhs.
+  ///         Return false otherwise.
+  ///
   bool operator< (const MatrixSize& rhs) const;
+
+  ///
+  /// \brief Compares if this is greater than rhs.
+  ///
+  /// \param rhs The MatrixSize to compare with.
+  ///
+  /// \return Returns true if columnCount() is equal for this and rhs and
+  ///         rowCount() for this is greater or equal than for rhs.
+  ///         Returns also true if columnCount() for this is greater than
+  ///         for rhs and rowCount() for this is greater or equal than
+  ///         for rhs.
+  ///         Returns false otherwise.
+  ///
   bool operator>=(const MatrixSize& rhs) const;
+
+  ///
+  /// \brief Compares if this is less than rhs.
+  ///
+  /// \param rhs The MatrixSize to compare with.
+  ///
+  /// \return Returns true if columnCount() is equal for this and rhs and
+  ///         rowCount() for this is less or equal than for rhs.
+  ///         Returns also true if columnCount() for this is less than for
+  ///         rhs and rowCount() for this is less or equal than for rhs.
+  ///         Return false otherwise.
+  ///
   bool operator<=(const MatrixSize& rhs) const;
 
 private:
@@ -82,12 +179,30 @@ private:
   size_type _columnCount;
 };
 
+/// \cond
+/// Don't show detail namespace in doxygen
+/// TODO: move into detail namespace?
 template <typename T>
 class RegisterMatrixDeviceFunctions {
 public:
   RegisterMatrixDeviceFunctions();
 };
+/// \endcond
 
+///
+/// \defgroup matrix Matrix
+/// \brief Two dimensional container data structures
+///
+/// \ingroup containers
+///
+
+///
+/// \brief The Matrix class is a two dimensional container which makes its data
+///        accessible on the host as well as on the devices.
+///
+/// \ingroup containers
+/// \ingroup matrix
+///
 template <typename T>
 class Matrix {
 public:
@@ -103,6 +218,9 @@ public:
   typedef typename host_buffer_type::difference_type difference_type;
   typedef typename host_buffer_type::allocator_type allocator_type;
 
+  ///
+  /// \brief This struct represents two dimensional coordinates.
+  ///
   struct coordinate {
     typedef size_type::size_type index_type;
 
@@ -111,22 +229,28 @@ public:
   };
 
   ///
-  /// \brief default constructor of the matrix
+  /// \brief Creates an empty new Matrix of size {0,0}.
   ///
   Matrix();
 
   ///
-   /// \brief constructor with a MatrixSize and Distribution as parameter
-   ///
+  /// \brief Creates a new Matrix with the given MatrixSize and Distribution.
+  ///        The newly created Matrix is filled with the given value.
+  ///
+  /// \param size The size of the Matrix to create.
+  /// \param value The value to be used to fill the Matrix.
+  /// \param distribution The distribution to be used by the Matrix.
+  ///
+  ///
   Matrix(const size_type size,
          const value_type& value = value_type(),
          const detail::Distribution<Matrix<T>>& distribution
                                     = detail::Distribution<Matrix<T>>());
 
-   ///
-   /// \brief constructor with a std::vector and the number of columns as
-   ///  parameter
-   ///
+  ///
+  /// \brief Constructor with a std::vector and the number of columns as
+  ///  parameter
+  ///
   Matrix(const std::vector<T>& vector,
          const typename size_type::size_type columnCount,
          const detail::Distribution<Matrix<T>>& distribution

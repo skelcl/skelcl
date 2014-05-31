@@ -160,14 +160,17 @@ public:
   /// \brief Move constructor. Creates an IndexPoint with the same values as the
   ///        given IndexPoint.
   ///
-  /// \param indexPoint The IndexPoint from with the values are used to create
-  ///                   the new IndexPoint.
+  /// \param indexPoint The IndexPoint which values are used to create the new
+  ///                   IndexPoint.
   /// 
-  IndexPoint(IndexPoint&& rhs);
-  IndexPoint(const IndexPoint& rhs) = default;
-  IndexPoint& operator=(const IndexPoint& rhs) = default;
+  IndexPoint(IndexPoint&& indexPoint);
+
+  ///
+  /// \brief Move assignment operator. Assign IndexPoint rhs to this.
+  ///        
+  /// \param rhs The IndexPoint which values are assigned to this.
+  ///
   IndexPoint& operator=(IndexPoint&& rhs);
-  //~IndexPoint() = default;
 
   /// 
   /// \brief Equality operator. Two IndexPoint objects are equal if and only if

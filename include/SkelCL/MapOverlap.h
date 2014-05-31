@@ -48,26 +48,123 @@
 
 namespace skelcl {
 
-template <typename>
-class Matrix;
-template <typename>
-class Out;
+/// \cond
+/// Don't show this forward declarations in doxygen
+template <typename> class Matrix;
+template <typename> class Out;
 
-template <typename>
-class MapOverlap;
+template <typename> class MapOverlap;
+/// \endcond
 
+///
+/// \defgroup mapOverlap MapOverlap Skeleton
+///
+/// \brief The MapOverlap skeleton describes calculations performed on one or
+///        more devices. It invokes a unary user-defined function on a container
+///        in a parallel fashion. Unlike the Map skeleton the user-defined
+///        function can access more than just a single element of the container.
+///
+/// \ingroup skeletons
+///
+
+///
+/// \brief This class implements the MapOverlap skeleton, which describes
+///        calculations performed on one or more devices. It invokes a unary
+///        user-defined function on a container in a parallel fashion. Unlike
+///        the Map skeleton the user-defined function can access more than just
+///        a single element of the container.
+///
+/// On creation the MapOverlap skeleton is customized with source code defining
+/// a unary function, an overlap range, as well as a Padding mode. The overlap
+/// range specifies how many elements of the neighborhood of an element can be
+/// accesses by the user-defined function. The Padding mode defines how out of
+/// bound accesses are handled.
+///
+/// More formally: When c is a container of length n with items c[0] .. c[n-1],
+/// f is the provided unary function, and r is the overlap range, the MapOverlap
+/// skeleton performs the calculation f(c[i-r], .., c[i], .., c[i+r]) for
+/// every i in 0 .. n-1. If an out of bound access of c occurs the Padding mode
+/// defines the behavior.
+///
+/// As all skeletons, the MapOverlap skeleton allows for passing additional
+/// arguments, i.e. arguments besides the input container, to the user defined
+/// function.
+/// The user-defined function has to written in such a way, that it expects more
+/// than just one argument (it is no unary function any more). Accordingly the
+/// number, types and order of arguments used when calling the map skeleton has
+/// to match the declaration of the user-defined function.
+///
+/// \tparam Tin   The type of the elements stored in the input container.
+/// \tparam Tout  The type of the elements stored in the output container.
+///
+/// \ingroup skeletons
+/// \ingroup mapOverlap
+///
 template <typename Tin, typename Tout>
 class MapOverlap<Tout(Tin)> : public detail::Skeleton {
 
 public:
+  /// 
+  /// \brief Constructor taking the source code used of the user-defined
+  ///        function, the overlap range, and the Padding mode as arguments.
+  ///
+  /// \param source   The source code of the user-defined function. 
+  /// \param overlap_range The number of elements to be accessible for the
+  ///                      user-defined function in each direction.
+  /// \param padding  The Padding mode for handling out of bound accesses.
+  /// \param neutral_element The neutral element used by some Padding modes.
+  /// \param func     The name of the user-defined function which should be
+  ///                 invoked by the Map skeleton.
+  ///
   MapOverlap<Tout(Tin)>(const Source& source, unsigned int overlap_range = 1,
                         detail::Padding padding = detail::Padding::NEAREST,
                         Tin neutral_element = Tin(),
                         const std::string& func = std::string("func"));
-
+  
+  /// 
+  /// \brief Executes the skeleton on the provided input Matrix. The
+  ///        resulting data is stored in a newly created output Matrix and
+  ///        the Matrix is returned.
+  ///
+  /// \tparam Args  The types of the arguments which are passed to the
+  ///               user-defined function in addition to the input container.
+  ///
+  /// \param in     The input Matrix on which the user-defined function is
+  ///               invoked.
+  /// \param args   The values of the arguments which are passed to the
+  ///               user-defined function in addition to the input container.
+  ///
+  /// \return A newly created Matrix storing the elements which get computed
+  ///         after invoking the user-defined function on the input Matrix
+  ///         and the additionally provided arguments.
+  /// 
   template <typename... Args>
   Matrix<Tout> operator()(const Matrix<Tin>& in, Args&&... args);
 
+
+  /// 
+  /// \brief Executes the skeleton on the provided input Matrix. The
+  ///        resulting data is stored in the provided output Matrix and a
+  ///        reference to this Matrix is returned.
+  ///
+  /// \tparam Args  The types of the arguments which are passed to the
+  ///               user-defined function in addition to the input container.
+  ///
+  /// \param output The output Matrix in which the resulting data is stored.
+  ///               The type of this argument is not the type of the Matrix
+  ///               itself, but instead a wrapping class tagging that this
+  ///               container is written into. The utility function
+  ///               skelcl::out() can be used to create this wrapper for an
+  ///               arbitrary container.
+  /// \param in     The input Matrix on which the user-defined function is
+  ///               invoked.
+  /// \param args   The values of the arguments which are passed to the
+  ///               user-defined function in addition to the input container.
+  ///
+  /// \return A newly created Matrix storing the elements which get computed
+  ///         after invoking the user-defined function on the input Matrix
+  ///         and the additionally provided arguments.
+  /// 
   template <typename... Args>
   Matrix<Tout>& operator()(Out<Matrix<Tout>> output, const Matrix<Tin>& in,
                            Args&&... args);

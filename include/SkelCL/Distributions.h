@@ -50,27 +50,35 @@
 
 namespace skelcl {
 
+/// \cond
+/// Don't show this forward declarations in doxygen
 namespace detail { class Device; }
+/// \endcond
 
 /// 
 /// \brief  This namespace groups factory functions to construct the different
 ///         distributions available in SkelCL
+///
+/// \ingroup distributions
 /// 
 namespace distribution {
 
 // to prevent template argument deduction (i.e. template arguments have to be
 // specified manually)
+/// \cond
+/// Don't show this helper class in the doxygen
 template <typename T>
 struct identity {
   typedef T type;
 };
+/// \endcond
 
 /// 
 /// \brief  Factory function to create a BlockDistribution with the types of the
 ///         given container.
 ///
 /// \tparam C Incomplete type of the container for which the distribution is
-///           created. The complete type is C<T>.
+///           created. The complete type is C<T>. C can be Vector or Matrix.
 /// \tparam T Type of the elements of the container for which the distribution
 ///           is created.
 ///
@@ -83,8 +91,9 @@ struct identity {
 /// 
 template <template <typename> class C, typename T>
 std::unique_ptr<skelcl::detail::Distribution<C<T>>>
-    Block( const C<T>& /*c*/ )
+    Block( const C<T>& c )
 {
+  (void)c;
   return std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
             new skelcl::detail::BlockDistribution<C<T>>() );
 }
@@ -94,7 +103,7 @@ std::unique_ptr<skelcl::detail::Distribution<C<T>>>
 ///         BlockDistribution.
 ///
 /// \tparam C Incomplete type of the container for which the distribution is
-///           set. The complete type is C<T>.
+///           set. The complete type is C<T>. C can be Vector or Matrix.
 /// \tparam T Type of the elements of the container for which the distribution
 ///           is set.
 ///
@@ -109,14 +118,42 @@ void setBlock( const C<T>& c)
 }
 
 
+/// \brief  Factory function to create an OverlapDistribution with the types of
+///         the given container.
+///
+/// \tparam C Incomplete type of the container for which the distribution is
+///           created. The complete type is C<T>. C can be Vector or Matrix.
+/// \tparam T Type of the elements of the container for which the distribution
+///           is created.
+///
+/// \param c  Container for which the distribution is created. This argument is
+///           used to deduct the types needed to create the distribution which
+///           gets returned.
+///
+/// \return A pointer to a newly created OverlapDistribution with the types of
+///         the given container.
+/// 
 template <template <typename> class C, typename T>
 std::unique_ptr<skelcl::detail::Distribution<C<T>>>
-    OL( const C<T>& /*c*/ )
+    OL( const C<T>& c )
 {
+  (void)c;
   return std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
             new skelcl::detail::OLDistribution<C<T>>() );
 }
 
+/// 
+/// \brief  This function sets the distribution of the given container to the
+///         OverlapDistribution.
+///
+/// \tparam C Incomplete type of the container for which the distribution is
+///           set. The complete type is C<T>. C can be Vector or Matrix.
+/// \tparam T Type of the elements of the container for which the distribution
+///           is set.
+///
+/// \param c  Container for which the distribution is set to OverlapDistribution
+///           using the setDistribution function.
+/// 
 template <template <typename> class C, typename T>
 void setOL( const C<T>& c)
 {
@@ -129,7 +166,7 @@ void setOL( const C<T>& c)
 ///         given container.
 ///
 /// \tparam C Incomplete type of the container for which the distribution is
-///           created. The complete type is C<T>.
+///           created. The complete type is C<T>. C can be Vector or Matrix.
 /// \tparam T Type of the elements of the container for which the distribution
 ///           is created.
 ///
@@ -137,15 +174,20 @@ void setOL( const C<T>& c)
 ///           used to deduct the types needed to create the distribution which
 ///           gets returned.
 ///
+/// \param combineFunc A binary function explaining how two elements of the
+///                    container should be combined if two devices modify the
+///                    data of a copy distributed container simultaneously.
+///
 /// \return A pointer to a newly created CopyDistribution with the types of the
 ///         given container.
 /// 
 template <template <typename> class C, typename T>
 std::unique_ptr<skelcl::detail::Distribution<C<T>>>
-    Copy( const C<T>& /*c*/,
+    Copy( const C<T>& c,
           typename identity<std::function<T(const T&, const T&)>>::type
             combineFunc = nullptr )
 {
+  (void)c;
   return std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
         new skelcl::detail::CopyDistribution<C<T>>(
                                     detail::globalDeviceList, combineFunc ) );
@@ -156,12 +198,16 @@ std::unique_ptr<skelcl::detail::Distribution<C<T>>>
 ///         CopyDistribution.
 ///
 /// \tparam C Incomplete type of the container for which the distribution is
-///           set. The complete type is C<T>.
+///           set. The complete type is C<T>. C can be Vector or Matrix.
 /// \tparam T Type of the elements of the container for which the distribution
 ///           is set.
 ///
 /// \param c  Container for which the distribution is set to CopyDistribution
 ///           using the setDistribution function.
+///
+/// \param combineFunc A binary function explaining how two elements of the
+///                    container should be combined if two devices modify the
+///                    data of a copy distributed container simultaneously.
 /// 
 template <template <typename> class C, typename T>
 void setCopy( const C<T>& c,
@@ -177,7 +223,7 @@ void setCopy( const C<T>& c,
 ///         the given container and for the default device.
 ///
 /// \tparam C Incomplete type of the container for which the distribution is
-///           created. The complete type is C<T>.
+///           created. The complete type is C<T>. C can be Vector or Matrix.
 /// \tparam T Type of the elements of the container for which the distribution
 ///           is created.
 ///
@@ -190,8 +236,9 @@ void setCopy( const C<T>& c,
 /// 
 template <template <typename> class C, typename T>
 std::unique_ptr<skelcl::detail::Distribution<C<T>>>
-    Single( const C<T>& /*c*/ )
+    Single( const C<T>& c )
 {
+  (void)c;
   return std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
         new skelcl::detail::SingleDistribution<C<T>>() );
 }
@@ -201,7 +248,7 @@ std::unique_ptr<skelcl::detail::Distribution<C<T>>>
 ///         the given container and for the given device.
 ///
 /// \tparam C Incomplete type of the container for which the distribution is
-///           created. The complete type is C<T>.
+///           created. The complete type is C<T>. C can be Vector or Matrix.
 /// \tparam T Type of the elements of the container for which the distribution
 ///           is created.
 ///
@@ -215,9 +262,10 @@ std::unique_ptr<skelcl::detail::Distribution<C<T>>>
 /// 
 template <template <typename> class C, typename T>
 std::unique_ptr<skelcl::detail::Distribution<C<T>>>
-    Single( const C<T>& /*c*/,
+    Single( const C<T>& c,
             const std::shared_ptr<skelcl::detail::Device>& device )
 {
+  (void)c;
   return std::unique_ptr<skelcl::detail::Distribution<C<T>>>(
         new skelcl::detail::SingleDistribution<C<T>>(device) );
 }
@@ -227,7 +275,7 @@ std::unique_ptr<skelcl::detail::Distribution<C<T>>>
 ///         SingleDistribution using the default device.
 ///
 /// \tparam C Incomplete type of the container for which the distribution is
-///           set. The complete type is C<T>.
+///           set. The complete type is C<T>. C can be Vector or Matrix.
 /// \tparam T Type of the elements of the container for which the distribution
 ///           is set.
 ///
@@ -246,7 +294,7 @@ void setSingle( const C<T>& c )
 ///         SingleDistribution using the given device.
 ///
 /// \tparam C Incomplete type of the container for which the distribution is
-///           set. The complete type is C<T>.
+///           set. The complete type is C<T>. C can be Vector or Matrix.
 /// \tparam T Type of the elements of the container for which the distribution
 ///           is set.
 ///
@@ -264,26 +312,14 @@ void setSingle( const C<T>& c,
 
 } // namespace distribution
 
+
+/// \cond
+/// Don't show this internal namespace in doxygen
 namespace detail {
 
 // provide function to clone arbitrary distribution while changing the
 // template argument
 
-/// 
-/// \brief  This function provides the ability to clone arbitrary distributions
-///         while changing the template arguments of the distributions.
-///
-/// \tparam T The type of the elements of the container to be converted in.
-/// \tparam U The type of the elements of the container to be converted from.
-/// \tparam C The incomplete type of the container. The complete types are C<U>
-///           and C<T>
-///
-/// \param dist The distribution to be converted into the same distribution
-///             replacing the template argument U by T.
-///
-/// \return A pointer to a newly created identical distribution as the given
-///         argument where the template argument U is replaced by T.
-/// 
 #if 0
 // This solution does not work in visual studio, but enforces, that OutT and
 // InT are of the same container type ...
@@ -365,6 +401,7 @@ std::unique_ptr<Distribution<OutT>>
 #endif
 
 } // namespace detail
+/// \endcond
 
 } // namespace skelcl
 

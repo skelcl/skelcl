@@ -51,33 +51,46 @@
 
 namespace skelcl {
 
-template <typename>
-class Out;
-template <typename>
-class Vector;
-namespace detail {
-class DeviceList;
-}
+/// \cond
+/// Don't show this forward declarations in doxygen
+template <typename> class Out;
+template <typename> class Vector;
+namespace detail { class DeviceList; }
 
-template <typename>
-class Reduce;
+template <typename> class Reduce;
+/// \endcond
 
 ///
-/// \class Reduce
+/// \defgroup reduce Reduce Skeleton
 ///
-/// \brief An instance of the Reduce skeleton describes a reduction calculation
-///        (a.k.a. accumulate) customized by a given source code.
+/// \brief The Reduce skeleton describes a calculation on a Vector performed in
+///        parallel on a device. Given a binary user-defined function the input
+///        Vector is reduced to a scalar value.
 ///
-/// On creating the Reduce skeleton is customized with source code defining
-/// a (at least) binary function.
-/// The Reduce skeleton can than be called by passing an input container.
+/// \ingroup skeletons
+///
+
+///
+/// \brief An instance of the Reduce class describes a reduction calculation
+///        (a.k.a. accumulate) customized by a given binary user-defined
+///        function.
+///
+/// On creation the Reduce skeleton is customized with source code defining
+/// a binary function. The binary function has to be associative and
+/// commutative. The Reduce skeleton can be executed by passing an input Vector.
 /// The given function is applied repetitively to calculate a single scalar
 /// value from all items of the input container.
-/// More formally: When x is a container of length n with items x[0] .. x[n-1],
+///
+/// More formally: When v is a Vector of length n with items v[0] .. v[n-1],
 /// f is the provided function, the Reduce skeleton calculates the output value
-/// y as follows: y = f(..f(f(x[0], x[1]), x[2]),.. x[n-1]) or written more
-/// common using + as a symbol for the given function and using infix notation:
-/// y = x[0] + x[1] + x[2] ... + x[n-1].
+/// y as follows: y = f(..f(f(v[0], v[1]), v[2]),.. v[n-1]) or written more
+/// easily using + as a symbol for the given function and using infix notation:
+/// y = v[0] + v[1] + v[2] ... + v[n-1].
+///
+/// \tparam T Type of the input and output data of the skeleton.
+///
+/// \ingroup skeletons
+/// \ingroup reduce
 ///
 template <typename T>
 class Reduce<T(T)> : public detail::Skeleton {
@@ -86,14 +99,14 @@ public:
   /// \brief Constructor taking the source code to customize the Reduce
   ///        skeleton.
   ///
-  /// \param source   Source code used to customize the skeleton
+  /// \param source   Source code used to customize the skeleton.
   ///
-  ///        id       Identity for he function named by funcName and defined in
+  /// \param id       Identity for he function named by funcName and defined in
   ///                 source. Meaning: if func is the name of the function
   ///                 defined in source, func(x, id) = x and func(id, x) = x
   ///                 for every possible value of x
   ///
-  ///        funcName Name of the 'main' function (the starting point) of the
+  /// \param funcName Name of the 'main' function (the starting point) of the
   ///                 given source code
   ///
   Reduce(const Source& source, const std::string& id = "0",
@@ -108,9 +121,10 @@ public:
   ///              If no distribution is set the Single distribution using the
   ///              device with id 0 is used.
   ///              Currently only the Single distribution is supported for the
-  ///              input vector! This is certainly advanced later.
+  ///              input Vector! This will certainly be advanced in a future
+  ///              version.
   ///
-  ///        args  Additional arguments which are passed to the function
+  /// \param args  Additional arguments which are passed to the function
   ///              named by funcName and defined in the source code at created.
   ///              The individual arguments must be passed in the same order
   ///              here as they where defined in the funcName function
@@ -130,13 +144,14 @@ public:
   ///               The Vector might be resized to fit the result.
   ///               The distribution of the container might change.
   ///
-  ///        input  The input data for the skeleton managed inside a Vector.
+  /// \param input  The input data for the skeleton managed inside a Vector.
   ///               If no distribution is set the Single distribution using the
   ///               device with id 0 is used.
   ///               Currently only the Single distribution is supported for the
-  ///               input vector! This is certainly advanced later.
+  ///               input vector! This will certainly be advanced in a future
+  ///               version.
   ///
-  ///        args   Additional arguments which are passed to the function
+  /// \param args   Additional arguments which are passed to the function
   ///               named by funcName and defined in the source code at
   ///               created. The individual arguments must be passed in the 
   ///               same order here as they where defined in the funcName 
@@ -146,50 +161,33 @@ public:
   Vector<T>& operator()(Out<Vector<T>> output, const Vector<T>& input,
                         Args&&... args);
 
-  const std::string source() const
-  {
-    return _userSource;
-  }
+  ///
+  /// \brief Return the source code of the user defined function.
+  ///
+  /// \return The source code of the user defined function.
+  ///
+  std::string source() const;
 
-  const std::string func() const
-  {
-    return _funcName;
-  }
+  ///
+  /// \brief Return the name of the user defined function.
+  ///
+  /// \return The name of the user defined function.
+  ///
+  std::string func() const;
 
-  const std::string id() const
-  {
-    return _id;
-  }
+  ///
+  /// \brief Return the identity for the user defined function.
+  ///
+  /// \return The identity for the user defined function.
+  ///
+  std::string id() const;
 
 private:
-
-  ///
-  /// \brief Prepares the input for kernel execution
-  ///
-  /// \param input The vector to be prepared
-  ///
   void prepareInput(const Vector<T>& input);
 
-  ///
-  /// \brief Prepares the output for kernel execution
-  ///
-  /// \param output The vector to be prepared
-  ///        input  The input vector is used to determine the distribution to
-  ///               select for the output vector
-  ///        size   After the call, the output vector is guaranteed to be able
-  ///               to store at least size many elements
-  ///
   void prepareOutput(Vector<T>& output, const Vector<T>& input,
                      const size_t size);
 
-  ///
-  /// \brief Queries the execution of one level of the reduce algorithm for a
-  ///        given device
-  ///
-  /// \param device The device on which the execution is to be queried
-  ///        level  The level to be executed of the reduce algorithm
-  ///        args   Additional arguments
-  ///
   template <typename... Args>
   void execute_first_step(const detail::Device& device,
                           const detail::DeviceBuffer& input,

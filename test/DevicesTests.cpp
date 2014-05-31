@@ -39,6 +39,8 @@
 #include <SkelCL/detail/DeviceList.h>
 
 #include "Test.h"
+/// \cond
+/// Don't show this test in doxygen
 
 class DeviceListTest : public ::testing::Test {
 protected:
@@ -68,4 +70,6 @@ TEST_F(DeviceListTest, DeviceListInit) {
   EXPECT_FALSE(devices.empty());
   EXPECT_LT(0, devices.size()) << "Expected at least one device";
 }
+
+/// \endcond
 
