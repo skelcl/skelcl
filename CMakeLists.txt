@@ -37,6 +37,8 @@ option (BUILD_SHARED_LIBS
         "Build shared libraries (DLLs)." ON)
 option (BUILD_EXAMPLES
         "Build all examples automatically with the library." ON)
+option (BUILD_EXECUTOR
+        "Build executor tool." ON)
 option (BUILD_TESTS
         "Build all tests automatically with the library." ON)
 
@@ -76,6 +78,11 @@ add_subdirectory (src)
 if (BUILD_EXAMPLES)
   add_subdirectory (examples)
 endif (BUILD_EXAMPLES)
+
+# build executor
+if (BUILD_EXECUTOR)
+  add_subdirectory (executor)
+endif (BUILD_EXECUTOR)
 
 #build tests
 if (BUILD_TESTS)
