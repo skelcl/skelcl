@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <memory>
 
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
@@ -12,6 +11,8 @@
 
 class KernelArg {
 public:
+  virtual ~KernelArg() = default;
+
   virtual void setAsKernelArg(cl::Kernel kernel, int i) = 0;
   virtual void upload() = 0;
   virtual void download() = 0;
@@ -19,10 +20,9 @@ public:
 
 class GlobalArg : public KernelArg {
 public:
-  static std::unique_ptr<KernelArg> create(void* data, size_t sizeInBytes,
-                                           bool isOutput = false);
-  static std::unique_ptr<KernelArg> create(size_t sizeInBytes,
-                                           bool isOutput = false);
+  static KernelArg* create(void* data, size_t sizeInBytes,
+                           bool isOutput = false);
+  static KernelArg* create(size_t sizeInBytes, bool isOutput = false);
 
   void setAsKernelArg(cl::Kernel kernel, int i);
   void upload();
@@ -39,7 +39,7 @@ private:
 
 class LocalArg : public KernelArg {
 public:
-  static std::unique_ptr<KernelArg> create(size_t sizeInBytes);
+  static KernelArg* create(size_t sizeInBytes);
 
   void setAsKernelArg(cl::Kernel kernel, int i);
   void upload();
@@ -53,7 +53,7 @@ private:
 
 class ValueArg : public KernelArg {
 public:
-  static std::unique_ptr<KernelArg> create(void* data, size_t sizeInBytes);
+  static KernelArg* create(void* data, size_t sizeInBytes);
 
   void setAsKernelArg(cl::Kernel kernel, int i);
   void upload();
@@ -77,10 +77,10 @@ cl::Kernel buildKernel(const std::string& kernelCode,
                        const std::string& kernelName);
 
 void executeKernel(cl::Kernel kernel, int localSize, int globalSize,
-                   const std::vector<std::unique_ptr<KernelArg>>& args);
+                   const std::vector<KernelArg*>& args);
 
 void execute(std::string kernelCode, std::string kernelName, int localSize,
              int globalSize,
-             const std::vector<std::unique_ptr<KernelArg>>& args);
+             const std::vector<KernelArg*>& args);
 
 #endif // EXECUTOR_H_

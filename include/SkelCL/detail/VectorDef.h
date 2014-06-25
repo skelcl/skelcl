@@ -199,8 +199,8 @@ Vector<T>& Vector<T>::operator=(Vector<T>&& rhs)
 template <typename T>
 Vector<T>::~Vector()
 {
-  LOG_DEBUG_INFO("Vector object (", this, ") with ", getDebugInfo(),
-                 " destroyed");
+  //LOG_DEBUG_INFO("Vector object (", this, ") with ", getDebugInfo(),
+  //               " destroyed");
 }
 
 template <typename T>

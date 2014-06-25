@@ -5,21 +5,18 @@ GlobalArg::GlobalArg(skelcl::Vector<char>&& skelclVectorP, bool isOutputP)
 {
 }
 
-std::unique_ptr<KernelArg> GlobalArg::create(void* data, size_t size,
-                                             bool isOutput)
+KernelArg* GlobalArg::create(void* data, size_t size, bool isOutput)
 {
   auto dataCharPtr = static_cast<char*>(data);
   skelcl::Vector<char> skelclVector(dataCharPtr, dataCharPtr+size);
-  return std::unique_ptr<KernelArg>{
-      new GlobalArg{std::move(skelclVector), isOutput}};
+  return new GlobalArg{std::move(skelclVector), isOutput};
 }
 
-std::unique_ptr<KernelArg> GlobalArg::create(size_t size, bool isOutput)
+KernelArg* GlobalArg::create(size_t size, bool isOutput)
 {
   skelcl::Vector<char> skelclVector;
   skelclVector.resize(size);
-  return std::unique_ptr<KernelArg>{
-      new GlobalArg{std::move(skelclVector), isOutput}};
+  return new GlobalArg{std::move(skelclVector), isOutput};
 }
 
 const skelcl::Vector<char>& GlobalArg::data() const
@@ -56,9 +53,9 @@ LocalArg::LocalArg(size_t sizeP)
 {
 }
 
-std::unique_ptr<KernelArg> LocalArg::create(size_t size)
+KernelArg* LocalArg::create(size_t size)
 {
-  return std::unique_ptr<KernelArg>{new LocalArg{size}};
+  return new LocalArg{size};
 }
 
 void LocalArg::setAsKernelArg(cl::Kernel kernel, int i)
@@ -74,12 +71,12 @@ ValueArg::ValueArg(std::vector<char>&& valueP)
 {
 }
 
-std::unique_ptr<KernelArg> ValueArg::create(void* data, size_t size)
+KernelArg* ValueArg::create(void* data, size_t size)
 {
   auto dataCharPtr = static_cast<char*>(data);
   std::vector<char> value(dataCharPtr, dataCharPtr+size);
 
-  return std::unique_ptr<KernelArg>{new ValueArg{std::move(value)}};
+  return new ValueArg{std::move(value)};
 }
 
 void ValueArg::setAsKernelArg(cl::Kernel kernel, int i)
@@ -114,7 +111,7 @@ cl::Kernel buildKernel(const std::string& kernelCode,
 }
 
 void executeKernel(cl::Kernel kernel, int localSize, int globalSize,
-                   const std::vector<std::unique_ptr<KernelArg>>& args)
+                   const std::vector<KernelArg*>& args)
 {
   auto& devPtr = skelcl::detail::globalDeviceList.front();
 
@@ -135,7 +132,7 @@ void executeKernel(cl::Kernel kernel, int localSize, int globalSize,
 
 void execute(std::string kernelCode, std::string kernelName, int localSize,
              int globalSize,
-             const std::vector<std::unique_ptr<KernelArg>>& args)
+             const std::vector<KernelArg*>& args)
 {
   auto kernel = buildKernel(kernelCode, kernelName);
   executeKernel(kernel, localSize, globalSize, args);

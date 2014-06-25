@@ -54,19 +54,21 @@ int main(int argc, char** argv)
 
   std::vector<char> result(1024);
 
-  std::vector<std::unique_ptr<KernelArg>> args;
+  std::vector<KernelArg*> args;
   args.emplace_back(GlobalArg::create(vc.data(), vc.size()));
   args.emplace_back(GlobalArg::create(result.data(), result.size(), true));
 
   execute(kernelSource, kernelName, localSize, globalSize, args);
 
   LOG_INFO("done");
-  auto& res = dynamic_cast<GlobalArg*>(args.back().get())->data();
+  auto& res = dynamic_cast<GlobalArg*>(args.back())->data();
   auto s = 0;
   for (auto& i : res) {
     s += i;
   }
   LOG_INFO("res: ", s);
+
+  for(auto& a : args) delete(a);
 
   shutdownSkelCL();
 }
