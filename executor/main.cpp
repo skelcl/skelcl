@@ -58,8 +58,7 @@ int main(int argc, char** argv)
   args.emplace_back(GlobalArg::create(vc.data(), vc.size()));
   args.emplace_back(GlobalArg::create(result.data(), result.size(), true));
 
-  auto kernel = buildKernel(kernelSource, kernelName);
-  executeKernel(kernel, localSize, globalSize, args);
+  execute(kernelSource, kernelName, localSize, globalSize, args);
 
   LOG_INFO("done");
   auto& res = dynamic_cast<GlobalArg*>(args.back().get())->data();

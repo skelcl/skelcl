@@ -133,3 +133,11 @@ void executeKernel(cl::Kernel kernel, int localSize, int globalSize,
   for (auto& arg : args) arg->download();
 }
 
+void execute(std::string kernelCode, std::string kernelName, int localSize,
+             int globalSize,
+             const std::vector<std::unique_ptr<KernelArg>>& args)
+{
+  auto kernel = buildKernel(kernelCode, kernelName);
+  executeKernel(kernel, localSize, globalSize, args);
+}
+

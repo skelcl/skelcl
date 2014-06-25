@@ -79,4 +79,8 @@ cl::Kernel buildKernel(const std::string& kernelCode,
 void executeKernel(cl::Kernel kernel, int localSize, int globalSize,
                    const std::vector<std::unique_ptr<KernelArg>>& args);
 
+void execute(std::string kernelCode, std::string kernelName, int localSize,
+             int globalSize,
+             const std::vector<std::unique_ptr<KernelArg>>& args);
+
 #endif // EXECUTOR_H_
