@@ -6,13 +6,11 @@
 #include "../executor.h"
 
 void
-  Java_opencl_executor_Executor_execute(JNIEnv* env, jclass cls,
+  Java_opencl_executor_Executor_execute(JNIEnv* env, jclass,
                                         jstring jKernelSource,
                                         jstring jKernelName, jint localSize,
                                         jint globalSize, jobjectArray jArgs)
 {
-  (void)cls;
-
   auto kernelSourcePtr = env->GetStringUTFChars(jKernelSource, nullptr);
   std::string kernelSource{kernelSourcePtr};
   auto kernelNamePtr = env->GetStringUTFChars(jKernelName, nullptr);
@@ -30,5 +28,15 @@ void
 
   env->ReleaseStringUTFChars(jKernelSource, kernelSourcePtr);
   env->ReleaseStringUTFChars(jKernelName, kernelNamePtr);
+}
+
+void Java_opencl_executor_Executor_init(JNIEnv *, jclass)
+{
+  initSkelCL("ANY");
+}
+
+void Java_opencl_executor_Executor_shutdown(JNIEnv *, jclass)
+{
+  shutdownSkelCL();
 }
 

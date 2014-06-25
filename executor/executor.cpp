@@ -89,6 +89,7 @@ void ValueArg::download() {}
 
 void initSkelCL(std::string deviceTypeString)
 {
+  pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Warning);
   skelcl::device_type deviceType;
   std::istringstream(deviceTypeString) >> deviceType;
   skelcl::init(skelcl::nDevices(1).deviceType(deviceType));

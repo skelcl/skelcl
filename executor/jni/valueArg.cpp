@@ -1,12 +1,25 @@
-#include "opencl_executor_LocalArg.h"
+#include "opencl_executor_ValueArg.h"
 #include "handle.h"
 #include "../executor.h"
 
-jobject Java_opencl_executor_LocalArg_create(JNIEnv* env, jclass cls, jint size)
+template <typename T>
+jobject helper(JNIEnv* env, jclass cls, T value)
 {
-  auto ptr = LocalArg::create(size);
+  auto ptr = ValueArg::create(&value, sizeof(value));
   auto methodID = env->GetMethodID(cls, "<init>", "(J)V"); 
   auto obj = env->NewObject(cls, methodID, ptr);
   return obj;
+}
+
+jobject Java_opencl_executor_ValueArg_create__F(JNIEnv* env, jclass cls,
+                                                jfloat value)
+{
+  return helper<float>(env, cls, value);
+}
+
+jobject Java_opencl_executor_ValueArg_create__I(JNIEnv* env, jclass cls,
+                                                jint value)
+{
+  return helper<int>(env, cls, value);
 }
 
