@@ -1,131 +1,9 @@
 #include <string>
-#include <vector>
-#include <memory>
 
 #include <pvsutil/CLArgParser.h>
 #include <pvsutil/Logger.h>
 
-#include <SkelCL/SkelCL.h>
-#include <SkelCL/Vector.h>
-#include <SkelCL/detail/Program.h>
-#include <SkelCL/detail/DeviceList.h>
-
-std::vector<std::unique_ptr<skelcl::Vector<int>>> vectors;
-
-bool startsWith(const std::string& haystack, const std::string& needle)
-{
-  if (haystack.length() >= needle.length()) {
-    return (0 == haystack.compare(0, needle.length(), needle));
-  } else {
-    return false;
-  }
-}
-
-size_t parseArg(const std::string& s)
-{
-  auto open = s.find('(');
-  auto close = s.find(')', open);
-  return std::stoi(s.substr(open+1, close-open-1));
-}
-
-class KernelArg {
-public:
-  enum Type : size_t {
-    GLOBAL,
-    LOCAL,
-    INT
-  };
-
-  static KernelArg globalArg(size_t size ) { return KernelArg(GLOBAL, size); }
-  static KernelArg localArg(size_t size) { return KernelArg(LOCAL, size); }
-  static KernelArg integer(size_t value) { return KernelArg(INT, value); }
-
-  KernelArg() = default;
-  KernelArg(const KernelArg&) = default;
-  KernelArg& operator=(const KernelArg&) = default;
-
-  Type type;
-  size_t size;
-
-private:
-  KernelArg(Type typeP, size_t sizeP)
-    : type(typeP), size(sizeP)
-  {}
-};
-
-std::istream& operator>>(std::istream& stream, KernelArg& arg)
-{
-  std::string s;
-  stream >> s;
-
-       if (startsWith(s, "GLOBAL")) arg = KernelArg::globalArg(parseArg(s));
-  else if (startsWith(s, "LOCAL"))  arg = KernelArg::localArg(parseArg(s));
-  else if (startsWith(s, "INT"))    arg = KernelArg::integer(parseArg(s));
-  else throw std::invalid_argument(
-    "Could not parse (" + s + ") as KernelArg.");
-
-  return stream;
-}
-
-std::ostream& operator<<(std::ostream& stream, const KernelArg& arg)
-{
-  if (arg.type == KernelArg::Type::GLOBAL) return stream << "GLOBAL";
-  if (arg.type == KernelArg::Type::LOCAL)  return stream << "LOCAL";
-  if (arg.type == KernelArg::Type::INT)    return stream << "INT";
-
-  throw std::logic_error("This point should never be reached.");
-}
-
-cl::Kernel buildKernel(const std::string& kernelCode,
-                       const std::string& kernelName)
-{
-  auto& devPtr = skelcl::detail::globalDeviceList.front();
-
-  auto p = skelcl::detail::Program(kernelCode);
-  p.build();
-
-  return cl::Kernel(p.kernel(*devPtr, kernelName));
-}
-
-void prepareAndSetArg(cl::Kernel kernel, const KernelArg& arg)
-{
-  static int i = 0;
-  auto& devPtr = skelcl::detail::globalDeviceList.front();
-
-  if (arg.type == KernelArg::Type::GLOBAL) {
-    vectors.emplace_back(new skelcl::Vector<int>(arg.size));
-    kernel.setArg(i, vectors.back()->deviceBuffer(*devPtr).clBuffer());
-  }
-
-  if (arg.type == KernelArg::Type::LOCAL) {
-    kernel.setArg(i, cl::__local(arg.size));
-  }
-
-  if (arg.type == KernelArg::Type::INT) {
-    kernel.setArg(i, static_cast<cl_int>(arg.size));
-  }
-
-  ++i;
-}
-
-void execute(cl::Kernel kernel, int localSize, int globalSize,
-             const KernelArg& arg0, const KernelArg& arg1,
-             const KernelArg& arg2)
-{
-  auto& devPtr = skelcl::detail::globalDeviceList.front();
-
-  cl_uint clLocalSize = localSize;
-  cl_uint clGlobalSize = globalSize;
-
-  prepareAndSetArg(kernel, arg0);
-  prepareAndSetArg(kernel, arg1);
-  prepareAndSetArg(kernel, arg2);
-
-  auto event = devPtr->enqueue(kernel, cl::NDRange(clGlobalSize),
-                               cl::NDRange(clLocalSize));
-
-  event.wait();
-}
+#include "executor.h"
 
 int main(int argc, char** argv)
 {
@@ -134,10 +12,10 @@ int main(int argc, char** argv)
 
   pvsutil::CLArgParser cmd(Description("Executes a given OpenCL kernel."));
 
-  auto deviceType = Arg<device_type>(Flags(Long("device_type")),
+  auto deviceType = Arg<std::string>(Flags(Long("device_type")),
                                      Description("Device type: ANY, CPU, "
                                                  "GPU, ACCELERATOR"),
-                                     Default(device_type::ANY));
+                                     Default(std::string("ANY")));
 
   auto enableLogging = Arg<bool>(Flags(Long("logging"),
                                        Long("verbose_logging")),
@@ -158,17 +36,8 @@ int main(int argc, char** argv)
   auto globalSize = Arg<int>(Flags(Long("globalSize"), Short('g')),
                              Description("Global size used in execution"));
 
-  auto kernelArg0 =
-      Arg<KernelArg>(Flags(Long("arg0")), Description("KernelArg"));
-
-  auto kernelArg1 =
-      Arg<KernelArg>(Flags(Long("arg1")), Description("KernelArg"));
-
-  auto kernelArg2 =
-      Arg<KernelArg>(Flags(Long("arg2")), Description("KernelArg"));
-
   cmd.add(&deviceType, &enableLogging, &kernelSource, &kernelName, &localSize,
-          &globalSize, &kernelArg0, &kernelArg1, &kernelArg2);
+          &globalSize);
   cmd.parse(argc, argv);
 
   if (enableLogging) {
@@ -176,10 +45,30 @@ int main(int argc, char** argv)
         pvsutil::Logger::Severity::DebugInfo);
   }
 
-  auto deviceCount = 1;
-  skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
+
+  // example usage
+  initSkelCL();
+
+  std::vector<char> vc(1024);
+  std::fill(vc.begin(), vc.end(), 5);
+
+  std::vector<char> result(1024);
+
+  std::vector<std::unique_ptr<KernelArg>> args;
+  args.emplace_back(GlobalArg::create(vc.data(), vc.size()));
+  args.emplace_back(GlobalArg::create(result.data(), result.size(), true));
 
   auto kernel = buildKernel(kernelSource, kernelName);
-  execute(kernel, localSize, globalSize, kernelArg0, kernelArg1, kernelArg2);
+  executeKernel(kernel, localSize, globalSize, args);
+
+  LOG_INFO("done");
+  auto& res = dynamic_cast<GlobalArg*>(args.back().get())->data();
+  auto s = 0;
+  for (auto& i : res) {
+    s += i;
+  }
+  LOG_INFO("res: ", s);
+
+  shutdownSkelCL();
 }
 
