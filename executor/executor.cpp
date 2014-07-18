@@ -1,5 +1,28 @@
 #include "executor.h"
 
+namespace {
+ 
+double getRuntimeInMilliseconds(cl::Event event)
+{
+  cl_ulong start;
+  cl_ulong end;
+  cl_int err;
+
+  event.wait();
+
+  err = clGetEventProfilingInfo(event(), CL_PROFILING_COMMAND_START,
+                                sizeof(start), &start, NULL);
+  ASSERT(err == CL_SUCCESS);
+
+  err = clGetEventProfilingInfo(event(), CL_PROFILING_COMMAND_END,
+                                sizeof(end), &end, NULL);
+  ASSERT(err == CL_SUCCESS);
+
+  return (end - start) * 1.0e-06;
+}
+
+}
+
 GlobalArg::GlobalArg(skelcl::Vector<char>&& skelclVectorP, bool isOutputP)
   : skelclVector(std::move(skelclVectorP)), isOutput(isOutputP)
 {
@@ -111,8 +134,8 @@ cl::Kernel buildKernel(const std::string& kernelCode,
   return cl::Kernel(p.kernel(*devPtr, kernelName));
 }
 
-void executeKernel(cl::Kernel kernel, int localSize, int globalSize,
-                   const std::vector<KernelArg*>& args)
+double executeKernel(cl::Kernel kernel, int localSize, int globalSize,
+                     const std::vector<KernelArg*>& args)
 {
   auto& devPtr = skelcl::detail::globalDeviceList.front();
 
@@ -126,16 +149,19 @@ void executeKernel(cl::Kernel kernel, int localSize, int globalSize,
     ++i;
   }
 
-  devPtr->enqueue(kernel, cl::NDRange(clGlobalSize), cl::NDRange(clLocalSize));
+  auto event = devPtr->enqueue(kernel, cl::NDRange(clGlobalSize),
+                                       cl::NDRange(clLocalSize));
 
   for (auto& arg : args) arg->download();
+
+  return getRuntimeInMilliseconds(event);
 }
 
-void execute(std::string kernelCode, std::string kernelName, int localSize,
-             int globalSize,
-             const std::vector<KernelArg*>& args)
+double execute(std::string kernelCode, std::string kernelName, int localSize,
+               int globalSize,
+               const std::vector<KernelArg*>& args)
 {
   auto kernel = buildKernel(kernelCode, kernelName);
-  executeKernel(kernel, localSize, globalSize, args);
+  return executeKernel(kernel, localSize, globalSize, args);
 }
 

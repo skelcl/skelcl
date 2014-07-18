@@ -5,7 +5,7 @@
 #include "handle.h"
 #include "../executor.h"
 
-void
+jdouble
   Java_opencl_executor_Executor_execute(JNIEnv* env, jclass,
                                         jstring jKernelSource,
                                         jstring jKernelName, jint localSize,
@@ -24,10 +24,11 @@ void
     ++i;
   }
 
-  execute(kernelSource, kernelName, localSize, globalSize, args);
+  auto runtime = execute(kernelSource, kernelName, localSize, globalSize, args);
 
   env->ReleaseStringUTFChars(jKernelSource, kernelSourcePtr);
   env->ReleaseStringUTFChars(jKernelName, kernelNamePtr);
+  return runtime;
 }
 
 void Java_opencl_executor_Executor_init(JNIEnv *, jclass)
