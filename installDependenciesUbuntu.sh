@@ -20,6 +20,8 @@ if [[ "$ANSWER" == 'y' ]]; then
     set -x #echo on
     sudo apt-get install libssl-dev libglu1-mesa-dev llvm-3.3-dev clang-3.3 libclang-3.3-dev
     mkdir $DIR/libraries/stooling/libraries/llvm
+    mkdir $DIR/libraries/stooling/libraries/llvm/bin
+    ln -s `which llvm-config-3.3` $DIR/libraries/stooling/libraries/llvm/bin/llvm-config
     ln -s `llvm-config-3.3 --includedir` $DIR/libraries/stooling/libraries/llvm/include
     ln -s `llvm-config-3.3 --libdir` $DIR/libraries/stooling/libraries/llvm/lib
     set +x #echo off

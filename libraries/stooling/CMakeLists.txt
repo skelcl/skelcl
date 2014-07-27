@@ -39,6 +39,11 @@ set (LLVM_LIB_DIR "${PROJECT_SOURCE_DIR}/libraries/llvm/lib" CACHE STRING
 
 execute_process(COMMAND "${LLVM_HOME_DIR}/bin/llvm-config" "--version"
                 OUTPUT_VARIABLE LLVM_VERSION)
+if ("${LLVM_VERSION}" STREQUAL "")
+  message(FATAL_ERROR "No LLVM version found. Please make LLVM available at: ${LLVM_HOME_DIR}. (The file 'bin/llvm-config' and the folders 'include' and 'lib' are required.)")
+else()
+  message(STATUS "LLVM version found: ${LLVM_VERSION}")
+endif()
 
 # add libraries
 if (NOT TARGET pvsutil)
