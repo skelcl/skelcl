@@ -39,9 +39,12 @@
 
 R"(
 
-__kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_OUT, __global SCL_TYPE_1* SCL_TMP, __local SCL_TYPE_1* SCL_LOCAL_TMP, const unsigned int SCL_TILE_WIDTH,
-            const unsigned int SCL_TILE_HEIGHT, const unsigned int SCL_ELEMENTS, const unsigned int SCL_NORTH, const unsigned int SCL_WEST, const unsigned int SCL_SOUTH,
-            const unsigned int SCL_EAST, const unsigned int SCL_COLS) {
+__kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
+                          __global SCL_TYPE_1* SCL_OUT,
+                          __global SCL_TYPE_1* SCL_TMP,
+                          __local SCL_TYPE_1* SCL_LOCAL_TMP,
+                          const unsigned int SCL_ELEMENTS,
+                          const unsigned int SCL_COLS) {
 
         const unsigned int col = get_global_id(0);
         const unsigned int l_col = get_local_id(0);
@@ -50,12 +53,6 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN, __global SCL_TYPE_1* SCL_
 
         input_matrix_t Mm;
         Mm.data = SCL_LOCAL_TMP;
-        Mm.local_row = l_row;
-        Mm.local_column = l_col;
-        Mm.offset_north = SCL_NORTH;
-        Mm.offset_west = SCL_WEST;
-        Mm.tile_width = SCL_TILE_WIDTH;
-
         int i;
 
         if(l_row==0 && row < SCL_ELEMENTS / SCL_COLS) {
