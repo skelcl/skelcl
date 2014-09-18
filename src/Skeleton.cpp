@@ -54,17 +54,30 @@ namespace skelcl {
 namespace detail {
 
 Skeleton::Skeleton()
-  : _workGroupSize(::defaultWorkGroupSize)
+  : _events(), _workGroupSize(::defaultWorkGroupSize)
 {
 }
 
 Skeleton::Skeleton(const unsigned workGroupSize)
-  : _workGroupSize(workGroupSize)
+  : _events(), _workGroupSize(workGroupSize)
 {
 }
 
 Skeleton::~Skeleton()
 {
+  printEventTimings();
+}
+
+void Skeleton::printEventTimings() const
+{
+  auto i = 0;
+  for (auto& e : _events) {
+    e.wait();
+    auto start = e.getProfilingInfo<CL_PROFILING_COMMAND_START>();
+    auto end = e.getProfilingInfo<CL_PROFILING_COMMAND_END>();
+    auto duration = (end - start) / 1000000.0;
+    LOG_INFO("Event ", i++, " timing: ", duration, "ms");
+  }
 }
 
 size_t Skeleton::workGroupSize() const

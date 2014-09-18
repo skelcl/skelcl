@@ -326,13 +326,15 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
           if (devicePtr->id() == 0) {
             LOG_INFO("starting Stencil with ", global[0], "x", global[1], " - ",
                      local[0], "x", local[1]);
-            devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
+            _events.push_back(devicePtr->enqueue(kernel, cl::NDRange(global[0],
+                                                                     global[1]),
                                cl::NDRange(local[0], local[1]),
-                               cl::NDRange(0, offset), invokeAfter);
+                               cl::NDRange(0, offset), invokeAfter));
           } else
-            devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
+            _events.push_back(devicePtr->enqueue(kernel, cl::NDRange(global[0],
+                                                                     global[1]),
                                cl::NDRange(local[0], local[1]), cl::NullRange,
-                               invokeAfter);
+                               invokeAfter));
         }
 
         k++;

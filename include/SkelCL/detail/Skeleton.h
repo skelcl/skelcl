@@ -92,7 +92,12 @@ protected:
   template <typename T, typename... Args>
   void updateModifiedStatus(T&& t, Args&&... args) const;
 
+  std::vector<cl::Event> _events;
+
 private:
+
+  void printEventTimings() const;
+
   size_t _workGroupSize;
 };
 

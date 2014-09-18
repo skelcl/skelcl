@@ -108,7 +108,8 @@ Device::Device(const cl::Device& device,
     _context = cl::Context(devices, props);
 
     // create command queue for every device
-    _commandQueue = cl::CommandQueue(_context, _device);
+    _commandQueue = cl::CommandQueue(_context, _device,
+                                     CL_QUEUE_PROFILING_ENABLE);
   } catch (cl::Error& err) {
     ABORT_WITH_ERROR(err);
   }
