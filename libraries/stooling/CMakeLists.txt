@@ -16,7 +16,7 @@ if (${UNIX})
   endif (${APPLE})
 
   # more restructive flags for compiling the SkelCL code. These flags are added in addition to the above
-  set (STOOLING_CXX_FLAGS "-fno-rtti -Wall -Wextra -Weffc++ -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Werror -pedantic-errors -Wfatal-errors"
+  set (STOOLING_CXX_FLAGS "-fno-rtti -Wall -Wextra -Weffc++ -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Werror -pedantic-errors -Wfatal-errors -Wno-non-virtual-dtor"
     CACHE STRING "More strict flags used to compile the STOOLING sources.")
 endif (${UNIX})
 
