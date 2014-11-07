@@ -2,6 +2,7 @@
 *.swp
 *.user
 build*
+libraries/llvm
 libraries/gtest
 xcuserdata
 !xcshareddata
