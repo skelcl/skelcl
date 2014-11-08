@@ -3,9 +3,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 install_pkgs() {
   for package in $@; do
-    set -ex #echo on
+    set -x #echo on
     sudo pacman -S $package
-    set +ex #echo off
+    set +x #echo off
   done
 }
 
