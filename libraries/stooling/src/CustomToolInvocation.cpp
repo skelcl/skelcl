@@ -67,12 +67,12 @@ const clang::driver::ArgStringList* getCC1Arguments(
   if (jobs.size() != 1 || !isa<clang::driver::Command>(*jobs.begin())) {
     SmallString<256> error_msg;
     llvm::raw_svector_ostream error_stream(error_msg);
-#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR >= 4)
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 3)
+    compilation->PrintJob(error_stream, compilation->getJobs(), "; ", true);
+#else
 		for (auto& j : jobs) {
 			j->Print(error_stream, "; ", true);
 		}
-#else
-    compilation->PrintJob(error_stream, compilation->getJobs(), "; ", true);
 #endif
     diagnostics->Report(clang::diag::err_fe_expected_compiler_job)
         << error_stream.str();
@@ -173,7 +173,7 @@ bool CustomToolInvocation::runInvocation(
   // Show the invocation, with -v.
   if (invocation->getHeaderSearchOpts().Verbose) {
     llvm::errs() << "clang Invocation:\n";
-#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 4)
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 3)
     compilation->PrintJob(llvm::errs(), compilation->getJobs(), "\n", true);
 #else
 		for (auto& j : compilation->getJobs()) {

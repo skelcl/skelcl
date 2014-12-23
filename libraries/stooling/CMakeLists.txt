@@ -53,7 +53,7 @@ set (STOOLING_COMMON_INCLUDE_DIR
      "Common include directories used by stooling.")
 
 # llvm version 3.5 or greater
-if ("${LLVM_VERSION}" VERSION_GREATER "3.4.0")
+if ("${LLVM_VERSION}" VERSION_GREATER "3.4.9")
 set (STOOLING_COMMON_LIBS
       clang
       clangTooling
@@ -77,9 +77,14 @@ set (STOOLING_COMMON_LIBS
       clangBasic
       LLVMBitReader
       LLVMBitWriter
+      LLVMTransformUtils
+      LLVMipa
+      LLVMAnalysis
+      LLVMTarget
       LLVMMCParser
       LLVMMC
       LLVMOption
+      LLVMObject
       LLVMCore
       LLVMSupport
       dl
@@ -110,8 +115,14 @@ set (STOOLING_COMMON_LIBS
       clangBasic
       LLVMBitReader
       LLVMBitWriter
+      LLVMTransformUtils
+      LLVMipa
+      LLVMAnalysis
+      LLVMTarget
       LLVMMCParser
       LLVMMC
+      LLVMOption
+      LLVMObject
       LLVMCore
       LLVMSupport
       dl
