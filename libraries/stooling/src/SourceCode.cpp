@@ -107,7 +107,16 @@ void SourceCode::transferParameters(const std::string& from,
       functionDecl(hasName(from)).bind("fromDecl"),
       &extractCallback);
 
-  _tool->run(_source, newFrontendActionFactory(&parameterFinder));
+  {
+    auto action = newFrontendActionFactory(&parameterFinder);
+    _tool->run(_source,
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 4)
+               action
+#else
+               action.get()
+#endif
+              );
+  }
 
   if (!parameter.empty()) {
     // Then insert the parameters to the declaration of the "to" function
@@ -117,8 +126,14 @@ void SourceCode::transferParameters(const std::string& from,
         functionDecl(hasName(to)).bind("toDecl"),
         &applyCallback);
 
+    auto action = newFrontendActionFactory(&functionFinder);
     _source = _tool->transform(_source,
-                               newFrontendActionFactory(&functionFinder));
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 4)
+                               action
+#else
+                               action.get()
+#endif
+                               );
   }
 }
 
@@ -134,7 +149,16 @@ void SourceCode::transferArguments(const std::string& from,
   argumentsFinder.addMatcher(
       functionDecl(hasName(from)).bind("fromDecl"),
       &extractCallback);
-  _tool->run(_source, newFrontendActionFactory(&argumentsFinder));
+  {
+    auto action = newFrontendActionFactory(&argumentsFinder);
+    _tool->run(_source,
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 4)
+               action
+#else
+               action.get()
+#endif
+               );
+  }
   
   if (!arguments.empty()) {
     // Then insert the arguments to every call of the function "to"
@@ -144,7 +168,14 @@ void SourceCode::transferArguments(const std::string& from,
         callExpr(callee(functionDecl(hasName(to)))).bind("toCall"),
         &applyCallback);
 
-    _source = _tool->transform(_source, newFrontendActionFactory(&callFinder));
+    auto action = newFrontendActionFactory(&callFinder);
+    _source = _tool->transform(_source,
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 4)
+                               action
+#else
+                               action.get()
+#endif
+                              );
   }
 }
 
@@ -161,7 +192,14 @@ void SourceCode::renameFunction(const std::string& from, const std::string& to)
       callExpr(callee(functionDecl(hasName(from)))).bind("call"),
       &callback);
 
-  _source = _tool->transform(_source, newFrontendActionFactory(&finder));
+  auto action = newFrontendActionFactory(&finder);
+  _source = _tool->transform(_source,
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 4)
+                             action
+#else
+                             action.get()
+#endif
+                            );
 }
 
 void SourceCode::renameTypedef(const std::string& from, const std::string& to)
@@ -174,7 +212,14 @@ void SourceCode::renameTypedef(const std::string& from, const std::string& to)
       namedDecl().bind("decl"),
       &callback);
 
-  _source = _tool->transform(_source, newFrontendActionFactory(&finder));
+  auto action = newFrontendActionFactory(&finder);
+  _source = _tool->transform(_source,
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 4)
+                             action
+#else
+                             action.get()
+#endif
+                            );
 }
 
 void SourceCode::redefineTypedef(const std::string& typedefName,
@@ -188,7 +233,14 @@ void SourceCode::redefineTypedef(const std::string& typedefName,
       namedDecl().bind("decl"),
       &callback);
 
-  _source = _tool->transform(_source, newFrontendActionFactory(&finder));
+  auto action = newFrontendActionFactory(&finder);
+  _source = _tool->transform(_source,
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 4)
+                             action
+#else
+                             action.get()
+#endif
+                            );
 }
 
 void SourceCode::fixKernelParameter(const std::string& kernel)
@@ -200,7 +252,14 @@ void SourceCode::fixKernelParameter(const std::string& kernel)
       functionDecl(hasName(kernel)).bind("decl"),
       &callback);
 
-  _source = _tool->transform(_source, newFrontendActionFactory(&finder));
+  auto action = newFrontendActionFactory(&finder);
+  _source = _tool->transform(_source,
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 4)
+                             action
+#else
+                             action.get()
+#endif
+                            );
 }
 
 std::vector<std::string>
@@ -212,7 +271,14 @@ std::vector<std::string>
       functionDecl(hasName(funcName)).bind("decl"),
       &callback);
 
-  _tool->run(_source, newFrontendActionFactory(&finder));
+  auto action = newFrontendActionFactory(&finder);
+  _tool->transform(_source,
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 4)
+                   action
+#else
+                   action.get()
+#endif
+                  );
   return callback.getParameterTypeNames();
 }
 

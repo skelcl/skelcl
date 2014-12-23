@@ -13,7 +13,6 @@
 #endif
 
 #include <llvm/Support/Host.h>
-#include <llvm/ADT/OwningPtr.h>
 #include <clang/Basic/FileManager.h>
 #include <clang/Driver/Compilation.h>
 #include <clang/Driver/Driver.h>
@@ -23,6 +22,13 @@
 #include <clang/Frontend/FrontendAction.h>
 #include <clang/Frontend/FrontendDiagnostic.h>
 #include <clang/Frontend/TextDiagnosticPrinter.h>
+
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 4)
+  #include <llvm/ADT/OwningPtr.h>
+#else
+  #include <memory>
+  template<class T> using OwningPtr = std::unique_ptr<T>;
+#endif
 
 #pragma GCC diagnostic pop
 
@@ -40,9 +46,13 @@ clang::driver::Driver* newDriver(clang::DiagnosticsEngine* diagnostics,
                                  const char* binaryName)
 {
   const std::string defaultOutputName = "a.out";
-  auto compilerDriver = new clang::driver::Driver(
-    binaryName, llvm::sys::getDefaultTargetTriple(),
-    defaultOutputName, *diagnostics);
+  auto compilerDriver =
+    new clang::driver::Driver(
+      binaryName, llvm::sys::getDefaultTargetTriple(),
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 4)
+      defaultOutputName,
+#endif
+      *diagnostics);
   compilerDriver->setTitle("clang_based_tool");
   return compilerDriver;
 }
@@ -146,7 +156,13 @@ bool CustomToolInvocation::run(clang::FrontendAction* action)
   }
   OwningPtr<clang::CompilerInvocation> invocation(
       newInvocation(&diagnostics, *CC1Args));
-  return runInvocation(action, compilation.get(), invocation.take());
+  return runInvocation(action, compilation.get(),
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 4)
+                       invocation.take()
+#else
+                       invocation.release()
+#endif
+                      );
 }
 
 bool CustomToolInvocation::runInvocation(
@@ -157,12 +173,12 @@ bool CustomToolInvocation::runInvocation(
   // Show the invocation, with -v.
   if (invocation->getHeaderSearchOpts().Verbose) {
     llvm::errs() << "clang Invocation:\n";
-#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR >= 4)
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 4)
+    compilation->PrintJob(llvm::errs(), compilation->getJobs(), "\n", true);
+#else
 		for (auto& j : compilation->getJobs()) {
 			j->Print(llvm::errs(), "\n", true);
 		}
-#else
-    compilation->PrintJob(llvm::errs(), compilation->getJobs(), "\n", true);
 #endif
     llvm::errs() << "\n";
   }
