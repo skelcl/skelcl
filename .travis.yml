@@ -33,10 +33,6 @@ before_script: mkdir build
 
 script: cd build && cmake .. && make && make test
 
-branches:
-  only:
-    - master
-
 notifications:
   email:
     on_success: change
