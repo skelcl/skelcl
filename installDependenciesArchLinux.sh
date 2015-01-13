@@ -83,6 +83,8 @@ if [[ "$ANSWER" == 'y' ]]; then
     cd $DIR
     rm -f "$LLVM.src.tar.gz" "$CLANG.src.tar.gz"
     mkdir $DIR/libraries/stooling/libraries/llvm
+    mkdir $DIR/libraries/stooling/libraries/llvm/bin
+    ln -s "$DIR/$LLVM_TARGET/bin/llvm-config" "$DIR/libraries/stooling/libraries/llvm/bin/llvm-config"
     ln -s "$DIR/$LLVM_TARGET/include" "$DIR/libraries/stooling/libraries/llvm/include"
     ln -s "$DIR/$LLVM_TARGET/lib" "$DIR/libraries/stooling/libraries/llvm/lib"
     set +ex #echo off
