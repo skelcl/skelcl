@@ -93,6 +93,7 @@ set (STOOLING_COMMON_LIBS
       LLVMCore
       LLVMSupport
       dl
+      z
       CACHE INTERNAL
      "Common libraries used by stooling."
      )
@@ -131,6 +132,7 @@ set (STOOLING_COMMON_LIBS
       LLVMCore
       LLVMSupport
       dl
+      z
       CACHE INTERNAL
      "Common libraries used by stooling."
      )
