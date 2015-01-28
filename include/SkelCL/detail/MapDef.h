@@ -130,8 +130,13 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
     cl_uint local     = static_cast<cl_uint>(
                           std::min(this->workGroupSize(),
                                    devicePtr->maxWorkGroupSize()) );
+
+    // TODO: Set "partitions" dynamically, as required.
+    cl_uint partitions = static_cast<cl_uint>( 1 );
+    cl_uint partitionSize = elements / partitions;
+
     cl_uint global    = static_cast<cl_uint>(
-                          detail::util::ceilToMultipleOf(elements, local) );
+                          detail::util::ceilToMultipleOf(partitionSize, local) );
 
     try {
       cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
@@ -139,6 +144,7 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
       kernel.setArg(0, inputBuffer.clBuffer());
       kernel.setArg(1, outputBuffer.clBuffer());
       kernel.setArg(2, elements);
+      kernel.setArg(3, partitionSize);
 
       detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 3,
                                         std::forward<Args>(args)...);
@@ -187,10 +193,14 @@ typedef float SCL_TYPE_1;
 __kernel void SCL_MAP(
     const __global SCL_TYPE_0*  SCL_IN,
           __global SCL_TYPE_1*  SCL_OUT,
-    const unsigned int          SCL_ELEMENTS)
+    const unsigned int          SCL_ELEMENTS,
+    const unsigned int          PARTITION_SIZE)
 {
-  if (get_global_id(0) < SCL_ELEMENTS) {
-    SCL_OUT[get_global_id(0)] = SCL_FUNC(SCL_IN[get_global_id(0)]);
+  size_t i = get_global_id(0);
+
+  while (i < SCL_ELEMENTS) {
+    SCL_OUT[i] = SCL_FUNC(SCL_IN[i]);
+    i += PARTITION_SIZE;
   }
 }
 )");
