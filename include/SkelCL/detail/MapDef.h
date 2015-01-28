@@ -138,6 +138,12 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
     cl_uint global    = static_cast<cl_uint>(
                           detail::util::ceilToMultipleOf(partitionSize, local) );
 
+    LOG_DEBUG_INFO("Number of elements: ", elements,
+                   ", partitions: ", partitions,
+                   ", partition size: ", partitionSize,
+                   ", local size: ", local,
+                   ", global size: ", global);
+
     try {
       cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
 
