@@ -10,6 +10,8 @@
 #ifndef CHRIS_H_
 #define CHRIS_H_
 
+#define CHRIS_OPENCL_FLAG "-cl-fast-relaxed-math"
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
 #include <CL/cl.h>

@@ -63,7 +63,7 @@ void init() {
 const char *get_cl_flags(skelcl::detail::Program *const program,
                          cl::Device device) {
   // TODO: Determine what flags to set programatically.
-  const char *flags = "";
+  const char *flags = CHRIS_OPENCL_FLAG;
 
   LOG_DEBUG_INFO("chris::get_cl_flags() --> \"", flags, "\"");
   return flags;
