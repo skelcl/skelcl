@@ -50,6 +50,10 @@ namespace ClFlags {
 }  // ClFlags
 
 
+void init() {
+  LOG_INFO("Using Chris' modifications");
+}
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 const char *get_cl_flags(skelcl::detail::Program *const program,

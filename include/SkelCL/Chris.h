@@ -15,10 +15,16 @@
 #include <CL/cl.h>
 #pragma GCC diagnostic pop  //  -Weffc++
 
+#include <pvsutil/Logger.h>
+
 #include "detail/Program.h"
 
 namespace chris {
 
+///
+/// Initialise "stuff".
+///
+void init();
 
 ///
 /// Return the number of partitions to use for a given inputBuffer and
