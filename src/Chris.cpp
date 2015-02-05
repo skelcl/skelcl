@@ -63,7 +63,7 @@ void init() {
 const char *get_cl_flags(skelcl::detail::Program *const program,
                          cl::Device device) {
   // TODO: Determine what flags to set programatically.
-  return ClFlags::OPT_DISABLE;
+  return "";
 }
 #pragma GCC diagnostic pop //  -Wunused-parameter
 
