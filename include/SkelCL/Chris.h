@@ -45,6 +45,16 @@ cl_uint get_num_partitions(Tin &inputBuffer, const cl_uint workGroupSize) {
 const char *get_cl_flags(skelcl::detail::Program *const program,
                          cl::Device device);
 
+///
+/// Start a timer with name "name".
+///
+void startTimer(const char *name);
+
+///
+/// Stop timer with name "name" and return elapsed time in milliseconds.
+///
+int stopTimer(const char *name);
+
 } // namespace chris
 
 #endif // CHRIS_H_
