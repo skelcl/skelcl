@@ -63,7 +63,10 @@ void init() {
 const char *get_cl_flags(skelcl::detail::Program *const program,
                          cl::Device device) {
   // TODO: Determine what flags to set programatically.
-  return "";
+  const char *flags = "";
+
+  LOG_DEBUG_INFO("chris::get_cl_flags() --> \"", flags, "\"");
+  return flags;
 }
 #pragma GCC diagnostic pop //  -Wunused-parameter
 
