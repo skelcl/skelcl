@@ -35,7 +35,7 @@ void init();
 template <typename Tin>
 cl_uint get_num_partitions(Tin &inputBuffer, const cl_uint workGroupSize) {
   // TODO: Determine how many partitions to set programatically.
-  int partitions = 2;
+  int partitions = 1;
 
   LOG_DEBUG_INFO("chris::get_num_partitions() --> ", partitions);
   return static_cast<cl_uint>(partitions);
