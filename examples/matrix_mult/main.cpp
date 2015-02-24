@@ -199,13 +199,16 @@ int main(int argc, char* argv[])
                                        "in SkelCL"));
 
   auto rowCountA = Arg<size_t>(Flags(Short('d'), Long("row_count_A")),
-                               Description("Row count of left matrix"));
+                               Description("Row count of left matrix"),
+                               Default<size_t>(1024));
 
   auto colCountA = Arg<size_t>(Flags(Short('m'), Long("col_count_A")),
-                               Description("Column count of left matrix"));
+                               Description("Column count of left matrix"),
+                               Default<size_t>(1024));
 
   auto colCountB = Arg<size_t>(Flags(Short('n'), Long("col_count_B")),
-                               Description("Column count of right matrix"));
+                               Description("Column count of right matrix"),
+                               Default<size_t>(1024));
 
   auto checkResult = Arg<bool>(Flags(Short('c'), Long("check_result")),
                                Description("Check result"),
