@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
 
 	auto deviceType = Arg<device_type>(Flags(Long("device_type")),
 			Description("Device type: ANY, CPU, "
-					"GPU, ACCELERATOR"), Default(device_type::GPU));
+					"GPU, ACCELERATOR"), Default(device_type::ANY));
 
 	auto range = Arg<int>(Flags(Long("range")),
 			Description("The range for the Gaussian blur"), Default(5));

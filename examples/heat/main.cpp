@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
 
 	auto deviceType = Arg<device_type>(Flags(Long("device_type")),
 			Description("Device type: ANY, CPU, "
-					"GPU, ACCELERATOR"), Default(device_type::GPU));
+					"GPU, ACCELERATOR"), Default(device_type::ANY));
 
 	auto iterationen = Arg<int>(Flags(Long("iterationen")),
 			Description("The number of iterations"), Default(1));

@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
 
 	auto deviceType = Arg<device_type>(Flags(Long("device_type")),
 			Description("Device type: ANY, CPU, "
-					"GPU, ACCELERATOR"), Default(device_type::GPU));
+					"GPU, ACCELERATOR"), Default(device_type::ANY));
 
     auto rangeNorth = Arg<unsigned int>(Flags(Long("rangeNorth")),
             Description("The range in north direction"), Default(5u));
