@@ -1,4 +1,4 @@
-float func(input_matrix_t* img)
+float func(input_matrix_t img)
 {
 float t = getData(img, 0, 1);
 float b = getData(img, 0, -1);
