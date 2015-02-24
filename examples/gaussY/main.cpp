@@ -169,7 +169,7 @@ int main(int argc, char** argv) {
 
 	time1 = get_time();
 
-	skelcl::MapOverlap<float(float)> s(std::ifstream { "./heat.cl" },
+	skelcl::MapOverlap<float(float)> s(std::ifstream { "./gaussY.cl" },
 			static_cast<unsigned int>(range), detail::Padding::NEAREST, 255);
 
 	time2 = get_time();

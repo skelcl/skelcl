@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
 
 	time1 = get_time();
 
-	skelcl::Stencil<float(float)> s(std::ifstream { "./heat.cl" },
+	skelcl::Stencil<float(float)> s(std::ifstream { "./gaussY.cl" },
 			static_cast<int>(range), 0, static_cast<int>(range), 0,
 			detail::Padding::NEAREST_INITIAL, 0, "func",
 			static_cast<int>(iterationenBetweenSwaps));
