@@ -56,7 +56,6 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
         int i;
 
         if(l_row==0 && row < SCL_ELEMENTS / SCL_COLS) {
-                const unsigned int SCL_ROWS = SCL_ELEMENTS / SCL_COLS;
                 const unsigned int SCL_WORKGROUP = SCL_ROWS / get_local_size(1);
                 const unsigned int SCL_REST = SCL_ROWS % get_local_size(1);
 
