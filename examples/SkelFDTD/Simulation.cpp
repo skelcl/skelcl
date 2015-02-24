@@ -181,7 +181,7 @@ Simulation::Simulation(const size_t size)
 	ss << std::scientific << define << CL_CONSTANT(src_y) << "\n";
 
 	std::string code;
-	std::ifstream file("../Kernels.cl", std::ios::in | std::ios::binary | std::ios::ate);
+	std::ifstream file("./Kernels.cl", std::ios::in | std::ios::binary | std::ios::ate);
 	if (file.is_open())
 	{
 		file.seekg(0, std::ios::end);
@@ -194,7 +194,7 @@ Simulation::Simulation(const size_t size)
 	std::string map_in = ss.str() + code;
 
 
-	std::ifstream file_s("../Stencils.cl", std::ios::in | std::ios::binary | std::ios::ate);
+	std::ifstream file_s("./Stencils.cl", std::ios::in | std::ios::binary | std::ios::ate);
 	std::string code2;
 	if (file_s.is_open())
 	{
