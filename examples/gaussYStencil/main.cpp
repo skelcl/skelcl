@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
 
 	auto inFile = Arg<std::string>(Flags(Long("inFile")),
 			Description("Filename of the input file"),
-			Default(std::string("lena.pgm")));
+			Default(std::string("data/lena.pgm")));
 
 	cmd.add(&deviceCount, &deviceType, &range, &inFile, &iterationen,
 			&iterationenBetweenSwaps);

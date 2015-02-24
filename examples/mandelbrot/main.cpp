@@ -107,7 +107,7 @@ void mandelbrot()
 
   Matrix<Pixel> output = m(positions, startX, startY, dx, dy);
 
-  writePPM(output.begin(), output.end(), "mandelbrot.ppm");
+  writePPM(output.begin(), output.end(), "data/mandelbrot.ppm");
 }
 
 int main(int argc, char** argv)

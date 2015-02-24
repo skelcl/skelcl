@@ -234,7 +234,7 @@ void Simulation::initialize()
 
 	std::cout << std::scientific;
 
-	readRandomMediaFile("../job.rmf");
+	readRandomMediaFile("data/job.rmf");
 	LOG_INFO("loaded: ", _particles.size(), " particles");
 	int smoothGrade = 1;
 	for (int idx_y = 0; idx_y != E.rowCount(); ++idx_y)

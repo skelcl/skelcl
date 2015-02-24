@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
 			Description("The number of iterations between Swaps"), Default(-1));
 	auto inFile = Arg<std::string>(Flags(Long("inFile")),
 			Description("Filename of the input file"),
-			Default(std::string("lena.pgm")));
+			Default(std::string("data/lena.pgm")));
 
 	cmd.add(&deviceCount, &deviceType, &rangeNorth, &rangeWest, &rangeSouth,
 			&rangeEast, &inFile, &iterationen, &iterationenBetweenSwaps);
