@@ -77,6 +77,12 @@ int readPPM(const std::string inFile, std::vector<float>& img)
   std::stringstream ss;
   std::string inputLine = "";
 
+  // Check if file exists.
+  if (!infile.good()) {
+    LOG_ERROR("Input file '", inFile, "' not found!");
+    abort();
+  }
+
   // First line : version
   getline(infile, inputLine);
 

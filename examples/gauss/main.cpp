@@ -68,6 +68,12 @@ Matrix<T> readPPM(const std::string& inFile)
   auto numrows = 0u, numcols = 0u;
   std::ifstream infile(inFile);
 
+  // Check if file exists.
+  if (!infile.good()) {
+    LOG_ERROR("Input file '", inFile, "' not found!");
+    abort();
+  }
+
   // function to get next line which is not a comment
   auto getNextLine = [](std::ifstream & infile)->std::string
   {
