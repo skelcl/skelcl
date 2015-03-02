@@ -23,6 +23,10 @@ double getRuntimeInMilliseconds(cl::Event event)
 
 }
 
+KernelArg::~KernelArg()
+{
+}
+
 GlobalArg::GlobalArg(skelcl::Vector<char>&& skelclVectorP, bool isOutputP)
   : skelclVector(std::move(skelclVectorP)), isOutput(isOutputP)
 {

@@ -11,7 +11,7 @@
 
 class KernelArg {
 public:
-  virtual ~KernelArg() = default;
+  virtual ~KernelArg();
 
   virtual void setAsKernelArg(cl::Kernel kernel, int i) = 0;
   virtual void upload() = 0;
