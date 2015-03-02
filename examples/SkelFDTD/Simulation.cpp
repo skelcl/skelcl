@@ -14,6 +14,9 @@
 #define __sq(x) ((x)*(x))
 #define CL_CONSTANT(x) #x << " " << x
 
+skelcl::detail::RegisterCommonDefinition
+  data_t_def("typedef struct { float x; float y; float z; float w; } data_t; ");
+
 // physical constants
 const float __c = 299792458.0;
 const float __pi = 3.14159265358979;

@@ -55,7 +55,8 @@ detail::Program StencilInfo<Tout(Tin)>::createAndBuildProgram() const {
        << "#define SCL_ROWS (SCL_ELEMENTS / SCL_COLS)\n";
 
 	// create program
-	std::string s(Matrix<Tout>::deviceFunctions());
+  std::string s(detail::CommonDefinitions::getSource());
+	s.append(Matrix<Tout>::deviceFunctions());
 	s.append(temp.str());
 
 	if (_north == 0 && _south == 0 && _west == 0 && _east == 0) {
