@@ -18,9 +18,17 @@ JNIEXPORT jdouble JNICALL Java_opencl_executor_Executor_execute
 /*
  * Class:     opencl_executor_Executor
  * Method:    init
+ * Signature: (II)V
+ */
+JNIEXPORT void JNICALL Java_opencl_executor_Executor_init__II
+  (JNIEnv *, jclass, jint, jint);
+
+/*
+ * Class:     opencl_executor_Executor
+ * Method:    init
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_opencl_executor_Executor_init
+JNIEXPORT void JNICALL Java_opencl_executor_Executor_init__
   (JNIEnv *, jclass);
 
 /*

@@ -110,12 +110,18 @@ void ValueArg::setAsKernelArg(cl::Kernel kernel, int i)
 void ValueArg::upload() {}
 void ValueArg::download() {}
 
+void initSkelCL(int platformId, int deviceId)
+{
+  skelcl::init(skelcl::platform(platformId), skelcl::device(deviceId));
+  pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Warning);
+}
+
 void initSkelCL(std::string deviceTypeString)
 {
-  pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Warning);
   skelcl::device_type deviceType;
   std::istringstream(deviceTypeString) >> deviceType;
   skelcl::init(skelcl::nDevices(1).deviceType(deviceType));
+  pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::Warning);
 }
 
 void shutdownSkelCL()

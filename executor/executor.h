@@ -69,6 +69,8 @@ std::istream& operator>>(std::istream& stream, KernelArg& arg);
 
 std::ostream& operator<<(std::ostream& stream, const KernelArg& arg);
 
+void initSkelCL(int platformId, int deviceId);
+
 void initSkelCL(std::string deviceType = std::string("ANY"));
 
 void shutdownSkelCL();

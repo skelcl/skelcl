@@ -31,7 +31,14 @@ jdouble
   return runtime;
 }
 
-void Java_opencl_executor_Executor_init(JNIEnv *, jclass)
+void Java_opencl_executor_Executor_init__II(JNIEnv *, jclass,
+                                            jint platformId,
+                                            jint deviceId)
+{
+  initSkelCL(platformId, deviceId);
+}
+
+void Java_opencl_executor_Executor_init__(JNIEnv *, jclass)
 {
   initSkelCL("ANY");
 }
