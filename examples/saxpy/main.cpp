@@ -107,7 +107,8 @@ void saxpy(int size, bool checkResult)
 int main(int argc, char** argv)
 {
   using namespace pvsutil::cmdline;
-  pvsutil::CLArgParser cmd(Description("Computation of the mandelbrot set."));
+  pvsutil::CLArgParser cmd(Description("Computation of 'Single-Precision "
+                                       "A.X + Y'."));
 
   auto deviceCount = Arg<int>(Flags(Long("device_count")),
                               Description("Number of devices used by SkelCL."),

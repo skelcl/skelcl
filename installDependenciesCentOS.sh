@@ -36,6 +36,8 @@ if [[ "$ANSWER" == 'y' ]]; then
     set -x #echo on
     su -c 'yum install llvm-devel llvm-static clang-devel'
     mkdir $DIR/libraries/stooling/libraries/llvm
+    mkdir $DIR/libraries/stooling/libraries/llvm/bin
+    ln -s `which llvm-config` $DIR/libraries/stooling/libraries/llvm/bin/llvm-config
     ln -s `llvm-config --includedir` $DIR/libraries/stooling/libraries/llvm/include
     ln -s `llvm-config --libdir` $DIR/libraries/stooling/libraries/llvm/lib
     set +x #echo off

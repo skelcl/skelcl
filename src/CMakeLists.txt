@@ -7,6 +7,7 @@ link_directories (${SKELCL_COMMON_LIB_DIR})
 
 # set files used to build library
 set (SKELCL_SOURCES
+      Chris.cpp
       Device.cpp
       DeviceBuffer.cpp
       DeviceID.cpp
@@ -32,32 +33,36 @@ set (SKELCL_SOURCES
 set (SKELCL_HEADERS
       ../include/SkelCL/AllPairs.h
       ../include/SkelCL/Distributions.h
+      ../include/SkelCL/Index.h
       ../include/SkelCL/IndexMatrix.h
       ../include/SkelCL/IndexVector.h
-      ../include/SkelCL/SkelCL.h
+      ../include/SkelCL/Local.h
       ../include/SkelCL/Map.h
       ../include/SkelCL/MapOverlap.h
       ../include/SkelCL/Matrix.h
       ../include/SkelCL/Out.h
       ../include/SkelCL/Reduce.h
+      ../include/SkelCL/Scan.h
+      ../include/SkelCL/SkelCL.h
       ../include/SkelCL/Source.h
       ../include/SkelCL/Vector.h
       ../include/SkelCL/Zip.h
       ../include/SkelCL/detail/AllPairsDef.h
       ../include/SkelCL/detail/AllPairsKernel.cl
       ../include/SkelCL/detail/AllPairsKernel2.cl
+      ../include/SkelCL/detail/AllPairsKernel3.cl
       ../include/SkelCL/detail/BlockDistribution.h
       ../include/SkelCL/detail/BlockDistributionDef.h
       ../include/SkelCL/detail/Container.h
       ../include/SkelCL/detail/CopyDistribution.h
       ../include/SkelCL/detail/CopyDistributionDef.h
-      ../include/SkelCL/detail/Distribution.h
-      ../include/SkelCL/detail/DistributionDef.h
       ../include/SkelCL/detail/Device.h
       ../include/SkelCL/detail/DeviceBuffer.h
       ../include/SkelCL/detail/DeviceID.h
       ../include/SkelCL/detail/DeviceList.h
       ../include/SkelCL/detail/DeviceProperties.h
+      ../include/SkelCL/detail/Distribution.h
+      ../include/SkelCL/detail/DistributionDef.h
       ../include/SkelCL/detail/Event.h
       ../include/SkelCL/detail/IndexMatrixDef.h
       ../include/SkelCL/detail/IndexVectorDef.h
@@ -78,10 +83,14 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/Program.h
       ../include/SkelCL/detail/ReduceDef.h
       ../include/SkelCL/detail/ReduceKernel.cl
+      ../include/SkelCL/detail/ScanDef.h
+      ../include/SkelCL/detail/ScanKernel.cl
       ../include/SkelCL/detail/Significances.h
       ../include/SkelCL/detail/SingleDistribution.h
       ../include/SkelCL/detail/SingleDistributionDef.h
+      ../include/SkelCL/detail/skelclDll.h
       ../include/SkelCL/detail/Skeleton.h
+      ../include/SkelCL/detail/Types.h
       ../include/SkelCL/detail/Util.h
       ../include/SkelCL/detail/VectorDef.h
       ../include/SkelCL/detail/ZipDef.h
@@ -90,4 +99,10 @@ set (SKELCL_HEADERS
 # specify library target
 add_library (SkelCL ${SKELCL_SOURCES} ${SKELCL_HEADERS})
 target_link_libraries (SkelCL ${SKELCL_COMMON_LIBS})
+
+install (TARGETS SkelCL
+         LIBRARY DESTINATION lib)
+
+install (DIRECTORY ../include/SkelCL
+         DESTINATION include)
 

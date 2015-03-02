@@ -57,6 +57,7 @@
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
 
+#include "../Chris.h"
 #include "../Distributions.h"
 #include "../Index.h"
 #include "../Out.h"
@@ -130,8 +131,19 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
     cl_uint local     = static_cast<cl_uint>(
                           std::min(this->workGroupSize(),
                                    devicePtr->maxWorkGroupSize()) );
+
+    // TODO: Set "partitions" dynamically, as required.
+    cl_uint partitions = chris::get_num_partitions(inputBuffer, local);
+    cl_uint partitionSize = elements / partitions;
+
     cl_uint global    = static_cast<cl_uint>(
-                          detail::util::ceilToMultipleOf(elements, local) );
+                          detail::util::ceilToMultipleOf(partitionSize, local) );
+
+    LOG_DEBUG_INFO("Number of elements: ", elements,
+                   ", partitions: ", partitions,
+                   ", partition size: ", partitionSize,
+                   ", local size: ", local,
+                   ", global size: ", global);
 
     try {
       cl::Kernel kernel(this->_program.kernel(*devicePtr, "SCL_MAP"));
@@ -139,8 +151,9 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
       kernel.setArg(0, inputBuffer.clBuffer());
       kernel.setArg(1, outputBuffer.clBuffer());
       kernel.setArg(2, elements);
+      kernel.setArg(3, partitionSize);
 
-      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 3,
+      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 4,
                                         std::forward<Args>(args)...);
 
       auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
@@ -187,10 +200,14 @@ typedef float SCL_TYPE_1;
 __kernel void SCL_MAP(
     const __global SCL_TYPE_0*  SCL_IN,
           __global SCL_TYPE_1*  SCL_OUT,
-    const unsigned int          SCL_ELEMENTS)
+    const unsigned int          SCL_ELEMENTS,
+    const unsigned int          SCL_PARTITION_SIZE)
 {
-  if (get_global_id(0) < SCL_ELEMENTS) {
-    SCL_OUT[get_global_id(0)] = SCL_FUNC(SCL_IN[get_global_id(0)]);
+  unsigned int i = get_global_id(0);
+
+  while (i < SCL_ELEMENTS) {
+    SCL_OUT[i] = SCL_FUNC(SCL_IN[i]);
+    i += SCL_PARTITION_SIZE;
   }
 }
 )");

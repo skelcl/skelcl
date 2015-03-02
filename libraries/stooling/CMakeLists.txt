@@ -16,7 +16,7 @@ if (${UNIX})
   endif (${APPLE})
 
   # more restructive flags for compiling the SkelCL code. These flags are added in addition to the above
-  set (STOOLING_CXX_FLAGS "-fno-rtti -Wall -Wextra -Weffc++ -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Werror -pedantic-errors -Wfatal-errors"
+  set (STOOLING_CXX_FLAGS "-fno-rtti -Wall -Wextra -Weffc++ -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Werror -pedantic-errors -Wfatal-errors -Wno-non-virtual-dtor"
     CACHE STRING "More strict flags used to compile the STOOLING sources.")
 endif (${UNIX})
 
@@ -30,10 +30,20 @@ option (BUILD_TESTS
         "Build all tests automatically with the library." ON)
 
 # libclang dirs
+set (LLVM_HOME_DIR "${PROJECT_SOURCE_DIR}/libraries/llvm" CACHE STRING
+     "Home directory of libclang and LLVM.")
 set (LLVM_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/libraries/llvm/include" CACHE STRING
      "Include directory of libclang.")
 set (LLVM_LIB_DIR "${PROJECT_SOURCE_DIR}/libraries/llvm/lib" CACHE STRING
      "Library directory of libclang.")
+
+execute_process(COMMAND "${LLVM_HOME_DIR}/bin/llvm-config" "--version"
+                OUTPUT_VARIABLE LLVM_VERSION)
+if ("${LLVM_VERSION}" STREQUAL "")
+  message(FATAL_ERROR "No LLVM version found. Please make LLVM available at: ${LLVM_HOME_DIR}. (The file 'bin/llvm-config' and the folders 'include' and 'lib' are required.)")
+else()
+  message(STATUS "LLVM version found: ${LLVM_VERSION}")
+endif()
 
 # add libraries
 if (NOT TARGET pvsutil)
@@ -46,11 +56,14 @@ set (STOOLING_COMMON_INCLUDE_DIR
       "${PROJECT_SOURCE_DIR}/libraries/pvsutil/include"
       "${LLVM_INCLUDE_DIR}" CACHE INTERNAL
      "Common include directories used by stooling.")
-   set (STOOLING_COMMON_LIBS
+
+# llvm version 3.5 or greater
+if ("${LLVM_VERSION}" VERSION_GREATER "3.4.9")
+set (STOOLING_COMMON_LIBS
       clang
       clangTooling
+      clangRewrite
       clangRewriteFrontend
-      clangRewriteCore
       clangFrontendTool
       clangFrontend
       clangParse
@@ -69,14 +82,63 @@ set (STOOLING_COMMON_INCLUDE_DIR
       clangBasic
       LLVMBitReader
       LLVMBitWriter
+      LLVMTransformUtils
+      LLVMipa
+      LLVMAnalysis
+      LLVMTarget
       LLVMMCParser
       LLVMMC
+      LLVMOption
+      LLVMObject
       LLVMCore
       LLVMSupport
       dl
+      z
       CACHE INTERNAL
-     "Common libraries used by stooling.")
-   set (STOOLING_COMMON_LIB_DIR
+     "Common libraries used by stooling."
+     )
+elseif ("${LLVM_VERSION}" VERSION_GREATER "3.2.0")
+set (STOOLING_COMMON_LIBS
+      clang
+      clangTooling
+      clangRewriteCore
+      clangRewriteFrontend
+      clangFrontendTool
+      clangFrontend
+      clangParse
+      clangSema
+      clangAnalysis
+      clangDriver
+      clangStaticAnalyzerCheckers
+      clangStaticAnalyzerFrontend
+      clangStaticAnalyzerCore
+      clangEdit
+      clangFormat
+      clangSerialization
+      clangASTMatchers
+      clangAST
+      clangLex
+      clangBasic
+      LLVMBitReader
+      LLVMBitWriter
+      LLVMTransformUtils
+      LLVMipa
+      LLVMAnalysis
+      LLVMTarget
+      LLVMMCParser
+      LLVMMC
+      LLVMOption
+      LLVMObject
+      LLVMCore
+      LLVMSupport
+      dl
+      z
+      CACHE INTERNAL
+     "Common libraries used by stooling."
+     )
+endif()
+
+set (STOOLING_COMMON_LIB_DIR
       "${LLVM_LIB_DIR}" CACHE INTERNAL
      "Common library directories used by stooling.")
 

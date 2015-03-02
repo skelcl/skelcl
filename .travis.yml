@@ -18,6 +18,8 @@ before_install:
   # install dependencies
   - sudo apt-get install -y libssl-dev libglu1-mesa-dev llvm-3.3-dev clang-3.3 libclang-3.3-dev
   - mkdir libraries/stooling/libraries/llvm
+  - mkdir libraries/stooling/libraries/llvm/bin
+  - ln -s `which llvm-config-3.3` libraries/stooling/libraries/llvm/bin/llvm-config
   - ln -s `llvm-config-3.3 --includedir` libraries/stooling/libraries/llvm/include
   - ln -s `llvm-config-3.3 --libdir` libraries/stooling/libraries/llvm/lib
 
@@ -30,10 +32,6 @@ before_install:
 before_script: mkdir build
 
 script: cd build && cmake .. && make && make test
-
-branches:
-  only:
-    - master
 
 notifications:
   email:
