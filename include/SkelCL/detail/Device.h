@@ -329,6 +329,13 @@ public:
   ///
   const cl::Device& clDevice() const;
 
+  ///
+  /// \brief Get access to the OpenCL Platform object associated with the device
+  ///
+  /// \return A reference to the OpenCL Platform object associated with the device
+  ///
+  cl::Platform clPlatform() const;
+
   bool supportsDouble() const;
 
 private:

@@ -114,8 +114,10 @@ Device::Device(const cl::Device& device,
     ABORT_WITH_ERROR(err);
   }
 
-  LOG_INFO("Using device `", name(),
-           "' with id: ", _id);
+  auto platformName = clPlatform().getInfo<CL_PLATFORM_NAME>();
+
+  LOG_INFO("Using device `", name(), "' with id: ", _id, " from platform `",
+           platformName, "'");
 }
 
 cl::Event Device::enqueue(const cl::Kernel& kernel,
@@ -396,6 +398,11 @@ const cl::Context& Device::clContext() const
 const cl::Device& Device::clDevice() const
 {
   return _device;
+}
+
+cl::Platform Device::clPlatform() const
+{
+  return _device.getInfo<CL_DEVICE_PLATFORM>();
 }
 
 bool Device::supportsDouble() const
