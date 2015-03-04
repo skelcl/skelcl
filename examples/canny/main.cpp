@@ -65,7 +65,7 @@ void writePPM(std::vector<float>& img, const std::string filename)
   std::vector<float>::iterator itr;
   for (itr = img.begin(); itr != img.end(); ++itr) {
     outputFile << *itr << "\n";
-	}
+  }
 }
 
 int readPPM(const std::string inFile, std::vector<float>& img)
@@ -137,26 +137,26 @@ int main(int argc, char** argv)
   outFile << inFile.getValue().substr(0, inFile.getValue().find("."))
           << "_" << range << "_devs_" << deviceCount << ".pgm";
 
-	auto fwhm = 5;
-	auto offset = (2 * range + 1) / 2;
-	auto a = (fwhm / 2.354);
+  auto fwhm = 5;
+  auto offset = (2 * range + 1) / 2;
+  auto a = (fwhm / 2.354);
 
-	skelcl::Vector<float> kernelVec(2 * range + 1);
+  skelcl::Vector<float> kernelVec(2 * range + 1);
 
   for (auto i = -offset; i <= ((2 * range + 1) - offset - 1); i++) {
     kernelVec[i + offset] = exp(-i * i / (2 * a * a));
   }
 
-	std::vector<float> img(1); // why 1?
-	auto numcols = readPPM(inFile, img);
+  std::vector<float> img(1); // why 1?
+  auto numcols = readPPM(inFile, img);
 
-	auto time0 = get_time();
+  auto time0 = get_time();
 
-	skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
+  skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
 
-	Matrix<float> inputImage(img, numcols);
+  Matrix<float> inputImage(img, numcols);
 
-	auto time1 = get_time();
+  auto time1 = get_time();
 
   skelcl::MapOverlap<float(float)> m(std::ifstream{"./cannyGauss.cl"},
                                      range.getValue(), detail::Padding::NEUTRAL,
@@ -180,17 +180,17 @@ int main(int argc, char** argv)
   tempImage.copyDataToHost();
   tempImage.resize(inputImage.size());
 
-	auto time4 = get_time();
+  auto time4 = get_time();
 
   outputImage = o(tempImage, kernelVec, 1);
   outputImage.copyDataToHost();
   outputImage.resize(inputImage.size());
 
-	auto time5 = get_time();
+  auto time5 = get_time();
 
   tempImage = p(outputImage, kernelVec, 1);
 
-	auto time6 = get_time();
+  auto time6 = get_time();
 
   tempImage.copyDataToHost();
 

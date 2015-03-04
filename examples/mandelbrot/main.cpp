@@ -48,12 +48,12 @@
 #include <SkelCL/Map.h>
 
 SKELCL_COMMON_DEFINITION(
-typedef struct {    \
-  unsigned char r;  \
-  unsigned char g;  \
-  unsigned char b;  \
-} Pixel;            \
-)
+    typedef struct {    \
+      unsigned char r;  \
+      unsigned char g;  \
+      unsigned char b;  \
+    } Pixel;            \
+			 )
 
 #define ITERATIONS 100
 

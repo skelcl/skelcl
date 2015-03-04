@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 {
   using namespace pvsutil::cmdline;
 
-	pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
+  pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
 
   auto deviceCount =
       Arg<int>(Flags(Long("device_count")),
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
           &size);
   cmd.parse(argc, argv);
 
-	int numcols = size;
+  int numcols = size;
   int numrows = size;
 
   std::vector<int> img(1, 1);
@@ -69,11 +69,11 @@ int main(int argc, char** argv)
     img.push_back(random() > (INT_MAX / 2));
   }
 
-	auto time0 = get_time();
+  auto time0 = get_time();
 
-	skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
+  skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
 
-	auto time1 = get_time();
+  auto time1 = get_time();
 
   Matrix<int> inputImage(img, numcols);
 

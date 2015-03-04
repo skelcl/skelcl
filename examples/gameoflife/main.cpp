@@ -31,7 +31,7 @@ long long get_time()
 
 int main(int argc, char** argv)
 {
-	using namespace pvsutil::cmdline;
+  using namespace pvsutil::cmdline;
 
   pvsutil::CLArgParser cmd(Description("Computation of the Gaussian blur."));
 
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
   cmd.parse(argc, argv);
 
   int numcols = size;
-	int numrows = size;
+  int numrows = size;
 
   std::vector<int> img(1, 1);
 
@@ -70,7 +70,7 @@ int main(int argc, char** argv)
 
   auto time1 = get_time();
 
-	Matrix<int> inputImage(img, numcols);
+  Matrix<int> inputImage(img, numcols);
 
   skelcl::MapOverlap<int(int)> s(std::ifstream{"./gameoflife.cl"}, 1,
                                  detail::Padding::NEUTRAL, 0, "func");
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
     inputImage.resize(inputImage.size());
   }
 
-	auto time5 = get_time();
+  auto time5 = get_time();
 
   printf("Init time : %.12f\n", (float)(time1 - time0) / 1000000);
   printf("Total time : %.12f\n", (float) (time5 - time0) / 1000000);

@@ -153,13 +153,13 @@ double matrixMultFloatAlt(const size_t rowCountA, const size_t columnCountA,
                           const size_t columnCountB, const bool checkResult)
 {
   std::string func = "float func(lmatrix_t* row, rmatrix_t* col, "\
-                                "const unsigned int dim) {" \
-                        "float res = 0;" \
-                        "for (int i = 0; i < dim; ++i) {" \
-                        "  res += getElementFromRow(row, i) "\
-                               "* getElementFromColumn(col, i); }" \
-                        "return res;" \
-                      "}";
+      "const unsigned int dim) {"                                 \
+      "float res = 0;"                                            \
+      "for (int i = 0; i < dim; ++i) {"                           \
+      "  res += getElementFromRow(row, i) "                       \
+      "* getElementFromColumn(col, i); }"                         \
+      "return res;"                                               \
+      "}";
   return matrixMult<float>(rowCountA, columnCountA, columnCountB, checkResult,
                            "", "", func);
 }
@@ -177,13 +177,13 @@ double matrixMultDoubleAlt(const size_t rowCountA, const size_t columnCountA,
                            const size_t columnCountB, const bool checkResult)
 {
   std::string func = "double func(lmatrix_t* row, rmatrix_t* col, "\
-                                 "const unsigned int dim) {" \
-                        "double res = 0;" \
-                        "for (int i = 0; i < dim; ++i) {" \
-                        "  res += getElementFromRow(row, i) "\
-                               "* getElementFromColumn(col, i); }" \
-                        "return res;" \
-                      "}";
+      "const unsigned int dim) {" \
+      "double res = 0;" \
+      "for (int i = 0; i < dim; ++i) {" \
+      "  res += getElementFromRow(row, i) "\
+      "* getElementFromColumn(col, i); }" \
+      "return res;" \
+      "}";
   return matrixMult<double>(rowCountA, columnCountA, columnCountB, checkResult,
                             "", "", func);
 }
@@ -260,7 +260,7 @@ int main(int argc, char* argv[])
   }
   double avgTime = totalTime / repetitions;
   LOG_INFO("sizes: ", rowCountA, ", ", colCountA, ", ", colCountB, "; ",
-      "average time: ", avgTime, " ms");
+	   "average time: ", avgTime, " ms");
 
   return 0;
 }

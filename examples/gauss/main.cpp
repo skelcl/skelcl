@@ -76,15 +76,15 @@ Matrix<T> readPPM(const std::string& inFile)
 
   // function to get next line which is not a comment
   auto getNextLine = [](std::ifstream & infile)->std::string
-  {
-    std::string inputLine;
-    while(true) {
-      getline(infile, inputLine);
-      // read until a line is not a comment
-      if (inputLine[0] != '#') break;
-    }
-    return inputLine;
-  };
+      {
+        std::string inputLine;
+        while(true) {
+          getline(infile, inputLine);
+          // read until a line is not a comment
+          if (inputLine[0] != '#') break;
+        }
+        return inputLine;
+      };
 
   auto version = getNextLine(infile);
 
