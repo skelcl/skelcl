@@ -61,7 +61,6 @@ data_t atof4(char* str)
       }
       else
       {
-        float x, y, z, w;
         str[i] = '\0';
         switch (values)
         {
@@ -98,7 +97,7 @@ std::ostream& operator<<(std::ostream& os, data_t a)
 
 using namespace skelcl;
 
-Simulation::Simulation(const size_t size)
+Simulation::Simulation(const size_t size, const int resolution)
     : E(MatrixSize(size, size)), H(MatrixSize(size, size)), N(MatrixSize(size, size))
 {
 
@@ -115,7 +114,7 @@ Simulation::Simulation(const size_t size)
   int src_x = 50;
   int src_y = 50;
 
-  int resolution = _p.resolution = 100; // FIXME: read a jobfile for dynamic values
+  _p.resolution = resolution;
   float abs_size = _p.abs_size = 0.32;
   float grid_size = _p.grid_size = size / _p.resolution;
   int array_size = _p.array_size = size;
@@ -284,7 +283,7 @@ void Simulation::run()
 {
   auto dev = skelcl::detail::globalDeviceList.front();
   LOG_INFO("computing FDTD with ", _p.time_steps, " iterations");
-	
+
   for (int t = 0; t != _p.time_steps; ++t)
   {
 
@@ -311,12 +310,12 @@ void Simulation::run()
     end = std::chrono::high_resolution_clock::now();
     auto gend = std::chrono::high_resolution_clock::now();
     LOG_INFO("hfield_eq:", std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1e6);
-		
+
     LOG_INFO("sum:", std::chrono::duration_cast<std::chrono::nanoseconds>(gend - gstart).count() / 1e6);
 
     if (t == 100) break;
   }
-	
+
   LOG_INFO("N = ", N[58][51]);
   LOG_INFO("E = ", E[40][50]);
   LOG_INFO("E = ", E[50][40]);
@@ -331,14 +330,14 @@ bool Simulation::readRandomMediaFile(const char* filename)
   char str[1024];
   char* temp;
   std::ifstream ifs(filename);
-	
+
   std::istrstream iss(buffer, 1024);
   if (ifs.is_open())
   {
     while (true)
-    { 
+    {
       read_string(&ifs, &iss, buffer, str);
-      if (str[0] == 'p') // its a positon 
+      if (str[0] == 'p') // its a positon
       {
         _particles.push_back(atof4(str + 3));
       }
