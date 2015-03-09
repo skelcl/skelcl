@@ -40,7 +40,6 @@
 #include <pvsutil/Logger.h>
 
 #include "SkelCL/SkelCL.h"
-#include "SkelCL/Chris.h"
 
 #include "SkelCL/detail/DeviceList.h"
 #include "SkelCL/detail/DeviceProperties.h"
@@ -51,13 +50,11 @@ namespace skelcl {
 
 void init(detail::DeviceProperties properites)
 {
-  chris::init();
   detail::globalDeviceList.init(std::move(properites));
 }
 
 void init(detail::PlatformID pID, detail::DeviceID dID)
 {
-  chris::init();
   detail::globalDeviceList.init(pID, dID);
 }
 
