@@ -1,9 +1,5 @@
 #include "SkelCL/Chris.h"
 
-#include <map>
-
-#include <sys/time.h>
-
 namespace chris {
 
 //
@@ -67,28 +63,5 @@ const char *get_cl_flags(skelcl::detail::Program *const program,
 }
 #pragma GCC diagnostic pop //  -Wunused-parameter
 
-
-///
-/// TIMING
-///
-std::map<const char *, long> _timers;
-
-long _walltime() {
-  struct timeval time;
-  gettimeofday(&time, NULL);
-
-  return time.tv_sec * 1e3 + time.tv_usec * 1e-3;
-}
-
-void startTimer(const char *name) {
-  LOG_INFO("Timer[", name , "] started");
-  _timers[name] = _walltime();
-}
-
-int stopTimer(const char *name) {
-  int elapsed = static_cast<int>(_walltime() - _timers[name]);
-  LOG_INFO("Timer[", name , "] ", elapsed, " ms");
-  return elapsed;
-}
 
 }  // chris

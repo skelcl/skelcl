@@ -191,10 +191,8 @@ void Program::build()
       LOG_DEBUG_INFO("Compiling program for device ", devicePtr->id(),
                      " with flags: \"", flags, "\"");
 
-      chris::startTimer("Program::build");
       _clPrograms[devicePtr->id()].build(
             std::vector<cl::Device>(1, devicePtr->clDevice()), flags );
-      chris::stopTimer("Program::build");
     }
 
     if (createdProgramsFromSource) {
