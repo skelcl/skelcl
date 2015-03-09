@@ -57,7 +57,6 @@
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
 
-#include "../Chris.h"
 #include "../Distributions.h"
 #include "../Index.h"
 #include "../Out.h"
@@ -133,7 +132,7 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
                                    devicePtr->maxWorkGroupSize()) );
 
     // TODO: Set "partitions" dynamically, as required.
-    cl_uint partitions = chris::get_num_partitions(inputBuffer, local);
+    cl_uint partitions = static_cast<cl_uint>( 1 );
     cl_uint partitionSize = elements / partitions;
 
     cl_uint global    = static_cast<cl_uint>(
