@@ -162,9 +162,6 @@ cl::Event Device::enqueue(const cl::Kernel& kernel,
   LOG_DEBUG_INFO("Kernel for device ", _id, " enqueued with global range: ",
                  ::printNDRange(global), ", local: ", ::printNDRange(local),
                  ", offset: ", ::printNDRange(offset));
-
-  ONLY_IN_DEBUG(event.wait());  // Synchronous blocking API (!!!)
-
   return event;
 }
 
