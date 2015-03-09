@@ -17,7 +17,6 @@ namespace chris {
 /// Return the number of partitions to use for a given inputBuffer and
 /// work group size.
 ///
-#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 template <typename Tin>
 cl_uint get_num_partitions(Tin &inputBuffer, const cl_uint workGroupSize) {
