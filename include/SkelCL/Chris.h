@@ -56,7 +56,7 @@ const char *get_cl_flags(skelcl::detail::Program *const program,
 ///
 /// Wrap expressions "e" with a timer called "name".
 ///
-#define TIME(name, e) { chris::startTimer(#name); e; chris::stopTimer(#name); }
+#define TIME(name, e) chris::startTimer(#name); e; chris::stopTimer(#name);
 
 ///
 /// Start a timer with name "name".
