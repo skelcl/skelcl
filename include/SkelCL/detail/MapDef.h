@@ -201,13 +201,13 @@ __kernel void SCL_MAP(
     const __global SCL_TYPE_0*  SCL_IN,
           __global SCL_TYPE_1*  SCL_OUT,
     const unsigned int          SCL_ELEMENTS,
-    const unsigned int          SCL_PARTITION_SIZE)
+    const unsigned int          PARTITION_SIZE)
 {
   unsigned int i = get_global_id(0);
 
   while (i < SCL_ELEMENTS) {
     SCL_OUT[i] = SCL_FUNC(SCL_IN[i]);
-    i += SCL_PARTITION_SIZE;
+    i += PARTITION_SIZE;
   }
 }
 )");
