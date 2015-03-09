@@ -10,10 +10,6 @@
 #ifndef CHRIS_H_
 #define CHRIS_H_
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Weffc++"
-#include <CL/cl.h>
-#pragma GCC diagnostic pop  //  -Weffc++
 namespace chris {
 
 
