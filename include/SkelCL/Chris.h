@@ -34,11 +34,7 @@ void init();
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 template <typename Tin>
 cl_uint get_num_partitions(Tin &inputBuffer, const cl_uint workGroupSize) {
-  // TODO: Determine how many partitions to set programatically.
-  int partitions = 2;
-
-  LOG_DEBUG_INFO("chris::get_num_partitions() --> ", partitions);
-  return static_cast<cl_uint>(partitions);
+  return static_cast<cl_uint>(2);
 }
 #pragma GCC diagnostic pop //  -Wunused-parameter
 
