@@ -203,7 +203,7 @@ __kernel void SCL_MAP(
     const unsigned int          SCL_ELEMENTS,
     const unsigned int          PARTITION_SIZE)
 {
-  unsigned int i = get_global_id(0);
+  size_t i = get_global_id(0);
 
   while (i < SCL_ELEMENTS) {
     SCL_OUT[i] = SCL_FUNC(SCL_IN[i]);
