@@ -14,9 +14,6 @@
 #pragma GCC diagnostic ignored "-Weffc++"
 #include <CL/cl.h>
 #pragma GCC diagnostic pop  //  -Weffc++
-
-#include "detail/Program.h"
-
 namespace chris {
 
 
@@ -32,12 +29,6 @@ cl_uint get_num_partitions(Tin &inputBuffer, const cl_uint workGroupSize) {
 }
 #pragma GCC diagnostic pop //  -Wunused-parameter
 
-///
-/// Returns a string of OpenCL options to build a given program for a
-/// given device with.
-///
-const char *get_cl_flags(skelcl::detail::Program *const program,
-                         cl::Device device);
 
 } // namespace chris
 

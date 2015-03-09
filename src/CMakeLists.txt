@@ -7,7 +7,6 @@ link_directories (${SKELCL_COMMON_LIB_DIR})
 
 # set files used to build library
 set (SKELCL_SOURCES
-      Chris.cpp
       Device.cpp
       DeviceBuffer.cpp
       DeviceID.cpp

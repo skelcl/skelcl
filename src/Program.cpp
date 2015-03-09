@@ -53,7 +53,6 @@
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
 
-#include "SkelCL/Chris.h"
 #include "SkelCL/detail/Program.h"
 
 #include "SkelCL/detail/Device.h"
@@ -186,13 +185,8 @@ void Program::build()
     // build program for each device
     // TODO: how to build the program only for a subset of devices?
     for (auto& devicePtr : globalDeviceList) {
-      // Select optimisation flags
-      const char *flags = chris::get_cl_flags(this, devicePtr->clDevice());
-      LOG_DEBUG_INFO("Compiling program for device ", devicePtr->id(),
-                     " with flags: \"", flags, "\"");
-
       _clPrograms[devicePtr->id()].build(
-            std::vector<cl::Device>(1, devicePtr->clDevice()), flags );
+            std::vector<cl::Device>(1, devicePtr->clDevice()) );
     }
 
     if (createdProgramsFromSource) {
