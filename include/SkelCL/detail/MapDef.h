@@ -153,7 +153,7 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
       kernel.setArg(2, elements);
       kernel.setArg(3, partitionSize);
 
-      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 4,
+      detail::kernelUtil::setKernelArgs(kernel, *devicePtr, 3,
                                         std::forward<Args>(args)...);
 
       auto keepAlive = detail::kernelUtil::keepAlive(*devicePtr,
