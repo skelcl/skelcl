@@ -49,6 +49,12 @@
 
 using namespace skelcl;
 
+long long getTime() {
+  auto time = std::chrono::high_resolution_clock::now();
+  return std::chrono::duration_cast<std::chrono::milliseconds>(
+      time.time_since_epoch()).count();
+}
+
 template<typename ForwardIterator>
 void init(ForwardIterator begin, ForwardIterator end) {
   srand((unsigned) time(0));
@@ -60,43 +66,47 @@ void init(ForwardIterator begin, ForwardIterator end) {
 
 int main(int argc, char** argv) {
   using namespace pvsutil::cmdline;
-  pvsutil::CLArgParser cmd(
-      Description("Computation of the dot product of two "
-                  "randomly created vectors."));
 
-  auto deviceCount = Arg<int>(Flags(Long("device_count")),
-			      Description("Number of devices used by SkelCL."), Default(1));
+  pvsutil::CLArgParser cmd(Description("Computation of the dot product of two "
+                                       "randomly created vectors."));
 
-  auto deviceType = Arg<device_type>(Flags(Long("device_type")),
-				     Description("Device type: ANY, CPU, "
-						 "GPU, ACCELERATOR"), Default(device_type::ANY));
+  // Parse arguments.
+  auto verbose = Arg<bool>(Flags(Short('v'), Long("verbose")),
+                           Description("Enable verbose logging."),
+                           Default(false));
 
-  auto enableLogging = Arg<bool>(
-      Flags(Short('l'), Long("logging"), Long("verbose_logging")),
-      Description("Enable verbose logging."), Default(false));
+  auto deviceCount = Arg<int>(Flags(Long("device-count")),
+                              Description("Number of devices used by SkelCL."),
+                              Default(1));
 
-  auto size = Arg<int>(Flags(Short('n'), Long("size")),
+  auto deviceType = Arg<device_type>(Flags(Long("device-type")),
+                                     Description("Device type: ANY, CPU, "
+                                                 "GPU, ACCELERATOR"),
+                                     Default(device_type::ANY));
+
+  auto size = Arg<int>(Flags(Short('s'), Long("size")),
 		       Description("Size of the two vectors used in "
-				   "the computation."), Default(1024));
+				   "the computation."),
+                       Default(16777216));
 
-  auto checkResult = Arg<bool>(
-      Flags(Short('c'), Long("check"), Long("check_result")),
-      Description("Check parallel computed result "
-                  "against a sequential computed "
-                  "version."), Default(false));
+  auto skipCheck = Arg<bool>(Flags(Long("skip-check")),
+                             Description("Don't check the computed result "
+                                         "against a sequential computed "
+                                         "version."),
+                             Default(false));
 
-  cmd.add(&deviceCount, &deviceType, &enableLogging, &size, &checkResult);
+  cmd.add(&verbose, &deviceType, &deviceCount, &size, &skipCheck);
   cmd.parse(argc, argv);
 
-  if (enableLogging) {
+  if (verbose) {
     pvsutil::defaultLogger.setLoggingLevel(
         pvsutil::Logger::Severity::DebugInfo);
   }
 
-  skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
+  init(nDevices(deviceCount).deviceType(deviceType));
 
   Zip<int(int, int)> mult("int func(int x, int y){ return x*y; }");
-  Reduce<int(int)> sum("int func(int x, int y){ return x+y; }", "0");
+  Reduce<int(int)>    sum("int func(int x, int y){ return x+y; }", "0");
 
   Vector<int> A(size);
   Vector<int> B(size);
@@ -104,18 +114,30 @@ int main(int argc, char** argv) {
   init(A.begin(), A.end());
   init(B.begin(), B.end());
 
-  Vector<int> C = sum(mult(A, B));
+  auto start = getTime();
+  int C = sum(mult(A, B)).front();
+  auto end = getTime();
 
-  LOG_INFO("skelcl: ", C.front());
-
-  if (checkResult) {
+  // Compare expected results.
+  if (!skipCheck) {
     int res = 0;
-    for (size_t i = 0; i < A.size(); ++i) {
-      res += (A[i] * B[i]);
+
+    for (size_t i = 0; i < A.size(); ++i)
+      res += A[i] * B[i];
+
+    if (res != C) {
+      LOG_ERROR("Expected: ", res,
+                ", received: ", C,
+                ", difference: ", res - C);
+      ABORT_WITH_ERROR("Expected result does not match computed result.");
     }
-    LOG_INFO("gold:   ", res);
   }
+
+  terminate();
+
+  printf("Vector size:  %lu\n", A.size());
+  printf("Solution:     %d\n", C);
+  printf("Elapsed time: %lld ms\n", end - start);
 
   return 0;
 }
-
