@@ -72,6 +72,14 @@
 #include "Skeleton.h"
 #include "Util.h"
 
+#define KNOB_C 32
+#define KNOB_R 8
+#define KNOB_S 16
+
+#define GENERIC_KNOB_C 16
+#define GENERIC_KNOB_R 16
+#define GENERIC_KNOB_S 1
+
 namespace skelcl {
 
 template<typename Tleft, typename Tright, typename Tout>
@@ -84,7 +92,7 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const 
       _idReduce(reduce.id()),
       _srcUser(),
       _funcUser(),
-      _C(32), _R(8), _S(16), // parameters
+      _C(KNOB_C), _R(KNOB_R), _S(KNOB_S), // parameters
       _program(createAndBuildProgramSpecial())
 {
     LOG_DEBUG("Create new AllPairs object (", this, ")");
@@ -100,7 +108,7 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::st
       _idReduce(),
       _srcUser(source),
       _funcUser(func),
-      _C(16), _R(16), _S(1),
+      _C(GENERIC_KNOB_C), _R(GENERIC_KNOB_R), _S(GENERIC_KNOB_S),
       _program(createAndBuildProgramGeneral())
 {
     LOG_DEBUG("Create new AllPairs object (", this, ")");
