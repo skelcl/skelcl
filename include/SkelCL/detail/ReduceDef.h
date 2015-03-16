@@ -73,6 +73,7 @@
 #include "Skeleton.h"
 #include "Util.h"
 
+#define KNOB_GLOBAL_SIZE 524288
 
 namespace skelcl {
 
@@ -98,7 +99,7 @@ template <typename... Args>
 Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
                                     const Vector<T>& input, Args&&... args)
 {
-  const size_t global_size = 8192;
+  const size_t global_size = KNOB_GLOBAL_SIZE;
 
   prepareInput(input);
   ASSERT(input.distribution().devices().size() == 1);
