@@ -8,8 +8,10 @@
 jdouble
   Java_opencl_executor_Executor_execute(JNIEnv* env, jclass,
                                         jstring jKernelSource,
-                                        jstring jKernelName, jint localSize,
-                                        jint globalSize, jobjectArray jArgs)
+                                        jstring jKernelName,
+                                        jint localSize1, jint localSize2, jint localSize3,
+                                        jint globalSize1, jint globalSize2, jint globalSize3,
+                                        jobjectArray jArgs)
 {
   auto kernelSourcePtr = env->GetStringUTFChars(jKernelSource, nullptr);
   std::string kernelSource{kernelSourcePtr};
@@ -24,7 +26,8 @@ jdouble
     ++i;
   }
 
-  auto runtime = execute(kernelSource, kernelName, localSize, globalSize, args);
+  auto runtime = execute(kernelSource, kernelName,
+   localSize1, localSize2, localSize3, globalSize1, globalSize2, globalSize3, args);
 
   env->ReleaseStringUTFChars(jKernelSource, kernelSourcePtr);
   env->ReleaseStringUTFChars(jKernelName, kernelNamePtr);

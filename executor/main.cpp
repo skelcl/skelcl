@@ -58,7 +58,7 @@ int main(int argc, char** argv)
   args.emplace_back(GlobalArg::create(vc.data(), vc.size()));
   args.emplace_back(GlobalArg::create(result.data(), result.size(), true));
 
-  execute(kernelSource, kernelName, localSize, globalSize, args);
+  execute(kernelSource, kernelName, localSize, 1, 1, globalSize, 1, 1, args);
 
   LOG_INFO("done");
   auto& res = dynamic_cast<GlobalArg*>(args.back())->data();

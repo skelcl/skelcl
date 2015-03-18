@@ -144,13 +144,19 @@ cl::Kernel buildKernel(const std::string& kernelCode,
   return cl::Kernel(p.kernel(*devPtr, kernelName));
 }
 
-double executeKernel(cl::Kernel kernel, int localSize, int globalSize,
-                     const std::vector<KernelArg*>& args)
+double executeKernel(cl::Kernel kernel,
+               int localSize1, int localSize2, int localSize3,
+               int globalSize1, int globalSize2, int globalSize3,
+               const std::vector<KernelArg*>& args)
 {
   auto& devPtr = skelcl::detail::globalDeviceList.front();
 
-  cl_uint clLocalSize = localSize;
-  cl_uint clGlobalSize = globalSize;
+  cl_uint clLocalSize1 = localSize1;
+  cl_uint clGlobalSize1 = globalSize1;
+  cl_uint clLocalSize2 = localSize2;
+  cl_uint clGlobalSize2 = globalSize2;
+  cl_uint clLocalSize3 = localSize3;
+  cl_uint clGlobalSize3 = globalSize3;
 
   int i = 0;
   for (auto& arg : args) {
@@ -159,19 +165,22 @@ double executeKernel(cl::Kernel kernel, int localSize, int globalSize,
     ++i;
   }
 
-  auto event = devPtr->enqueue(kernel, cl::NDRange(clGlobalSize),
-                                       cl::NDRange(clLocalSize));
+  auto event = devPtr->enqueue(kernel, cl::NDRange(clGlobalSize1, clGlobalSize2, clGlobalSize3),
+                                       cl::NDRange(clLocalSize1, clLocalSize2, clLocalSize3));
 
   for (auto& arg : args) arg->download();
 
   return getRuntimeInMilliseconds(event);
 }
 
-double execute(std::string kernelCode, std::string kernelName, int localSize,
-               int globalSize,
+double execute(std::string kernelCode, std::string kernelName,
+               int localSize1, int localSize2, int localSize3,
+               int globalSize1, int globalSize2, int globalSize3,
                const std::vector<KernelArg*>& args)
 {
   auto kernel = buildKernel(kernelCode, kernelName);
-  return executeKernel(kernel, localSize, globalSize, args);
+  return executeKernel(kernel,
+   localSize1, localSize2, localSize3,
+   globalSize1, globalSize2, globalSize3, args);
 }
 

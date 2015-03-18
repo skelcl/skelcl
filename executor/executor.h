@@ -78,11 +78,14 @@ void shutdownSkelCL();
 cl::Kernel buildKernel(const std::string& kernelCode,
                        const std::string& kernelName);
 
-double executeKernel(cl::Kernel kernel, int localSize, int globalSize,
-                     const std::vector<KernelArg*>& args);
+double executeKernel(cl::Kernel kernel,
+               int localSize1, int localSize2, int localSize3,
+               int globalSize1, int globalSize2, int globalSize3,
+               const std::vector<KernelArg*>& args);
 
-double execute(std::string kernelCode, std::string kernelName, int localSize,
-               int globalSize,
+double execute(std::string kernelCode, std::string kernelName, 
+               int localSize1, int localSize2, int localSize3,
+               int globalSize1, int globalSize2, int globalSize3,
                const std::vector<KernelArg*>& args);
 
 #endif // EXECUTOR_H_
