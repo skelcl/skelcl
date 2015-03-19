@@ -55,7 +55,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
   input_matrix_t Mm;
   Mm.data = SCL_LOCAL_TMP;
 
-#if 1
+#if 0
   // everybody copies one item to local memory
   SCL_LOCAL_TMP[localIndex(0, 0)] = SCL_TMP[globalIndex(0, 0)];
 
@@ -115,7 +115,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
 
 #endif
 
-#if 0
+#if 1
         const unsigned int col = get_global_id(0);
         const unsigned int l_col = get_local_id(0);
         const unsigned int row = get_global_id(1);
