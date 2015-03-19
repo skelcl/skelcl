@@ -370,7 +370,7 @@ unsigned int Stencil<Tout(Tin)>::determineIterationsBetweenDataSwaps(
     const Matrix<Tin>& /*in*/, unsigned int iterLeft)
 {
   // User choses a value
-  if (iterLeft <= _iterBetSwaps)
+  if (static_cast<int>(iterLeft) <= _iterBetSwaps)
     return iterLeft;
   else if (_iterBetSwaps != -1)
     return _iterBetSwaps;
