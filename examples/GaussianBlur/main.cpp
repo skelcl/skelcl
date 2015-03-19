@@ -178,6 +178,11 @@ int main(int argc, char** argv) {
           &iterations, &swaps);
   cmd.parse(argc, argv);
 
+  if (verbose) {
+    pvsutil::defaultLogger.setLoggingLevel(
+        pvsutil::Logger::Severity::DebugInfo);
+  }
+
   auto range = rangeNorth > rangeSouth ? rangeNorth : rangeSouth;
   range = range > rangeEast ? range : rangeEast;
   range = range > rangeWest ? range : rangeWest;
@@ -208,7 +213,7 @@ int main(int argc, char** argv) {
 
   auto start = getTime();
 
-  if (useMapOverlap) {   
+  if (useMapOverlap) {
     if (oneD) {
       MapOverlap<float(float)>s(std::ifstream { "./MapOverlap1D.cl" },
                                 range.getValue(),
