@@ -272,6 +272,9 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
                         southSum,
                 local[1]));
           }
+
+          LOG_DEBUG_INFO("Global size: [", global[0], " x ", global[1],
+                         "]. Local size: [", local[0], " x ", local[1], "]");
           // LOG_DEBUG_INFO("device: ", devicePtr->id(), " elements: ",
           // elements);
           // Get time
