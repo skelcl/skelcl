@@ -68,6 +68,9 @@
 #include "Skeleton.h"
 #include "Util.h"
 
+#define KNOB_C 8
+#define KNOB_R 8
+
 namespace skelcl {
 
 template <typename Tin, typename Tout>
@@ -243,7 +246,7 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
           cl_uint offset = 0;
           // cl_uint local[2] = { static_cast<cl_uint>(sqrt(
           //		workgroupSize)), static_cast<cl_uint>(local[0]) };
-          cl_uint local[2] = {32, 4};
+          cl_uint local[2] = {KNOB_C, KNOB_R};
           cl_uint global[2] = {
               static_cast<cl_uint>(detail::util::ceilToMultipleOf(
                   output.columnCount(), local[0])),
