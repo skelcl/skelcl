@@ -242,15 +242,18 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
               sInfo.getProgram().kernel(*devicePtr, "SCL_STENCIL"));
 
           // Set working group size.
-          cl_uint local[2] = {KNOB_C, KNOB_R};
+          const cl_uint local[2] = {KNOB_C, KNOB_R};
+
+          // Offset is set for multi-GPU execution.
+          cl_uint offset = 0;
 
           // Global size must be a multiple of working group size in
           // each dimension.
           cl_uint global[2] = {
-              static_cast<cl_uint>(detail::util::ceilToMultipleOf(
-                  output.columnCount(), local[0])),
-              static_cast<cl_uint>(detail::util::ceilToMultipleOf(
-                  output.rowCount(), local[1]))}; // HALO
+            static_cast<cl_uint>(detail::util::ceilToMultipleOf(
+                output.columnCount(), local[0])),
+            static_cast<cl_uint>(detail::util::ceilToMultipleOf(
+                output.rowCount(), local[1]))}; // HALO
 
           // Setting the global size when the number of devices > 1.
           if (devicePtr->id() == 0 && noOfDevices > 1) {
