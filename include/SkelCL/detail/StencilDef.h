@@ -68,8 +68,8 @@
 #include "Skeleton.h"
 #include "Util.h"
 
-#define KNOB_C 8
-#define KNOB_R 8
+#define KNOB_C 32
+#define KNOB_R 4
 
 namespace skelcl {
 
