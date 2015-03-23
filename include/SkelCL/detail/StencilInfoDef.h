@@ -59,7 +59,12 @@ detail::Program StencilInfo<Tout(Tin)>::createAndBuildProgram() const {
   s.append(Matrix<Tout>::deviceFunctions());
   s.append(temp.str());
 
-  if (_north == 0 && _south == 0 && _west == 0 && _east == 0) {
+  // If all of the boundaries are 0, then this is just a map
+  // operation.
+  auto ismap = _north == 0 && _south == 0 && _west == 0 && _east == 0;
+
+  // Helper structs and functions.
+  if (ismap) {
     s.append(
         R"(
 
@@ -77,7 +82,6 @@ detail::Program StencilInfo<Tout(Tin)>::createAndBuildProgram() const {
 
 )");
   } else {
-    // helper structs and functions
     s.append(
         R"(
 
@@ -99,9 +103,13 @@ SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y){
 
 )");
   }
-  // user source
+
+  // Add the user program.
   s.append(_userSource);
-  if (_north == 0 && _south == 0 && _west == 0 && _east == 0) {
+
+  // Append the appropiate kernel, based on the padding type, or if
+  // it's a map.
+  if (ismap) {
     s.append(
         R"(
 
@@ -112,41 +120,41 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
                           const unsigned int SCL_ELEMENTS,
                           const unsigned int SCL_COLS)
 {
-if (get_global_id(1)*SCL_COLS+get_global_id(0) < SCL_ELEMENTS) {
+  if (get_global_id(1)*SCL_COLS+get_global_id(0) < SCL_ELEMENTS) {
     input_matrix_t Mm;
     Mm.data = SCL_TMP+get_global_id(1)*SCL_COLS+get_global_id(0);
     SCL_OUT[get_global_id(1)*SCL_COLS+get_global_id(0)] = USR_FUNC(&Mm);
-}
+  }
 }
 )");
-  } else {
-    // Build the kernel.
-    if (_padding == detail::Padding::NEAREST)
-      s.append(
+  } else if (_padding == detail::Padding::NEAREST)
+    s.append(
 #include "StencilKernelNearest.cl"
 			);
-    else if (_padding == detail::Padding::NEUTRAL) {
-      s.append(
+  else if (_padding == detail::Padding::NEUTRAL) {
+    s.append(
 #include "StencilKernelNeutral.cl"
 			);
-    }
-    else if (_padding == detail::Padding::NEAREST_INITIAL) {
-      s.append(
+  }
+  else if (_padding == detail::Padding::NEAREST_INITIAL) {
+    s.append(
 #include "StencilKernelNearestInitial.cl"
 			);
-    }
   }
+
+  // Build the program.
   auto program = detail::Program(s,
                                  detail::util::hash(
                                      "//Stencil\n" + Matrix<Tout>::deviceFunctions()
                                      + _userSource + _funcName));
-  // modify program
+  // Set the parameters and function names.
   if (!program.loadBinary()) {
     program.transferParameters(_funcName, 1, "SCL_STENCIL");
     program.transferArguments(_funcName, 1, "USR_FUNC");
     program.renameFunction(_funcName, "USR_FUNC");
     program.adjustTypes<Tin, Tout>();
   }
+
   program.build();
   return program;
 }
