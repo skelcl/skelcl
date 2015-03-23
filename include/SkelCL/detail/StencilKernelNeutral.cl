@@ -60,31 +60,17 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
   SCL_LOCAL_TMP[localIndex(0, 0)] = SCL_TMP[globalIndex(0, 0)];
 
 #if SCL_NORTH > 0
-  // the first SCL_NORTH many rows of thread copy the north region
-  if (SCL_L_ROW < SCL_NORTH) {
-    // TODO this assumes thae there are more rows of workgroups than rows of data
-    size_t rowId = -SCL_NORTH - SCL_L_ROW; // -SCL_NORTH ... -1
-
-    if (SCL_ROW < SCL_NORTH) { // out of bound handling
-      SCL_LOCAL_TMP[localIndex(rowId, 0)] = neutral;
-    } else {
-      SCL_LOCAL_TMP[localIndex(rowId, 0)] = SCL_TMP[globalIndex(rowId, 0)];
-    }
-  }
+  // The first SCL_NORTH rows of threads copy the north region.
+  // TODO: This assumes that there are more rows of workitems than the size of the north border.
+  if (SCL_L_ROW < SCL_NORTH)
+    SCL_LOCAL_TMP[localIndex(-SCL_NORTH, 0)] = SCL_ROW >= SCL_NORTH ? SCL_TMP[globalIndex(-SCL_NORTH, 0)] : neutral;
 #endif
 
 #if SCL_WEST > 0
-  // the first SCL_WEST many cols of threads copy the west region
-  if (SCL_L_COL < SCL_WEST) {
-    // TODO this assumes that there are more cols of workgroups than cols of data
-    size_t colId = -SCL_WEST - SCL_L_COL; // -SCL_WEST ... -1
-
-    if (SCL_COL < SCL_WEST) {
-      SCL_LOCAL_TMP[localIndex(0, colId)] = neutral;
-    } else {
-      SCL_LOCAL_TMP[localIndex(0, colId)] = SCL_TMP[globalIndex(0, colId)];
-    }
-  }
+  // The first SCL_WEST columns of threads copy the west region.
+  // TODO: This assumes that there are more columns of workitems than the size of the west border.
+  if (SCL_L_COL < SCL_WEST)
+    SCL_LOCAL_TMP[localIndex(0, -SCL_WEST)] = SCL_COL >= SCL_WEST ? SCL_TMP[globalIndex(0, -SCL_WEST)] : neutral;
 #endif
 
 #if SCL_EAST > 0
