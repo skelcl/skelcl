@@ -62,6 +62,18 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
   // TODO: This assumes that there are more rows of workitems than the size of the north border.
   if (SCL_L_ROW < SCL_NORTH)
     SCL_LOCAL_TMP[localIndex(-SCL_NORTH, 0)] = SCL_ROW >= SCL_NORTH ? SCL_TMP[globalIndex(-SCL_NORTH, 0)] : neutral;
+
+#if SCL_EAST > 0
+  // Copy the top left region.
+  if (SCL_L_ROW < SCL_NORTH && SCL_COL >= SCL_COLS - SCL_EAST)
+    SCL_LOCAL_TMP[localIndex(-SCL_NORTH, SCL_EAST)] = neutral;
+#endif
+
+#if SCL_WEST > 0
+  // Copy the top right region.
+  if (SCL_L_ROW < SCL_NORTH && SCL_L_COL < SCL_WEST)
+    SCL_LOCAL_TMP[localIndex(-SCL_NORTH, -SCL_WEST)] = neutral;
+#endif
 #endif
 
 #if SCL_WEST > 0
@@ -75,13 +87,10 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
   // The last SCL_EAST columns of threads copy the east region.
   // TODO: This assumes that there are more columns of workitems than the size of the east border.
   if (SCL_L_COL >= SCL_L_COL_COUNT - SCL_EAST) {
-    size_t colId = SCL_EAST - (SCL_L_COL_COUNT - SCL_L_COL) + 1; // 1 .. SCL_EAST
-
-    if (SCL_COL >= SCL_COLS - SCL_EAST) {
-      SCL_LOCAL_TMP[localIndex(0, colId)] = neutral;
-    } else {
-      SCL_LOCAL_TMP[localIndex(0, colId)] = SCL_TMP[globalIndex(0, colId)];
-    }
+    if (SCL_COL < SCL_COLS - SCL_EAST)
+      SCL_LOCAL_TMP[localIndex(0, SCL_EAST)] = SCL_TMP[globalIndex(0, SCL_EAST)];
+    else
+      SCL_LOCAL_TMP[localIndex(0, SCL_EAST - ((SCL_L_COL_COUNT - SCL_COLS) % SCL_L_COL_COUNT))] = neutral;
   }
 #endif
 
@@ -89,14 +98,23 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
   // The bottom SCL_SOUTH rows of threads copy the south region.
   // TODO: This assumes that there are more rows of workitems than the size of the south border.
   if (SCL_L_ROW >= SCL_L_ROW_COUNT - SCL_SOUTH) {
-    size_t rowId = SCL_SOUTH - (SCL_L_ROW_COUNT - SCL_L_ROW) + 1; // 1 .. SCL_SOUTH
-
-    if (SCL_ROW >= SCL_ROWS - SCL_SOUTH) {
-      SCL_LOCAL_TMP[localIndex(rowId, 0)] = neutral;
-    } else {
-      SCL_LOCAL_TMP[localIndex(rowId, 0)] = SCL_TMP[globalIndex(rowId, 0)];
-    }
+    if (SCL_ROW < SCL_ROWS - SCL_SOUTH)
+      SCL_LOCAL_TMP[localIndex(SCL_SOUTH, 0)] = SCL_TMP[globalIndex(SCL_SOUTH, 0)];
+    else
+      SCL_LOCAL_TMP[localIndex(SCL_SOUTH - ((SCL_L_ROW_COUNT - SCL_ROWS) % SCL_L_ROW_COUNT), 0)] = neutral;
   }
+
+#if SCL_WEST > 0
+  // Copy the bottom left region.
+  if (SCL_L_ROW >= SCL_L_ROW_COUNT - SCL_SOUTH && SCL_L_COL < SCL_WEST)
+    SCL_LOCAL_TMP[localIndex(SCL_SOUTH, -SCL_WEST)] = neutral;
+#endif
+
+#if SCL_EAST > 0
+  // Copy the bottom right region.
+  if (SCL_L_ROW >= SCL_L_ROW_COUNT - SCL_SOUTH && SCL_L_COL >= SCL_L_COL_COUNT - SCL_EAST)
+    SCL_LOCAL_TMP[localIndex(SCL_SOUTH, SCL_EAST)] = neutral;
+#endif
 #endif
 
 #endif
