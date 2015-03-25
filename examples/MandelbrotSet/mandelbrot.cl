@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
-  
+
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
@@ -39,40 +39,41 @@
 #define COLOR_G(n) ((n << 3) & 255)
 #define COLOR_B(n) ((n >> 8) & 255)
 
-int iterate(float x, float y)
+int iterate(float x, float y, const uint iterations)
 {
   int n = 0;
   float r = 0.0f, s = 0.0f;
   float rNext = 0.0f;
-  
-  while (((r * r) + (s * s) <= 4.0f) && (n < ITERATIONS)) {
-    rNext = ((r * r) - (s * s)) + x;
-    s = (2 * r * s) + y;
-    r = rNext;
-    ++n;
+
+  while (((r * r) + (s * s) <= 4.0f) && (n < iterations)) {
+      rNext = ((r * r) - (s * s)) + x;
+      s = (2 * r * s) + y;
+      r = rNext;
+      ++n;
   }
+
   return n;
 }
 
 Pixel func(IndexPoint position,
            float startX, float startY,
-           float dx, float dy)
+           float dx, float dy,
+           const uint iterations)
 {
-  float x = startX + position.x * dx;
-  float y = startY + position.y * dy;
+    float x = startX + position.x * dx;
+    float y = startY + position.y * dy;
+    int n = iterate(x, y, iterations);
+    Pixel pixel;
 
-  int n = iterate(x, y);
-  
-  Pixel pixel;
-  if (n == ITERATIONS) {
-    pixel.r = 0;
-    pixel.g = 0;
-    pixel.b = 0;
-  } else {
-    pixel.r = COLOR_R(n);
-    pixel.g = COLOR_G(n);
-    pixel.b = COLOR_B(n);
-  }
-  return pixel;
+    if (n == iterations) {
+        pixel.r = 0;
+        pixel.g = 0;
+        pixel.b = 0;
+    } else {
+        pixel.r = COLOR_R(n);
+        pixel.g = COLOR_G(n);
+        pixel.b = COLOR_B(n);
+    }
+
+    return pixel;
 }
-
