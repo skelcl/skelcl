@@ -232,7 +232,7 @@ int main(int argc, char* argv[])
                                Default<size_t>(4096));
 
   auto checkResult = Arg<bool>(Flags(Short('c'), Long("check")),
-                               Description("Don'Check the computed result "
+                               Description("Check the computed result "
                                            "against a sequential computed "
                                            "version."),
                                Default(false));
