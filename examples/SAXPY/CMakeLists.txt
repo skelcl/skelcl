@@ -1,0 +1,4 @@
+set (SKELCL_EXAMPLES_SAXPY_SOURCES main.cpp)
+
+add_executable (SAXPY ${SKELCL_EXAMPLES_SAXPY_SOURCES})
+target_link_libraries (SAXPY SkelCL ${SKELCL_COMMON_LIBS})
