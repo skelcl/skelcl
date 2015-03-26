@@ -142,8 +142,13 @@ int main(int argc, char** argv)
                         Description("Gaussian overlap radius"),
                         Default(5));
 
+  auto swaps = Arg<int>(Flags(Short('S'), Long("iterations-between-swaps")),
+                        Description("The number of iterations "
+                                    "between swaps"),
+                        Default(-1));
+
   cmd.add(&verbose, &useMapOverlap, &deviceCount, &deviceType,
-          &range, &inFile, &outFile);
+          &range, &inFile, &outFile, &swaps);
   cmd.parse(argc, argv);
 
   if (verbose) {
@@ -202,7 +207,7 @@ int main(int argc, char** argv)
     skelcl::Stencil<float(float)> s(std::ifstream { "./StencilGauss.cl" },
                                     static_cast<int>(range), static_cast<int>(range),
                                     static_cast<int>(range), static_cast<int>(range),
-                                    detail::Padding::NEUTRAL, 255, "func");
+                                    detail::Padding::NEUTRAL, 255, "func", swaps);
     s.add(std::ifstream { "./StencilSobel.cl" }, 1, 1, 1, 1,
           detail::Padding::NEAREST, 255, "func");
     s.add(std::ifstream { "./StencilNMS.cl" }, 1, 1, 1, 1,

@@ -97,7 +97,7 @@ std::ostream& operator<<(std::ostream& os, data_t a)
 
 using namespace skelcl;
 
-Simulation::Simulation(const size_t size, const int resolution)
+Simulation::Simulation(const size_t size, const int resolution, const int swaps)
     : E(MatrixSize(size, size)), H(MatrixSize(size, size)), N(MatrixSize(size, size))
 {
 
@@ -209,8 +209,8 @@ Simulation::Simulation(const size_t size, const int resolution)
   std::string stc_in = ss.str() + code2;
   std::cout << map_in;
   motionEquation = new Map<data_t(data_t)>(map_in, "motionEquation");
-  eFieldEquation = new Stencil<data_t(data_t)>(stc_in, 1u, 1u, 0u, 0u, detail::Padding::NEUTRAL, zero, "eFieldEquation");
-  hFieldEquation = new Stencil<data_t(data_t)>(stc_in, 0u, 0u, 1u, 1u, detail::Padding::NEUTRAL, zero, "hFieldEquation");
+  eFieldEquation = new Stencil<data_t(data_t)>(stc_in, 1u, 1u, 0u, 0u, detail::Padding::NEUTRAL, zero, "eFieldEquation", swaps);
+  hFieldEquation = new Stencil<data_t(data_t)>(stc_in, 0u, 0u, 1u, 1u, detail::Padding::NEUTRAL, zero, "hFieldEquation", swaps);
 }
 
 Simulation::~Simulation()

@@ -43,7 +43,12 @@ int main(int argc, char *argv[])
                                                  "GPU, ACCELERATOR"),
                                      Default(device_type::ANY));
 
-  cmd.add(&verbose, &size, &resolution, &deviceCount, &deviceType);
+  auto swaps = Arg<int>(Flags(Short('S'), Long("iterations-between-swaps")),
+                        Description("The number of iterations "
+                                    "between swaps"),
+                        Default(-1));
+
+  cmd.add(&verbose, &size, &resolution, &deviceCount, &deviceType, &swaps);
   cmd.parse(argc, argv);
 
   if (verbose) {
@@ -55,7 +60,7 @@ int main(int argc, char *argv[])
 
   auto start = getTime();
 
-  Simulation sim(size, resolution);
+  Simulation sim(size, resolution, swaps);
   sim.initialize();
   sim.run();
 
