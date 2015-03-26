@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
 
   terminate();
 
-  printf("Iterations:   %lu\n", iterations.getValue());
+  printf("Iterations:   %d\n", iterations.getValue());
   printf("Image size:   %lu x %lu px\n", image.rowCount(), image.columnCount());
   printf("Elapsed time: %lld ms\n", end - start);
   printf("Output:       %s\n", out.str().c_str());
