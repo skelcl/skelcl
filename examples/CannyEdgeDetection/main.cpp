@@ -169,7 +169,7 @@ int main(int argc, char** argv)
   std::vector<float> img(1); // why 1?
   auto numcols = readPPM(inFile, img);
 
-  skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
+  init(nDevices(deviceCount).deviceType(deviceType));
 
   Matrix<float> inputImage(img, numcols);
   Matrix<float> outputImage;
