@@ -100,6 +100,7 @@ std::string severityToString(Logger::Severity::Type severity)
     case Logger::Severity::Error      : return "ERROR";
     case Logger::Severity::Warning    : return " WARN";
     case Logger::Severity::Info       : return " INFO";
+    case Logger::Severity::Profiling  : return " PROF";
     case Logger::Severity::Debug      : return "DEBUG";
     case Logger::Severity::DebugInfo  : return "DINFO";
   }

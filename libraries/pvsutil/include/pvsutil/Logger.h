@@ -58,6 +58,7 @@ public:
       Error = 0,
       Warning,
       Info,
+      Profiling,
       Debug,
       DebugInfo
     };
@@ -108,6 +109,9 @@ private:
 
 #define LOG_INFO(...)\
   LOG(pvsutil::Logger::Severity::Info, __VA_ARGS__)
+
+#define LOG_PROF(...)\
+  LOG(pvsutil::Logger::Severity::Profiling, __VA_ARGS__)
 
 #ifdef NDEBUG
 
