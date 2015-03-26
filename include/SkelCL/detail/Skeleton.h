@@ -94,11 +94,11 @@ protected:
 
   std::vector<cl::Event> _events;
 
-private:
-
-  void printEventTimings() const;
-
   size_t _workGroupSize;
+
+private:
+  
+  void printEventTimings() const;
 };
 
 template <typename T, template <typename> class C, typename... Args>
