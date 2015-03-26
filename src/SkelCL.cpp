@@ -38,6 +38,7 @@
 ///
 
 #include <pvsutil/Logger.h>
+#include <pvsutil/Timer.h>
 
 #include "SkelCL/SkelCL.h"
 
@@ -50,12 +51,16 @@ namespace skelcl {
 
 void init(detail::DeviceProperties properites)
 {
+  pvsutil::Timer timer;
   detail::globalDeviceList.init(std::move(properites));
+  LOG_PROF("skelcl::init() time ", timer.stop(), " ms");
 }
 
 void init(detail::PlatformID pID, detail::DeviceID dID)
 {
+  pvsutil::Timer timer;
   detail::globalDeviceList.init(pID, dID);
+  LOG_PROF("skelcl::init() time ", timer.stop(), " ms");
 }
 
 detail::DeviceProperties allDevices()
