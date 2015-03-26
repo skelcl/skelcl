@@ -194,9 +194,11 @@ void Reduce<T(T)>::execute_first_step(const detail::Device& device,
     // after finishing the kernel invoke this function ...
     auto invokeAfter = [keepAlive]() {};
 
-    device.enqueue(kernel, cl::NDRange(global_size), cl::NDRange(local_size),
-                   cl::NullRange, // offset
-                   invokeAfter);
+    _events.push_back(device.enqueue(kernel,
+                                     cl::NDRange(global_size),
+                                     cl::NDRange(local_size),
+                                     cl::NullRange, // offset
+                                     invokeAfter));
   }
   catch (cl::Error& err)
   {
@@ -236,9 +238,11 @@ void Reduce<T(T)>::execute_second_step(const detail::Device& device,
     auto invokeAfter = [keepAlive]() {};
 
     ASSERT(local_size <= data_size);
-    device.enqueue(kernel, cl::NDRange(local_size), cl::NDRange(local_size),
-                   cl::NullRange, // offset
-                   invokeAfter);
+    _events.push_back(device.enqueue(kernel,
+                                     cl::NDRange(local_size),
+                                     cl::NDRange(local_size),
+                                     cl::NullRange, // offset
+                                     invokeAfter));
   }
   catch (cl::Error& err)
   {

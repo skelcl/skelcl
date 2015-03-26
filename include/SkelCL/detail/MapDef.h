@@ -150,14 +150,13 @@ void Map<Tout(Tin)>::execute(C<Tout>& output,
                                                     );
 
       // after finishing the kernel invoke this function ...
-      auto invokeAfter =  [=] () {
-                                    (void)keepAlive;
-                                 };
+      auto invokeAfter =  [=]() {(void)keepAlive;};
 
-      devicePtr->enqueue(kernel,
-                         cl::NDRange(global), cl::NDRange(local),
-                         cl::NullRange, // offset
-                         invokeAfter);
+      _events.push_back(devicePtr->enqueue(kernel,
+                                           cl::NDRange(global),
+                                           cl::NDRange(local),
+                                           cl::NullRange, // offset
+                                           invokeAfter));
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
     }
@@ -270,14 +269,13 @@ void Map<void(Tin)>::execute(const C<Tin>& input,
                                                     );
 
       // after finishing the kernel invoke this function and release keepAlive
-      auto invokeAfter =  [=] () {
-                                    (void)keepAlive;
-                                 };
+      auto invokeAfter =  [=] () { (void)keepAlive; };
 
-      devicePtr->enqueue(kernel,
-                         cl::NDRange(global), cl::NDRange(local),
-                         cl::NullRange, // offset
-                         invokeAfter);
+      _events.push_back(devicePtr->enqueue(kernel,
+                                           cl::NDRange(global),
+                                           cl::NDRange(local),
+                                           cl::NullRange, // offset
+                                           invokeAfter));
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
     }
@@ -410,10 +408,11 @@ void Map<Tout(Index)>::execute(Vector<Tout>& output,
                                     (void)keepAlive;
                                  };
 
-      devicePtr->enqueue(kernel,
-                         cl::NDRange(global), cl::NDRange(local),
-                         cl::NullRange,
-                         invokeAfter);
+      _events.push_back(devicePtr->enqueue(kernel,
+                                           cl::NDRange(global),
+                                           cl::NDRange(local),
+                                           cl::NullRange,
+                                           invokeAfter));
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
     }
@@ -521,10 +520,11 @@ void Map<void(Index)>::execute(const Vector<Index>& input,
       // after finishing the kernel invoke this function ...
       auto invokeAfter =  [=] () { (void)keepAlive; };
 
-      devicePtr->enqueue(kernel,
-                         cl::NDRange(global), cl::NDRange(local),
-                         cl::NullRange,
-                         invokeAfter);
+      _events.push_back(devicePtr->enqueue(kernel,
+                                           cl::NDRange(global),
+                                           cl::NDRange(local),
+                                           cl::NullRange,
+                                           invokeAfter));
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
     }
@@ -621,12 +621,17 @@ void Map<Tout(IndexPoint)>::execute(Matrix<Tout>& output,
       
       // after finishing the kernel invoke this function ...
       auto invokeAfter =  [=] () { (void)keepAlive; };
-      
+
       devicePtr->enqueue(kernel,
                          cl::NDRange(rowGlobal, colGlobal),
                          cl::NDRange(local, local),
                          cl::NullRange,
                          invokeAfter);
+      _events.push_back(devicePtr->enqueue(kernel,
+                                           cl::NDRange(rowGlobal, colGlobal),
+                                           cl::NDRange(local, local),
+                                           cl::NullRange,
+                                           invokeAfter));
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
     }
@@ -753,11 +758,11 @@ void Map<void(IndexPoint)>::execute(const Matrix<IndexPoint>& input,
         (void)keepAlive;
       };
       
-      devicePtr->enqueue(kernel,
-                         cl::NDRange(rowGlobal, colGlobal),
-                         cl::NDRange(local, local),
-                         cl::NullRange,
-                         invokeAfter);
+      _events.push_back(devicePtr->enqueue(kernel,
+                                           cl::NDRange(rowGlobal, colGlobal),
+                                           cl::NDRange(local, local),
+                                           cl::NullRange,
+                                           invokeAfter));
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
     }

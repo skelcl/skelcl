@@ -164,10 +164,11 @@ void MapOverlap<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
 
       // after finishing the kernel invoke this function ...
       auto invokeAfter = [=]() { (void)keepAlive; };
-      auto event = devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]),
-                                      cl::NDRange(local[0], local[1]),
-                                      cl::NullRange, // offset
-                                      invokeAfter);
+      _events.push_back(devicePtr->enqueue(kernel,
+                                           cl::NDRange(global[0], global[1]),
+                                           cl::NDRange(local[0], local[1]),
+                                           cl::NullRange, // offset
+                                           invokeAfter));
     }
     catch (cl::Error& err)
     {

@@ -96,7 +96,7 @@ protected:
   // arbitrary string.
   const std::string _name;
 
-  std::vector<cl::Event> _events;
+  mutable std::vector<cl::Event> _events;
 
   size_t _workGroupSize;
 

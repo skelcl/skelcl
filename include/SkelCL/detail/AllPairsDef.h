@@ -206,10 +206,11 @@ void AllPairs<Tout(Tleft, Tright)>::execute(Matrix<Tout>& output,
             // after finishing the kernel invoke this function ...
             auto invokeAfter =  [=] () { (void)keepAlive; };
 
-            devicePtr->enqueue(kernel, cl::NDRange(global[0], global[1]), cl::NDRange(local[0], local[1]),
-                               cl::NullRange, // offset
-                               invokeAfter);
-
+            _events.push_back(devicePtr->enqueue(kernel,
+                                                 cl::NDRange(global[0], global[1]),
+                                                 cl::NDRange(local[0], local[1]),
+                                                 cl::NullRange, // offset
+                                                 invokeAfter));
         } catch (cl::Error& err) {
             ABORT_WITH_ERROR(err);
         }

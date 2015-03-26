@@ -160,10 +160,10 @@ void Zip<Tout(Tleft, Tright)>::execute(C<Tout>& output,
                                   (void)keepAlive;
                                 };
 
-      devicePtr->enqueue(kernel,
-                         cl::NDRange(global), cl::NDRange(local),
-                         cl::NullRange, // offset
-                         invokeAfter);
+      _events.push_back(devicePtr->enqueue(kernel,
+                                           cl::NDRange(global), cl::NDRange(local),
+                                           cl::NullRange, // offset
+                                           invokeAfter));
 
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
@@ -343,10 +343,11 @@ void Zip<void(Tleft, Tright)>::execute(const C<Tleft>& left,
                                   (void)keepAlive;
                                 };
 
-      devicePtr->enqueue(kernel,
-                         cl::NDRange(global), cl::NDRange(local),
-                         cl::NullRange, // offset
-                         invokeAfter);
+      _events.push_back(devicePtr->enqueue(kernel,
+                                           cl::NDRange(global),
+                                           cl::NDRange(local),
+                                           cl::NullRange, // offset
+                                           invokeAfter));
 
     } catch (cl::Error& err) {
       ABORT_WITH_ERROR(err);
