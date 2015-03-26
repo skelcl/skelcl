@@ -335,14 +335,13 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
           // After finishing the kernel invoke this function.
           auto invokeAfter = [=]() { (void)keepAlive; };
 
-          if (devicePtr->id() == 0) {
-            LOG_INFO("Starting Stencil.");
+          if (devicePtr->id() == 0)
             _events.push_back(devicePtr->enqueue(kernel,
                                                  cl::NDRange(global[0], global[1]),
                                                  cl::NDRange(local[0], local[1]),
                                                  cl::NDRange(0, offset),
                                                  invokeAfter));
-          } else
+          else
             _events.push_back(devicePtr->enqueue(kernel,
                                                  cl::NDRange(global[0], global[1]),
                                                  cl::NDRange(local[0], local[1]),
