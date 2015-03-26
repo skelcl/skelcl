@@ -74,6 +74,9 @@ public:
   void insert(const cl::Event& event);
 
   void wait();
+
+  std::vector<cl::Event>::const_iterator begin() const;
+  std::vector<cl::Event>::const_iterator end() const;
 private:
   std::vector<cl::Event> _events;
 };

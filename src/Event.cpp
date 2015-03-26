@@ -97,6 +97,14 @@ void Event::wait()
   }
 }
 
+std::vector<cl::Event>::const_iterator Event::begin() const {
+  return _events.begin();
+}
+
+std::vector<cl::Event>::const_iterator Event::end() const {
+  return _events.end();
+}
+
 } // namespace detail
 
 } // namespace skelcl
