@@ -70,13 +70,44 @@ Skeleton::~Skeleton()
 
 void Skeleton::printEventTimings() const
 {
-  auto i = 0;
+  auto eventnum = 0;
+
   for (auto& e : _events) {
+    // Wait for job to complete.
     e.wait();
+
+    // Get profiling information.
+    auto queued = e.getProfilingInfo<CL_PROFILING_COMMAND_QUEUED>();
+    auto submit = e.getProfilingInfo<CL_PROFILING_COMMAND_SUBMIT>();
     auto start = e.getProfilingInfo<CL_PROFILING_COMMAND_START>();
     auto end = e.getProfilingInfo<CL_PROFILING_COMMAND_END>();
-    auto duration = (end - start) / 1000000.0;
-    LOG_INFO("Event ", i++, " timing: ", duration, "ms");
+
+    // Elapsed time in milliseconds between for events.
+#define elapsed(start, end) (((end) - (start)) / static_cast<double>(1e6))
+    auto queueTime = elapsed(queued, submit);
+    auto submitTime = elapsed(submit, start);
+    auto runTime = elapsed(start, end);
+#undef elapsed
+
+    // Print profiling information for event times, in the format:
+    //
+    //     <name> <address>, clEvent: <event>: <time> ms
+    //
+    // Where:
+    //   <name>    is the Skeleton::_name;
+    //   <address> is the memory address of the skeleton object
+    //   <event>   is an integer event number starting at 0, and
+    //             incremented for each subsequent event;
+    //   <time>    is elapsed time in milliseconds.
+#define print(time) \
+    LOG_PROF(_name, " ", this, ", clEvent: ", eventnum, \
+             ", "#time": ", time, " ms")
+    print(queueTime);
+    print(submitTime);
+    print(runTime);
+#undef print
+
+    eventnum++; // Bump event counter.
   }
 }
 
