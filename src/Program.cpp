@@ -52,6 +52,7 @@
 
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
+#include <pvsutil/Timer.h>
 
 #include "SkelCL/detail/Program.h"
 
@@ -175,6 +176,7 @@ bool Program::loadBinary()
 
 void Program::build()
 {
+  pvsutil::Timer t;
   bool createdProgramsFromSource = false;
   if (_clPrograms.empty()) {
     createProgramsFromSource();
@@ -206,6 +208,8 @@ void Program::build()
       ABORT_WITH_ERROR(err);
     }
   }
+
+  LOG_PROF("skelcl::Program::build() ", t.stop(), " ms");
 }
 
 cl::Kernel Program::kernel(const Device& device,
