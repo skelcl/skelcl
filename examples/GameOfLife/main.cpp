@@ -65,7 +65,7 @@ int main(int argc, char** argv)
                         Default(-1));
 
   cmd.add(&verbose, &useMapOverlap, &deviceCount, &deviceType,
-          &iterations, &size);
+          &iterations, &swaps, &size);
   cmd.parse(argc, argv);
 
   if (verbose) {
@@ -101,8 +101,7 @@ int main(int argc, char** argv)
   } else {
     // Stencil.
     skelcl::Stencil<int(int)> s(std::ifstream{"./Stencil.cl"}, 1, 1, 1, 1,
-                                detail::Padding::NEUTRAL, 0, "func",
-                                static_cast<int>(swaps));
+                                detail::Padding::NEUTRAL, 0, "func", swaps);
     grid = s(iterations, grid);
   }
 
