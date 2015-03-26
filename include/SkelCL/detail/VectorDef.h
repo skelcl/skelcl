@@ -78,7 +78,9 @@ Vector<T>::Vector()
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(true),
     _hostBuffer(),
-    _deviceBuffers()
+    _deviceBuffers(),
+    _uevents(),
+    _devents()
 {
   (void)registerVectorDeviceFunctions;
   LOG_DEBUG_INFO("Created new Vector object (", this, ") with ",
@@ -94,7 +96,9 @@ Vector<T>::Vector(const size_type size,
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(size, value),
-    _deviceBuffers()
+    _deviceBuffers(),
+    _uevents(),
+    _devents()
 {
   (void)registerVectorDeviceFunctions;
   LOG_DEBUG_INFO("Created new Vector object (", this, ") with ",
@@ -109,7 +113,9 @@ Vector<T>::Vector(InputIterator first, InputIterator last)
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(first, last),
-    _deviceBuffers()
+    _deviceBuffers(),
+    _uevents(),
+    _devents()
 {
   (void)registerVectorDeviceFunctions;
   LOG_DEBUG_INFO("Created new Vector object (", this, ") with ",
@@ -126,7 +132,9 @@ Vector<T>::Vector(InputIterator first,
     _hostBufferUpToDate(true),
     _deviceBuffersUpToDate(false),
     _hostBuffer(first, last),
-    _deviceBuffers()
+    _deviceBuffers(),
+    _uevents(),
+    _devents()
 {
   (void)registerVectorDeviceFunctions;
   LOG_DEBUG_INFO("Created new Vector object (", this, ") with ",
@@ -140,7 +148,9 @@ Vector<T>::Vector(const Vector<T>& rhs)
     _hostBufferUpToDate(rhs._hostBufferUpToDate),
     _deviceBuffersUpToDate(rhs._deviceBuffersUpToDate),
     _hostBuffer(rhs._hostBuffer),
-    _deviceBuffers(rhs._deviceBuffers)
+    _deviceBuffers(rhs._deviceBuffers),
+    _uevents(),
+    _devents()
 {
   (void)registerVectorDeviceFunctions;
   LOG_DEBUG_INFO("Created new Vector object (", this, ") by copying (", &rhs,
@@ -154,7 +164,9 @@ Vector<T>::Vector(Vector<T>&& rhs)
     _hostBufferUpToDate(std::move(rhs._hostBufferUpToDate)),
     _deviceBuffersUpToDate(std::move(rhs._deviceBuffersUpToDate)),
     _hostBuffer(std::move(rhs._hostBuffer)),
-    _deviceBuffers(std::move(rhs._deviceBuffers))
+    _deviceBuffers(std::move(rhs._deviceBuffers)),
+    _uevents(),
+    _devents()
 {
   (void)registerVectorDeviceFunctions;
   rhs._size = 0;
@@ -199,8 +211,54 @@ Vector<T>& Vector<T>::operator=(Vector<T>&& rhs)
 template <typename T>
 Vector<T>::~Vector()
 {
+  printEventTimings(_uevents, "upload");
+  printEventTimings(_devents, "download");
   LOG_DEBUG_INFO("Vector object (", this, ") with ", getDebugInfo(),
                  " destroyed");
+}
+
+template <typename T>
+void Vector<T>::printEventTimings(std::vector<cl::Event> events,
+                                  const std::string direction) const
+{
+  auto eventnum = 0;
+  for (auto& e : events) {
+    // Wait for job to complete.
+    e.wait();
+
+    // Get profiling information.
+    auto queued = e.getProfilingInfo<CL_PROFILING_COMMAND_QUEUED>();
+    auto submit = e.getProfilingInfo<CL_PROFILING_COMMAND_SUBMIT>();
+    auto start = e.getProfilingInfo<CL_PROFILING_COMMAND_START>();
+    auto end = e.getProfilingInfo<CL_PROFILING_COMMAND_END>();
+
+    // Elapsed time in milliseconds between for events.
+#define elapsed(start, end) (((end) - (start)) / static_cast<double>(1e6))
+    auto queueTime = elapsed(queued, submit);
+    auto submitTime = elapsed(submit, start);
+    auto runTime = elapsed(start, end);
+#undef elapsed
+
+    // Print profiling information for event times, in the format:
+    //
+    //     <name> <address>, clEvent: <event>: <time> ms
+    //
+    // Where:
+    //   <name>    is the Skeleton::_name;
+    //   <address> is the memory address of the skeleton object
+    //   <event>   is an integer event number starting at 0, and
+    //             incremented for each subsequent event;
+    //   <time>    is elapsed time in milliseconds.
+#define print(time) \
+    LOG_PROF("Vector ", this, ", clEvent: ", \
+             eventnum, ", ", direction, " ", #time": ", time, " ms")
+    print(queueTime);
+    print(submitTime);
+    print(runTime);
+#undef print
+
+    eventnum++; // Bump event counter.
+  }
 }
 
 template <typename T>
@@ -572,6 +630,9 @@ detail::Event Vector<T>::startUpload() const
   LOG_DEBUG_INFO("Started data upload to ", _distribution->devices().size(),
            " devices (", getInfo(), ")");
 
+  // Cache events to retrieve profiling information later.
+  _uevents.insert(_uevents.end(), events.begin(), events.end());
+
   return events;
 }
 
@@ -603,6 +664,9 @@ detail::Event Vector<T>::startDownload() const
 
   LOG_DEBUG_INFO("Started data download from ", _distribution->devices().size(),
                  " devices (", getInfo() ,")");
+
+  // Cache events to retrieve profiling information later.
+  _devents.insert(_devents.end(), events.begin(), events.end());
 
   return events;
 }

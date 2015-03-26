@@ -309,6 +309,12 @@ private:
     // _deviceBuffers empty => buffers not created
   mutable std::map< detail::Device::id_type,
                     detail::DeviceBuffer >            _deviceBuffers;
+
+  // Profiling information.
+  mutable std::vector<cl::Event> _uevents;
+  mutable std::vector<cl::Event> _devents;
+  void printEventTimings(std::vector<cl::Event> events,
+                         const std::string direction) const;
 };
 
 template <typename T>
