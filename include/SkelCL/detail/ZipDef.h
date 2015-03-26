@@ -70,7 +70,7 @@ namespace skelcl {
 template<typename Tleft, typename Tright, typename Tout>
 Zip<Tout(Tleft, Tright)>::Zip(const Source& source,
                               const std::string& funcName)
-  : detail::Skeleton(),
+  : detail::Skeleton("Zip<Tout(TLeft, Tright)>"),
     _source(source),
     _funcName(funcName),
     _program(createAndBuildProgram(source, funcName))
@@ -276,7 +276,7 @@ void Zip<Tout(Tleft, Tright)>::prepareOutput(C<Tout>& output,
 template<typename Tleft, typename Tright>
 Zip<void(Tleft, Tright)>::Zip(const Source& source,
                               const std::string& funcName)
-  : detail::Skeleton(),
+  : detail::Skeleton("Zip<void(Tleft, Tright)>"),
     _program(createAndBuildProgram(source, funcName))
 {
   LOG_DEBUG_INFO("Create new Zip<void(Tleft, Tright)> object (", this, ")");

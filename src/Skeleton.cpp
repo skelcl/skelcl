@@ -53,13 +53,13 @@ namespace skelcl {
 
 namespace detail {
 
-Skeleton::Skeleton()
-  : _events(), _workGroupSize(::defaultWorkGroupSize)
+Skeleton::Skeleton(const std::string name)
+  : _name(name), _events(), _workGroupSize(::defaultWorkGroupSize)
 {
 }
 
-Skeleton::Skeleton(const unsigned workGroupSize)
-  : _events(), _workGroupSize(workGroupSize)
+Skeleton::Skeleton(const std::string name, const unsigned workGroupSize)
+  : _name(name), _events(), _workGroupSize(workGroupSize)
 {
 }
 

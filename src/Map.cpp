@@ -47,12 +47,12 @@
 #include "SkelCL/detail/Program.h"
 
 namespace skelcl {
-  
+
 // ## Map<Index, void> ################################################
   
 Map<void(Index)>::Map(const Source& source,
                       const std::string& funcName)
-  : Skeleton(),
+  : Skeleton("Map<void(Index)>"),
   detail::MapHelper<void(Index)>(createAndBuildProgram(source, funcName))
   {
   }
@@ -101,7 +101,7 @@ Map<void(Index)>::Map(const Source& source,
   // ## Map<IndexPoint, void> ################################################
   Map<void(IndexPoint)>::Map(const Source& source,
                              const std::string& funcName)
-  : Skeleton(),
+  : Skeleton("MapHelper<void(IndexPoint)>"),
   detail::MapHelper<void(IndexPoint)>(createAndBuildProgram(source, funcName))
   {
   }

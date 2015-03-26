@@ -71,7 +71,7 @@ template<typename T>
 Scan<T(T)>::Scan(const Source& source,
                  const std::string& id,
                  const std::string& funcName)
-  : detail::Skeleton(),
+  : detail::Skeleton("Scan<T(T)>"),
     _program(createAndBuildProgram(source, id, funcName))
 {
   LOG_DEBUG_INFO("Create new Scan object (", this, ")");

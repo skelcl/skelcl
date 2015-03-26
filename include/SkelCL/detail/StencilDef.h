@@ -79,7 +79,7 @@ Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int north,
                             unsigned int east, detail::Padding padding,
                             Tin neutral_element, const std::string& func,
                             int iterBetSwaps)
-  : detail::Skeleton(), _iterBetSwaps(iterBetSwaps)
+  : detail::Skeleton("Stencil<Tout(Tin)>"), _iterBetSwaps(iterBetSwaps)
 {
   LOG_DEBUG_INFO("Create new Stencil object for Matrix (", this, ")");
   add(source, north, west, south, east, padding, neutral_element, func);
@@ -89,7 +89,7 @@ template <typename Tin, typename Tout>
 Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int range,
                             detail::Padding padding, Tin neutral_element,
                             const std::string& func, int iterBetSwaps)
-  : detail::Skeleton(), _iterBetSwaps(iterBetSwaps)
+  : detail::Skeleton("Stencil<Tout(Tin)>"), _iterBetSwaps(iterBetSwaps)
 {
   LOG_DEBUG_INFO("Create new Stencil object for Matrix (", this, ")");
 	add(source, range, range, range, range, padding, neutral_element, func);
@@ -100,7 +100,7 @@ Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int west,
                             unsigned int east, detail::Padding padding,
                             Tin neutral_element, const std::string& func,
                             int iterBetSwaps)
-  : detail::Skeleton(), _iterBetSwaps(iterBetSwaps)
+  : detail::Skeleton("Stencil<Tout(Tin)>"), _iterBetSwaps(iterBetSwaps)
 {
   LOG_DEBUG_INFO("Create new Stencil object for Vector (", this, ")");
 	add(source, 0, west, 0, east, padding, neutral_element, func);

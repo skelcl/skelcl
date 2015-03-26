@@ -73,8 +73,8 @@ MapOverlap<Tout(Tin)>::MapOverlap(const Source& source,
                                   unsigned int overlap_range,
                                   detail::Padding padding, Tin neutral_element,
                                   const std::string& func)
-  : detail::Skeleton(), _userSource(source), _funcName(func),
-    _overlap_range(overlap_range), _padding(padding),
+  : detail::Skeleton("MapOverlap<Tout(Tin)>"), _userSource(source),
+    _funcName(func), _overlap_range(overlap_range), _padding(padding),
     _neutral_element(neutral_element), _program(createAndBuildProgram())
 {
   LOG_DEBUG_INFO("Create new MapOverlap object (", this, ")");

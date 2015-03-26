@@ -75,7 +75,7 @@ namespace skelcl {
 template<typename Tin, typename Tout>
 Map<Tout(Tin)>::Map(const Source& source,
                     const std::string& funcName)
-  : Skeleton(),
+  : Skeleton("Map<Tout(Tin)>"),
     detail::MapHelper<Tout(Tin)>(createAndBuildProgram(source, funcName))
 {
   LOG_DEBUG_INFO("Create new Map object (", this, ")");
@@ -219,7 +219,7 @@ __kernel void SCL_MAP(
 template<typename Tin>
 Map<void(Tin)>::Map(const Source& source,
                     const std::string& funcName)
-  : Skeleton(),
+  : Skeleton("Map<void(Tin)>"),
     detail::MapHelper<void(Tin)>(createAndBuildProgram(source, funcName))
 {
 }
@@ -335,7 +335,7 @@ __kernel void SCL_MAP(
 template <typename Tout>
 Map<Tout(Index)>::Map(const Source& source,
                       const std::string& funcName)
-  : Skeleton(),
+  : Skeleton("Map<Tout(Index)>"),
     detail::MapHelper<Tout(Index)>(createAndBuildProgram(source, funcName))
 {
 }
@@ -539,7 +539,7 @@ void Map<void(Index)>::execute(const Vector<Index>& input,
 template <typename Tout>
 Map<Tout(IndexPoint)>::Map(const Source& source,
                            const std::string& funcName)
-: Skeleton(),
+: Skeleton("Map<Tout(IndexPoint)>"),
   detail::MapHelper<Tout(IndexPoint)>(createAndBuildProgram(source, funcName))
 {
 }

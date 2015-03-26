@@ -51,9 +51,9 @@ namespace detail {
 
 class SKELCL_DLL Skeleton {
 public:
-  Skeleton();
+  Skeleton(const std::string name);
 
-  Skeleton(const unsigned workGroupSize);
+  Skeleton(const std::string name, const unsigned workGroupSize);
 
   Skeleton(const Skeleton& rhs) = default;
 
@@ -91,6 +91,10 @@ protected:
 
   template <typename T, typename... Args>
   void updateModifiedStatus(T&& t, Args&&... args) const;
+
+  // The name of the skeleton, used in debugging. Can be set to any
+  // arbitrary string.
+  const std::string _name;
 
   std::vector<cl::Event> _events;
 

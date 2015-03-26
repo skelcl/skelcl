@@ -80,7 +80,8 @@ namespace skelcl {
 template <typename T>
 Reduce<T(T)>::Reduce(const Source& source, const std::string& id,
                      const std::string& funcName)
-  : detail::Skeleton(), _id(id), _funcName(funcName), _userSource(source),
+  : detail::Skeleton("Reduce<T(T)>"), _id(id),
+    _funcName(funcName), _userSource(source),
     _program{createPrepareAndBuildProgram()}
 {
 }

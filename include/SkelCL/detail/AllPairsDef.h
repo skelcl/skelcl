@@ -84,7 +84,7 @@ namespace skelcl {
 
 template<typename Tleft, typename Tright, typename Tout>
 AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip)
-    : detail::Skeleton(),
+    : detail::Skeleton("AllPairs<Tout(Tleft, Tright)>"),
       _srcReduce(reduce.source()),
       _srcZip(zip.source()),
       _funcReduce(reduce.func()),
@@ -100,7 +100,7 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const 
 
 template<typename Tleft, typename Tright, typename Tout>
 AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::string& func)
-    : detail::Skeleton(),
+    : detail::Skeleton("AllPairs<Tout(Tleft, Tright)>"),
       _srcReduce(),
       _srcZip(),
       _funcReduce(),
