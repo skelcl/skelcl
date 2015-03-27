@@ -5,6 +5,7 @@ include_directories (${SKELCL_COMMON_INCLUDE_DIR})
 link_directories (${SKELCL_COMMON_LIB_DIR})
 
 add_subdirectory (CannyEdgeDetection)
+add_subdirectory (CannyEdgeDetection.fused)
 add_subdirectory (DotProduct)
 add_subdirectory (FDTD)
 add_subdirectory (GameOfLife)
