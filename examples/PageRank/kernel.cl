@@ -1,0 +1,3 @@
+float map(double rank) {
+
+}
