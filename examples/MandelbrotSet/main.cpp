@@ -147,11 +147,6 @@ int main(int argc, char** argv)
                                                    "GPU, ACCELERATOR"),
                                        Default(device_type::ANY));
 
-    auto enableLogging = Arg<bool>(Flags(Short('l'), Long("logging"),
-                                         Long("verbose_logging")),
-                                   Description("Enable verbose logging."),
-                                   Default(false));
-
     cmd.add(&verbose, &iterations, &width, &height, &outFile,
             &deviceCount, &deviceType);
     cmd.parse(argc, argv);
