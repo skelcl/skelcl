@@ -28,11 +28,15 @@ int main(int argc, char *argv[])
 
   auto size = Arg<int>(Flags(Short('s'), Long("size")),
                        Description("Simulation size: [s, s]."),
-                       Default(2048));
+                       Default(1024));
 
   auto resolution = Arg<int>(Flags(Short('r'), Long("resolution")),
                              Description("Simulation resolution."),
-                             Default(100));
+                             Default(1));
+
+  auto time = Arg<int>(Flags(Short('t'), Long("time")),
+                       Description("Simulation time."),
+                       Default(5));
 
   auto deviceCount = Arg<int>(Flags(Long("device-count")),
                               Description("Number of devices used by SkelCL."),
@@ -60,7 +64,7 @@ int main(int argc, char *argv[])
 
   auto start = getTime();
 
-  Simulation sim(size, resolution, swaps);
+  Simulation sim(size, resolution, swaps, static_cast<float>(time));
   sim.initialize();
   sim.run();
 

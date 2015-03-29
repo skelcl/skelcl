@@ -18,7 +18,8 @@ class Simulation
 {
 public:
 
-  Simulation(const size_t size, const int resolution, const int swaps);
+  Simulation(const size_t size, const int resolution, const int swaps,
+             const float time);
 
   virtual ~Simulation();
 

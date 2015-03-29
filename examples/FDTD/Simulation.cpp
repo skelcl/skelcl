@@ -97,7 +97,8 @@ std::ostream& operator<<(std::ostream& os, data_t a)
 
 using namespace skelcl;
 
-Simulation::Simulation(const size_t size, const int resolution, const int swaps)
+Simulation::Simulation(const size_t size, const int resolution, const int swaps,
+                       const float time)
     : E(MatrixSize(size, size)), H(MatrixSize(size, size)), N(MatrixSize(size, size))
 {
 
@@ -120,7 +121,7 @@ Simulation::Simulation(const size_t size, const int resolution, const int swaps)
   int array_size = _p.array_size = size;
   int array_size_2  = size / 2;
   int abs_cell_size = _p.abs_cell_size = _p.abs_size * _p.resolution;
-  float time_end = _p.time_end = 200;
+  float time_end = _p.time_end = time;
 
   float c = _p.c = __c;
   float pi = _p.pi = __pi;
