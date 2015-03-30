@@ -266,8 +266,8 @@ Matrix<T>& Matrix<T>::operator=(Matrix<T>&& rhs)
 template <typename T>
 Matrix<T>::~Matrix()
 {
-  printEventTimings(_uevents, "upload");
-  printEventTimings(_devents, "download");
+  printEventTimings(_uevents, "ul");
+  printEventTimings(_devents, "dl");
   LOG_DEBUG_INFO("Matrix object (", this, ") with ", getDebugInfo(),
       " destroyed");
 }
@@ -296,21 +296,18 @@ void Matrix<T>::printEventTimings(std::vector<cl::Event> events,
 
     // Print profiling information for event times, in the format:
     //
-    //     <name> <address>, clEvent: <event>: <time> ms
+    //     Matrix[<address>][<event>] <direction> <queue> <submit> <run>
     //
     // Where:
-    //   <name>    is the Skeleton::_name;
-    //   <address> is the memory address of the skeleton object
-    //   <event>   is an integer event number starting at 0, and
-    //             incremented for each subsequent event;
-    //   <time>    is elapsed time in milliseconds.
-#define print(time) \
-    LOG_PROF("Matrix ", this, ", clEvent: ", \
-             eventnum, ", ", direction, " ", #time": ", time, " ms")
-    print(queueTime);
-    print(submitTime);
-    print(runTime);
-#undef print
+    //   <address>   is the memory address of the skeleton object;
+    //   <event>     is an integer event number starting at 0, and
+    //               incremented for each subsequent event;
+    //   <direction> is either "ul" for upload or "dl" for download;
+    //   <queue>     is the time spent queuing;
+    //   <submit>    is the time spent submitted;
+    //   <run>       is the time spent running.
+    LOG_PROF("Matrix[", this, "][", eventnum, "] ",
+             direction, " ", queueTime, " ", submitTime, " ", runTime);
 
     eventnum++; // Bump event counter.
   }
