@@ -351,8 +351,8 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
           // tile size.
           LOG_PROF(_name, "[", this, "][", eventnum,
                    "] global[", global[0], "][", global[1],
-                   "] local [", local[0], "][", local[1],
-                   "] tile [", tile_width, "][", tile_height,
+                   "] local[", local[0], "][", local[1],
+                   "] tile[", tile_width, "][", tile_height,
                    "][", sizeof(Tin), "]");
         }
 
