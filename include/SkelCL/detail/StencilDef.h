@@ -280,9 +280,6 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
                 local[1]));
           }
 
-          LOG_INFO("Global size: [", global[0], " x ", global[1],
-                   "]. Local size: [", local[0], " x ", local[1], "].");
-
           // Determine the tile size.
           const unsigned int tile_width =
               local[0] + sInfo.getWest() + sInfo.getEast();
@@ -290,9 +287,6 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
               local[1] + sInfo.getNorth() + sInfo.getSouth();
           const unsigned int tile_size = // size = w * h * sizeof(Tin).
               tile_width * tile_height * sizeof(Tin);
-          LOG_INFO("Local memory: [", tile_width, " x ",
-                   tile_height, "] x ", sizeof(Tin), " = ",
-                   tile_size, " bytes.");
 
           // Set kernel arguments.
           int j = 0;
@@ -335,6 +329,11 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
           // After finishing the kernel invoke this function.
           auto invokeAfter = [=]() { (void)keepAlive; };
 
+          // Each OpenCL event is identified using it's index in the
+          // private _events vector. The current size of the vector is
+          // equivalent to the index of the *next* element to be
+          // pushed to it.
+          auto eventnum = _events.size();
           if (devicePtr->id() == 0)
             _events.push_back(devicePtr->enqueue(kernel,
                                                  cl::NDRange(global[0], global[1]),
@@ -347,12 +346,19 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
                                                  cl::NDRange(local[0], local[1]),
                                                  cl::NullRange,
                                                  invokeAfter));
+
+          // Print profiling information: global size, local size, and
+          // tile size.
+          LOG_PROF(_name, "[", this, "][", eventnum,
+                   "] global[", global[0], "][", global[1],
+                   "] local [", local[0], "][", local[1],
+                   "] tile [", tile_width, "][", tile_height,
+                   "][", sizeof(Tin), "]");
         }
 
         k++;
       }
       iterationsAfterLastSync++;
-      LOG_INFO("Stencil kernel ", i, " started");
     }
   }
   catch (cl::Error& err)

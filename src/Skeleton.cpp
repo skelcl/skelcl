@@ -91,21 +91,18 @@ void Skeleton::printEventTimings() const
 
     // Print profiling information for event times, in the format:
     //
-    //     <name> <address>, clEvent: <event>: <time> ms
+    //     <name>[<address>][<event>] <queue> <submit> <run>
     //
     // Where:
-    //   <name>    is the Skeleton::_name;
-    //   <address> is the memory address of the skeleton object
-    //   <event>   is an integer event number starting at 0, and
-    //             incremented for each subsequent event;
-    //   <time>    is elapsed time in milliseconds.
-#define print(time) \
-    LOG_PROF(_name, " ", this, ", clEvent: ", eventnum, \
-             ", "#time": ", time, " ms")
-    print(queueTime);
-    print(submitTime);
-    print(runTime);
-#undef print
+    //   <address>   is the memory address of the skeleton object;
+    //   <event>     is an integer event number starting at 0, and
+    //               incremented for each subsequent event;
+    //   <direction> is either "ul" for upload or "dl" for download;
+    //   <queue>     is the time spent queuing;
+    //   <submit>    is the time spent submitted;
+    //   <run>       is the time spent running.
+    LOG_PROF(_name, "[", this, "][", eventnum, "] ",
+             queueTime, " ", submitTime, " ", runTime);
 
     eventnum++; // Bump event counter.
   }
