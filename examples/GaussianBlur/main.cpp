@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
 
   auto iterations = Arg<int>(Flags(Short('i'), Long("iterations")),
                              Description("The number of iterations"),
-                             Default(5));
+                             Default(1));
 
   auto swaps = Arg<int>(Flags(Short('S'), Long("iterations-between-swaps")),
                         Description("The number of iterations "
