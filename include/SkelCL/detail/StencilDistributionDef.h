@@ -88,10 +88,12 @@ void StencilDistribution<C<T>>::startUpload(C<T>& container,
 template<template<typename > class C, typename T>
 void StencilDistribution<C<T>>::swap(const C<T>& container,
 		unsigned int iterations) const {
+	pvsutil::Timer t; // Record the amount of time to perform swap.
 	detail::Event events;
 	stencil_distribution_helper::swap(container, &events, this->_north,
 			this->_west, this->_south, this->_east, iterations,
 			this->_initialIterationsBeforeFirstSwap, this->_devices);
+	LOG_PROF(" swap", t.stop(), " ms"); // Print profiling info.
 }
 
 template<template<typename > class C, typename T>
