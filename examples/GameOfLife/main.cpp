@@ -90,14 +90,12 @@ int main(int argc, char** argv)
         pvsutil::Logger::Severity::DebugInfo);
   }
 
-  int numcols = size;
-  int numrows = size;
-
+  const int numcols = size;
+  const int numrows = size;
   std::vector<int> img(0, 0);
 
-  for (auto i = 0; i < numcols * numrows; i++) {
+  for (auto i = 0; i < numcols * numrows; i++)
     img.push_back(random() > (INT_MAX / 2));
-  }
 
   skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
 
@@ -110,16 +108,21 @@ int main(int argc, char** argv)
     skelcl::MapOverlap<int(int)> s(std::ifstream{"./MapOverlap.cl"}, 1,
                                    detail::Padding::NEUTRAL, 0, "func");
 
+    LOG_INFO("-> mapoverlap");
     for (auto i = 0; i < iterations; i++) {
       grid = s(grid);
       grid.copyDataToHost();
       grid.resize(grid.size());
     }
+    LOG_INFO("<- mapoverlap");
   } else {
     // Stencil.
     skelcl::Stencil<int(int)> s(std::ifstream{"./Stencil.cl"}, 1, 1, 1, 1,
                                 detail::Padding::NEUTRAL, 0, "func", swaps);
+    LOG_INFO("-> stencil");
     grid = s(iterations, grid);
+    grid.copyDataToHost();
+    LOG_INFO("<- stencil");
   }
 
   auto end = getTime();
