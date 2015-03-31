@@ -219,15 +219,15 @@ int main(int argc, char* argv[])
                                      Default(device_type::ANY));
 
 
-  auto rowCountA = Arg<size_t>(Flags(Short('d'), Long("row_count_A")),
+  auto rowCountA = Arg<size_t>(Flags(Short('d'), Long("row-count-a")),
                                Description("Row count of left matrix"),
                                Default<size_t>(2048));
 
-  auto colCountA = Arg<size_t>(Flags(Short('m'), Long("col_count_A")),
+  auto colCountA = Arg<size_t>(Flags(Short('m'), Long("col-count-a")),
                                Description("Column count of left matrix"),
                                Default<size_t>(2048));
 
-  auto colCountB = Arg<size_t>(Flags(Short('n'), Long("col_count_B")),
+  auto colCountB = Arg<size_t>(Flags(Short('n'), Long("col-count-b")),
                                Description("Column count of right matrix"),
                                Default<size_t>(4096));
 
