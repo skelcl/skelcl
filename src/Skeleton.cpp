@@ -77,32 +77,20 @@ void Skeleton::printEventTimings() const
     e.wait();
 
     // Get profiling information.
-    auto queued = e.getProfilingInfo<CL_PROFILING_COMMAND_QUEUED>();
-    auto submit = e.getProfilingInfo<CL_PROFILING_COMMAND_SUBMIT>();
     auto start = e.getProfilingInfo<CL_PROFILING_COMMAND_START>();
     auto end = e.getProfilingInfo<CL_PROFILING_COMMAND_END>();
-
-    // Elapsed time in milliseconds between for events.
-#define elapsed(start, end) (((end) - (start)) / static_cast<double>(1e6))
-    auto queueTime = elapsed(queued, submit);
-    auto submitTime = elapsed(submit, start);
-    auto runTime = elapsed(start, end);
-#undef elapsed
+    auto runTime = (end - start) / static_cast<double>(1e6);
 
     // Print profiling information for event times, in the format:
     //
-    //     <name>[<address>][<event>] <queue> <submit> <run>
+    //     <name>[<address>][<event>] <run> ms
     //
     // Where:
     //   <address>   is the memory address of the skeleton object;
     //   <event>     is an integer event number starting at 0, and
     //               incremented for each subsequent event;
-    //   <direction> is either "ul" for upload or "dl" for download;
-    //   <queue>     is the time spent queuing;
-    //   <submit>    is the time spent submitted;
-    //   <run>       is the time spent running.
-    LOG_PROF(_name, "[", this, "][", eventnum, "] ",
-             queueTime, " ", submitTime, " ", runTime);
+    //   <run>       "hw" execution time.
+    LOG_PROF(_name, "[", this, "][", eventnum, "] ", runTime, " ms");
 
     eventnum++; // Bump event counter.
   }
