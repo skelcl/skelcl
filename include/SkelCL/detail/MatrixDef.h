@@ -297,7 +297,7 @@ void Matrix<T>::printEventTimings(std::vector<cl::Event> events,
     //   <direction> is either "ul" for upload or "dl" for download;
     //   <run>       "hw" execution time.
     LOG_PROF("Matrix[", this, "][", eventnum, "] ",
-             direction, " ", runTime, " ms");
+             direction, " ", std::fixed, runTime, " ms");
 
     eventnum++; // Bump event counter.
   }

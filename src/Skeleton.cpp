@@ -90,7 +90,7 @@ void Skeleton::printEventTimings() const
     //   <event>     is an integer event number starting at 0, and
     //               incremented for each subsequent event;
     //   <run>       "hw" execution time.
-    LOG_PROF(_name, "[", this, "][", eventnum, "] ", runTime, " ms");
+    LOG_PROF(_name, "[", this, "][", eventnum, "] ", std::fixed, runTime, " ms");
 
     eventnum++; // Bump event counter.
   }
