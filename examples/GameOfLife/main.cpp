@@ -26,6 +26,19 @@ long long getTime()
       time.time_since_epoch()).count();
 }
 
+// Write the contents of "grid" to "filename".
+void writeGrid(Matrix<int> &grid, const std::string filename) {
+  std::ofstream outputFile(filename.c_str());
+  size_t i, j;
+
+  for (i = 0; i < grid.rowCount(); i++) {
+    for (j = 0; j < grid.columnCount(); j++)
+      outputFile << grid[i][j];
+    outputFile << "\n";
+  }
+}
+
+
 int main(int argc, char** argv)
 {
   using namespace pvsutil::cmdline;
@@ -64,8 +77,12 @@ int main(int argc, char** argv)
                                     "between swaps"),
                         Default(-1));
 
+  auto outFile = Arg<std::string>(Flags(Short('o'), Long("output")),
+                                  Description("Path to output data file"),
+                                  Default(std::string("data/grid.txt")));
+
   cmd.add(&verbose, &useMapOverlap, &deviceCount, &deviceType,
-          &iterations, &swaps, &size);
+          &iterations, &swaps, &size, &outFile);
   cmd.parse(argc, argv);
 
   if (verbose) {
@@ -107,8 +124,11 @@ int main(int argc, char** argv)
 
   auto end = getTime();
 
+  writeGrid(grid, outFile);
+
   skelcl::terminate();
 
   printf("Grid size:    %lu x %lu\n", grid.columnCount(), grid.rowCount());
   printf("Elapsed time: %lld ms\n", end - start);
+  printf("Output:       %s\n", outFile.getValue().c_str());
 }
