@@ -179,7 +179,7 @@ void MapOverlap<Tout(Tin)>::execute(Matrix<Tout>& output, const Matrix<Tin>& in,
       ABORT_WITH_ERROR(err);
     }
   }
-  LOG_INFO("MapOverlap kernel started");
+  LOG_DEBUG_INFO("MapOverlap kernel started");
 }
 
 template <typename Tin, typename Tout>

@@ -219,7 +219,7 @@ void AllPairs<Tout(Tleft, Tright)>::execute(Matrix<Tout>& output,
             ABORT_WITH_ERROR(err);
         }
     }
-    LOG_INFO("AllPairs kernel started");
+    LOG_DEBUG_INFO("AllPairs kernel started");
 }
 
 template<typename Tleft, typename Tright, typename Tout>
