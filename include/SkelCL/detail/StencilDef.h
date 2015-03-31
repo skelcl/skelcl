@@ -352,13 +352,13 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
                                                  cl::NullRange,
                                                  invokeAfter));
 
-          // Print profiling information: global size, local size, and
-          // tile size.
-          LOG_PROF(_name, "[", this, "][", eventnum,
-                   "] global[", global[0], "][", global[1],
-                   "] local[", local[0], "][", local[1],
-                   "] tile[", tile_width, "][", tile_height,
-                   "][", sizeof(Tin), "]");
+          // Print global, local, and tile sizes on the first iteration.
+          if (!i)
+            LOG_PROF(_name, "[", this, "][", eventnum,
+                     "] global[", global[0], "][", global[1],
+                     "] local[", local[0], "][", local[1],
+                     "] tile[", tile_width, "][", tile_height,
+                     "][", sizeof(Tin), "]");
         }
 
         k++;
