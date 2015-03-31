@@ -40,6 +40,8 @@
 #ifndef STENCILDISTRIBUTION_DEF_H_
 #define STENCILDISTRIBUTION_DEF_H_
 
+#include <pvsutil/Timer.h>
+
 namespace skelcl {
 
 namespace detail {
