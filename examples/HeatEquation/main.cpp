@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 
   auto iterations = Arg<int>(Flags(Short('i'), Long("iterations")),
                              Description("The number of iterations"),
-                             Default(1000));
+                             Default(10));
 
   auto useMapOverlap = Arg<bool>(Flags(Short('m'), Long("map-overlap")),
                                  Description("Use the MapOverlap skeleton rather "
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 
   auto size = Arg<size_t>(Flags(Short('s'), Long("size")),
                           Description("Size of the grid"),
-                          Default<size_t>(1024));
+                          Default<size_t>(6144));
 
 
   cmd.add(&verbose, &iterations, &useMapOverlap, &deviceType, &deviceCount,
