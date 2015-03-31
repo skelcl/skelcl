@@ -54,6 +54,7 @@
 
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
+#include <pvsutil/Timer.h>
 
 #include "../Distributions.h"
 #include "../Out.h"
@@ -100,11 +101,14 @@ C<Tout>& Zip<Tout(Tleft, Tright)>::operator()(Out<C<Tout>> output,
 {
   ASSERT(left.size() <= right.size());
 
+  pvsutil::Timer t; // Time how long it takes to prepare input and output data.
+
   prepareInput(left, right);
-
   prepareAdditionalInput(std::forward<Args>(args)...);
-
   prepareOutput(output.container(), left, right);
+
+  // Profiling information.
+  LOG_PROF(_name, "[", this, "] prepare ", t.stop(), " ms");
 
   execute(output.container(), left, right, std::forward<Args>(args)...);
 
@@ -291,9 +295,13 @@ void Zip<void(Tleft, Tright)>::operator()(const C<Tleft>& left,
 {
   ASSERT(left.size() <= right.size());
 
-  prepareInput(left, right);
+  pvsutil::Timer t; // Time how long it takes to prepare input and output data.
 
+  prepareInput(left, right);
   prepareAdditionalInput(std::forward<Args>(args)...);
+
+  // Profiling information.
+  LOG_PROF(_name, "[", this, "] prepare ", t.stop(), " ms");
 
   execute(left, right, std::forward<Args>(args)...);
 

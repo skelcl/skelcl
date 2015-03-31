@@ -55,6 +55,7 @@
 
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
+#include <pvsutil/Timer.h>
 
 #include "../Distributions.h"
 #include "../Matrix.h"
@@ -156,12 +157,16 @@ Matrix<Tout>& Stencil<Tout(Tin)>::
   ASSERT(in.columnCount() > 0);
 
   _iterations = iterations;
-	prepareInput(in);
 
-	prepareAdditionalInput(std::forward<Args>(args)...);
+  pvsutil::Timer t; // Time how long it takes to prepare input and output data.
 
-	prepareOutput(output.container(), in);
-	prepareOutput(temp.container(), in);
+  prepareInput(in);
+  prepareAdditionalInput(std::forward<Args>(args)...);
+  prepareOutput(output.container(), in);
+  prepareOutput(temp.container(), in);
+
+  // Profiling information.
+  LOG_PROF(_name, "[", this, "] prepare ", t.stop(), " ms");
 
   // Wann muss die temp-Matrix und wann die reguläre output-Matrix zurückgegeben
   // werden?:

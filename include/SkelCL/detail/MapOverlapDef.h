@@ -53,6 +53,7 @@
 
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
+#include <pvsutil/Timer.h>
 
 #include "../Distributions.h"
 #include "../Matrix.h"
@@ -98,11 +99,14 @@ Matrix<Tout>& MapOverlap<Tout(Tin)>::
   ASSERT(in.rowCount() > 0);
   ASSERT(in.columnCount() > 0);
 
+  pvsutil::Timer t; // Time how long it takes to prepare input and output data.
+
   prepareInput(in);
-
   prepareAdditionalInput(std::forward<Args>(args)...);
+  prepareOutput(output.container(), in);
 
-	prepareOutput(output.container(), in);
+  // Profiling information.
+  LOG_PROF(_name, "[", this, "] prepare ", t.stop(), " ms");
 
 	execute(output.container(), in, std::forward<Args>(args)...);
 

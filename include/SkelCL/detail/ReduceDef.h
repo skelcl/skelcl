@@ -60,6 +60,7 @@
 
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
+#include <pvsutil/Timer.h>
 
 #include "../Distributions.h"
 #include "../Out.h"
@@ -102,7 +103,10 @@ Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
 {
   const size_t global_size = KNOB_GLOBAL_SIZE;
 
+  pvsutil::Timer t; // Time how long it takes to prepare input and output data.
+
   prepareInput(input);
+
   ASSERT(input.distribution().devices().size() == 1);
 
   // TODO: relax to multiple devices later
@@ -111,6 +115,9 @@ Vector<T>& Reduce<T(T)>::operator()(Out<Vector<T>> output,
   Vector<T> tmpOutput;
   prepareOutput(tmpOutput, input, global_size);
   prepareOutput(output.container(), tmpOutput, 1);
+
+  // Profiling information.
+  LOG_PROF(_name, "[", this, "] prepare ", t.stop(), " ms");
 
   execute_first_step(device, input.deviceBuffer(device),
                      tmpOutput.deviceBuffer(device), input.size(), global_size,

@@ -57,6 +57,7 @@
 
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
+#include <pvsutil/Timer.h>
 
 #include <stooling/SourceCode.h>
 
@@ -136,11 +137,14 @@ Matrix<Tout>& AllPairs<Tout(Tleft, Tright)>::operator()(Out< Matrix<Tout> > outp
     ASSERT( left.columnCount() == right.rowCount() );
     ASSERT( left.columnCount() > 0 );
 
+    pvsutil::Timer t; // Time how long it takes to prepare input and output data.
+
     prepareInput(left, right);
-
     prepareAdditionalInput(std::forward<Args>(args)...);
-
     prepareOutput(output.container(), left, right);
+
+    // Profiling information.
+    LOG_PROF(_name, "[", this, "] prepare ", t.stop(), " ms");
 
     execute(output.container(), left, right, std::forward<Args>(args)...);
 

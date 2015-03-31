@@ -56,6 +56,7 @@
 
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
+#include <pvsutil/Timer.h>
 
 #include "../Distributions.h"
 #include "../Index.h"
@@ -99,11 +100,14 @@ C<Tout>& Map<Tout(Tin)>::operator()(Out<C<Tout>> output,
                                     const C<Tin>& input,
                                     Args&&... args) const
 {
+  pvsutil::Timer t; // Time how long it takes to prepare input and output data.
+
   this->prepareInput(input);
-
   prepareAdditionalInput(std::forward<Args>(args)...);
-
   this->prepareOutput(output.container(), input);
+
+  // Profiling information.
+  LOG_PROF(_name, "[", this, "] prepare ", t.stop(), " ms");
 
   execute(output.container(), input, std::forward<Args>(args)...);
 
@@ -229,9 +233,13 @@ template <template <typename> class C,
 void Map<void(Tin)>::operator()(const C<Tin>& input,
                                 Args&&... args) const
 {
-  this->prepareInput(input);
+  pvsutil::Timer t; // Time how long it takes to prepare input and output data.
 
+  this->prepareInput(input);
   prepareAdditionalInput(std::forward<Args>(args)...);
+
+  // Profiling information.
+  LOG_PROF(_name, "[", this, "] prepare ", t.stop(), " ms");
 
   execute(input, std::forward<Args>(args)...);
 
@@ -360,9 +368,13 @@ Vector<Tout>& Map<Tout(Index)>::operator()(Out<Vector<Tout>> output,
   }
   // no need to fully prepare index container
 
-  prepareAdditionalInput(std::forward<Args>(args)...);
+  pvsutil::Timer t; // Time how long it takes to prepare input and output data.
 
+  prepareAdditionalInput(std::forward<Args>(args)...);
   this->prepareOutput(output.container(), input);
+
+  // Profiling information.
+  LOG_PROF(_name, "[", this, "] prepare ", t.stop(), " ms");
 
   execute(output.container(), input, std::forward<Args>(args)...);
 
@@ -565,11 +577,15 @@ Matrix<Tout>& Map<Tout(IndexPoint)>::operator()(Out<Matrix<Tout>> output,
     input.setDistribution(detail::BlockDistribution<Matrix<IndexPoint>>());
   }
   // no need to further prepare index matrix
-  
+
+  pvsutil::Timer t; // Time how long it takes to prepare input and output data.
+
   prepareAdditionalInput(std::forward<Args>(args)...);
-  
   this->prepareOutput(output.container(), input);
-  
+
+  // Profiling information.
+  LOG_PROF(_name, "[", this, "] prepare ", t.stop(), " ms");
+
   execute(output.container(), input, std::forward<Args>(args)...);
   
   updateModifiedStatus(output, std::forward<Args>(args)...);
