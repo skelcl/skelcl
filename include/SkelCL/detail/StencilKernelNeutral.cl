@@ -53,73 +53,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
   input_matrix_t Mm;
   Mm.data = SCL_LOCAL_TMP;
 
-#if 0
-  // Everybody copies one item to local memory.
-  SCL_LOCAL_TMP[localIndex(0, 0)] = SCL_TMP[globalIndex(0, 0)];
 
-#if SCL_NORTH > 0
-  // The first SCL_NORTH rows of threads copy the north region.
-  // TODO: This assumes that there are more rows of workitems than the size of the north border.
-  if (SCL_L_ROW < SCL_NORTH)
-    SCL_LOCAL_TMP[localIndex(-SCL_NORTH, 0)] = SCL_ROW >= SCL_NORTH ? SCL_TMP[globalIndex(-SCL_NORTH, 0)] : neutral;
-
-#if SCL_EAST > 0
-  // Copy the top left region.
-  if (SCL_L_ROW < SCL_NORTH && SCL_COL >= SCL_COLS - SCL_EAST)
-    SCL_LOCAL_TMP[localIndex(-SCL_NORTH, SCL_EAST)] = neutral;
-#endif
-
-#if SCL_WEST > 0
-  // Copy the top right region.
-  if (SCL_L_ROW < SCL_NORTH && SCL_L_COL < SCL_WEST)
-    SCL_LOCAL_TMP[localIndex(-SCL_NORTH, -SCL_WEST)] = neutral;
-#endif
-#endif
-
-#if SCL_WEST > 0
-  // The first SCL_WEST columns of threads copy the west region.
-  // TODO: This assumes that there are more columns of workitems than the size of the west border.
-  if (SCL_L_COL < SCL_WEST)
-    SCL_LOCAL_TMP[localIndex(0, -SCL_WEST)] = SCL_COL >= SCL_WEST ? SCL_TMP[globalIndex(0, -SCL_WEST)] : neutral;
-#endif
-
-#if SCL_EAST > 0
-  // The last SCL_EAST columns of threads copy the east region.
-  // TODO: This assumes that there are more columns of workitems than the size of the east border.
-  if (SCL_L_COL >= SCL_L_COL_COUNT - SCL_EAST) {
-    if (SCL_COL < SCL_COLS - SCL_EAST)
-      SCL_LOCAL_TMP[localIndex(0, SCL_EAST)] = SCL_TMP[globalIndex(0, SCL_EAST)];
-    else
-      SCL_LOCAL_TMP[localIndex(0, SCL_EAST - ((SCL_L_COL_COUNT - SCL_COLS) % SCL_L_COL_COUNT))] = neutral;
-  }
-#endif
-
-#if SCL_SOUTH > 0
-  // The bottom SCL_SOUTH rows of threads copy the south region.
-  // TODO: This assumes that there are more rows of workitems than the size of the south border.
-  if (SCL_L_ROW >= SCL_L_ROW_COUNT - SCL_SOUTH) {
-    if (SCL_ROW < SCL_ROWS - SCL_SOUTH)
-      SCL_LOCAL_TMP[localIndex(SCL_SOUTH, 0)] = SCL_TMP[globalIndex(SCL_SOUTH, 0)];
-    else
-      SCL_LOCAL_TMP[localIndex(SCL_SOUTH - ((SCL_L_ROW_COUNT - SCL_ROWS) % SCL_L_ROW_COUNT), 0)] = neutral;
-  }
-
-#if SCL_WEST > 0
-  // Copy the bottom left region.
-  if (SCL_L_ROW >= SCL_L_ROW_COUNT - SCL_SOUTH && SCL_L_COL < SCL_WEST)
-    SCL_LOCAL_TMP[localIndex(SCL_SOUTH, -SCL_WEST)] = neutral;
-#endif
-
-#if SCL_EAST > 0
-  // Copy the bottom right region.
-  if (SCL_L_ROW >= SCL_L_ROW_COUNT - SCL_SOUTH && SCL_L_COL >= SCL_L_COL_COUNT - SCL_EAST)
-    SCL_LOCAL_TMP[localIndex(SCL_SOUTH, SCL_EAST)] = neutral;
-#endif
-#endif
-
-#endif
-
-#if 1
         const unsigned int col = get_global_id(0);
         const unsigned int l_col = get_local_id(0);
         const unsigned int row = get_global_id(1);
@@ -231,7 +165,6 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
                 }
 
         }
-#endif
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
