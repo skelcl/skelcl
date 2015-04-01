@@ -101,36 +101,34 @@ int main(int argc, char** argv)
 
   Matrix<int> grid(img, numcols);
 
-  auto start = getTime();
+  long long start;
 
   if (useMapOverlap) {
     // MapOverlap.
     skelcl::MapOverlap<int(int)> s(std::ifstream{"./MapOverlap.cl"}, 1,
                                    detail::Padding::NEUTRAL, 0, "func");
 
-    LOG_INFO("-> mapoverlap");
-    for (auto i = 0; i < iterations; i++) {
+    start = getTime();
+    for (auto i = 0; i < iterations; i++)
       grid = s(grid);
-      grid.copyDataToHost();
-      grid.resize(grid.size());
-    }
-    LOG_INFO("<- mapoverlap");
+
+    grid.resize(grid.size());
   } else {
     // Stencil.
     skelcl::Stencil<int(int)> s(std::ifstream{"./Stencil.cl"}, 1, 1, 1, 1,
                                 detail::Padding::NEUTRAL, 0, "func", swaps);
-    LOG_INFO("-> stencil");
+    start = getTime();
     grid = s(iterations, grid);
-    grid.copyDataToHost();
-    LOG_INFO("<- stencil");
   }
 
+  grid.copyDataToHost();
   auto end = getTime();
 
   writeGrid(grid, outFile);
 
   skelcl::terminate();
 
+  printf("Iterations:   %d\n", iterations.getValue());
   printf("Grid size:    %lu x %lu\n", grid.columnCount(), grid.rowCount());
   printf("Elapsed time: %lld ms\n", end - start);
   printf("Output:       %s\n", outFile.getValue().c_str());
