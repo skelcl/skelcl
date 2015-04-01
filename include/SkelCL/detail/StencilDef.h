@@ -211,30 +211,44 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
 
   unsigned int southSum = determineSouthSum();
   unsigned int northSum = determineNorthSum();
+
+  // Iteration counter.
   unsigned int i = 0;
+
+  // Backwards (!) iteration counter. Used to determine the first
+  // iteration.
   int k = 1;
+
+  // Helpers to determine whether the current iteration is the first,
+  // or an odd/even one.
+#define firstIteration(i, k) ((i) + (k) == 0)
+#define evenIteration(i, k)  (((i) + (k)) % 2 == 0)
+#define oddIteration(i, k)   (((i) + (k)) % 2 == 1)
 
   try
   {
     for (i = 0; i < _iterations; i++) {
       k--;
+
       // Synchronise data across devices.
       if (noOfDevices != 1 &&
           iterationsAfterLastSync == iterationsBetweenSwaps) {
         // Perform swap.
-        if ((i + k) % 2 == 0) {
+        if (evenIteration(i, k)) {
           (dynamic_cast<detail::StencilDistribution<Matrix<Tout>>*>(
                &temp.distribution()))->swap(temp, iterationsBetweenSwaps);
-        } else if ((i + k) % 2 == 1) {
+        } else if (oddIteration(i, k)) {
           (dynamic_cast<detail::StencilDistribution<Matrix<Tout>>*>(
                &output.distribution()))->swap(output, iterationsBetweenSwaps);
         }
+
         // Set number of iterations before next swap.
         iterationsBetweenSwaps =
             determineIterationsBetweenDataSwaps(in, _iterations - i - 1);
         iterationsAfterLastSync = 0; // Reset swap counter.
       }
 
+      // Iterate over the list of stencil operations.
       for (auto& sInfo : _stencilInfos) {
         for (auto& devicePtr : in.distribution().devices()) {
           auto& outputBuffer = output.deviceBuffer(*devicePtr);
@@ -295,31 +309,40 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
 
           // Set kernel arguments.
           int j = 0;
-          kernel.setArg(j++, inputBuffer.clBuffer()); // Argument: Input.
-          if ((i + k) == 0) {
-            // First iteration : Reading of input , write to output
-            kernel.setArg(j++, outputBuffer.clBuffer()); // Argument: Output.
-            kernel.setArg(j++, inputBuffer.clBuffer()); // Argument: Temp.
-          } else if ((i + k) % 2 == 0) {
-            // "Straight" iterations + StencilShape : Reading of temp,
-            // write to output.
-            kernel.setArg(j++, outputBuffer.clBuffer()); // Argument: Output.
-            kernel.setArg(j++, tempBuffer.clBuffer()); // Argument: Temp.
-          } else if ((i + k) % 2 == 1) {
-            // "Odd" iterations + StencilShape: Reading of output,
-            // write to Temp. If this is the last iteration, temp must
-            // be returned.
-            kernel.setArg(j++, tempBuffer.clBuffer()); // Argument: Output.
-            kernel.setArg(j++, outputBuffer.clBuffer()); // Argument: Temp.
+
+          // Set the "SCL_IN" argument.
+          kernel.setArg(j++, inputBuffer.clBuffer());
+
+          // Set the "SCL_OUT" and "SCL_TMP" arguments.
+          if (firstIteration(i, k)) {
+            // First iteration: Reading from input, write to output.
+            kernel.setArg(j++, outputBuffer.clBuffer());
+            kernel.setArg(j++, inputBuffer.clBuffer());
+          } else if (evenIteration(i, k)) {
+            // Even iterations: Read from temp, write to output.
+            kernel.setArg(j++, outputBuffer.clBuffer());
+            kernel.setArg(j++, tempBuffer.clBuffer());
+          } else if (oddIteration(i, k)) {
+            // Odd iterations: Read from output, write to temp. If
+            // this is the last iteration, temp must be returned.
+            kernel.setArg(j++, tempBuffer.clBuffer());
+            kernel.setArg(j++, outputBuffer.clBuffer());
           }
-          kernel.setArg(j++, tile_size, NULL); // Argument: Local temporary memory.
-          kernel.setArg(j++, numElements); // Argument: Number of elements.
-          kernel.setArg(j++, static_cast<cl_uint>(
-              output.columnCount())); // Argument: Number of columns.
+
+          // Set the "SCL_LOCAL_TMP" argument.
+          kernel.setArg(j++, tile_size, NULL);
+
+          // Set the "SCL_ELEMENTS" argument.
+          kernel.setArg(j++, numElements);
+
+          // Set the "SCL_COLS" argument.
+          const cl_uint sclCols = static_cast<cl_uint>(output.columnCount());
+          kernel.setArg(j++, sclCols);
 
           // Set additional user arguments.
           detail::kernelUtil::setKernelArgs(kernel, *devicePtr, j,
                                             std::forward<Args>(args)...);
+
 
           // Keep the buffer with the most current data alive.
           auto keepAliveBuffer = (i + k) % 2 == 1 ?
@@ -371,6 +394,10 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
     ABORT_WITH_ERROR(err);
   }
 }
+
+#undef firstIteration
+#undef evenIteration
+#undef oddIteration
 
 template <typename Tin, typename Tout>
 void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in)
