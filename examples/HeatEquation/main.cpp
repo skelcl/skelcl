@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 
   auto iterations = Arg<int>(Flags(Short('i'), Long("iterations")),
                              Description("The number of iterations"),
-                             Default(10));
+                             Default(100));
 
   auto useMapOverlap = Arg<bool>(Flags(Short('m'), Long("map-overlap")),
                                  Description("Use the MapOverlap skeleton rather "
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 
   auto size = Arg<size_t>(Flags(Short('s'), Long("size")),
                           Description("Size of the grid"),
-                          Default<size_t>(6144));
+                          Default<size_t>(4096));
 
 
   cmd.add(&verbose, &iterations, &useMapOverlap, &deviceType, &deviceCount,
@@ -93,39 +93,53 @@ int main(int argc, char** argv) {
   // Input data.
   std::vector<float> img(1);
   img.clear();
-  for (size_t i = 0; i < size * size; i++)
-    img.push_back(0);
 
-  // Create a white square in the center of the data.
-  int i, j;
-  for (i = size / 2; i < size / 2 + sqrt(size); i++)
-    for (j = size / 2; j < size / 2 + sqrt(size); j++)
-      img[i * size + j] = 255;
+  // Create input dataset.
+  size_t i, j;
+  size_t vborder = size / 15;
+  size_t hborder = size / 6;
+  for (j = 0; j < size; j++)
+    for (i = 0; i < size; i++) {
+      float v = 50;
+
+      if (j < vborder || j > size - vborder)
+        v = 255;
+
+      if (i < hborder)
+        v = 150;
+
+      if (i > size - hborder)
+        v = 0;
+
+      img.push_back(v);
+    }
 
   init(nDevices(deviceCount).deviceType(deviceType));
 
   Matrix<float> image(img, size);
-
-  auto start = getTime();
+  long long start;
 
   if (useMapOverlap) {
     MapOverlap<float(float)> s(std::ifstream { "./MapOverlap.cl" }, 1,
                                detail::Padding::NEUTRAL, 0, "func");
 
-    for (int i = 0; i < iterations; i++) {
+    start = getTime();
+    for (int i = 0; i < iterations; i++)
       image = s(image);
-      image.copyDataToHost();
-      image.resize(image.size());
-    }
+
+    image.resize(image.size());
   } else {
     Stencil<float(float)> s(std::ifstream { "./Stencil.cl" }, 1, 1, 1, 1,
                             detail::Padding::NEUTRAL, 0, "func", swaps);
 
+    start = getTime();
     image = s(iterations, image);
   }
+  image.copyDataToHost();
+
+  auto end = getTime();
 
   Matrix<float>::iterator itr = image.begin();
-  auto end = getTime();
 
   writePPM(image, out.str());
 
