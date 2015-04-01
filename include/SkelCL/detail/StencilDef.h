@@ -310,24 +310,24 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
           // Set kernel arguments.
           int j = 0;
 
-          // Set the "SCL_IN" argument.
-          kernel.setArg(j++, inputBuffer.clBuffer());
-
-          // Set the "SCL_OUT" and "SCL_TMP" arguments.
+          // Set the "SCL_IN" and "SCL_OUT" arguments.
           if (firstIteration(i, k)) {
             // First iteration: Reading from input, write to output.
-            kernel.setArg(j++, outputBuffer.clBuffer());
             kernel.setArg(j++, inputBuffer.clBuffer());
+            kernel.setArg(j++, outputBuffer.clBuffer());
           } else if (evenIteration(i, k)) {
             // Even iterations: Read from temp, write to output.
-            kernel.setArg(j++, outputBuffer.clBuffer());
             kernel.setArg(j++, tempBuffer.clBuffer());
+            kernel.setArg(j++, outputBuffer.clBuffer());
           } else if (oddIteration(i, k)) {
             // Odd iterations: Read from output, write to temp. If
             // this is the last iteration, temp must be returned.
-            kernel.setArg(j++, tempBuffer.clBuffer());
             kernel.setArg(j++, outputBuffer.clBuffer());
+            kernel.setArg(j++, tempBuffer.clBuffer());
           }
+
+          // Set the "SCL_INITIAL" argument.
+          kernel.setArg(j++, inputBuffer.clBuffer());
 
           // Set the "SCL_LOCAL_TMP" argument.
           kernel.setArg(j++, tile_size, NULL);
