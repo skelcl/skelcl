@@ -1,13 +1,16 @@
 float func(input_matrix_t* img)
 {
-float t = getData(img, 0, 1);
-float b = getData(img, 0, -1);
-float l = getData(img, -1, 0);
-float r = getData(img, 1, 0);
-float c = getData(img, 0, 0);
+  float centre = getData(img,  0,  0);
 
-if(c==255.0) return 255.0;
+  // Neighbouring elements.
+  float top    = getData(img,  0,  1);
+  float bottom = getData(img,  0, -1);
+  float left   = getData(img, -1,  0);
+  float right  = getData(img,  1,  0);
 
-return c + (t+b+r+l-4*c)/4;
+  // Sum neighbours
+  float neighbours = top + bottom + left + right;
 
+  // Diffusion.
+  return centre + (neighbours - 4 * centre) / 4;
 }
