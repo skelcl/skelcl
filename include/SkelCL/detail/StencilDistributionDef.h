@@ -95,7 +95,7 @@ void StencilDistribution<C<T>>::swap(const C<T>& container,
 	stencil_distribution_helper::swap(container, &events, this->_north,
 			this->_west, this->_south, this->_east, iterations,
 			this->_initialIterationsBeforeFirstSwap, this->_devices);
-	LOG_PROF(" swap", t.stop(), " ms"); // Print profiling info.
+	LOG_PROF(" swap ", t.stop(), " ms"); // Print profiling info.
 }
 
 template<template<typename > class C, typename T>
