@@ -96,7 +96,8 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const Reduce<Tout(Tout)>& reduce, const 
       _C(KNOB_C), _R(KNOB_R), _S(KNOB_S), // parameters
       _program(createAndBuildProgramSpecial())
 {
-    LOG_DEBUG("Create new AllPairs object (", this, ")");
+    LOG_DEBUG("Created new AllPairs object (", this, ") with CRS values [",
+              _C, ",", _R, ",", _S, "]");
 }
 
 template<typename Tleft, typename Tright, typename Tout>
@@ -112,7 +113,8 @@ AllPairs<Tout(Tleft, Tright)>::AllPairs(const std::string& source, const std::st
       _C(GENERIC_KNOB_C), _R(GENERIC_KNOB_R), _S(GENERIC_KNOB_S),
       _program(createAndBuildProgramGeneral())
 {
-    LOG_DEBUG("Create new AllPairs object (", this, ")");
+    LOG_DEBUG("Created new AllPairs object (", this, ") with CRS values [",
+              _C, ",", _R, ",", _S, "]");
 }
 
 template<typename Tleft, typename Tright, typename Tout>
