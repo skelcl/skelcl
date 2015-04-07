@@ -39,6 +39,8 @@ option (BUILD_EXAMPLES
         "Build all examples automatically with the library." ON)
 option (BUILD_TESTS
         "Build all tests automatically with the library." ON)
+option (BUILD_TOOLS
+        "Build additional tools." ON)
 
 # opencl dirs
 find_package (OpenCL)
@@ -88,3 +90,7 @@ if (BUILD_TESTS)
   add_subdirectory (test)
 endif (BUILD_TESTS)
 
+# build tools
+if (BUILD_TOOLS)
+  add_subdirectory (tools)
+endif (BUILD_TOOLS)
