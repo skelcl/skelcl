@@ -110,11 +110,8 @@ void matrixMult(const size_t rowCountA, const size_t columnCountA,
   init(right.begin(), right.end());
 
   auto start = getTime();
-
   Matrix<T> output = (*allpairs)(left, right);
-
   output.copyDataToHost();
-
   auto end = getTime();
 
   if (checkResult) {
@@ -198,7 +195,6 @@ void matrixMultDoubleGeneric(const size_t rowCountA, const size_t columnCountA,
 
 int main(int argc, char* argv[])
 {
-  // pvsutil::defaultLogger.setLoggingLevel(pvsutil::Logger::Severity::DebugInfo);
   pvsutil::defaultLogger.setOutput(std::cout);
 
   using namespace pvsutil::cmdline;
