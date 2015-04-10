@@ -15,3 +15,5 @@ add_subdirectory (MandelbrotSet)
 add_subdirectory (MatrixMultiply)
 add_subdirectory (PageRank)
 add_subdirectory (SAXPY)
+
+add_subdirectory (SimpleBig)

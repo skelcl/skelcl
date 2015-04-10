@@ -49,6 +49,8 @@
 #include "detail/Skeleton.h"
 #include "detail/Program.h"
 
+#include "Source.h"
+
 namespace skelcl {
 
 template<typename > class Matrix;
