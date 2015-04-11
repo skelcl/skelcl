@@ -54,7 +54,7 @@ int main(int argc, char** argv)
         auto complex = Arg<bool>(Flags(Short('c'), Long("complex")),
                                  Description("Use complex kernel."),
                                  Default(false));
-        
+
         cmd.add(&verbose, &iterations, &deviceCount, &deviceType, &swaps,
                 &width, &height, &complex);
         cmd.parse(argc, argv);
@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 
         const std::string simple_k("simple");
         const std::string complex_k("complex");
-        
+
         // Create stencil.
         Stencil<DATA_T(DATA_T)> s(std::ifstream{"./kernels.cl"},
                                   NORTH, WEST, SOUTH, EAST,

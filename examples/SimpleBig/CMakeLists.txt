@@ -1,4 +1,4 @@
-add_executable (SimpleBig SimpleBig.cpp)
+add_executable (SimpleBig main.cpp)
 target_link_libraries (SimpleBig SkelCL ${SKELCL_COMMON_LIBS})
 
 # copy file along with binary
