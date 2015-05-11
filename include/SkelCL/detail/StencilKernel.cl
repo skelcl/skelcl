@@ -50,6 +50,19 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_1* SCL_IN,
         SCL_TYPE_0 neutral = NEUTRAL;
 #endif
 
+// For the \"nearest initial\" padding type, we need to distinguish between the
+// current input and initial input. For \"nearest\" padding type, we don't need
+// this distinction, so we can alias the two inputs to the same value. This
+// massively reduces the amount of conditional code between nearest and nearest
+// initial padding types.
+#if STENCIL_PADDING_NEAREST_INITIAL
+#  define SCL_IN_A SCL_IN
+#  define SCL_IN_B SCL_INITIAL
+#else
+#  define SCL_IN_A SCL_IN
+#  define SCL_IN_B SCL_IN_A
+#endif
+
         const unsigned int col = get_global_id(0);
         const unsigned int l_col = get_local_id(0);
         const unsigned int row = get_global_id(1);
@@ -71,28 +84,20 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_1* SCL_IN,
                         for(i = 0; i<SCL_NORTH; i++) {
 #if STENCIL_PADDING_NEUTRAL
                                 SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = neutral;
-#elif STENCIL_PADDING_NEAREST
-                                if(withinCols)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[col];
-                                else            SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[SCL_COLS-1];
-#elif STENCIL_PADDING_NEAREST_INITIAL
-                                if(withinCols)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_INITIAL[col];
-                                else            SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_INITIAL[SCL_COLS-1];
+#else
+                                if(withinCols)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_B[col];
+                                else            SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_B[SCL_COLS-1];
 #endif
                         }
 #if STENCIL_PADDING_NEUTRAL
                         for(i = SCL_NORTH; i < SCL_TILE_HEIGHT; i++) {
-                                if(withinCols) 	SCL_LOCAL[i * SCL_TILE_WIDTH + l_col + SCL_WEST] = SCL_IN[(i - SCL_NORTH) * SCL_COLS + col];
+                                if(withinCols) 	SCL_LOCAL[i * SCL_TILE_WIDTH + l_col + SCL_WEST] = SCL_IN_A[(i - SCL_NORTH) * SCL_COLS + col];
                                 else 		SCL_LOCAL[i * SCL_TILE_WIDTH + l_col + SCL_WEST] = neutral;
                         }
 #else
                         for(i = 0; i<SCL_TILE_HEIGHT-SCL_NORTH; i++){
-#  if STENCIL_PADDING_NEAREST
-                                if(withinCols)  SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[i*SCL_COLS+col];
-                                else            SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(i+1)*SCL_COLS-1];
-#  elif STENCIL_PADDING_NEAREST_INITIAL
-                                if(withinCols)  SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[i*SCL_COLS+col];
-                                else            SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_INITIAL[(i+1)*SCL_COLS-1];
-#  endif
+                                if(withinCols)  SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[i*SCL_COLS+col];
+                                else            SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_B[(i+1)*SCL_COLS-1];
                         }
 #endif
 
@@ -103,21 +108,13 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_1* SCL_IN,
                                 }
 #else
                                 for(i = 0; i<SCL_NORTH; i++){
-#  if STENCIL_PADDING_NEAREST
-                                        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[0];
-#  elif STENCIL_PADDING_NEAREST_INITIAL
-                                        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_INITIAL[0];
-#  endif
+                                        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN_B[0];
                                 }
 #endif
 
-#if STENCIL_PADDING_NEAREST
+#if STENCIL_PADDING_NEAREST || STENCIL_PADDING_NEAREST_INITIAL
                                 for(i = 0; i<SCL_TILE_HEIGHT-SCL_NORTH; i++){
-                                        SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col] = SCL_IN[i*SCL_COLS];
-                                }
-#elif STENCIL_PADDING_NEAREST_INITIAL
-                                for(i = 0; i<SCL_TILE_HEIGHT-SCL_NORTH; i++){
-                                        SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col] = SCL_INITIAL[i*SCL_COLS];
+                                        SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col] = SCL_IN_A[i*SCL_COLS];
                                 }
 #endif
 
@@ -127,27 +124,17 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_1* SCL_IN,
                                         SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = neutral;
                                 }
                                 for(i = SCL_NORTH; i<SCL_TILE_HEIGHT; i++){
-                                        if(withinColsWest) 	SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[(i-SCL_NORTH)*SCL_COLS+col-SCL_WEST];
+                                        if(withinColsWest) 	SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN_A[(i-SCL_NORTH)*SCL_COLS+col-SCL_WEST];
                                         else			SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = neutral;
                                 }
 #else
                                 for(i = 0; i<SCL_NORTH; i++) {
-#  if STENCIL_PADDING_NEAREST
-                                        if(withinColsWest)      SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[col-SCL_WEST];
-                                        else                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[SCL_COLS-1];
-#  elif STENCIL_PADDING_NEAREST_INITIAL
-                                        if(withinColsWest)      SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_INITIAL[col-SCL_WEST];
-                                        else                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_INITIAL[SCL_COLS-1];
-#  endif
+                                        if(withinColsWest)      SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN_B[col-SCL_WEST];
+                                        else                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN_B[SCL_COLS-1];
                                 }
                                 for(i = 0; i<SCL_TILE_HEIGHT-SCL_NORTH; i++){
-#  if STENCIL_PADDING_NEAREST
-                                        if(withinColsWest)      SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col] = SCL_IN[i*SCL_COLS+col-SCL_WEST];
-                                        else                    SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col] = SCL_IN[(i+1)*SCL_COLS-1];
-#  elif STENCIL_PADDING_NEAREST_INITIAL
-                                        if(withinColsWest)      SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col] = SCL_IN[i*SCL_COLS+col-SCL_WEST];
-                                        else                    SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col] = SCL_INITIAL[(i+1)*SCL_COLS-1];
-#  endif
+                                        if(withinColsWest)      SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col] = SCL_IN_A[i*SCL_COLS+col-SCL_WEST];
+                                        else                    SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col] = SCL_IN_B[(i+1)*SCL_COLS-1];
                                 }
 #endif
                         }
@@ -158,45 +145,34 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_1* SCL_IN,
                                 }
 #else
                                 for(i = 0; i<SCL_NORTH; i++) {
-#  if STENCIL_PADDING_NEAREST
-                                        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN[SCL_COLS-1];
-#  elif STENCIL_PADDING_NEAREST_INITIAL
-                                        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_INITIAL[SCL_COLS-1];
-#  endif
+                                        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_B[SCL_COLS-1];
                                 }
                                 for(i = 0; i<SCL_TILE_HEIGHT - SCL_NORTH; i++) {
-#  if STENCIL_PADDING_NEAREST
-                                        SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN[(i+1)*SCL_COLS-1];
-#  elif STENCIL_PADDING_NEAREST_INITIAL
-                                        SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_INITIAL[(i+1)*SCL_COLS-1];
-#  endif
+                                        SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_B[(i+1)*SCL_COLS-1];
                                 }
 #endif
                         } else if(l_col>=get_local_size(0) - SCL_EAST) {
                                 for(i = 0; i<SCL_NORTH; i++) {
 #if STENCIL_PADDING_NEUTRAL
                                         SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = neutral;
-#elif STENCIL_PADDING_NEAREST
-                                        if(withinColsEast)      SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN[col+SCL_EAST];
-                                        else                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN[SCL_COLS-1];
-#elif STENCIL_PADDING_NEAREST_INITIAL
-                                        if(withinColsEast)      SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_INITIAL[col+SCL_EAST];
-                                        else                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_INITIAL[SCL_COLS-1];
+#else
+                                        if(withinColsEast)      SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_B[col+SCL_EAST];
+                                        else                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_B[SCL_COLS-1];
 #endif
                                 }
 #if STENCIL_PADDING_NEUTRAL
                                 for(i = SCL_NORTH; i<SCL_TILE_HEIGHT; i++){
-                                        if(withinColsEast) 	SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN[(i-SCL_NORTH)*SCL_COLS+col+SCL_EAST];
+                                        if(withinColsEast) 	SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_A[(i-SCL_NORTH)*SCL_COLS+col+SCL_EAST];
                                         else			SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = neutral;
                                 }
 #else
                                 for(i = 0; i<SCL_TILE_HEIGHT - SCL_NORTH; i++){
 #  if STENCIL_PADDING_NEAREST
-                                        if(withinColsEast)      SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[i*SCL_COLS+col+SCL_EAST];
-                                        else                    SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(i+1)*SCL_COLS-1];
+                                        if(withinColsEast)      SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[i*SCL_COLS+col+SCL_EAST];
+                                        else                    SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[(i+1)*SCL_COLS-1];
 #  elif STENCIL_PADDING_NEAREST_INITIAL
-                                        if(withinColsEast)      SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN[i*SCL_COLS+col+SCL_EAST];
-                                        else                    SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_INITIAL[(i+1)*SCL_COLS-1];
+                                        if(withinColsEast)      SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_A[i*SCL_COLS+col+SCL_EAST];
+                                        else                    SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_B[(i+1)*SCL_COLS-1];
 #  endif
                                 }
 #endif
@@ -204,14 +180,11 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_1* SCL_IN,
                 } else if (row - SCL_NORTH + SCL_TILE_HEIGHT < SCL_ROWS) {
                         for(i = 0; i<SCL_TILE_HEIGHT; i++){
 #if STENCIL_PADDING_NEUTRAL
-                                if(withinCols) 		SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col];
+                                if(withinCols) 		SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[(row+i-SCL_NORTH)*SCL_COLS+col];
                                 else			SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = neutral;
-#elif STENCIL_PADDING_NEAREST
-                                if(withinCols)          SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col];
-                                else                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] =  SCL_IN[(row+i+1-SCL_NORTH)*SCL_COLS-1];
-#elif STENCIL_PADDING_NEAREST_INITIAL
-                                if(withinCols)          SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col];
-                                else                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_INITIAL[(row+i+1-SCL_NORTH)*SCL_COLS-1];
+#else
+                                if(withinCols)          SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[(row+i-SCL_NORTH)*SCL_COLS+col];
+                                else                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_B[(row+i+1-SCL_NORTH)*SCL_COLS-1];
 #endif
                         }
 
@@ -219,23 +192,18 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_1* SCL_IN,
                                 for(i = 0; i<SCL_TILE_HEIGHT; i++){
 #if STENCIL_PADDING_NEUTRAL
                                         SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = neutral;
-#elif STENCIL_PADDING_NEAREST
-                                        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS];
-#elif STENCIL_PADDING_NEAREST_INITIAL
-                                        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_INITIAL[(row+i-SCL_NORTH)*SCL_COLS];
+#else
+                                        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN_B[(row+i-SCL_NORTH)*SCL_COLS];
 #endif
                                 }
                         } else if(l_col<SCL_WEST) {
                                 for(i = 0; i<SCL_TILE_HEIGHT; i++){
 #if STENCIL_PADDING_NEUTRAL
-                                    if(withinColsWest) 	SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col-SCL_WEST];
+                                    if(withinColsWest) 	SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN_A[(row+i-SCL_NORTH)*SCL_COLS+col-SCL_WEST];
                                     else		SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = neutral;
-#elif STENCIL_PADDING_NEAREST
-                                        if(withinColsWest)      SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col-SCL_WEST];
-                                        else                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[(row+i+1-SCL_NORTH)*SCL_COLS-1];
-#elif STENCIL_PADDING_NEAREST_INITIAL
-                                    if(withinColsWest)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col-SCL_WEST];
-                                    else                SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_INITIAL[(row+i+1-SCL_NORTH)*SCL_COLS-1];
+#else
+                                    if(withinColsWest)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN_A[(row+i-SCL_NORTH)*SCL_COLS+col-SCL_WEST];
+                                    else                SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN_B[(row+i+1-SCL_NORTH)*SCL_COLS-1];
 #endif
                                 }
                         }
@@ -245,22 +213,22 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_1* SCL_IN,
 #if STENCIL_PADDING_NEUTRAL
                                         SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = neutral;
 #elif STENCIL_PADDING_NEAREST
-                                        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(row+1+i-SCL_NORTH)*SCL_COLS-1];
+                                        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[(row+1+i-SCL_NORTH)*SCL_COLS-1];
 #elif STENCIL_PADDING_NEAREST_INITIAL
-                                        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_INITIAL[(row+1+i-SCL_NORTH)*SCL_COLS-1];
+                                        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_B[(row+1+i-SCL_NORTH)*SCL_COLS-1];
 #endif
                                 }
                         } else if(l_col>=get_local_size(0) - SCL_EAST) {
                                 for(i = 0; i<SCL_TILE_HEIGHT; i++){
 #if STENCIL_PADDING_NEUTRAL
-                                    if(withinColsEast) 	SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col+SCL_EAST];
+                                    if(withinColsEast) 	SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_A[(row+i-SCL_NORTH)*SCL_COLS+col+SCL_EAST];
                                     else		SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = neutral;
 #elif STENCIL_PADDING_NEAREST
-                                    if(withinColsEast)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col+SCL_EAST];
-                                    else                SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(row+i+1-SCL_NORTH)*SCL_COLS-1];
+                                    if(withinColsEast)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[(row+i-SCL_NORTH)*SCL_COLS+col+SCL_EAST];
+                                    else                SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[(row+i+1-SCL_NORTH)*SCL_COLS-1];
 #elif STENCIL_PADDING_NEAREST_INITIAL
-                                    if(withinColsEast)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col+SCL_EAST];
-                                    else                SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_INITIAL[(row+i+1-SCL_NORTH)*SCL_COLS-1];
+                                    if(withinColsEast)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_A[(row+i-SCL_NORTH)*SCL_COLS+col+SCL_EAST];
+                                    else                SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_B[(row+i+1-SCL_NORTH)*SCL_COLS-1];
 #endif
                                 }
                         }
@@ -269,18 +237,13 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_1* SCL_IN,
                         for(i = 0; i<SCL_TILE_HEIGHT; i++){
                                 int withinRows = row + i - SCL_NORTH < SCL_ROWS;
 #if STENCIL_PADDING_NEUTRAL
-                                if(withinCols && withinRows) 		SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col];
+                                if(withinCols && withinRows) 		SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[(row+i-SCL_NORTH)*SCL_COLS+col];
                                 else					SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = neutral;
-#elif STENCIL_PADDING_NEAREST
-                                if(withinCols && withinRows)            SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col];
-                                else if(withinCols && !withinRows)      SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[SCL_ELEMENTS-SCL_COLS+col];
-                                else if(!withinCols && withinRows)      SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(row+1+i-SCL_NORTH)*SCL_COLS-1];
-                                else                                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[SCL_ELEMENTS-1];
-#elif STENCIL_PADDING_NEAREST_INITIAL
-                                if(withinCols && withinRows)            SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col];
-                                else if(withinCols && !withinRows)      SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_INITIAL[SCL_ELEMENTS-SCL_COLS+col];
-                                else if(!withinCols && withinRows)      SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_INITIAL[(row+1+i-SCL_NORTH)*SCL_COLS-1];
-                                else                                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_INITIAL[SCL_ELEMENTS-1];
+#else
+                                if(withinCols && withinRows)            SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[(row+i-SCL_NORTH)*SCL_COLS+col];
+                                else if(withinCols && !withinRows)      SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_B[SCL_ELEMENTS-SCL_COLS+col];
+                                else if(!withinCols && withinRows)      SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_B[(row+1+i-SCL_NORTH)*SCL_COLS-1];
+                                else                                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_B[SCL_ELEMENTS-1];
 #endif
                         }
 
@@ -290,31 +253,21 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_1* SCL_IN,
                                         SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = neutral;
 #else
                                         int withinRows = row + i - SCL_NORTH < SCL_ROWS;
-#  if STENCIL_PADDING_NEAREST
-                                        if(withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS];
-                                        else            SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[SCL_ELEMENTS-SCL_COLS];
-#  elif STENCIL_PADDING_NEAREST_INITIAL
-                                        if(withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_INITIAL[(row+i-SCL_NORTH)*SCL_COLS];
-                                        else            SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_INITIAL[SCL_ELEMENTS-SCL_COLS];
-#  endif
+                                        if(withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN_B[(row+i-SCL_NORTH)*SCL_COLS];
+                                        else            SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN_B[SCL_ELEMENTS-SCL_COLS];
 #endif
                                 }
                         } else if(l_col<SCL_WEST) {
                                 for(i = 0; i<SCL_TILE_HEIGHT; i++){
                                         int withinRows = row + i - SCL_NORTH < SCL_ROWS;
 #if STENCIL_PADDING_NEUTRAL
-                                        if(withinColsWest && withinRows) 	SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col-SCL_WEST];
+                                        if(withinColsWest && withinRows) 	SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN_A[(row+i-SCL_NORTH)*SCL_COLS+col-SCL_WEST];
                                         else					SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = neutral;
-#elif STENCIL_PADDING_NEAREST
-                                        if(withinColsWest && withinRows)        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col-SCL_WEST];
-                                        else if(withinColsWest && !withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[SCL_ELEMENTS-SCL_COLS+col-SCL_WEST];
-                                        else if(!withinColsWest && withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[(row+1+i-SCL_NORTH)*SCL_COLS-1];
-                                        else                                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[SCL_ELEMENTS-1];
-#elif STENCIL_PADDING_NEAREST_INITIAL
-                                        if(withinColsWest && withinRows)        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col-SCL_WEST];
-                                        else if(withinColsWest && !withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_INITIAL[SCL_ELEMENTS-SCL_COLS+col-SCL_WEST];
-                                        else if(!withinColsWest && withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_INITIAL[(row+1+i-SCL_NORTH)*SCL_COLS-1];
-                                        else                                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_INITIAL[SCL_ELEMENTS-1];
+#else
+                                        if(withinColsWest && withinRows)        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN_A[(row+i-SCL_NORTH)*SCL_COLS+col-SCL_WEST];
+                                        else if(withinColsWest && !withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN_B[SCL_ELEMENTS-SCL_COLS+col-SCL_WEST];
+                                        else if(!withinColsWest && withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN_B[(row+1+i-SCL_NORTH)*SCL_COLS-1];
+                                        else                                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col] = SCL_IN_B[SCL_ELEMENTS-1];
 #endif
                                 }
                         }
@@ -326,11 +279,11 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_1* SCL_IN,
 #else
                                         int withinRows = row + i - SCL_NORTH < SCL_ROWS;
 #  if STENCIL_PADDING_NEAREST
-                                        if(withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(row+1+i-SCL_NORTH)*SCL_COLS-1];
-                                        else            SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[SCL_ELEMENTS-1];
+                                        if(withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[(row+1+i-SCL_NORTH)*SCL_COLS-1];
+                                        else            SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[SCL_ELEMENTS-1];
 #  elif STENCIL_PADDING_NEAREST_INITIAL
-                                        if(withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_INITIAL[(row+1+i-SCL_NORTH)*SCL_COLS-1];
-                                        else            SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_INITIAL[SCL_ELEMENTS-1];
+                                        if(withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_B[(row+1+i-SCL_NORTH)*SCL_COLS-1];
+                                        else            SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_B[SCL_ELEMENTS-1];
 #  endif
 # endif
                                 }
@@ -338,18 +291,18 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_1* SCL_IN,
                                 for(i = 0; i<SCL_TILE_HEIGHT; i++){
                                         int withinRows = row + i - SCL_NORTH < SCL_ROWS;
 #if STENCIL_PADDING_NEUTRAL
-                                        if(withinColsEast && withinRows) 	SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col+SCL_EAST];
+                                        if(withinColsEast && withinRows) 	SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_A[(row+i-SCL_NORTH)*SCL_COLS+col+SCL_EAST];
                                         else					SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = neutral;
 #elif STENCIL_PADDING_NEAREST
-                                        if(withinColsEast && withinRows)        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col+SCL_EAST];
-                                        else if(withinColsEast && !withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[SCL_ELEMENTS-SCL_COLS+col+SCL_EAST];
-                                        else if(!withinColsEast && withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[(row+1+i-SCL_NORTH)*SCL_COLS-1];
-                                        else                                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN[SCL_ELEMENTS-1];
+                                        if(withinColsEast && withinRows)        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[(row+i-SCL_NORTH)*SCL_COLS+col+SCL_EAST];
+                                        else if(withinColsEast && !withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[SCL_ELEMENTS-SCL_COLS+col+SCL_EAST];
+                                        else if(!withinColsEast && withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[(row+1+i-SCL_NORTH)*SCL_COLS-1];
+                                        else                                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST] = SCL_IN_A[SCL_ELEMENTS-1];
 #elif STENCIL_PADDING_NEAREST_INITIAL
-                                        if(withinColsEast && withinRows)        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN[(row+i-SCL_NORTH)*SCL_COLS+col+SCL_EAST];
-                                        else if(withinColsEast && !withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_INITIAL[SCL_ELEMENTS-SCL_COLS+col+SCL_EAST];
-                                        else if(!withinColsEast && withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_INITIAL[(row+1+i-SCL_NORTH)*SCL_COLS-1];
-                                        else                                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_INITIAL[SCL_ELEMENTS-1];
+                                        if(withinColsEast && withinRows)        SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_A[(row+i-SCL_NORTH)*SCL_COLS+col+SCL_EAST];
+                                        else if(withinColsEast && !withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_B[SCL_ELEMENTS-SCL_COLS+col+SCL_EAST];
+                                        else if(!withinColsEast && withinRows)  SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_B[(row+1+i-SCL_NORTH)*SCL_COLS-1];
+                                        else                                    SCL_LOCAL[i*SCL_TILE_WIDTH+l_col+SCL_WEST+SCL_EAST] = SCL_IN_B[SCL_ELEMENTS-1];
 #endif
                                 }
                         }
