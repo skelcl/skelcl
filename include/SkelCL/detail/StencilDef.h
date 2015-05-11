@@ -69,8 +69,7 @@
 #include "Skeleton.h"
 #include "Util.h"
 
-#define KNOB_C 32
-#define KNOB_R 4
+#include "./StencilKnobs.h"
 
 namespace skelcl {
 
@@ -261,7 +260,18 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
               sInfo.getProgram().kernel(*devicePtr, "SCL_STENCIL"));
 
           // Set working group size.
-          const cl_uint local[2] = {KNOB_C, KNOB_R};
+          const cl_uint local[2] = {
+            STENCIL_WORKGROUP_SIZE_C,
+            STENCIL_WORKGROUP_SIZE_R
+          };
+
+          // Determine the tile size.
+          const unsigned int tile_width =
+              local[0] + sInfo.getWest() + sInfo.getEast();
+          const unsigned int tile_height =
+              local[1] + sInfo.getNorth() + sInfo.getSouth();
+          const unsigned int tile_size = // size = w * h * sizeof(Tin).
+              tile_width * tile_height * sizeof(Tin);
 
           // Offset is set for multi-GPU execution.
           cl_uint offset = 0;
@@ -272,7 +282,8 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
             static_cast<cl_uint>(detail::util::ceilToMultipleOf(
                 output.columnCount(), local[0])),
             static_cast<cl_uint>(detail::util::ceilToMultipleOf(
-                output.rowCount(), local[1]))}; // HALO
+                output.rowCount(), local[1]))
+          };
 
           // Setting the global size when the number of devices > 1.
           if (devicePtr->id() == 0 && noOfDevices > 1) {
@@ -298,14 +309,6 @@ void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
                         southSum,
                 local[1]));
           }
-
-          // Determine the tile size.
-          const unsigned int tile_width =
-              local[0] + sInfo.getWest() + sInfo.getEast();
-          const unsigned int tile_height =
-              local[1] + sInfo.getNorth() + sInfo.getSouth();
-          const unsigned int tile_size = // size = w * h * sizeof(Tin).
-              tile_width * tile_height * sizeof(Tin);
 
           // Set kernel arguments.
           int j = 0;

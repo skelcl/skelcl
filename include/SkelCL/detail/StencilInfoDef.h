@@ -8,6 +8,8 @@
 #ifndef STENCILINFODEF_H_
 #define STENCILINFODEF_H_
 
+#include "./StencilKnobs.h"
+
 namespace skelcl {
 
 template<typename Tin, typename Tout>
@@ -129,7 +131,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
 )");
 
   } else {
-    // Set the correct padding type.
+    // Append macros to define the padding type.
     if (_padding == detail::Padding::NEUTRAL) {
       s.append(R"(
 #define STENCIL_PADDING_NEUTRAL         1
@@ -153,7 +155,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
     // Include the kernel definition.
     s.append(
 #include "StencilKernel.cl"
-);
+             );
   }
 
   // Build the program.
