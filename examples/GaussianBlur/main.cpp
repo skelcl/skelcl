@@ -53,6 +53,9 @@
 
 using namespace skelcl;
 
+// Border handling behaviour.
+static const detail::Padding paddingType = detail::Padding::NEAREST;
+
 long long getTime()
 {
   auto time = std::chrono::high_resolution_clock::now();
@@ -216,15 +219,13 @@ int main(int argc, char** argv) {
   if (useMapOverlap) {
     if (oneD) {
       MapOverlap<float(float)>s(std::ifstream { "./MapOverlap1D.cl" },
-                                range.getValue(),
-                                detail::Padding::NEAREST, 255);
+                                range.getValue(), paddingType, 255);
 
       for (auto i = 0; i < iterations; i++)
         image = s(image, kernelVec, range.getValue());
     } else {
       MapOverlap<float(float)>s(std::ifstream{"./MapOverlap2D.cl"},
-                                range.getValue(),
-                                detail::Padding::NEAREST, 0);
+                                range.getValue(), paddingType, 0);
 
       for (auto i = 0; i < iterations; i++)
         image = s(image, kernelVec, range.getValue());
@@ -233,8 +234,7 @@ int main(int argc, char** argv) {
     if (oneD) {
       Stencil<float(float)>s(std::ifstream { "./Stencil1D.cl" },
                              range.getValue(), 0, range.getValue(), 0,
-                             detail::Padding::NEAREST_INITIAL, 0,
-                             "func", swaps);
+                             paddingType, 0, "func", swaps);
 
       image = s(iterations, image, kernelVec, range.getValue());
     } else {
@@ -243,8 +243,7 @@ int main(int argc, char** argv) {
                              rangeWest.getValue(),
                              rangeSouth.getValue(),
                              rangeEast.getValue(),
-                             detail::Padding::NEAREST, 255,
-                             "func", swaps);
+                             paddingType, 255, "func", swaps);
 
       image = s(iterations, image, kernelVec, range.getValue());
     }
