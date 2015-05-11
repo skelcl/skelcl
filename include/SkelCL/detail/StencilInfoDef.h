@@ -127,19 +127,33 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
   }
 }
 )");
-  } else if (_padding == detail::Padding::NEAREST)
+
+  } else {
+    // Set the correct padding type.
+    if (_padding == detail::Padding::NEUTRAL) {
+      s.append(R"(
+#define STENCIL_PADDING_NEUTRAL         1
+#define STENCIL_PADDING_NEAREST         0
+#define STENCIL_PADDING_NEAREST_INITIAL 0
+)");
+    } else if (_padding == detail::Padding::NEAREST) {
+      s.append(R"(
+#define STENCIL_PADDING_NEUTRAL         0
+#define STENCIL_PADDING_NEAREST         1
+#define STENCIL_PADDING_NEAREST_INITIAL 0
+)");
+    } else if (_padding == detail::Padding::NEAREST_INITIAL) {
+      s.append(R"(
+#define STENCIL_PADDING_NEUTRAL         0
+#define STENCIL_PADDING_NEAREST         0
+#define STENCIL_PADDING_NEAREST_INITIAL 1
+)");
+    }
+
+    // Include the kernel definition.
     s.append(
-#include "StencilKernelNearest.cl"
-			);
-  else if (_padding == detail::Padding::NEUTRAL) {
-    s.append(
-#include "StencilKernelNeutral.cl"
-			);
-  }
-  else if (_padding == detail::Padding::NEAREST_INITIAL) {
-    s.append(
-#include "StencilKernelNearestInitial.cl"
-			);
+#include "StencilKernel.cl"
+);
   }
 
   // Build the program.
