@@ -112,7 +112,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_1* SCL_IN,
                                 }
 #endif
 
-#if STENCIL_PADDING_NEAREST || STENCIL_PADDING_NEAREST_INITIAL
+#if !STENCIL_PADDING_NEUTRAL
                                 for(i = 0; i<SCL_TILE_HEIGHT-SCL_NORTH; i++){
                                         SCL_LOCAL[(i+SCL_NORTH)*SCL_TILE_WIDTH+l_col] = SCL_IN_A[i*SCL_COLS];
                                 }
