@@ -60,7 +60,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_1* SCL_IN,
 #  define SCL_IN_B SCL_INITIAL
 #else
 #  define SCL_IN_A SCL_IN
-#  define SCL_IN_B SCL_IN_A
+#  define SCL_IN_B SCL_IN
 #endif
 
         const unsigned int col = get_global_id(0);
@@ -289,6 +289,9 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_1* SCL_IN,
                 }
         }
 
+// Clear up after ourselves.
+#undef SCL_IN_A
+#undef SCL_IN_B
 
         barrier(CLK_LOCAL_MEM_FENCE);
 
