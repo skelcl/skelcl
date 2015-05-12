@@ -219,7 +219,7 @@ int main(int argc, char** argv) {
   if (useMapOverlap) {
     if (oneD) {
       MapOverlap<float(float)>s(std::ifstream { "./MapOverlap1D.cl" },
-                                range.getValue(), paddingType, 255);
+                                range.getValue(), paddingType, 0);
 
       for (auto i = 0; i < iterations; i++)
         image = s(image, kernelVec, range.getValue());
@@ -243,7 +243,7 @@ int main(int argc, char** argv) {
                              rangeWest.getValue(),
                              rangeSouth.getValue(),
                              rangeEast.getValue(),
-                             paddingType, 255, "func", swaps);
+                             paddingType, 0, "func", swaps);
 
       image = s(iterations, image, kernelVec, range.getValue());
     }
