@@ -62,6 +62,14 @@
 
 namespace {
 
+// If set to "1", OpenCL skeleton kernels will be dumped to the file
+// system.
+#define DEBUG_PRINT_KERNEL_CODE 0
+
+#if DEBUG_PRINT_KERNEL_CODE
+static int kernelCount = 0;
+#endif
+
 std::string binaryFilename(const std::string& hash,
                            const std::shared_ptr<skelcl::detail::Device>&
                                 devicePtr)
@@ -232,6 +240,20 @@ void Program::createProgramsFromSource()
 
         LOG_DEBUG_INFO("Create cl::Program for device ", devicePtr->id(),
                        " with source:\n", s, "\n");
+
+
+#if DEBUG_PRINT_KERNEL_CODE
+        // Write source code to file.
+        char *outputPath = new char[100];
+        sprintf(outputPath, "skelcl_kernel%d.cl", kernelCount);
+
+        FILE *const out = fopen(outputPath, "w");
+        fprintf(out, "%s\n", s.c_str());
+        fclose(out);
+        LOG_INFO("Wrote kernel source code '", outputPath, "'.");
+
+        kernelCount++;
+#endif
 
         return cl::Program(devicePtr->clContext(),
                            cl::Program::Sources(1, std::make_pair(s.c_str(),
