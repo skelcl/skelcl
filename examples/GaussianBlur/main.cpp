@@ -70,7 +70,7 @@ void writePPM(T& img, const std::string filename) {
 
   outputFile << "P2\n"
              << "#Creator: skelcl\n" << img.columnCount() << " "
-	     << img.rowCount() << "\n255\n";
+             << img.rowCount() << "\n255\n";
 
   for (itr = img.begin(); itr != img.end(); ++itr)
     outputFile << static_cast<int>(*itr) << "\n";
@@ -99,7 +99,7 @@ int readPPM(const std::string inFile, std::vector<float>& img) {
   // Continue with a stringstream
   getline(infile, inputLine);
   std::stringstream ss2(inputLine);
-  //	// Third line : size
+  // Third line : size
   ss2 >> numcols >> numrows;
 
   getline(infile, inputLine);
@@ -232,20 +232,22 @@ int main(int argc, char** argv) {
     }
   } else {
     if (oneD) {
-      Stencil<float(float)>s(std::ifstream { "./Stencil1D.cl" },
-                             range.getValue(), 0, range.getValue(), 0,
-                             paddingType, 0, "func", swaps);
+      Stencil<float(float)>s(std::ifstream { "./Stencil1D.cl" }, "func",
+                             detail::stencilShape(detail::any(0),
+                                                  detail::north(range),
+                                                  detail::south(range)),
+                             detail::Padding::NEUTRAL, 255);
 
-      image = s(iterations, image, kernelVec, range.getValue());
+      image = s(image, kernelVec, range.getValue());
     } else {
-      Stencil<float(float)>s(std::ifstream { "./Stencil2D.cl" },
-                             rangeNorth.getValue(),
-                             rangeWest.getValue(),
-                             rangeSouth.getValue(),
-                             rangeEast.getValue(),
-                             paddingType, 0, "func", swaps);
+      Stencil<float(float)> s(std::ifstream { "./Stencil2D.cl" }, "func",
+                              detail::stencilShape(detail::north(rangeNorth),
+                                                   detail::south(rangeSouth),
+                                                   detail::west(rangeWest),
+                                                   detail::east(rangeEast)),
+                              detail::Padding::NEUTRAL, 255);
 
-      image = s(iterations, image, kernelVec, range.getValue());
+      image = s(image, kernelVec, range.getValue());
     }
   }
 

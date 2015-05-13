@@ -26,6 +26,7 @@ set (SKELCL_SOURCES
       SkelCL.cpp
       Skeleton.cpp
       Source.cpp
+      StencilShape.cpp
       Util.cpp
     )
 
@@ -43,7 +44,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/Scan.h
       ../include/SkelCL/Source.h
       ../include/SkelCL/Stencil.h
-      ../include/SkelCL/StencilInfo.h
+      ../include/SkelCL/StencilPipeline.h
       ../include/SkelCL/StencilShare.h
       ../include/SkelCL/Vector.h
       ../include/SkelCL/Zip.h
@@ -88,8 +89,10 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/SingleDistributionDef.h
       ../include/SkelCL/detail/Skeleton.h
       ../include/SkelCL/detail/StencilDef.h
-      ../include/SkelCL/detail/StencilInfoDef.h
       ../include/SkelCL/detail/StencilKernel.cl
+      ../include/SkelCL/detail/StencilKnobs.h
+      ../include/SkelCL/detail/StencilShape.h
+      ../include/SkelCL/detail/StencilPipelineDef.h
       ../include/SkelCL/detail/StencilDistribution.h
       ../include/SkelCL/detail/StencilDistributionDef.h
       ../include/SkelCL/detail/Util.h
@@ -100,4 +103,3 @@ set (SKELCL_HEADERS
 # specify library target
 add_library (SkelCL ${SKELCL_SOURCES} ${SKELCL_HEADERS})
 target_link_libraries (SkelCL ${SKELCL_COMMON_LIBS})
-

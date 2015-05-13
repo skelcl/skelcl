@@ -32,88 +32,69 @@
  *****************************************************************************/
 
 ///
-/// \file Stencil.h
+/// StencilShape.h
 ///
 /// A Stencil operation.
 ///
-/// \author Stefan Breuer<s_breu03@uni-muenster.de>
 /// \author Chris Cummins <chrisc.101@gmail.com>
-#ifndef STENCIL_H_
-#define STENCIL_H_
+#include "SkelCL/detail/StencilShape.h"
 
-#include <limits.h>
-
-#include "./detail/Skeleton.h"
-#include "./detail/StencilShape.h"
+#include <utility>
 
 namespace skelcl {
 
-template<typename > class Stencil;
+namespace detail {
 
-template<typename Tin, typename Tout>
-class Stencil<Tout(Tin)> : public detail::Skeleton {
-public:
-  // Construct a new stencil.
-  Stencil(const Source& source,
-          const std::string& func,
-          const detail::StencilShape& shape,
-          detail::Padding padding, Tin paddingElement = NULL);
+StencilDirection::StencilDirection(StencilDirection::type val) : _val(val) {}
 
-  // Execute stencil, returning output.
-  template <typename... Args>
-  Matrix<Tout> operator()(const Matrix<Tin>& input,
-                          Args&&... args) const;
+StencilDirection::type StencilDirection::val() const {
+  return _val;
+}
 
-  // Execute stencil (in-place).
-  template <typename... Args>
-  Matrix<Tout>& operator()(Out<Matrix<Tout>> output,
-                           const Matrix<Tin>& input,
-                           Args&&... args) const;
+StencilShape::StencilShape() : _north(0), _south(0), _east(0), _west(0) {}
 
-  // Returns the stencil shape used.
-  const detail::StencilShape& getShape() const;
+StencilDirection::type StencilShape::getNorth() const {
+    return _north;
+}
 
-  // Returns the padding method used.
-  const detail::Padding& getPadding() const;
+StencilDirection::type StencilShape::getSouth() const {
+    return _south;
+}
 
-  /// Returns neutral element, which shall be used to fill the overlap
-  /// region (only used if detail::Padding == NEUTRAL)
-  const Tin& getPaddingElement() const;
+StencilDirection::type StencilShape::getEast() const {
+    return _east;
+}
 
-private:
-  template <typename... Args>
-  void execute(const Matrix<Tin>& input, Matrix<Tout>& output,
-               const Matrix<Tin>& initial, Args&&... args) const;
+StencilDirection::type StencilShape::getWest() const {
+    return _west;
+}
 
-  // Utility methods.
-  detail::Program createAndBuildProgram() const;
-  void prepareInput(const Matrix<Tin>& input) const;
-  void prepareOutput(Matrix<Tout>& output, const Matrix<Tin>& input) const;
-  void getLocalSize(cl_uint *local) const;
-  void getTileSize(const cl_uint *local, unsigned int *tile) const;
-  void getGlobalSize(const cl_uint *local, const Matrix<Tout>& output,
-                     cl_uint *global) const;
-  template <typename... Args>
-  void setKernelArgs(Matrix<Tout>& output,
-                     const Matrix<Tin>& input,
-                     const Matrix<Tin>& initial,
-                     const cl_uint *const localSize,
-                     const std::shared_ptr<detail::Device>& devicePtr,
-                     cl::Kernel& kernel,
-                     Args&&... args) const;
+Any::Any(StencilDirection::type val) : StencilDirection(val) {}
+North::North(StencilDirection::type val) : StencilDirection(val) {}
+South::South(StencilDirection::type val) : StencilDirection(val) {}
+East::East(StencilDirection::type val) : StencilDirection(val) {}
+West::West(StencilDirection::type val) : StencilDirection(val) {}
 
-  // Member variables.
-  const detail::StencilShape& _shape;
-  detail::Padding _padding;
-  Tin _paddingElement;
+Any any(size_t size) {
+    return Any(size);
+}
 
-  std::string _userSource;  // Source code from application developer.
-  std::string _funcName;    // Name of main function defined in _userSource.
-  detail::Program _program;
-};
+North north(size_t size) {
+    return North(size);
+}
 
-} // skelcl
+South south(size_t size) {
+    return South(size);
+}
 
-#include "detail/StencilDef.h"
+East east(size_t size) {
+    return East(size);
+}
 
-#endif  // STENCIL_H_
+West west(size_t size) {
+    return West(size);
+}
+
+} // namespace detail
+
+} // namespace skelcl

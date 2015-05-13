@@ -34,9 +34,10 @@
 ///
 /// \file StencilDef.h
 ///
-/// Works with the matrix.
+/// Stencil template class implementation.
 ///
-///	\author Stefan Breuer<s_breu03@uni-muenster.de>
+/// \author Stefan Breuer <s_breu03@uni-muenster.de>
+/// \author Chris Cummins <chrisc.101@gmail.com>
 ///
 #ifndef STENCILDEF_H_
 #define STENCILDEF_H_
@@ -61,8 +62,6 @@
 #include "../Matrix.h"
 #include "../Out.h"
 
-#include "../StencilInfo.h"
-
 #include "Device.h"
 #include "KernelUtil.h"
 #include "Program.h"
@@ -74,422 +73,325 @@
 namespace skelcl {
 
 template <typename Tin, typename Tout>
-Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int north,
-                            unsigned int west, unsigned int south,
-                            unsigned int east, detail::Padding padding,
-                            Tin neutral_element, const std::string& func,
-                            int iterBetSwaps)
-  : detail::Skeleton("Stencil<Tout(Tin)>"), _iterBetSwaps(iterBetSwaps)
-{
-  LOG_DEBUG_INFO("Create new Stencil object for Matrix (", this, ")");
-  add(source, north, west, south, east, padding, neutral_element, func);
-}
-
-template <typename Tin, typename Tout>
-Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int range,
-                            detail::Padding padding, Tin neutral_element,
-                            const std::string& func, int iterBetSwaps)
-  : detail::Skeleton("Stencil<Tout(Tin)>"), _iterBetSwaps(iterBetSwaps)
-{
-  LOG_DEBUG_INFO("Create new Stencil object for Matrix (", this, ")");
-	add(source, range, range, range, range, padding, neutral_element, func);
-}
-
-template <typename Tin, typename Tout>
-Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int west,
-                            unsigned int east, detail::Padding padding,
-                            Tin neutral_element, const std::string& func,
-                            int iterBetSwaps)
-  : detail::Skeleton("Stencil<Tout(Tin)>"), _iterBetSwaps(iterBetSwaps)
-{
-  LOG_DEBUG_INFO("Create new Stencil object for Vector (", this, ")");
-	add(source, 0, west, 0, east, padding, neutral_element, func);
-}
-
-template <typename Tin, typename Tout>
-void Stencil<Tout(Tin)>::add(const Source& source, unsigned int range,
-                             detail::Padding padding, Tin neutral_element,
-                             const std::string& func)
-{
-  add(source, range, range, range, range, padding, neutral_element, func);
-}
-
-template <typename Tin, typename Tout>
-void Stencil<Tout(Tin)>::add(const Source& source, unsigned int north,
-                             unsigned int west, unsigned int south,
-                             unsigned int east, detail::Padding padding,
-                             Tin neutral_element, const std::string& func)
-{
-    _stencilInfos.emplace_back(source, north, west, south, east, padding,
-                               neutral_element, func);
+Stencil<Tout(Tin)>::Stencil(const Source& source,
+                            const std::string& func,
+                            const detail::StencilShape& shape,
+                            detail::Padding padding,
+                            Tin paddingElement) :
+  detail::Skeleton("Stencil<Tout(Tin)>"), _shape(shape), _padding(padding),
+  _paddingElement(paddingElement), _userSource(source), _funcName(func),
+  _program(createAndBuildProgram()) {
+    LOG_DEBUG_INFO("Created new Stencil object (", this, ")");
 }
 
 template <typename Tin, typename Tout>
 template <typename... Args>
-Matrix<Tout> Stencil<Tout(Tin)>::
-    operator()(unsigned int iterations, const Matrix<Tin>& in, Args&&... args)
-{
+Matrix<Tout> Stencil<Tout(Tin)>::operator()(const Matrix<Tin>& input,
+                                            Args&&... args) const {
   Matrix<Tout> output;
-  this->operator()(iterations, out(output), in, std::forward<Args>(args)...);
+  this->operator()(out(output), input, std::forward<Args>(args)...);
   return output;
 }
 
-template <typename Tin, typename Tout>
-template <typename... Args>
-Matrix<Tout>& Stencil<Tout(Tin)>::
-    operator()(unsigned int iterations, Out<Matrix<Tout>> output,
-               const Matrix<Tin>& in, Args&&... args)
-{
-  Matrix<Tout> temp;
-  return this->operator()(iterations, output, out(temp), in,
-                          std::forward<Args>(args)...);
-}
 
 template <typename Tin, typename Tout>
 template <typename... Args>
-Matrix<Tout>& Stencil<Tout(Tin)>::
-    operator()(unsigned int iterations, Out<Matrix<Tout>> output,
-               Out<Matrix<Tout>> temp, const Matrix<Tin>& in, Args&&... args)
-{
-  ASSERT(iterations > 0);
-  ASSERT(in.rowCount() > 0);
-  ASSERT(in.columnCount() > 0);
-
-  _iterations = iterations;
-
-  pvsutil::Timer t; // Time how long it takes to prepare input and output data.
-
-  prepareInput(in);
-  prepareAdditionalInput(std::forward<Args>(args)...);
-  prepareOutput(output.container(), in);
-  prepareOutput(temp.container(), in);
-
-  // Profiling information.
-  LOG_PROF(_name, "[", this, "] prepare ", t.stop(), " ms");
-
-  // Wann muss die temp-Matrix und wann die reguläre output-Matrix zurückgegeben
-  // werden?:
-  // Wird eine gerade Anzahl Iterationen durchgeführt, so muss immer die
-  // temp-Matrix benutzt werden.
-  // Bei ungerader Anzahl Iterationen hängt es von der Anzahl der verwendeten
-  // Stencil Shapes ab.
-  // Da das Kopieren und Zuweisen von Matrizen hier explizit verboten wurde,
-  // wird hier im vorhinein die Ausgabe-Matrix bestimmt.
-  if (_iterations % 2 == 0) {
-    execute(temp.container(), output.container(), in,
-            std::forward<Args>(args)...);
-  } else {
-    if ((_iterations % 2 == 1) && (_stencilInfos.size() % 2 == 0)) {
-      execute(temp.container(), output.container(), in,
-              std::forward<Args>(args)...);
-    } else {
-      execute(output.container(), temp.container(), in,
-              std::forward<Args>(args)...);
-    }
-  }
-
-  updateModifiedStatus(temp, output, std::forward<Args>(args)...);
+Matrix<Tout>& Stencil<Tout(Tin)>::operator()(Out<Matrix<Tout>> output,
+                                             const Matrix<Tin>& input,
+                                             Args&&... args) const {
+  execute(input, output.container(), input, std::forward<Args>(args)...);
 
   return output.container();
 }
 
 template <typename Tin, typename Tout>
 template <typename... Args>
-void Stencil<Tout(Tin)>::execute(Matrix<Tout>& output, Matrix<Tout>& temp,
-                                 const Matrix<Tin>& in, Args&&... args)
-{
-  ASSERT(in.distribution().isValid());
-  ASSERT(output.rowCount() == in.rowCount() &&
-         output.columnCount() == in.columnCount());
-  unsigned int iterationsBetweenSwaps =
-      determineIterationsBetweenDataSwaps(in, _iterations);
-  unsigned int iterationsAfterLastSync = 0;
+void Stencil<Tout(Tin)>::execute(const Matrix<Tin>& input,
+                                 Matrix<Tout>& output,
+                                 const Matrix<Tin>& initial,
+                                 Args&&... args) const {
+  prepareInput(input);
+  prepareAdditionalInput(std::forward<Args>(args)...);
+  prepareOutput(output, input);
 
-  unsigned int outputRowCount = output.rowCount();
-  unsigned int noOfDevices = in.distribution().devices().size();
+  for (auto& devicePtr : input.distribution().devices()) {
+    cl_uint local[2], global[2];
 
-  unsigned int southSum = determineSouthSum();
-  unsigned int northSum = determineNorthSum();
+    cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_STENCIL"));
 
-  // Iteration counter.
-  unsigned int i = 0;
+    getLocalSize(&local[0]);
+    getGlobalSize(&local[0], output, &global[0]);
+    setKernelArgs(output, input, initial, local, devicePtr,
+                  kernel, std::forward<Args>(args)...);
 
-  // Backwards (!) iteration counter. Used to determine the first
-  // iteration.
-  int k = 1;
+    // Keep buffers and arguments alive / mark them as in use.
+    auto keepAlive = detail::kernelUtil::keepAlive(
+        *devicePtr,
+        input.deviceBuffer(*devicePtr).clBuffer(),
+        output.deviceBuffer(*devicePtr).clBuffer(),
+        std::forward<Args>(args)...);
+    auto invokeAfter = [=]() { (void)keepAlive; };
 
-  // Helpers to determine whether the current iteration is the first,
-  // or an odd/even one.
-#define firstIteration(i, k) ((i) + (k) == 0)
-#define evenIteration(i, k)  (((i) + (k)) % 2 == 0)
-#define oddIteration(i, k)   (((i) + (k)) % 2 == 1)
+    // Offset is set for multi-GPU execution.
+    cl_uint offset = 0;
+    cl::NDRange range(0, offset);
 
-  try
-  {
-    for (i = 0; i < _iterations; i++) {
-      k--;
+    // Each OpenCL event is identified using it's index in the private
+    // _events vector. The current size of the vector is equivalent to
+    // the index of the *next* element to be pushed to it.
+    auto eventnum = _events.size();
+    _events.push_back(devicePtr->enqueue(kernel,
+                                         cl::NDRange(global[0], global[1]),
+                                         cl::NDRange(local[0], local[1]),
+                                         range, invokeAfter));
 
-      // Synchronise data across devices.
-      if (noOfDevices != 1 &&
-          iterationsAfterLastSync == iterationsBetweenSwaps) {
-        // Perform swap.
-        if (evenIteration(i, k)) {
-          (dynamic_cast<detail::StencilDistribution<Matrix<Tout>>*>(
-               &temp.distribution()))->swap(temp, iterationsBetweenSwaps);
-        } else if (oddIteration(i, k)) {
-          (dynamic_cast<detail::StencilDistribution<Matrix<Tout>>*>(
-               &output.distribution()))->swap(output, iterationsBetweenSwaps);
-        }
-
-        // Set number of iterations before next swap.
-        iterationsBetweenSwaps =
-            determineIterationsBetweenDataSwaps(in, _iterations - i - 1);
-        iterationsAfterLastSync = 0; // Reset swap counter.
-      }
-
-      // Iterate over the list of stencil operations.
-      for (auto& sInfo : _stencilInfos) {
-        for (auto& devicePtr : in.distribution().devices()) {
-          auto& outputBuffer = output.deviceBuffer(*devicePtr);
-          auto& inputBuffer = in.deviceBuffer(*devicePtr);
-          auto& tempBuffer = temp.deviceBuffer(*devicePtr);
-
-          const cl_uint numElements = static_cast<cl_uint>(inputBuffer.size());
-
-          cl::Kernel kernel(
-              sInfo.getProgram().kernel(*devicePtr, "SCL_STENCIL"));
-
-          // Set working group size.
-          const cl_uint local[2] = {
-            STENCIL_WORKGROUP_SIZE_C,
-            STENCIL_WORKGROUP_SIZE_R
-          };
-
-          // Determine the tile size.
-          const unsigned int tile_width =
-              local[0] + sInfo.getWest() + sInfo.getEast();
-          const unsigned int tile_height =
-              local[1] + sInfo.getNorth() + sInfo.getSouth();
-          const unsigned int tile_size = // size = w * h * sizeof(Tin).
-              tile_width * tile_height * sizeof(Tin);
-
-          // Offset is set for multi-GPU execution.
-          cl_uint offset = 0;
-
-          // Global size must be a multiple of working group size in
-          // each dimension.
-          cl_uint global[2] = {
-            static_cast<cl_uint>(detail::util::ceilToMultipleOf(
-                output.columnCount(), local[0])),
-            static_cast<cl_uint>(detail::util::ceilToMultipleOf(
-                output.rowCount(), local[1]))
-          };
-
-          // Setting the global size when the number of devices > 1.
-          if (devicePtr->id() == 0 && noOfDevices > 1) {
-            global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(
-                outputRowCount +
-                    (iterationsBetweenSwaps - iterationsAfterLastSync) *
-                        southSum,
-                local[1]));
-          } else if (devicePtr->id() == noOfDevices - 1 && noOfDevices > 1) {
-            offset = iterationsAfterLastSync * northSum;
-            global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(
-                outputRowCount +
-                    (iterationsBetweenSwaps - iterationsAfterLastSync) *
-                        northSum,
-                local[1]));
-          } else if (noOfDevices > 1) {
-            offset = iterationsAfterLastSync * northSum;
-            global[1] = static_cast<cl_uint>(detail::util::ceilToMultipleOf(
-                outputRowCount +
-                    (iterationsBetweenSwaps - iterationsAfterLastSync) *
-                        northSum +
-                    (iterationsBetweenSwaps - iterationsAfterLastSync) *
-                        southSum,
-                local[1]));
-          }
-
-          // Set kernel arguments.
-          int j = 0;
-
-          // Set the "SCL_IN" and "SCL_OUT" arguments.
-          if (firstIteration(i, k)) {
-            // First iteration: Reading from input, write to output.
-            kernel.setArg(j++, inputBuffer.clBuffer());
-            kernel.setArg(j++, outputBuffer.clBuffer());
-          } else if (evenIteration(i, k)) {
-            // Even iterations: Read from temp, write to output.
-            kernel.setArg(j++, tempBuffer.clBuffer());
-            kernel.setArg(j++, outputBuffer.clBuffer());
-          } else if (oddIteration(i, k)) {
-            // Odd iterations: Read from output, write to temp. If
-            // this is the last iteration, temp must be returned.
-            kernel.setArg(j++, outputBuffer.clBuffer());
-            kernel.setArg(j++, tempBuffer.clBuffer());
-          }
-
-          // Set the "SCL_INITIAL" argument.
-          kernel.setArg(j++, inputBuffer.clBuffer());
-
-          // Set the "SCL_LOCAL_TMP" argument.
-          kernel.setArg(j++, tile_size, NULL);
-
-          // Set the "SCL_ELEMENTS" argument.
-          kernel.setArg(j++, numElements);
-
-          // Set the "SCL_COLS" argument.
-          const cl_uint sclCols = static_cast<cl_uint>(output.columnCount());
-          kernel.setArg(j++, sclCols);
-
-          // Set additional user arguments.
-          detail::kernelUtil::setKernelArgs(kernel, *devicePtr, j,
-                                            std::forward<Args>(args)...);
-
-
-          // Keep the buffer with the most current data alive.
-          auto keepAliveBuffer = (i + k) % 2 == 1 ?
-              tempBuffer.clBuffer() :
-              outputBuffer.clBuffer();
-
-          // Keep buffers and arguments alive / mark them as in use.
-          auto keepAlive = detail::kernelUtil::keepAlive(
-              *devicePtr, inputBuffer.clBuffer(), keepAliveBuffer,
-              std::forward<Args>(args)...);
-
-          // After finishing the kernel invoke this function.
-          auto invokeAfter = [=]() { (void)keepAlive; };
-
-          // Each OpenCL event is identified using it's index in the
-          // private _events vector. The current size of the vector is
-          // equivalent to the index of the *next* element to be
-          // pushed to it.
-          auto eventnum = _events.size();
-          if (devicePtr->id() == 0)
-            _events.push_back(devicePtr->enqueue(kernel,
-                                                 cl::NDRange(global[0], global[1]),
-                                                 cl::NDRange(local[0], local[1]),
-                                                 cl::NDRange(0, offset),
-                                                 invokeAfter));
-          else
-            _events.push_back(devicePtr->enqueue(kernel,
-                                                 cl::NDRange(global[0], global[1]),
-                                                 cl::NDRange(local[0], local[1]),
-                                                 cl::NullRange,
-                                                 invokeAfter));
-
-          // Print global, local, and tile sizes on the first iteration.
-          if (!i)
-            LOG_PROF(_name, "[", this, "][", eventnum,
-                     "] global[", global[0], "][", global[1],
-                     "] local[", local[0], "][", local[1],
-                     "] tile[", tile_width, "][", tile_height,
-                     "][", sizeof(Tin), "]");
-        }
-
-        k++;
-      }
-      iterationsAfterLastSync++;
-    }
+    // Print global, local, and tile sizes.
+    LOG_PROF(_name, "[", this, "][", eventnum,
+             "] global[", global[0], "][", global[1],
+             "] local[", local[0], "][", local[1]);
   }
-  catch (cl::Error& err)
-  {
-    ABORT_WITH_ERROR(err);
-  }
+
+  updateModifiedStatus(out(output), std::forward<Args>(args)...);
 }
 
-#undef firstIteration
-#undef evenIteration
-#undef oddIteration
+template <typename Tin, typename Tout>
+void Stencil<Tout(Tin)>::getLocalSize(cl_uint *const local) const {
+  local[0] = STENCIL_WORKGROUP_SIZE_C;
+  local[1] = STENCIL_WORKGROUP_SIZE_R;
+}
 
 template <typename Tin, typename Tout>
-void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& in)
-{
-  // set distribution
+void Stencil<Tout(Tin)>::getTileSize(const cl_uint *const local,
+                                     cl_uint *const tile) const {
+  tile[0] = local[0] + _shape.getNorth() + _shape.getSouth();
+  tile[1] = local[1] + _shape.getEast() + _shape.getWest();
+}
+
+template <typename Tin, typename Tout>
+void Stencil<Tout(Tin)>::getGlobalSize(const cl_uint *const local,
+                                       const Matrix<Tout>& output,
+                                       cl_uint *const global) const {
+  // Global size must be a multiple of working group size in each
+  // dimension.
+  global[0] = detail::util::ceilToMultipleOf(output.columnCount(), local[0]);
+  global[1] = detail::util::ceilToMultipleOf(output.rowCount(), local[1]);
+}
+
+template <typename Tin, typename Tout>
+template <typename... Args>
+void Stencil<Tout(Tin)>::setKernelArgs(Matrix<Tout>& output,
+                                       const Matrix<Tin>& input,
+                                       const Matrix<Tin>& initial,
+                                       const cl_uint *const localSize,
+                                       const std::shared_ptr<detail::Device>& devicePtr,
+                                       cl::Kernel& kernel,
+                                       Args&&... args) const {
+  cl_uint tile[2];
+
+  auto& inputBuffer = input.deviceBuffer(*devicePtr);
+  auto& outputBuffer = output.deviceBuffer(*devicePtr);
+  auto& initialBuffer = initial.deviceBuffer(*devicePtr);
+
+  getTileSize(&localSize[0], &tile[0]);
+
+  const cl_uint clNumElements = static_cast<cl_uint>(inputBuffer.size());
+  const cl_uint clColumnCount = static_cast<cl_uint>(output.columnCount());
+  const cl_uint tileSizeBytes = tile[0] * tile[1] * sizeof(Tin);
+
+  int j = 0;
+  kernel.setArg(j++, inputBuffer.clBuffer());    // SCL_IN
+  kernel.setArg(j++, outputBuffer.clBuffer());   // SCL_OUT
+  kernel.setArg(j++, initialBuffer.clBuffer());  // SCL_INITIAL
+  kernel.setArg(j++, tileSizeBytes, NULL);       // SCL_LOCAL
+  kernel.setArg(j++, clNumElements);             // SCL_ELEMENTS
+  kernel.setArg(j++, clColumnCount);             // SCL_COLS
+  detail::kernelUtil::setKernelArgs(kernel, *devicePtr, j,
+                                    std::forward<Args>(args)...);
+}
+
+template <typename Tin, typename Tout>
+void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& input) const {
   detail::StencilDistribution<Matrix<Tin>> dist(
-      determineNorthSum(), determineWestSum(), determineSouthSum(),
-      determineEastSum(), determineIterationsBetweenDataSwaps(in, _iterations));
-  in.setDistribution(dist);
+      _shape.getNorth(), _shape.getWest(), _shape.getSouth(),
+      _shape.getEast(), 1);
 
-  // create buffers if required
-	in.createDeviceBuffers();
-
-	// copy data to devices
-	in.startUpload();
-}
-
-template <typename Tin, typename Tout>
-unsigned int Stencil<Tout(Tin)>::determineIterationsBetweenDataSwaps(
-    const Matrix<Tin>& /*in*/, unsigned int iterLeft)
-{
-  // User choses a value
-  if (static_cast<int>(iterLeft) <= _iterBetSwaps)
-    return iterLeft;
-  else if (_iterBetSwaps != -1)
-    return _iterBetSwaps;
-
-  // Add the online determination of the number of iterations between device
-  // synchronizations here
-
-  return 1;
-}
-
-template <typename Tin, typename Tout>
-unsigned int Stencil<Tout(Tin)>::determineNorthSum()
-{
-  unsigned int largestNorth = 0;
-  for (auto& s : _stencilInfos) {
-    largestNorth += s.getNorth();
-  }
-  return largestNorth;
-}
-
-template <typename Tin, typename Tout>
-unsigned int Stencil<Tout(Tin)>::determineWestSum()
-{
-  unsigned int largestWest = 0;
-  for (auto& s : _stencilInfos) {
-    largestWest += s.getWest();
-  }
-  return largestWest;
-}
-
-template <typename Tin, typename Tout>
-unsigned int Stencil<Tout(Tin)>::determineSouthSum()
-{
-  unsigned int largestSouth = 0;
-  for (auto& s : _stencilInfos) {
-    largestSouth += s.getSouth();
-  }
-  return largestSouth;
-}
-
-template <typename Tin, typename Tout>
-unsigned int Stencil<Tout(Tin)>::determineEastSum()
-{
-  unsigned int largestEast = 0;
-  for (auto& s : _stencilInfos) {
-		largestEast += s.getEast();
-	}
-  return largestEast;
+  input.setDistribution(dist);
+  input.createDeviceBuffers();
+  input.startUpload();
 }
 
 template <typename Tin, typename Tout>
 void Stencil<Tout(Tin)>::prepareOutput(Matrix<Tout>& output,
-                                       const Matrix<Tin>& in)
-{
-  // set size
-  if (output.rowCount() != in.rowCount())
-    output.resize(
-        typename Matrix<Tout>::size_type(in.rowCount(), in.columnCount()));
+                                       const Matrix<Tin>& input) const {
+  if (output.rowCount() != input.rowCount()) {
+    output.resize(typename Matrix<Tout>::size_type(input.rowCount(),
+                                                   input.columnCount()));
+  }
 
-  // adopt distribution from in input
-  output.setDistribution(in.distribution()); // richtiger typ (Tout)?
-
-  // create buffers if required
+  output.setDistribution(input.distribution());
   output.createDeviceBuffers();
 }
 
-} // namespace skelcl
+template <typename Tin, typename Tout>
+detail::Program Stencil<Tout(Tin)>::createAndBuildProgram() const {
+  ASSERT_MESSAGE(!_userSource.empty(),
+                 "Tried to create program with empty user source.");
 
-#endif /* STENCILDEF_H_ */
+  std::stringstream temp;
+
+  temp << "#define SCL_NORTH (" << _shape.getNorth() << ")\n"
+       << "#define SCL_WEST  (" << _shape.getWest()  << ")\n"
+       << "#define SCL_SOUTH (" << _shape.getSouth() << ")\n"
+       << "#define SCL_EAST  (" << _shape.getEast()  << ")\n"
+       << "#define SCL_TILE_WIDTH  (get_local_size(0) + SCL_WEST + SCL_EAST)\n"
+       << "#define SCL_TILE_HEIGHT (get_local_size(1) + SCL_NORTH + SCL_SOUTH)\n"
+       << "#define SCL_COL   (get_global_id(0))\n"
+       << "#define SCL_ROW   (get_global_id(1))\n"
+       << "#define SCL_L_COL (get_local_id(0))\n"
+       << "#define SCL_L_ROW (get_local_id(1))\n"
+       << "#define SCL_L_COL_COUNT (get_local_size(0))\n"
+       << "#define SCL_L_ROW_COUNT (get_local_size(1))\n"
+       << "#define SCL_L_ID (SCL_L_ROW * SCL_L_COL_COUNT + SCL_L_COL)\n"
+       << "#define SCL_ROWS (SCL_ELEMENTS / SCL_COLS)\n";
+
+  if (_padding == detail::Padding::NEUTRAL)
+    temp << "#define NEUTRAL " << _paddingElement << "\n";
+
+  // create program
+  std::string s(detail::CommonDefinitions::getSource());
+  s.append(Matrix<Tout>::deviceFunctions());
+  s.append(temp.str());
+
+  // If all of the boundaries are 0, then this is just a map
+  // operation.
+  auto ismap = _shape.getNorth() + _shape.getSouth() +
+               _shape.getEast() + _shape.getWest() == 0;
+
+  // Helper structs and functions.
+  if (ismap) {
+    s.append(
+        R"(
+
+    typedef float SCL_TYPE_0;
+    typedef float SCL_TYPE_1;
+
+    typedef struct {
+        __global SCL_TYPE_1* data;
+    } input_matrix_t;
+
+    //In case, local memory is used
+    SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y){
+        return matrix->data[0];
+    }
+
+)");
+  } else {
+    s.append(
+        R"(
+
+typedef float SCL_TYPE_0;
+typedef float SCL_TYPE_1;
+
+typedef struct {
+    __local SCL_TYPE_1* data;
+} input_matrix_t;
+
+//In case, local memory is used
+SCL_TYPE_1 getData(input_matrix_t* matrix, int x, int y){
+    int offsetNorth = SCL_NORTH * SCL_TILE_WIDTH;
+    int currentIndex = SCL_L_ROW * SCL_TILE_WIDTH + SCL_L_COL;
+    int shift = x - y * SCL_TILE_WIDTH;
+
+    return matrix->data[currentIndex+offsetNorth+shift+SCL_WEST];
+}
+
+)");
+  }
+
+  // Add the user program.
+  s.append(_userSource);
+
+  // Append the appropiate kernel, based on the padding type, or if
+  // it's a map.
+  if (ismap) {
+    s.append(
+        R"(
+
+__kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
+                          __global SCL_TYPE_1* SCL_OUT,
+                          __global SCL_TYPE_1* SCL_TMP,
+                          __local SCL_TYPE_1* SCL_LOCAL_TMP,
+                          const unsigned int SCL_ELEMENTS,
+                          const unsigned int SCL_COLS)
+{
+  if (get_global_id(1)*SCL_COLS+get_global_id(0) < SCL_ELEMENTS) {
+    input_matrix_t Mm;
+    Mm.data = SCL_TMP+get_global_id(1)*SCL_COLS+get_global_id(0);
+    SCL_OUT[get_global_id(1)*SCL_COLS+get_global_id(0)] = USR_FUNC(&Mm);
+  }
+}
+)");
+
+  } else {
+    // Append macros to define the padding type.
+    if (_padding == detail::Padding::NEUTRAL) {
+      s.append(R"(
+#define STENCIL_PADDING_NEUTRAL         1
+#define STENCIL_PADDING_NEAREST         0
+#define STENCIL_PADDING_NEAREST_INITIAL 0
+)");
+    } else if (_padding == detail::Padding::NEAREST) {
+      s.append(R"(
+#define STENCIL_PADDING_NEUTRAL         0
+#define STENCIL_PADDING_NEAREST         1
+#define STENCIL_PADDING_NEAREST_INITIAL 0
+)");
+    } else if (_padding == detail::Padding::NEAREST_INITIAL) {
+      s.append(R"(
+#define STENCIL_PADDING_NEUTRAL         0
+#define STENCIL_PADDING_NEAREST         0
+#define STENCIL_PADDING_NEAREST_INITIAL 1
+)");
+    }
+
+    // Include the kernel definition.
+    s.append(
+#include "StencilKernel.cl"
+             );
+  }
+
+  // Build the program.
+  auto program = detail::Program(s,
+                                 detail::util::hash(
+                                     "//Stencil\n" + Matrix<Tout>::deviceFunctions()
+                                     + _userSource + _funcName));
+  // Set the parameters and function names.
+  if (!program.loadBinary()) {
+    program.transferParameters(_funcName, 1, "SCL_STENCIL");
+    program.transferArguments(_funcName, 1, "USR_FUNC");
+    program.renameFunction(_funcName, "USR_FUNC");
+    program.adjustTypes<Tin, Tout>();
+  }
+
+  program.build();
+  return program;
+}
+
+template <typename Tin, typename Tout>
+const detail::StencilShape& Stencil<Tout(Tin)>::getShape() const {
+  return this->_shape;
+}
+
+template <typename Tin, typename Tout>
+const detail::Padding& Stencil<Tout(Tin)>::getPadding() const {
+  return this->_padding;
+}
+
+template <typename Tin, typename Tout>
+const Tin& Stencil<Tout(Tin)>::getPaddingElement() const {
+  return this->_paddingElement;
+}
+
+}  // namespace
+
+#endif   // STENCILDEF_H_

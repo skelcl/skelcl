@@ -32,88 +32,88 @@
  *****************************************************************************/
 
 ///
-/// \file Stencil.h
+/// \file StencilPipeline.h
 ///
-/// A Stencil operation.
+/// A sequential pipeline for iterative stencil operations.
 ///
-/// \author Stefan Breuer<s_breu03@uni-muenster.de>
-/// \author Chris Cummins <chrisc.101@gmail.com>
-#ifndef STENCIL_H_
-#define STENCIL_H_
+///	\author Stefan Breuer<s_breu03@uni-muenster.de>
+///     \author Chris Cummins <chrisc.101@gmail.com>
+///
+#ifndef STENCILPIPELINE_H_
+#define STENCILPIPELINE_H_
 
-#include <limits.h>
+#include <istream>
+#include <string>
+#include <vector>
 
+#include "./detail/Padding.h"
 #include "./detail/Skeleton.h"
-#include "./detail/StencilShape.h"
+#include "./detail/Program.h"
+
+#include "./Source.h"
+#include "./Stencil.h"
 
 namespace skelcl {
 
-template<typename > class Stencil;
+template<typename > class Matrix;
+template<typename > class Out;
+
+template<typename > class StencilPipeline;
 
 template<typename Tin, typename Tout>
-class Stencil<Tout(Tin)> : public detail::Skeleton {
+class StencilPipeline<Tout(Tin)> : public detail::Skeleton {
+
 public:
-  // Construct a new stencil.
-  Stencil(const Source& source,
-          const std::string& func,
-          const detail::StencilShape& shape,
-          detail::Padding padding, Tin paddingElement = NULL);
+	StencilPipeline<Tout(Tin)>(const int iterBetweenSwaps = 1);
 
-  // Execute stencil, returning output.
-  template <typename... Args>
-  Matrix<Tout> operator()(const Matrix<Tin>& input,
-                          Args&&... args) const;
+	// Add a new stencil to the pipeline.
+	void add(Stencil<Tout(Tin)> stencil);
 
-  // Execute stencil (in-place).
-  template <typename... Args>
-  Matrix<Tout>& operator()(Out<Matrix<Tout>> output,
-                           const Matrix<Tin>& input,
-                           Args&&... args) const;
+        // Run pipeline.
+	template<typename ... Args>
+	Matrix<Tout> operator()(const unsigned int iterations,
+                                const Matrix<Tin>& input,
+                                Args&&... args);
 
-  // Returns the stencil shape used.
-  const detail::StencilShape& getShape() const;
+	template<typename ... Args>
+        Matrix<Tout>& operator()(const unsigned int iterations,
+                                 const Matrix<Tin>& input,
+                                 Out<Matrix<Tout>> output,
+                                 Args&&... args);
 
-  // Returns the padding method used.
-  const detail::Padding& getPadding() const;
-
-  /// Returns neutral element, which shall be used to fill the overlap
-  /// region (only used if detail::Padding == NEUTRAL)
-  const Tin& getPaddingElement() const;
+	template<typename ... Args>
+        Matrix<Tout>& operator()(const unsigned int iterations,
+                                 const Matrix<Tin>& input,
+                                 Out<Matrix<Tout>> temp,
+                                 Out<Matrix<Tout>> output,
+                                 Args&&... args);
 
 private:
-  template <typename... Args>
-  void execute(const Matrix<Tin>& input, Matrix<Tout>& output,
-               const Matrix<Tin>& initial, Args&&... args) const;
+	template<typename ... Args>
+        void execute(const Matrix<Tin>& input,
+                     Matrix<Tout>& temp,
+                     Matrix<Tout>& output,
+                     Args&&... args);
 
-  // Utility methods.
-  detail::Program createAndBuildProgram() const;
-  void prepareInput(const Matrix<Tin>& input) const;
-  void prepareOutput(Matrix<Tout>& output, const Matrix<Tin>& input) const;
-  void getLocalSize(cl_uint *local) const;
-  void getTileSize(const cl_uint *local, unsigned int *tile) const;
-  void getGlobalSize(const cl_uint *local, const Matrix<Tout>& output,
-                     cl_uint *global) const;
-  template <typename... Args>
-  void setKernelArgs(Matrix<Tout>& output,
-                     const Matrix<Tin>& input,
-                     const Matrix<Tin>& initial,
-                     const cl_uint *const localSize,
-                     const std::shared_ptr<detail::Device>& devicePtr,
-                     cl::Kernel& kernel,
-                     Args&&... args) const;
+	void prepareInput(const Matrix<Tin>& in);
+	void prepareOutput(Matrix<Tout>& output, const Matrix<Tin>& in);
 
-  // Member variables.
-  const detail::StencilShape& _shape;
-  detail::Padding _padding;
-  Tin _paddingElement;
+        unsigned int determineIterationsBetweenDataSwaps(const Matrix<Tin> &input,
+                                                         unsigned int iterLeft);
 
-  std::string _userSource;  // Source code from application developer.
-  std::string _funcName;    // Name of main function defined in _userSource.
-  detail::Program _program;
+        unsigned int determineNorthSum();
+        unsigned int determineEastSum();
+        unsigned int determineSouthSum();
+        unsigned int determineWestSum();
+
+	std::vector<Stencil<Tout(Tin)>> _pipeline;
+
+	int _iterBetweenSwaps;
+        int _iterations;
 };
 
-} // skelcl
+} //namespace skelcl
 
-#include "detail/StencilDef.h"
+#include "detail/StencilPipelineDef.h"
 
-#endif  // STENCIL_H_
+#endif  // STENCILPIPELINE_H_
