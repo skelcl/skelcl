@@ -133,13 +133,33 @@ void shutdownSkelCL()
   skelcl::terminate();
 }
 
+std::string getPlatformName()
+{
+  auto& devicePtr = skelcl::detail::globalDeviceList.front();
+  return devicePtr->clPlatform().getInfo<CL_PLATFORM_NAME>();
+}
+
+std::string getDeviceName()
+{
+  auto& devicePtr = skelcl::detail::globalDeviceList.front();
+  return devicePtr->name();
+}
+
+std::string getDeviceType()
+{
+  auto& devicePtr = skelcl::detail::globalDeviceList.front();
+  return devicePtr->typeAsString();
+}
+
 cl::Kernel buildKernel(const std::string& kernelCode,
-                       const std::string& kernelName)
+                       const std::string& kernelName,
+                       const std::string& buildOptions)
 {
   auto& devPtr = skelcl::detail::globalDeviceList.front();
 
-  auto p = skelcl::detail::Program(kernelCode);
-  p.build();
+  auto p = skelcl::detail::Program(kernelCode,
+                                   skelcl::detail::util::hash(kernelCode));
+  p.build(buildOptions);
 
   return cl::Kernel(p.kernel(*devPtr, kernelName));
 }
@@ -165,22 +185,25 @@ double executeKernel(cl::Kernel kernel,
     ++i;
   }
 
-  auto event = devPtr->enqueue(kernel, cl::NDRange(clGlobalSize1, clGlobalSize2, clGlobalSize3),
-                                       cl::NDRange(clLocalSize1, clLocalSize2, clLocalSize3));
+  auto event = devPtr->enqueue(kernel,
+                               cl::NDRange(clGlobalSize1,
+                                           clGlobalSize2, clGlobalSize3),
+                               cl::NDRange(clLocalSize1,
+                                           clLocalSize2, clLocalSize3));
 
   for (auto& arg : args) arg->download();
 
   return getRuntimeInMilliseconds(event);
 }
 
-double execute(std::string kernelCode, std::string kernelName,
+double execute(const std::string& kernelCode, const std::string& kernelName,
+               const std::string& buildOptions,
                int localSize1, int localSize2, int localSize3,
                int globalSize1, int globalSize2, int globalSize3,
                const std::vector<KernelArg*>& args)
 {
-  auto kernel = buildKernel(kernelCode, kernelName);
-  return executeKernel(kernel,
-   localSize1, localSize2, localSize3,
-   globalSize1, globalSize2, globalSize3, args);
+  auto kernel = buildKernel(kernelCode, kernelName, buildOptions);
+  return executeKernel(kernel, localSize1, localSize2, localSize3,
+                       globalSize1, globalSize2, globalSize3, args);
 }
 

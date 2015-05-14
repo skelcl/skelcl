@@ -97,6 +97,7 @@ namespace logger_impl {
 std::string severityToString(Logger::Severity::Type severity)
 {
   switch (severity) {
+    case Logger::Severity::LogAlways  : return "     ";
     case Logger::Severity::Error      : return "ERROR";
     case Logger::Severity::Warning    : return " WARN";
     case Logger::Severity::Info       : return " INFO";

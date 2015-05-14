@@ -36,8 +36,14 @@ int main(int argc, char** argv)
   auto globalSize = Arg<int>(Flags(Long("globalSize"), Short('g')),
                              Description("Global size used in execution"));
 
+  auto buildOptions = Arg<std::string>(Flags(Long("buildOptions"), Short('b')),
+                                       Description("Build options used when "
+                                                   "compiling the OpenCL "
+                                                   "kernel"),
+                                       Default(std::string("")));
+
   cmd.add(&deviceType, &enableLogging, &kernelSource, &kernelName, &localSize,
-          &globalSize);
+          &globalSize, &buildOptions);
   cmd.parse(argc, argv);
 
   if (enableLogging) {
@@ -58,7 +64,8 @@ int main(int argc, char** argv)
   args.emplace_back(GlobalArg::create(vc.data(), vc.size()));
   args.emplace_back(GlobalArg::create(result.data(), result.size(), true));
 
-  execute(kernelSource, kernelName, localSize, 1, 1, globalSize, 1, 1, args);
+  execute(kernelSource, kernelName, buildOptions,
+          localSize, 1, 1, globalSize, 1, 1, args);
 
   LOG_INFO("done");
   auto& res = dynamic_cast<GlobalArg*>(args.back())->data();

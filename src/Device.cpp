@@ -349,6 +349,13 @@ bool Device::isType(Type t) const
   return _device.getInfo<CL_DEVICE_TYPE>() == t;
 }
 
+std::string Device::typeAsString() const
+{
+  std::ostringstream oss;
+  oss << Type(_device.getInfo<CL_DEVICE_TYPE>());
+  return oss.str();
+}
+
 std::string Device::name() const
 {
   return _device.getInfo<CL_DEVICE_NAME>();

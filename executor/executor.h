@@ -75,15 +75,23 @@ void initSkelCL(std::string deviceType = std::string("ANY"));
 
 void shutdownSkelCL();
 
+std::string getPlatformName();
+
+std::string getDeviceName();
+
+std::string getDeviceType();
+
 cl::Kernel buildKernel(const std::string& kernelCode,
-                       const std::string& kernelName);
+                       const std::string& kernelName,
+                       const std::string& buildOptions);
 
 double executeKernel(cl::Kernel kernel,
                int localSize1, int localSize2, int localSize3,
                int globalSize1, int globalSize2, int globalSize3,
                const std::vector<KernelArg*>& args);
 
-double execute(std::string kernelCode, std::string kernelName, 
+double execute(const std::string& kernelCode, const std::string& kernelName,
+               const std::string& buildOptions,
                int localSize1, int localSize2, int localSize3,
                int globalSize1, int globalSize2, int globalSize3,
                const std::vector<KernelArg*>& args);

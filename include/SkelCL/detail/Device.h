@@ -258,6 +258,8 @@ public:
 
   bool isType(Type t) const;
 
+  std::string typeAsString() const;
+
   ///
   /// \brief Returns the name of the device as a string
   ///

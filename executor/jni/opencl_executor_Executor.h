@@ -10,25 +10,41 @@ extern "C" {
 /*
  * Class:     opencl_executor_Executor
  * Method:    execute
- * Signature: (Ljava/lang/String;Ljava/lang/String;IIIIII[Lopencl/executor/KernelArg;)D
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIIII[Lopencl/executor/KernelArg;)D
  */
 JNIEXPORT jdouble JNICALL Java_opencl_executor_Executor_execute
-  (JNIEnv *, jclass, jstring, jstring, jint, jint, jint, jint, jint, jint, jobjectArray);
+  (JNIEnv *, jclass, jstring, jstring, jstring, jint, jint, jint, jint, jint, jint, jobjectArray);
 
 /*
  * Class:     opencl_executor_Executor
  * Method:    init
  * Signature: (II)V
  */
-JNIEXPORT void JNICALL Java_opencl_executor_Executor_init__II
+JNIEXPORT void JNICALL Java_opencl_executor_Executor_init
   (JNIEnv *, jclass, jint, jint);
 
 /*
  * Class:     opencl_executor_Executor
- * Method:    init
- * Signature: ()V
+ * Method:    getPlatformName
+ * Signature: ()Ljava/lang/String;
  */
-JNIEXPORT void JNICALL Java_opencl_executor_Executor_init__
+JNIEXPORT jstring JNICALL Java_opencl_executor_Executor_getPlatformName
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     opencl_executor_Executor
+ * Method:    getDeviceName
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_opencl_executor_Executor_getDeviceName
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     opencl_executor_Executor
+ * Method:    getDeviceType
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_opencl_executor_Executor_getDeviceType
   (JNIEnv *, jclass);
 
 /*
