@@ -44,7 +44,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/Scan.h
       ../include/SkelCL/Source.h
       ../include/SkelCL/Stencil.h
-      ../include/SkelCL/StencilPipeline.h
+      ../include/SkelCL/StencilSequence.h
       ../include/SkelCL/StencilShare.h
       ../include/SkelCL/Vector.h
       ../include/SkelCL/Zip.h
@@ -92,7 +92,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/StencilKernel.cl
       ../include/SkelCL/detail/StencilKnobs.h
       ../include/SkelCL/detail/StencilShape.h
-      ../include/SkelCL/detail/StencilPipelineDef.h
+      ../include/SkelCL/detail/StencilSequenceDef.h
       ../include/SkelCL/detail/StencilDistribution.h
       ../include/SkelCL/detail/StencilDistributionDef.h
       ../include/SkelCL/detail/Util.h

@@ -47,6 +47,7 @@
 #include <SkelCL/IndexMatrix.h>
 #include <SkelCL/MapOverlap.h>
 #include <SkelCL/Stencil.h>
+#include <SkelCL/StencilSequence.h>
 #include <SkelCL/detail/Padding.h>
 
 #include <chrono>
@@ -240,14 +241,21 @@ int main(int argc, char** argv) {
 
       image = s(image, kernelVec, range.getValue());
     } else {
-      Stencil<float(float)> s(std::ifstream { "./Stencil2D.cl" }, "func",
-                              detail::stencilShape(detail::north(rangeNorth),
-                                                   detail::south(rangeSouth),
-                                                   detail::west(rangeWest),
-                                                   detail::east(rangeEast)),
-                              detail::Padding::NEUTRAL, 255);
+      Stencil<float(float)> blur(std::ifstream { "./Stencil2D.cl" }, "func",
+                                 detail::stencilShape(detail::north(rangeNorth),
+                                                      detail::south(rangeSouth),
+                                                      detail::west(rangeWest),
+                                                      detail::east(rangeEast)),
+                                 detail::Padding::NEUTRAL, 255);
 
-      image = s(image, kernelVec, range.getValue());
+      if (iterations > 1) {
+        StencilSequence<float(float)> sequence;
+        sequence.add(&blur);
+
+        image = sequence(iterations, image, kernelVec, range.getValue());
+      } else {
+        image = blur(image, kernelVec, range.getValue());
+      }
     }
   }
 

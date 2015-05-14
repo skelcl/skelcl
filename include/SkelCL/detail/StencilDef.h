@@ -99,7 +99,11 @@ template <typename... Args>
 Matrix<Tout>& Stencil<Tout(Tin)>::operator()(Out<Matrix<Tout>> output,
                                              const Matrix<Tin>& input,
                                              Args&&... args) const {
-  execute(input, output.container(), input, std::forward<Args>(args)...);
+  ASSERT(input.rowCount() > 0);
+  ASSERT(input.columnCount() > 0);
+
+  execute(input, output.container(), input, 1, 0, _shape.getSouth(),
+          _shape.getNorth(), std::forward<Args>(args)...);
 
   return output.container();
 }
@@ -109,18 +113,31 @@ template <typename... Args>
 void Stencil<Tout(Tin)>::execute(const Matrix<Tin>& input,
                                  Matrix<Tout>& output,
                                  const Matrix<Tin>& initial,
+                                 const unsigned int opsUntilNextSync,
+                                 const unsigned int opsSinceLastSync,
+                                 const unsigned int sumSouthBorders,
+                                 const unsigned int sumNorthBorders,
                                  Args&&... args) const {
+  const size_t numDevices = input.distribution().devices().size();
+
+  pvsutil::Timer t; // Time how long it takes to prepare input and output data.
+
   prepareInput(input);
   prepareAdditionalInput(std::forward<Args>(args)...);
   prepareOutput(output, input);
 
+  // Profiling information.
+  LOG_PROF(_name, "[", this, "] prepare ", t.stop(), " ms");
+
   for (auto& devicePtr : input.distribution().devices()) {
-    cl_uint local[2], global[2];
+    cl_uint local[2], global[3];
 
     cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_STENCIL"));
 
     getLocalSize(&local[0]);
-    getGlobalSize(&local[0], output, &global[0]);
+    getGlobalSize(&local[0], output, devicePtr->id(), numDevices,
+                  opsUntilNextSync, opsSinceLastSync, sumSouthBorders,
+                  sumNorthBorders, &global[0]);
     setKernelArgs(output, input, initial, local, devicePtr,
                   kernel, std::forward<Args>(args)...);
 
@@ -132,10 +149,6 @@ void Stencil<Tout(Tin)>::execute(const Matrix<Tin>& input,
         std::forward<Args>(args)...);
     auto invokeAfter = [=]() { (void)keepAlive; };
 
-    // Offset is set for multi-GPU execution.
-    cl_uint offset = 0;
-    cl::NDRange range(0, offset);
-
     // Each OpenCL event is identified using it's index in the private
     // _events vector. The current size of the vector is equivalent to
     // the index of the *next* element to be pushed to it.
@@ -143,7 +156,8 @@ void Stencil<Tout(Tin)>::execute(const Matrix<Tin>& input,
     _events.push_back(devicePtr->enqueue(kernel,
                                          cl::NDRange(global[0], global[1]),
                                          cl::NDRange(local[0], local[1]),
-                                         range, invokeAfter));
+                                         cl::NDRange(0, global[2]),
+                                         invokeAfter));
 
     // Print global, local, and tile sizes.
     LOG_PROF(_name, "[", this, "][", eventnum,
@@ -170,11 +184,38 @@ void Stencil<Tout(Tin)>::getTileSize(const cl_uint *const local,
 template <typename Tin, typename Tout>
 void Stencil<Tout(Tin)>::getGlobalSize(const cl_uint *const local,
                                        const Matrix<Tout>& output,
+                                       const size_t deviceId,
+                                       const size_t numDevices,
+                                       const unsigned int opsUntilNextSync,
+                                       const unsigned int opsSinceLastSync,
+                                       const unsigned int sumSouthBorders,
+                                       const unsigned int sumNorthBorders,
                                        cl_uint *const global) const {
+  cl_uint grid[2];
+
+  // Determine the size of the grid being operated on, and the offset
+  // into it.
+  grid[0] = output.columnCount();
+  if (numDevices == 1) {
+    // For a single device, the grid size == global size
+    grid[1] = output.rowCount();
+    global[2] = 0;
+  } else if (deviceId == 0) {
+    grid[1] = output.rowCount() + opsUntilNextSync * sumSouthBorders;
+    global[2] = 0;
+  } else if (deviceId == numDevices - 1) {
+    grid[1] = output.rowCount() + opsUntilNextSync * sumNorthBorders;
+    global[2] = opsSinceLastSync * sumNorthBorders;
+  } else {
+    grid[1] = output.rowCount() + opsUntilNextSync * sumNorthBorders
+              + opsUntilNextSync * sumSouthBorders;
+    global[2] = opsSinceLastSync * sumNorthBorders;
+  }
+
   // Global size must be a multiple of working group size in each
   // dimension.
-  global[0] = detail::util::ceilToMultipleOf(output.columnCount(), local[0]);
-  global[1] = detail::util::ceilToMultipleOf(output.rowCount(), local[1]);
+  global[0] = detail::util::ceilToMultipleOf(grid[0], local[0]);
+  global[1] = detail::util::ceilToMultipleOf(grid[1], local[1]);
 }
 
 template <typename Tin, typename Tout>

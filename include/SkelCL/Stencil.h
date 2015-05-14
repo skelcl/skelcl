@@ -49,10 +49,13 @@
 namespace skelcl {
 
 template<typename > class Stencil;
+template<typename > class StencilSequence;
 
 template<typename Tin, typename Tout>
 class Stencil<Tout(Tin)> : public detail::Skeleton {
 public:
+  friend class StencilSequence<Tout(Tin)>;
+
   // Construct a new stencil.
   Stencil(const Source& source,
           const std::string& func,
@@ -83,7 +86,12 @@ public:
 private:
   template <typename... Args>
   void execute(const Matrix<Tin>& input, Matrix<Tout>& output,
-               const Matrix<Tin>& initial, Args&&... args) const;
+               const Matrix<Tin>& initial,
+               const unsigned int opsUntilNextSync,
+               const unsigned int opsSinceLastSync,
+               const unsigned int sumSouthBorders,
+               const unsigned int sumNorthBorders,
+               Args&&... args) const;
 
   // Utility methods.
   detail::Program createAndBuildProgram() const;
@@ -91,7 +99,14 @@ private:
   void prepareOutput(Matrix<Tout>& output, const Matrix<Tin>& input) const;
   void getLocalSize(cl_uint *local) const;
   void getTileSize(const cl_uint *local, unsigned int *tile) const;
-  void getGlobalSize(const cl_uint *local, const Matrix<Tout>& output,
+  void getGlobalSize(const cl_uint *local,
+                     const Matrix<Tout>& output,
+                     const size_t deviceId,
+                     const size_t numDevices,
+                     const unsigned int opsUntilNextSync,
+                     const unsigned int opsSinceLastSync,
+                     const unsigned int sumSouthBorders,
+                     const unsigned int sumNorthBorders,
                      cl_uint *global) const;
   template <typename... Args>
   void setKernelArgs(Matrix<Tout>& output,

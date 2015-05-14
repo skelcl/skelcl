@@ -32,15 +32,15 @@
  *****************************************************************************/
 
 ///
-/// \file StencilPipeline.h
+/// \file StencilSequence.h
 ///
-/// A sequential pipeline for iterative stencil operations.
+/// A sequence of stencil skeletons for iterative execution.
 ///
-///	\author Stefan Breuer<s_breu03@uni-muenster.de>
-///     \author Chris Cummins <chrisc.101@gmail.com>
+/// \author Stefan Breuer<s_breu03@uni-muenster.de>
+/// \author Chris Cummins <chrisc.101@gmail.com>
 ///
-#ifndef STENCILPIPELINE_H_
-#define STENCILPIPELINE_H_
+#ifndef STENCIL_SEQUENCE_H_
+#define STENCIL_SEQUENCE_H_
 
 #include <istream>
 #include <string>
@@ -57,63 +57,61 @@ namespace skelcl {
 
 template<typename > class Matrix;
 template<typename > class Out;
-
-template<typename > class StencilPipeline;
+template<typename > class StencilSequence;
 
 template<typename Tin, typename Tout>
-class StencilPipeline<Tout(Tin)> : public detail::Skeleton {
+class StencilSequence<Tout(Tin)> : public detail::Skeleton {
 
 public:
-	StencilPipeline<Tout(Tin)>(const int iterBetweenSwaps = 1);
+  StencilSequence<Tout(Tin)>();
 
-	// Add a new stencil to the pipeline.
-	void add(Stencil<Tout(Tin)> stencil);
+  // Add a new stencil to the sequence.
+  void add(Stencil<Tout(Tin)> *const stencil);
 
-        // Run pipeline.
-	template<typename ... Args>
-	Matrix<Tout> operator()(const unsigned int iterations,
-                                const Matrix<Tin>& input,
-                                Args&&... args);
+  // Run sequence for 1 iterations.
+  template<typename ... Args>
+  Matrix<Tout> operator()(const Matrix<Tin>& input,
+                          Args&&... args) const;
 
-	template<typename ... Args>
-        Matrix<Tout>& operator()(const unsigned int iterations,
-                                 const Matrix<Tin>& input,
-                                 Out<Matrix<Tout>> output,
-                                 Args&&... args);
+  // Run sequence for n iterations.
+  template<typename ... Args>
+  Matrix<Tout> operator()(const unsigned int iterations,
+                          const Matrix<Tin>& input,
+                          Args&&... args) const;
 
-	template<typename ... Args>
-        Matrix<Tout>& operator()(const unsigned int iterations,
-                                 const Matrix<Tin>& input,
-                                 Out<Matrix<Tout>> temp,
-                                 Out<Matrix<Tout>> output,
-                                 Args&&... args);
+  // Run sequence for n iterations (in-place).
+  template<typename ... Args>
+  Matrix<Tout>& operator()(const unsigned int iterations,
+                           Out<Matrix<Tin>> output,
+                           const Matrix<Tin>& input,
+                           Args&&... args) const;
 
 private:
-	template<typename ... Args>
-        void execute(const Matrix<Tin>& input,
-                     Matrix<Tout>& temp,
-                     Matrix<Tout>& output,
-                     Args&&... args);
+  template<typename ... Args>
+  Matrix<Tout>& operator()(const unsigned int iterations,
+                           Out<Matrix<Tin>> output,
+                           Out<Matrix<Tin>> temp,
+                           const Matrix<Tin>& input,
+                           Args&&... args) const;
 
-	void prepareInput(const Matrix<Tin>& in);
-	void prepareOutput(Matrix<Tout>& output, const Matrix<Tin>& in);
+  template<typename ... Args>
+  void execute(const Matrix<Tin>& input,
+               Matrix<Tout>& temp,
+               Matrix<Tout>& output,
+               const unsigned int iterations,
+               Args&&... args) const;
 
-        unsigned int determineIterationsBetweenDataSwaps(const Matrix<Tin> &input,
-                                                         unsigned int iterLeft);
+  unsigned int getIterationsUntilNextSync(
+      const unsigned int iterationsRemaining) const;
 
-        unsigned int determineNorthSum();
-        unsigned int determineEastSum();
-        unsigned int determineSouthSum();
-        unsigned int determineWestSum();
+  detail::StencilDirection::type getSumNorthBorders() const;
+  detail::StencilDirection::type getSumSouthBorders() const;
 
-	std::vector<Stencil<Tout(Tin)>> _pipeline;
-
-	int _iterBetweenSwaps;
-        int _iterations;
+  std::vector<Stencil<Tout(Tin)> *> _sequence;
 };
 
 } //namespace skelcl
 
-#include "detail/StencilPipelineDef.h"
+#include "detail/StencilSequenceDef.h"
 
-#endif  // STENCILPIPELINE_H_
+#endif  // STENCIL_SEQUENCE_H_
