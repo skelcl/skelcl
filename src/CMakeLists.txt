@@ -20,6 +20,7 @@ set (SKELCL_SOURCES
       Local.cpp
       Map.cpp
       MatrixSize.cpp
+      OmniTuneClient.cpp
       PlatformID.cpp
       Program.cpp
       Significances.cpp
@@ -81,6 +82,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/Padding.h
       ../include/SkelCL/detail/PlatformID.h
       ../include/SkelCL/detail/Program.h
+      ../include/SkelCL/detail/OmniTuneClient.h
       ../include/SkelCL/detail/ReduceDef.h
       ../include/SkelCL/detail/ReduceKernel.cl
       ../include/SkelCL/detail/ScanDef.h

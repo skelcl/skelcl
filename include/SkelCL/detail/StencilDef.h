@@ -68,7 +68,10 @@
 #include "Skeleton.h"
 #include "Util.h"
 
-#include "./StencilKnobs.h"
+#include "./OmniTuneClient.h"
+
+// Use OmniTune to suggest workgroup sizes.
+#define USE_OMNITUNE_WG 1
 
 namespace skelcl {
 
@@ -134,7 +137,7 @@ void Stencil<Tout(Tin)>::execute(const Matrix<Tin>& input,
 
     cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_STENCIL"));
 
-    getLocalSize(&local[0]);
+    omnitune::stencil::getLocalSize(&local[0]);
     getGlobalSize(&local[0], output, devicePtr->id(), numDevices,
                   opsUntilNextSync, opsSinceLastSync, sumSouthBorders,
                   sumNorthBorders, &global[0]);
@@ -166,12 +169,6 @@ void Stencil<Tout(Tin)>::execute(const Matrix<Tin>& input,
   }
 
   updateModifiedStatus(out(output), std::forward<Args>(args)...);
-}
-
-template <typename Tin, typename Tout>
-void Stencil<Tout(Tin)>::getLocalSize(cl_uint *const local) const {
-  local[0] = STENCIL_WORKGROUP_SIZE_C;
-  local[1] = STENCIL_WORKGROUP_SIZE_R;
 }
 
 template <typename Tin, typename Tout>

@@ -97,7 +97,6 @@ private:
   detail::Program createAndBuildProgram() const;
   void prepareInput(const Matrix<Tin>& input) const;
   void prepareOutput(Matrix<Tout>& output, const Matrix<Tin>& input) const;
-  void getLocalSize(cl_uint *local) const;
   void getTileSize(const cl_uint *local, unsigned int *tile) const;
   void getGlobalSize(const cl_uint *local,
                      const Matrix<Tout>& output,
