@@ -56,6 +56,7 @@ public:
   typedef size_t type;
 
   explicit StencilDirection(type val);
+  virtual ~StencilDirection() {};
 
   type val() const;
 
