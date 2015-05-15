@@ -13,6 +13,7 @@
 #include <SkelCL/IndexMatrix.h>
 #include <SkelCL/MapOverlap.h>
 #include <SkelCL/Stencil.h>
+#include <SkelCL/StencilSequence.h>
 #include <SkelCL/detail/Padding.h>
 
 #include <chrono>
@@ -203,19 +204,27 @@ int main(int argc, char** argv)
     tempImage = p(outputImage, kernelVec, 1);
     tempImage.copyDataToHost();
   } else {
-    // Stencil.
-    skelcl::Stencil<float(float)> s(std::ifstream { "./StencilGauss.cl" },
-                                    static_cast<int>(range), static_cast<int>(range),
-                                    static_cast<int>(range), static_cast<int>(range),
-                                    detail::Padding::NEUTRAL, 255, "func", swaps);
-    s.add(std::ifstream { "./StencilSobel.cl" }, 1, 1, 1, 1,
-          detail::Padding::NEAREST, 255, "func");
-    s.add(std::ifstream { "./StencilNMS.cl" }, 1, 1, 1, 1,
-          detail::Padding::NEUTRAL, 1, "func");
-    s.add(std::ifstream { "./StencilThreshold.cl" }, 0, 0, 0, 0,
-          detail::Padding::NEAREST, 1, "func");
+    Stencil<float(float)> gauss(std::ifstream {"./StencilGauss.cl"}, "func",
+                                detail::stencilShape(detail::any(range)),
+                                detail::Padding::NEUTRAL, 255);
+    Stencil<float(float)> sobel(std::ifstream {"./StencilSobel.cl"}, "func",
+                                detail::stencilShape(detail::any(1)),
+                                detail::Padding::NEAREST);
+    Stencil<float(float)> nms(std::ifstream {"./StencilNMS.cl"}, "func",
+                              detail::stencilShape(detail::any(1)),
+                              detail::Padding::NEUTRAL, 1);
+    Stencil<float(float)> threshold(std::ifstream {"./StencilThreshold.cl"}, "func",
+                                    detail::stencilShape(detail::any(0)),
+                                    detail::Padding::NEAREST);
 
-    outputImage = s(1, inputImage, kernelVec, static_cast<int>(range));
+    StencilSequence<float(float)> sequence;
+
+    sequence.add(&gauss);
+    sequence.add(&sobel);
+    sequence.add(&nms);
+    sequence.add(&threshold);
+
+    outputImage = sequence(inputImage, kernelVec, range.getValue());
   }
 
   auto end = getTime();
