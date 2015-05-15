@@ -234,18 +234,18 @@ int main(int argc, char** argv) {
   } else {
     if (oneD) {
       Stencil<float(float)>s(std::ifstream { "./Stencil1D.cl" }, "func",
-                             detail::stencilShape(detail::any(0),
-                                                  detail::north(range),
-                                                  detail::south(range)),
+                             stencilShape(any(0),
+                                          north(range),
+                                          south(range)),
                              detail::Padding::NEUTRAL, 255);
 
       image = s(image, kernelVec, range.getValue());
     } else {
       Stencil<float(float)> blur(std::ifstream { "./Stencil2D.cl" }, "func",
-                                 detail::stencilShape(detail::north(rangeNorth),
-                                                      detail::south(rangeSouth),
-                                                      detail::west(rangeWest),
-                                                      detail::east(rangeEast)),
+                                 stencilShape(north(rangeNorth),
+                                              south(rangeSouth),
+                                              west(rangeWest),
+                                              east(rangeEast)),
                                  detail::Padding::NEUTRAL, 255);
 
       if (iterations > 1) {

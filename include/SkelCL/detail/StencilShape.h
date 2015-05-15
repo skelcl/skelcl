@@ -42,6 +42,7 @@
 
 #include <cstring>
 #include <utility>
+#include <type_traits>
 
 #include <pvsutil/Logger.h>
 
@@ -50,6 +51,18 @@
 namespace skelcl {
 
 namespace detail {
+  template <class T, class...>
+  struct does_not_appear : std::true_type {};
+
+  // go through the given types U & TT and check that T does not appear
+  template <class T, class U, class...TT>
+  struct does_not_appear<T, U, TT...>
+    : std::integral_constant<bool, !std::is_same<T, U>{}
+                                   && does_not_appear<T, TT...>{}>
+  {};
+}
+
+//namespace detail {
 
 class SKELCL_DLL StencilDirection {
 public:
@@ -147,6 +160,9 @@ StencilShape stencilShape(T direction, Args... args);
 
 template <typename... Args>
 void setStencilDirections(StencilShape &shape, Any any, Args... args) {
+  static_assert(detail::does_not_appear<Any, Args...>{},
+                "Any should only appear once.");
+
   shape._north = any.val();
   shape._south = any.val();
   shape._east = any.val();
@@ -156,24 +172,44 @@ void setStencilDirections(StencilShape &shape, Any any, Args... args) {
 
 template <typename... Args>
 void setStencilDirections(StencilShape &shape, North north, Args... args) {
+  static_assert(detail::does_not_appear<North, Args...>{},
+                "North should only appear once.");
+  static_assert(detail::does_not_appear<Any, Args...>{},
+                "Any should not appear after North.");
+
   shape._north = north.val();
   setStencilDirections(shape, args...);
 }
 
 template <typename... Args>
 void setStencilDirections(StencilShape &shape, South south, Args... args) {
+  static_assert(detail::does_not_appear<South, Args...>{},
+                "North should only appear once.");
+  static_assert(detail::does_not_appear<Any, Args...>{},
+                "Any should not appear after South.");
+
   shape._south = south.val();
   setStencilDirections(shape, args...);
 }
 
 template <typename... Args>
 void setStencilDirections(StencilShape &shape, East east, Args... args) {
+  static_assert(detail::does_not_appear<East, Args...>{},
+                "North should only appear once.");
+  static_assert(detail::does_not_appear<Any, Args...>{},
+                "Any should not appear after East.");
+
   shape._east = east.val();
   setStencilDirections(shape, args...);
 }
 
 template <typename... Args>
 void setStencilDirections(StencilShape &shape, West west, Args... args) {
+  static_assert(detail::does_not_appear<West, Args...>{},
+                "North should only appear once.");
+  static_assert(detail::does_not_appear<Any, Args...>{},
+                "Any should not appear after West.");
+
   shape._west = west.val();
   setStencilDirections(shape, args...);
 }
@@ -181,14 +217,12 @@ void setStencilDirections(StencilShape &shape, West west, Args... args) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
-template <typename... Args>
-void setStencilDirections(StencilShape &shape, Args... args) {
-  // Bottom out case, no more directions to set.
-}
+void setStencilDirections(StencilShape &shape);
 
 template <typename T, typename... Args>
 void setStencilDirections(StencilShape &shape, T direction, Args... args) {
-  LOG_ERROR("Stencil ", shape._north, " ", shape._south, " ", shape._east, " ", shape._west);
+  LOG_ERROR("Stencil ", shape._north, " ", shape._south, " ",
+                        shape._east,  " ", shape._west);
   ABORT_WITH_ERROR("Unrecognised argument while setting stencil direction.");
 }
 
@@ -203,7 +237,7 @@ StencilShape stencilShape(T direction, Args... args) {
   return shape;
 }
 
-} // namespace detail
+//} // namespace detail
 
 } // namespace skelcl
 

@@ -500,7 +500,7 @@ public:
   /// \param count How many times value should be inserted into the Vector
   /// \param value Element value to insert
   /// \return Iterator pointing to the first inserted value
-  iterator insert( iterator pos, size_type count, const T& value );
+  void insert( iterator pos, size_type count, const T& value );
 
   /// \brief Inserts elements from range <tt>[first, last)</tt> at the
   ///        specified location in the Vector.

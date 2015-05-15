@@ -104,8 +104,8 @@ private:
   unsigned int getIterationsUntilNextSync(
       const unsigned int iterationsRemaining) const;
 
-  detail::StencilDirection::type getSumNorthBorders() const;
-  detail::StencilDirection::type getSumSouthBorders() const;
+  StencilDirection::type getSumNorthBorders() const;
+  StencilDirection::type getSumSouthBorders() const;
 
   std::vector<Stencil<Tout(Tin)> *> _sequence;
 };

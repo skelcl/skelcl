@@ -445,17 +445,18 @@ void Vector<T>::pop_back()
 }
 
 template <typename T>
-typename Vector<T>::iterator Vector<T>::insert( typename Vector<T>::iterator position,
-                                                const T& x )
+typename Vector<T>::iterator
+  Vector<T>::insert( typename Vector<T>::iterator position, const T& x )
 {
   ++_size;
   return _hostBuffer.insert(position, x);
 }
 
 template <typename T>
-void Vector<T>::insert( typename Vector<T>::iterator position,
-                        typename Vector<T>::size_type n,
-                        const T& x )
+void
+  Vector<T>::insert( typename Vector<T>::iterator position,
+                     typename Vector<T>::size_type n,
+                     const T& x )
 {
   _size += n;
   return _hostBuffer.insert(position, n, x);
@@ -505,11 +506,13 @@ void Vector<T>::clear()
   _size = 0;
 }
 
+#if 0
 template <typename T>
 typename Vector<T>::allocator_type Vector<T>::get_allocator() const
 {
   return _hostBuffer.get_allocator();
 }
+#endif
 
 template <typename T>
 detail::Distribution<Vector<T>>& Vector<T>::distribution() const
