@@ -46,16 +46,44 @@
 
 namespace skelcl {
 
+///
+/// \brief This class represents OpenCL local memory in SkelCL.
+///
+/// An object of this class can be used as an additional argument of a skeleton
+/// to make local memory available in the user defined function.
+///
+/// The helper function local(size_t) can be used to create an object of this
+/// class directly when the skeleton is executed.
+///
 class SKELCL_DLL Local {
 public:
+  ///
+  /// \brief Create a new Local object with the given size of local memory in
+  ///        bytes.
+  ///
+  /// \param sizeInBytes The size of local memory to be used in bytes.
+  ///
   Local(size_t sizeInBytes);
 
+  ///
+  /// \brief Access the amount of local memory to be used in bytes.
+  ///
+  /// \return The amount of local memory to be used in bytes.
+  ///
   size_t getSizeInBytes() const;
 
 private:
   size_t _sizeInBytes;
 };
 
+///
+/// \brief Helper function to easily create an Local object with a given size.
+///
+/// \param sizeInBytes The amount of local memory to be used in bytes.
+///
+/// \return A newly created Local object representing the given amount of local
+///         memory.
+///
 SKELCL_DLL Local local(size_t sizeInBytes);
 
 } // namespace skelcl

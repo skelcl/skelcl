@@ -26,4 +26,9 @@ set (STOOLING_SOURCES
 add_library (stooling ${STOOLING_SOURCES})
 target_link_libraries (stooling ${STOOLING_COMMON_LIBS})
 
+install (TARGETS stooling
+         LIBRARY DESTINATION lib)
+
+install (DIRECTORY ../include/stooling
+         DESTINATION include)
 

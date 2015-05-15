@@ -89,12 +89,14 @@ public:
 
   bool loadBinary();
 
-  void build();
+  void build(const std::string& options = std::string());
 
   cl::Kernel kernel(const Device& device, const std::string& name) const;
 
 private:
   void createProgramsFromSource();
+
+  void printBuildLog();
 
   void saveBinary();
 

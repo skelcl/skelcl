@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
-
+  
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
@@ -38,13 +38,13 @@
 #include <cstdlib>
 #include <ctime>
 
-#include <chrono>
 #include <iostream>
 #include <algorithm>
 #include <numeric>
 
 #include <pvsutil/CLArgParser.h>
 #include <pvsutil/Logger.h>
+#include <pvsutil/Timer.h>
 
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
@@ -54,108 +54,97 @@ using namespace skelcl;
 
 const double epsilon = 1e-12;
 
-long long getTime()
-{
-    auto time = std::chrono::high_resolution_clock::now();
-    return std::chrono::duration_cast<std::chrono::milliseconds>(
-        time.time_since_epoch()).count();
-}
-
 template <typename ForwardIterator>
 void fillVector(ForwardIterator begin, ForwardIterator end)
 {
-    srand((unsigned)time(0));
-    while (begin != end) {
-        *begin = ((float)rand() / (float)RAND_MAX) * 125.0f;
-        ++begin;
-    }
+  srand( (unsigned)time(0) );
+  while (begin != end) {
+    *begin = ( (float)rand()/(float)RAND_MAX ) * 125.0f;
+    ++begin;
+  }
 }
 
 float fillScalar()
 {
-    srand((unsigned)time(0));
-    return ((float)rand() / (float)RAND_MAX) * 125.0f;
+  srand( (unsigned)time(0) );
+  return ((float)rand()/(float)RAND_MAX) * 125.0f;
 }
 
-long long saxpy(int size, bool checkResult)
+void saxpy(int size, bool checkResult)
 {
-    // Y <- a * X + Y
-    Zip<float(float, float)> saxpy("float func(float x, float y, float a){"
-                                   "  return a*x + y;"
-                                   "}");
+  
+  // Y <- a * X + Y
+  Zip<float(float, float)> saxpy("float func(float x, float y, float a){"
+                                 "  return a*x + y;"
+                                 "}");
 
-    Vector<float> X(size);
-    Vector<float> Y(size);
-    float a = fillScalar();
+  Vector<float> X(size); fillVector(X.begin(), X.end());
+  Vector<float> Y(size); fillVector(Y.begin(), Y.end());
+  float a = fillScalar();
 
-    fillVector(X.begin(), X.end());
-    fillVector(Y.begin(), Y.end());
+  Vector<float> Y_orig(Y); // copy Y for verification later
 
-    Vector<float> Y_orig(Y); // copy Y for verification later
+  pvsutil::Timer timer;
+  Y = saxpy( X, Y, a );
+  Y.copyDataToHost();
+  pvsutil::Timer::time_type time = timer.stop();
 
-    auto start = getTime();
-    Y = saxpy( X, Y, a );
-    Y.copyDataToHost();
-    auto end = getTime();
-
-    if (checkResult) {
-        int errors = 0;
-        for (int i = 0; i < size; ++i) {
-            if ( fabs(Y[i] - (a * X[i] + Y_orig[i])) > epsilon ) {
-                errors++;
-            }
-        }
-        if (errors > 0) {
-            LOG_ERROR(errors, " errors detected.");
-        }
+  if (checkResult) {
+    int errors = 0;
+    for (int i = 0; i < size; ++i) {
+      if ( fabs(Y[i] - (a * X[i] + Y_orig[i])) > epsilon ) {
+        errors++;
+      }
     }
-
-    return end - start;
+    if (errors > 0) {
+      LOG_ERROR(errors, " errors detected.");
+    }
+  }
+  
+  LOG_INFO("Time: ", time, " ms");
 }
 
 int main(int argc, char** argv)
 {
-    using namespace pvsutil::cmdline;
-    pvsutil::CLArgParser cmd(Description("Computation of the mandelbrot set."));
+  using namespace pvsutil::cmdline;
+  pvsutil::CLArgParser cmd(Description("Computation of 'Single-Precision "
+                                       "A.X + Y'."));
 
-    // Parse arguments.
-    auto verbose = Arg<bool>(Flags(Short('v'), Long("verbose")),
-                             Description("Enable verbose logging."),
-                             Default(false));
+  auto deviceCount = Arg<int>(Flags(Long("device_count")),
+                              Description("Number of devices used by SkelCL."),
+                              Default(2));
 
-    auto size = Arg<size_t>(Flags(Short('n'), Long("size")),
-                            Description("Size of the two vectors used in "
-                                        "the computation."),
-                            Default<size_t>(1024 * 1024));
+  auto deviceType = Arg<device_type>(Flags(Long("device_type")),
+                                     Description("Device type: ANY, CPU, "
+                                                 "GPU, ACCELERATOR"),
+                                     Default(device_type::ANY));
 
-    auto deviceCount = Arg<int>(Flags(Long("device-count")),
-                                Description("Number of devices used by SkelCL."),
-                                Default(1));
-
-    auto deviceType = Arg<device_type>(Flags(Long("device-type")),
-                                       Description("Device type: ANY, CPU, "
-                                                   "GPU, ACCELERATOR"),
-                                       Default(device_type::ANY));
-
-    auto checkResult = Arg<bool>(Flags(Short('c'), Long("check")),
-                                 Description("Check the computed result "
-                                             "against a sequential computed "
-                                             "version."),
+  auto enableLogging = Arg<bool>(Flags(Short('l'), Long("logging"),
+                                       Long("verbose_logging")),
+                                 Description("Enable verbose logging."),
                                  Default(false));
 
-    cmd.add(&verbose, &size, &deviceCount, &deviceType, &checkResult);
-    cmd.parse(argc, argv);
+  auto size = Arg<int>(Flags(Short('n'), Long("size")),
+                       Description("Size of the two vectors used in "
+                                   "the computation."),
+                       Default(1024 * 1024));
 
-    if (verbose) {
-        pvsutil::defaultLogger.setLoggingLevel(
-            pvsutil::Logger::Severity::DebugInfo);
-    }
+  auto checkResult = Arg<bool>(Flags(Short('c'),
+                                     Long("check"), Long("check_result")),
+                               Description("Check SkelCL computation against "
+                                           "sequential computed version."),
+                               Default(false));
+  
+  cmd.add(&deviceCount, &deviceType, &enableLogging, &size, &checkResult);
+  cmd.parse(argc, argv);
 
-    skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
-    long long time = saxpy(size, checkResult);
+  if (enableLogging) {
+    pvsutil::defaultLogger.setLoggingLevel(
+        pvsutil::Logger::Severity::DebugInfo);
+  }
 
-    printf("Size:         %lu\n", size.getValue());
-    printf("Elapsed time: %lld ms\n", time);
-
-    return 0;
+  skelcl::init(skelcl::nDevices(deviceCount).deviceType(deviceType));
+  saxpy(size, checkResult);
+  return 0;
 }
+

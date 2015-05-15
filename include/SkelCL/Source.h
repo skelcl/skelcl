@@ -102,6 +102,11 @@ public:
   ///
   operator std::string() const;
 
+  ///
+  /// \brief Append the given string to the source code
+  ///
+  /// \param source The string to be appended to the source code.
+  ///
   void append(const std::string& source);
 
 private:
@@ -109,6 +114,9 @@ private:
   std::string _source;
 };
 
+
+/// \cond
+/// Don't show detail namespace in doxygen
 namespace detail {
 
 class SKELCL_DLL CommonDefinitions {
@@ -158,6 +166,7 @@ public:
 };
 
 } // namespace detail
+/// \endcond
 
 } // namespace skelcl
 

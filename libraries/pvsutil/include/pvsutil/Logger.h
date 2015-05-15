@@ -55,7 +55,8 @@ class PVSUTIL_API Logger {
 public:
   struct Severity {
     enum Type {
-      Error = 0,
+      LogAlways = 0,
+      Error,
       Warning,
       Info,
       Profiling,

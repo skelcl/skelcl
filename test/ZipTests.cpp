@@ -46,6 +46,8 @@
 #include <SkelCL/Zip.h>
 
 #include "Test.h"
+/// \cond
+/// Don't show this test in doxygen
 
 class ZipTest : public ::testing::Test {
 protected:
@@ -210,4 +212,6 @@ TEST_F(ZipTest, VoidAddArgs) {
     EXPECT_EQ( left[i]*right[i], output[i]);
   }
 }
+
+/// \endcond
 

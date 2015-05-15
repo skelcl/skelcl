@@ -50,70 +50,192 @@
 
 namespace skelcl {
 
+///
+/// \brief An simple to use alias for the Vector<Index> class.
+///
 typedef const Vector<Index> IndexVector;
 
+/// 
+/// \brief The IndexVector (a.k.a. Vector<Index>) class is a special
+///        implementation of a Vector with Elements of type Index.
+///
+/// The implementation guaranties that no data is transfered to and from the
+/// devices when using this version of the Vector. OpenCL functionality (global
+/// ids) is used to make the Index%s available on the device. This
+/// implementation requires, that the Vector is const and can, therefore, not be
+/// modified after creation.
+///
+/// \ingroup containers
+/// \ingroup vector
+/// 
 template <>
 class SKELCL_DLL Vector<Index> {
 public:
+  ///
+  /// \brief Defines the type of the elements in the Vector
+  ///
   typedef Index value_type;
-//  typedef ?? const_iterator;
+
+  ///
+  /// \brief Defines the type used to denote size of the Vector
+  ///
   typedef size_t size_type;
 
-  Vector(const value_type size);// ,
-         //const detail::Distribution<Vector<Index>>& distribution
-         //                           = detail::Distribution<Vector<Index>>());
+  ///
+  /// \brief Create a new IndexVector with the given size.
+  ///
+  Vector(const value_type size);
+
+  ///
+  /// \brief Create a new IndexVector with the size and distribution given by
+  ///        rhs.
+  ///
   Vector(const Vector<Index>& rhs);
 
   ~Vector();
 
-  // TODO: vector interface
-
+  // TODO: finish vector interface
+//  typedef ?? const_iterator;
 //  const_iterator begin() const;
 //  const_iterator end() const;
+  // ...
+
+  ///
+  /// \brief Returns the total size of the Vector.
+  ///
+  /// \return The total size of the Vector.
+  ///
   size_type size() const;
+
+  ///
+  /// \brief Returns the size of the parts of the Vector which are stored on
+  ///        each device.
+  ///
+  /// \return The sizes of the parts of the Vector which are stored on each
+  ///         device.
+  ///
   detail::Sizes sizes() const;
+
+  ///
+  /// \brief Returns the Index at position n (i.e. n).
+  ///
+  /// This version does not prevent out of range accesses.
+  /// If n > size() the behavior is undefined.
+  ///
+  /// \param n The position for which the Index should be returned.
+  ///
+  /// \return The Index at position n. As the Vector stores Index%es from 0 up
+  ///         to its size the return value is always n.
+  ///
   value_type operator[]( size_type n ) const;
+
+  ///
+  /// \brief Returns the Index at position n (i.e. n).
+  ///
+  /// This version does prevent out of range accesses.
+  /// If n > size() an std::out_of_range exception is thrown.
+  ///
+  /// \param n The position for which the Index should be returned.
+  ///
+  /// \return The Index at position n. As the Vector stores Index%es from 0 up
+  ///         to its size the return value is always n.
+  ///
   value_type at( size_type n ) const;
+
+  ///
+  /// \brief Return the first Index stored in the Vector (i.e. 0).
+  ///
+  /// \return Always 0.
+  ///
   value_type front() const;
+
+  ///
+  /// \brief Return the last Index stored in the Vector (i.e. size()-1).
+  ///
+  /// \return Always size()-1.
+  ///
   value_type back() const;
 
   ///
-  /// \brief Returns a pointer to the current distribution of the vector.
-  /// \return A pointer to the current distribution of the vector, of nullptr
-  ///         if no distribution is set
+  /// \brief Returns the current distribution of the Vector.
+  //
+  /// \return The current distribution of the Vector.
   ///
   detail::Distribution<Vector<Index>>& distribution() const;
 
   ///
-  /// \brief Changes the distribution of the vector
-  ///
-  /// Changing the distribution might lead to data transfer between the host and
-  /// the devices.
+  /// \brief Changes the distribution of the Vector
   ///
   /// \param distribution The new distribution to be set. After this call
   ///                     distribution is the new selected distribution of the
-  ///                     vector
+  ///                     Vector.
   ///
   template <typename U>
-  void setDistribution(const detail::Distribution<Vector<U>>&
-                          distribution) const;
+  void setDistribution(const detail::Distribution<Vector<U>>& distribution)
+      const;
 
+  ///
+  /// \brief Changes the distribution of the Vector
+  ///
+  /// \param newDistribution The new distribution to be set. After this call
+  ///                     distribution is the new selected distribution of the
+  ///                     Vector.
+  ///
   template <typename U>
   void setDistribution(const std::unique_ptr<detail::Distribution<Vector<U>>>&
-                          newDistribution) const;
+                           newDistribution) const;
 
+  ///
+  /// \brief Changes the distribution of the Vector
+  ///
+  /// \param newDistribution The new distribution to be set. After this call
+  ///                     distribution is the new selected distribution of the
+  ///                     Vector.
+  ///
   void setDistribution(std::unique_ptr<detail::Distribution<Vector<Index>>>&&
-                          newDistribution) const;
+                           newDistribution) const;
 
+  ///
+  /// \brief Returns a string defining functions necessary to access the Vector
+  ///        on the device. For the IndexVector this function always returns an
+  ///        empty string.
+  ///
+  /// This functions exists for compatibility reasons with the Vector class.
+  ///
+  /// \return An empty string.
+  ///
   static std::string deviceFunctions();
 
-  //
+  ///
+  /// \brief This function should never be called as it only exists for
+  ///        compatibility reasons with the Matrix class.
+  ///
+  /// This function will always fail with an assertion.
+  ///
   const detail::DeviceBuffer& deviceBuffer(const detail::Device& device) const;
 
+  ///
+  /// \brief This function should never be called as it only exists for
+  ///        compatibility reasons with the Matrix class.
+  ///
+  /// This function will always fail with an assertion.
+  ///
   std::vector<Index>& hostBuffer() const;
 
+  ///
+  /// \brief This function should never be called as it only exists for
+  ///        compatibility reasons with the Matrix class.
+  ///
+  /// This function will always fail with an assertion.
+  ///
   void dataOnDeviceModified() const;
 
+  ///
+  /// \brief This function should never be called as it only exists for
+  ///        compatibility reasons with the Matrix class.
+  ///
+  /// This function will always fail with an assertion.
+  ///
   void dataOnHostModified() const;
 
 private:
@@ -122,21 +244,8 @@ private:
   Vector<Index>& operator=(const Vector<Index>&);// = delete;
   Vector<Index>& operator=(Vector<Index> && rhs);// = delete;
 
-  ///
-  /// \brief Formates information about the current instance into a string,
-  ///        used for Debug purposes
-  ///
-  /// \return A formated string with information about the current instance
-  ///
   std::string getInfo() const;
 
-  ///
-  /// \brief Formates even more information about the current instance into a
-  ///        string, as compared to getInfo, used for Debug purposes
-  ///
-  /// \return A formated string with information about the current instance,
-  ///         contains all information from getInfo and more.
-  ///
   std::string getDebugInfo() const;
 
     value_type                                                _maxIndex;

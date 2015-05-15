@@ -274,6 +274,17 @@ void Zip<Tout(Tleft, Tright)>::prepareOutput(C<Tout>& output,
   output.createDeviceBuffers();
 }
 
+template <typename Tleft, typename Tright, typename Tout>
+const std::string& Zip<Tout(Tleft, Tright)>::source() const
+{
+  return _source;
+}
+
+template <typename Tleft, typename Tright, typename Tout>
+const std::string& Zip<Tout(Tleft, Tright)>::func() const
+{
+  return _funcName;
+}
 
 // ## Zip<Tleft, Tright, void> #####################################
 

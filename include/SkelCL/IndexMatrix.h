@@ -51,78 +51,186 @@
 
 namespace skelcl {
 
-/// 
-/// \brief The IndexMatrix class is a special implementation of a Matrix with
-///        IndexPoints as Elements. The implementation guaranties that no data
-///        is transfered when using this version of the Matrix. OpenCL
-///        functionality (global ids) is used to make the IndexPoints available
-///        on the device. This implementation requires, that the Matrix is const
-///        and can, therefore, not be modified after creation.
-/// 
+///
+/// \brief An simple to use alias for the Matrix<IndexPoint> class.
+///
 typedef const Matrix<IndexPoint> IndexMatrix;
 
+/// 
+/// \brief The IndexMatrix (a.k.a. Matrix<IndexPoint>) class is a special
+///        implementation of a Matrix with Elements of type IndexPoint.
+///
+/// The implementation guaranties that no data is transfered to and from the
+/// devices when using this version of the Matrix. OpenCL functionality (global
+/// ids) is used to make the IndexPoint%s available on the device. This
+/// implementation requires, that the Matrix is const and can, therefore, not be
+/// modified after creation.
+///
+/// \ingroup containers
+/// \ingroup matrix
+/// 
 template <>
 class SKELCL_DLL Matrix<IndexPoint> {
 public:
+  ///
+  /// \brief Defines the type of the elements in the Matrix
+  ///
   typedef IndexPoint value_type;
-//  typedef ?? const_iterator;
+
+  ///
+  /// \brief Defines the type used to denote size of the Matrix
+  ///
   typedef skelcl::MatrixSize size_type;
 
-  Matrix(const size_type size);// ,
-         //const detail::Distribution<Matrix<IndexPoint>>& distribution
-         //  = detail::Distribution<Matrix<IndexPoint>>());
+  ///
+  /// \brief Create a new IndexMatrix with the given size.
+  ///
+  Matrix(const size_type size);
 
   ~Matrix();
 
-  // matrix interface
-
+  // TODO: finish matrix interface
+//  typedef ?? const_iterator;
 //  const_iterator begin() const;
 //  const_iterator end() const;
+  //  ...
+
+  ///
+  /// \brief Returns the total size of the Matrix.
+  ///
+  /// \return The total size of the Matrix.
+  ///
   size_type size() const;
+
+  ///
+  /// \brief Returns the size of the parts of the Matrix which are stored on
+  ///        each device.
+  ///
+  /// \return The sizes of the parts of the Matrix which are stored on each
+  ///         device.
+  ///
   detail::Sizes sizes() const;
+
+  ///
+  /// \brief Returns the IndexPoint at position n (i.e. n).
+  ///
+  /// This version does not prevent out of range accesses.
+  /// If n > size() the behavior is undefined.
+  ///
+  /// \param n The position for which the IndexPoint should be returned.
+  ///
+  /// \return The IndexPoint at position n. As the Matirx stores IndexPoint%s
+  ///         from 0 up to its size the return value is always n.
+  ///
   value_type operator[]( size_type n ) const;
+
+  /// \brief Returns the IndexPoint at position n (i.e. n).
+  ///
+  /// This version does prevent out of range accesses.
+  /// If n > size() an std::out_of_range exception is thrown.
+  ///
+  /// \param n The position for which the IndexPoint should be returned.
+  ///
+  /// \return The IndexPoint at position n. As the Matirx stores IndexPoint%s
+  ///         from 0 up to its size the return value is always n.
+  ///
   value_type at( size_type n ) const;
+
+  ///
+  /// \brief Return the first IndexPoint stored in the Matrix (i.e. {0, 0}).
+  ///
+  /// \return Always {0, 0}.
+  ///
   value_type front() const;
+
+  ///
+  /// \brief Return the last Index stored in the Vector (i.e.
+  ///        {size().rowCount()-1, size().columnCount()-1}).
+  ///
+  /// \return Always {size().rowCount()-1, size().columnCount()-1}).
+  ///
   value_type back() const;
 
   ///
-  /// \brief Returns a pointer to the current distribution of the vector.
-  /// \return A pointer to the current distribution of the vector, of nullptr
-  ///         if no distribution is set
+  /// \brief Returns the current distribution of the Matrix.
+  ///
+  /// \return The current distribution of the Matrix.
   ///
   detail::Distribution<Matrix<IndexPoint>>& distribution() const;
 
   ///
-  /// \brief Changes the distribution of the vector
-  ///
-  /// Changing the distribution might lead to data transfer between the host and
-  /// the devices.
+  /// \brief Changes the distribution of the Matrix
   ///
   /// \param distribution The new distribution to be set. After this call
   ///                     distribution is the new selected distribution of the
-  ///                     vector
+  ///                     Matrix.
   ///
   template <typename U>
-  void setDistribution(const detail::Distribution<Matrix<U>>&
-                          distribution) const;
+  void setDistribution(const detail::Distribution<Matrix<U>>& distribution)
+      const;
 
+  ///
+  /// \brief Changes the distribution of the Matrix
+  ///
+  /// \param newDistribution The new distribution to be set. After this call
+  ///                     distribution is the new selected distribution of the
+  ///                     Matrix.
+  ///
   template <typename U>
   void setDistribution(const std::unique_ptr<detail::Distribution<Matrix<U>>>&
                           newDistribution) const;
 
-  void
-    setDistribution(std::unique_ptr<detail::Distribution<Matrix<IndexPoint>>>&&
-                          newDistribution) const;
+  ///
+  /// \brief Changes the distribution of the Matrix
+  ///
+  /// \param newDistribution The new distribution to be set. After this call
+  ///                     distribution is the new selected distribution of the
+  ///                     Matrix.
+  ///
+  void setDistribution(std::unique_ptr<
+      detail::Distribution<Matrix<IndexPoint>>>&& newDistribution) const;
 
+  ///
+  /// \brief Returns a string defining functions necessary to access the Matrix
+  ///        on the device. For the IndexMatrix this function always returns an
+  ///        empty string.
+  ///
+  /// This functions exists for compatibility reasons with the Matrix class.
+  ///
+  /// \return An empty string.
+  ///
   static std::string deviceFunctions();
 
-  //
+  ///
+  /// \brief This function should never be called as it only exists for
+  ///        compatibility reasons with the Matrix class.
+  ///
+  /// This function will always fail with an assertion.
+  ///
   const detail::DeviceBuffer& deviceBuffer(const detail::Device& device) const;
 
+  ///
+  /// \brief This function should never be called as it only exists for
+  ///        compatibility reasons with the Matrix class.
+  ///
+  /// This function will always fail with an assertion.
+  ///
   std::vector<IndexPoint>& hostBuffer() const;
 
+  ///
+  /// \brief This function should never be called as it only exists for
+  ///        compatibility reasons with the Matrix class.
+  ///
+  /// This function will always fail with an assertion.
+  ///
   void dataOnDeviceModified() const;
 
+  ///
+  /// \brief This function should never be called as it only exists for
+  ///        compatibility reasons with the Matrix class.
+  ///
+  /// This function will always fail with an assertion.
+  ///
   void dataOnHostModified() const;
 
 private:
@@ -132,24 +240,11 @@ private:
   Matrix<IndexPoint>& operator=(const Matrix<IndexPoint>&);// = delete;
   Matrix<IndexPoint>& operator=(Matrix<IndexPoint> && rhs);// = delete;
 
-  ///
-  /// \brief Formates information about the current instance into a string,
-  ///        used for Debug purposes
-  ///
-  /// \return A formated string with information about the current instance
-  ///
   std::string getInfo() const;
 
-  ///
-  /// \brief Formates even more information about the current instance into a
-  ///        string, as compared to getInfo, used for Debug purposes
-  ///
-  /// \return A formated string with information about the current instance,
-  ///         contains all information from getInfo and more.
-  ///
   std::string getDebugInfo() const;
 
-    value_type                                                _maxIndex;
+  value_type                                                  _maxIndex;
   mutable
     std::unique_ptr<detail::Distribution<Matrix<IndexPoint>>> _distribution;
 };

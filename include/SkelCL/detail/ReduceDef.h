@@ -287,6 +287,24 @@ skelcl::detail::Program Reduce<T(T)>::createPrepareAndBuildProgram()
   return program;
 }
 
+template <typename T>
+std::string Reduce<T(T)>::source() const
+{
+  return _userSource;
+}
+
+template <typename T>
+std::string Reduce<T(T)>::func() const
+{
+  return _funcName;
+}
+
+template <typename T>
+std::string Reduce<T(T)>::id() const
+{
+  return _id;
+}
+
 } // namespace skelcl
 
 #endif // REDUCE_DEF_H_

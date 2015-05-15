@@ -43,6 +43,8 @@
 #include <SkelCL/Map.h>
 
 #include "Test.h"
+/// \cond
+/// Don't show this test in doxygen
 
 class IndexVectorTest : public ::testing::Test {
 protected:
@@ -91,4 +93,6 @@ TEST_F(IndexVectorTest, SimpleMap) {
     EXPECT_EQ(i, v[i]);
   }
 }
+
+/// \endcond
 

@@ -8,7 +8,7 @@ before_install:
   - sudo apt-get update -qq
 
   # install OpenCL 2.9 from AMD
-  - wget --content-disposition --trust-server-names --post-data='amd_developer_central_nonce=6a655af5ac&_wp_http_referer=/tools-and-sdks/opencl-zone/opencl-tools-sdks/amd-accelerated-parallel-processing-app-sdk/&f=QU1ELUFQUC1TREstdjIuOS1sbng2NC50Z3o=' http://developer.amd.com/tools-and-sdks/opencl-zone/opencl-tools-sdks/amd-accelerated-parallel-processing-app-sdk/
+  - wget https://dl.dropboxusercontent.com/s/e9dihwobjt806op/AMD-APP-SDK-v2.9-lnx64.tgz
   - tar xf AMD-APP-SDK-v2.9-lnx64.tgz
   - sudo ./Install-AMD-APP.sh
 
@@ -18,6 +18,8 @@ before_install:
   # install dependencies
   - sudo apt-get install -y libssl-dev libglu1-mesa-dev llvm-3.3-dev clang-3.3 libclang-3.3-dev
   - mkdir libraries/stooling/libraries/llvm
+  - mkdir libraries/stooling/libraries/llvm/bin
+  - ln -s `which llvm-config-3.3` libraries/stooling/libraries/llvm/bin/llvm-config
   - ln -s `llvm-config-3.3 --includedir` libraries/stooling/libraries/llvm/include
   - ln -s `llvm-config-3.3 --libdir` libraries/stooling/libraries/llvm/lib
 
@@ -30,10 +32,6 @@ before_install:
 before_script: mkdir build
 
 script: cd build && cmake .. && make && make test
-
-branches:
-  only:
-    - master
 
 notifications:
   email:

@@ -30,12 +30,9 @@ set (PVSUTIL_SOURCES
 # specify library target
 add_library (pvsutil ${PVSUTIL_SOURCES})
 
-# specify install
-if (OS_LINUX)
-	# specify install into directory DESTINATION/lib
-  install (TARGETS pvsutil
-					 LIBRARY DESTINATION lib
-					 ARCHIVE DESTINATION lib
-					)
-endif (OS_LINUX)
+install (TARGETS pvsutil
+         LIBRARY DESTINATION lib)
+
+install (DIRECTORY ../include/pvsutil
+         DESTINATION include)
 

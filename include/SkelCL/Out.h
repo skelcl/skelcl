@@ -44,22 +44,23 @@
 
 namespace skelcl {
 
+/// \cond
+/// Don't show this forward declarations in doxygen
 template <typename> class Out;
+/// \endcond
 
 ///
-/// \class Out
-///
 /// \brief This class can be used to wrap an container to be passed as
-///        argument to a skeleton
+///        argument to a skeleton.
 ///
 /// When this class is used to wrap an argument which is passed to a 
 /// skeleton, the data inside the wrapped container is marked as modified on
-/// the device after the skeleton executed.
+/// the device after the skeleton is executed.
 ///
-/// \tparam ContainerType The wrapped container, must be a subclass of the
-///                       Container Class
-///         T             The type of the data stored in the wrapped 
-///                       container
+/// \tparam ContainerType The wrapped container class. Can wither be Vector or
+///                       Matrix.
+/// \tparam T             The type of the data stored in the wrapped 
+///                       container.
 ///
 template <template <typename> class ContainerType, typename T>
 class Out<ContainerType<T>> {
@@ -85,7 +86,7 @@ private:
 };
 
 ///
-/// \brief Auxiliary function to create a Out wrapper object.
+/// \brief Helper function to create a Out wrapper object.
 ///
 /// \param c Container to be wrapped
 ///

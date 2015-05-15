@@ -11,7 +11,7 @@ if (${UNIX})
     set (CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++ -DGTEST_USE_OWN_TR1_TUPLE=1 -Wall -Wextra"
       CACHE STRING "Flags used by the compiler during all build types.")
   else (${APPLE})
-    set (CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra"
+    set (CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra -pthread"
       CACHE STRING "Flags used by the compiler during all build types.")
   endif (${APPLE})
 
@@ -47,6 +47,8 @@ option (BUILD_SHARED_LIBS
         "Build shared libraries (DLLs)." ON)
 option (BUILD_EXAMPLES
         "Build all examples automatically with the library." ON)
+option (BUILD_EXECUTOR
+        "Build executor tool." ON)
 option (BUILD_TESTS
         "Build all tests automatically with the library." ON)
 option (BUILD_TOOLS
@@ -88,6 +90,11 @@ add_subdirectory (src)
 if (BUILD_EXAMPLES)
   add_subdirectory (examples)
 endif (BUILD_EXAMPLES)
+
+# build executor
+if (BUILD_EXECUTOR)
+  add_subdirectory (executor)
+endif (BUILD_EXECUTOR)
 
 #build tests
 if (BUILD_TESTS)

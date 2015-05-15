@@ -56,9 +56,7 @@
 
 #include "SkelCL/detail/Program.h"
 
-#include "SkelCL/detail/Device.h"
 #include "SkelCL/detail/DeviceList.h"
-#include "SkelCL/detail/Util.h"
 
 namespace {
 
@@ -146,6 +144,9 @@ void Program::renameType(const int i, const std::string& typeName)
 
 bool Program::loadBinary()
 {
+  // don't load if not explicitly enabled
+  if (util::envVarValue("SKELCL_LOAD_BINARY") != "YES") return false;
+
   // if hash is empty no binary is loaded (maybe be more gentle and just return)
   ASSERT(!_hash.empty());
 
@@ -160,16 +161,16 @@ bool Program::loadBinary()
     }
 
     // get the size of the file
-		std::ifstream::pos_type size = binaryFile.tellg();
-		// allocate memory
+    std::ifstream::pos_type size = binaryFile.tellg();
+    // allocate memory
     std::unique_ptr<char[]> binary(new char[size]);
-		// set position in file to the beginning
-		binaryFile.seekg(0, std::ios::beg);
-		// read the hole file
-		binaryFile.read(binary.get(), size);
-		// close it
-		binaryFile.close();
-		// push the binary on the vector
+    // set position in file to the beginning
+    binaryFile.seekg(0, std::ios::beg);
+    // read the hole file
+    binaryFile.read(binary.get(), size);
+    // close it
+    binaryFile.close();
+    // push the binary on the vector
     cl::Program::Binaries binaries(1, std::make_pair(binary.get(), size));
     std::vector<cl::Device> devices{ devicePtr->clDevice() };
     _clPrograms.push_back( cl::Program( devicePtr->clContext(),
@@ -182,7 +183,7 @@ bool Program::loadBinary()
   return true;
 }
 
-void Program::build()
+void Program::build(const std::string& options)
 {
   pvsutil::Timer t;
   bool createdProgramsFromSource = false;
@@ -196,21 +197,22 @@ void Program::build()
     // TODO: how to build the program only for a subset of devices?
     for (auto& devicePtr : globalDeviceList) {
       _clPrograms[devicePtr->id()].build(
-            std::vector<cl::Device>(1, devicePtr->clDevice()) );
+            std::vector<cl::Device>(1, devicePtr->clDevice()),
+            options.c_str() );
     }
 
     if (createdProgramsFromSource) {
       saveBinary();
     }
 
+    if (util::envVarValue("SKELCL_PRINT_BUILD_LOG") == "YES") {
+      printBuildLog();
+    }
+
   } catch (cl::Error& err) {
     if (err.err() == CL_BUILD_PROGRAM_FAILURE) {
-      auto& devicePtr = globalDeviceList.front();
-      auto  buildLog =
-        _clPrograms[
-          devicePtr->id()].getBuildInfo<CL_PROGRAM_BUILD_LOG>(
-                                           devicePtr->clDevice() );
-      LOG_ERROR(err, "\nBuild log:\n", buildLog);
+      LOG_ERROR(err);
+      printBuildLog();
       abort();
     } else {
       ABORT_WITH_ERROR(err);
@@ -218,6 +220,16 @@ void Program::build()
   }
 
   LOG_PROF("skelcl::Program::build() ", t.stop(), " ms");
+}
+
+void Program::printBuildLog()
+{
+  auto& devicePtr = globalDeviceList.front();
+  auto  buildLog =
+          _clPrograms[
+                  devicePtr->id()].getBuildInfo<CL_PROGRAM_BUILD_LOG>(
+                  devicePtr->clDevice() );
+  LOG(pvsutil::Logger::Severity::LogAlways, "Build log:\n", buildLog);
 }
 
 cl::Kernel Program::kernel(const Device& device,

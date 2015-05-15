@@ -42,6 +42,8 @@
 #include <SkelCL/detail/Util.h>
 
 #include "Test.h"
+/// \cond
+/// Don't show this test in doxygen
 
 class SHA1Test : public ::testing::Test {
 protected:
@@ -73,4 +75,6 @@ TEST_F(SHA1Test, lazyCog) {
 
   EXPECT_EQ(expected, skelcl::detail::util::hash(text));
 }
+
+/// \endcond
 

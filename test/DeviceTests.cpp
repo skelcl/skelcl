@@ -38,6 +38,8 @@
 #include <SkelCL/detail/Device.h>
 
 #include "Test.h"
+/// \cond
+/// Don't show this test in doxygen
 
 class DeviceTest : public ::testing::Test {
 protected:
@@ -75,4 +77,6 @@ TEST_F(DeviceTest, CreateDevice) {
 
   // TODO: Test command queue
 }
+
+/// \endcond
 

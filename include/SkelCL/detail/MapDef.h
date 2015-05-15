@@ -236,6 +236,7 @@ void Map<void(Tin)>::operator()(const C<Tin>& input,
   pvsutil::Timer t; // Time how long it takes to prepare input and output data.
 
   this->prepareInput(input);
+
   prepareAdditionalInput(std::forward<Args>(args)...);
 
   // Profiling information.

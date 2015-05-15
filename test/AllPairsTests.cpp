@@ -48,6 +48,8 @@
 #include <SkelCL/Reduce.h>
 
 #include "Test.h"
+/// \cond
+/// Don't show this test in doxygen
 
 void testAllPairsWithMatrices(const unsigned int, const unsigned int, const unsigned int);
 
@@ -265,4 +267,6 @@ TEST_F(AllPairsTest, AltKernelAddArguments) {
         }
     }
 }
+
+/// \endcond
 
