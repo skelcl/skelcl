@@ -210,8 +210,14 @@ Simulation::Simulation(const size_t size, const int resolution, const int swaps,
   std::string stc_in = ss.str() + code2;
   std::cout << map_in;
   motionEquation = new Map<data_t(data_t)>(map_in, "motionEquation");
-  eFieldEquation = new Stencil<data_t(data_t)>(stc_in, 1u, 1u, 0u, 0u, detail::Padding::NEUTRAL, zero, "eFieldEquation", swaps);
-  hFieldEquation = new Stencil<data_t(data_t)>(stc_in, 0u, 0u, 1u, 1u, detail::Padding::NEUTRAL, zero, "hFieldEquation", swaps);
+  eFieldEquation = new Stencil<data_t(data_t)>(
+      stc_in, "eFieldEquation",
+      detail::stencilShape(detail::any(0), detail::north(1), detail::west(1)),
+      detail::Padding::NEUTRAL, zero);
+  hFieldEquation = new Stencil<data_t(data_t)>(
+      stc_in, "hFieldEquation",
+      detail::stencilShape(detail::any(0), detail::south(1), detail::east(1)),
+      detail::Padding::NEUTRAL, zero);
 }
 
 Simulation::~Simulation()
@@ -299,14 +305,14 @@ void Simulation::run()
 
     dev->wait();
     start = std::chrono::high_resolution_clock::now();
-    (*eFieldEquation)(1, out(E), out(E), H, E, t * _p.dt);
+    (*eFieldEquation)(out(E), out(E), H, E, t * _p.dt);
     dev->wait();
     end = std::chrono::high_resolution_clock::now();
     LOG_INFO("efield_eq:", std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1e6);
 
     dev->wait();
     start = std::chrono::high_resolution_clock::now();
-    (*hFieldEquation)(1, out(H), out(H), E, H);
+    (*hFieldEquation)(out(H), out(H), E, H);
     dev->wait();
     end = std::chrono::high_resolution_clock::now();
     auto gend = std::chrono::high_resolution_clock::now();

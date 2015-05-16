@@ -60,7 +60,7 @@ public:
   Stencil(const Source& source,
           const std::string& func,
           const detail::StencilShape& shape,
-          detail::Padding padding, Tin paddingElement = NULL);
+          detail::Padding padding, Tin paddingElement = static_cast<Tin>(NULL));
 
   // Execute stencil, returning output.
   template <typename... Args>
