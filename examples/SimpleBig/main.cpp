@@ -77,7 +77,7 @@ int main(int argc, char** argv)
         // Create stencil.
         Stencil<DATA_T(DATA_T)> s(std::ifstream{"./kernels.cl"},
                                   NORTH, WEST, SOUTH, EAST,
-                                  detail::Padding::NEUTRAL, 0,
+                                  Padding::NEUTRAL, 0,
                                   complex ? complex_k : simple_k, swaps);
 
         // Run stencil.

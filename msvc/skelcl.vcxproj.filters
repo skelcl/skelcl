@@ -83,7 +83,7 @@
     <ClInclude Include="..\include\SkelCL\detail\OverlapDistributionDef.h">
       <Filter>Public Header Files\detail</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\SkelCL\detail\Padding.h">
+    <ClInclude Include="..\include\SkelCL\Padding.h">
       <Filter>Public Header Files\detail</Filter>
     </ClInclude>
     <ClInclude Include="..\include\SkelCL\detail\PlatformID.h">

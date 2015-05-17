@@ -60,7 +60,7 @@ public:
   Stencil(const Source& source,
           const std::string& func,
           const StencilShape& shape,
-          detail::Padding padding, Tin paddingElement = static_cast<Tin>(NULL));
+          Padding padding, Tin paddingElement = static_cast<Tin>(NULL));
 
   // Execute stencil, returning output.
   template <typename... Args>
@@ -77,10 +77,10 @@ public:
   const StencilShape& getShape() const;
 
   // Returns the padding method used.
-  const detail::Padding& getPadding() const;
+  const Padding& getPadding() const;
 
   /// Returns neutral element, which shall be used to fill the overlap
-  /// region (only used if detail::Padding == NEUTRAL)
+  /// region (only used if Padding == NEUTRAL)
   const Tin& getPaddingElement() const;
 
 private:
@@ -118,7 +118,7 @@ private:
 
   // Member variables.
   const StencilShape& _shape;
-  detail::Padding _padding;
+  Padding _padding;
   Tin _paddingElement;
 
   std::string _userSource;  // Source code from application developer.

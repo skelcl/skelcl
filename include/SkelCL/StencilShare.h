@@ -32,14 +32,14 @@ class StencilInfo<Tout(Tin)> {
 public:
 
    StencilInfo(const Source& source, unsigned int north, unsigned int west, unsigned int south, unsigned int east,
-                                detail::Padding padding, Tin neutral_element, const std::string& func);
+                                Padding padding, Tin neutral_element, const std::string& func);
 
    const unsigned int& getNorth() const;
    const unsigned int& getWest() const;
    const unsigned int& getSouth() const;
    const unsigned int& getEast() const;
 
-   const detail::Padding& getPadding() const;
+   const Padding& getPadding() const;
 
    const Tin& getNeutralElement() const;
 
@@ -69,9 +69,9 @@ private:
     unsigned int _east;
 
     /// Determines the padding method.
-    detail::Padding _padding;
+    Padding _padding;
 
-    /// The neutral element, which shall be used to fill the overlap region (only used if detail::Padding == NEUTRAL)
+    /// The neutral element, which shall be used to fill the overlap region (only used if Padding == NEUTRAL)
     Tin _neutral_element;
 
     /// Name of the main function defined in _userSource

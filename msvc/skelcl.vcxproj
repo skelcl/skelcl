@@ -170,7 +170,7 @@
     <ClInclude Include="..\include\SkelCL\detail\MatrixDef.h" />
     <ClInclude Include="..\include\SkelCL\detail\OverlapDistribution.h" />
     <ClInclude Include="..\include\SkelCL\detail\OverlapDistributionDef.h" />
-    <ClInclude Include="..\include\SkelCL\detail\Padding.h" />
+    <ClInclude Include="..\include\SkelCL\Padding.h" />
     <ClInclude Include="..\include\SkelCL\detail\PlatformID.h" />
     <ClInclude Include="..\include\SkelCL\detail\Program.h" />
     <ClInclude Include="..\include\SkelCL\detail\ReduceDef.h" />

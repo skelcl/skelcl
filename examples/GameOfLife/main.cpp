@@ -13,7 +13,7 @@
 #include <SkelCL/IndexMatrix.h>
 #include <SkelCL/MapOverlap.h>
 #include <SkelCL/Stencil.h>
-#include <SkelCL/detail/Padding.h>
+#include <SkelCL/Padding.h>
 
 #include <chrono>
 
@@ -106,7 +106,7 @@ int main(int argc, char** argv)
   if (useMapOverlap) {
     // MapOverlap.
     skelcl::MapOverlap<int(int)> s(std::ifstream{"./MapOverlap.cl"}, 1,
-                                   detail::Padding::NEUTRAL, 0, "func");
+                                   Padding::NEUTRAL, 0, "func");
 
     start = getTime();
     for (auto i = 0; i < iterations; i++)
@@ -116,7 +116,7 @@ int main(int argc, char** argv)
   } else {
     // Stencil.
     skelcl::Stencil<int(int)> s(std::ifstream{"./Stencil.cl"}, 1, 1, 1, 1,
-                                detail::Padding::NEUTRAL, 0, "func", swaps);
+                                Padding::NEUTRAL, 0, "func", swaps);
     start = getTime();
     grid = s(iterations, grid);
   }

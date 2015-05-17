@@ -212,7 +212,7 @@ Debug/SkelFDTD.o: SkelFDTD.cpp Simulation.h \
   /home/m_haid02/skelcl/include/SkelCL/detail/Significances.h \
   /home/m_haid02/skelcl/include/SkelCL/detail/BlockDistributionDef.h \
   /home/m_haid02/skelcl/include/SkelCL/detail/OLDistribution.h \
-  /home/m_haid02/skelcl/include/SkelCL/detail/Padding.h \
+  /home/m_haid02/skelcl/include/SkelCL/Padding.h \
   /home/m_haid02/skelcl/include/SkelCL/detail/OLDistributionDef.h \
   /home/m_haid02/skelcl/include/SkelCL/detail/StencilDistribution.h \
   /usr/lib/gcc/x86_64-linux-gnu/4.8/../../../../include/c++/4.8/climits \

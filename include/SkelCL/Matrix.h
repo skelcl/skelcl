@@ -55,7 +55,7 @@
 #include "detail/Device.h"
 #include "detail/DeviceBuffer.h"
 #include "detail/Distribution.h"
-#include "detail/Padding.h"
+#include "Padding.h"
 #include "detail/skelclDll.h"
 
 namespace skelcl {

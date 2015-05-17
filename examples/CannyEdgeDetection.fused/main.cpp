@@ -13,7 +13,7 @@
 #include <SkelCL/IndexMatrix.h>
 #include <SkelCL/MapOverlap.h>
 #include <SkelCL/Stencil.h>
-#include <SkelCL/detail/Padding.h>
+#include <SkelCL/Padding.h>
 
 #include <chrono>
 
@@ -179,14 +179,14 @@ int main(int argc, char** argv)
   if (useMapOverlap) {
     // Map Overlap.
     skelcl::MapOverlap<float(float)> m(std::ifstream{"./MapOverlapGauss.cl"},
-                                       range.getValue(), detail::Padding::NEUTRAL,
+                                       range.getValue(), Padding::NEUTRAL,
                                        255, "func");
     skelcl::MapOverlap<float(float)> n(std::ifstream{"./MapOverlapSobel.cl"}, 1,
-                                       detail::Padding::NEAREST, 0, "func");
+                                       Padding::NEAREST, 0, "func");
     skelcl::MapOverlap<float(float)> o(std::ifstream{"./MapOverlapNMS.cl"}, 1,
-                                       detail::Padding::NEUTRAL, 0, "func");
+                                       Padding::NEUTRAL, 0, "func");
     skelcl::MapOverlap<float(float)> p(std::ifstream{"./MapOverlapThreshold.cl"}, 1,
-                                       detail::Padding::NEAREST, 255, "func");
+                                       Padding::NEAREST, 255, "func");
 
     outputImage = m(inputImage, kernelVec, range.getValue());
     outputImage.copyDataToHost();
@@ -208,7 +208,7 @@ int main(int argc, char** argv)
     // Stencil.
     skelcl::Stencil<float(float)> s(std::ifstream { "./kernel.cl" },
                                     border, border, border, border,
-                                    detail::Padding::NEUTRAL, 255, "func", swaps);
+                                    Padding::NEUTRAL, 255, "func", swaps);
 
     outputImage = s(1, inputImage, kernelVec, range.getValue());
   }

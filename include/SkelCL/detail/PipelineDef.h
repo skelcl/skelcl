@@ -77,7 +77,7 @@ namespace skelcl {
 template <typename Tin, typename Tout>
 Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int north,
                             unsigned int west, unsigned int south,
-                            unsigned int east, detail::Padding padding,
+                            unsigned int east, Padding padding,
                             Tin neutral_element, const std::string& func,
                             int iterBetSwaps)
   : detail::Skeleton("Stencil<Tout(Tin)>"), _iterBetSwaps(iterBetSwaps)
@@ -88,7 +88,7 @@ Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int north,
 
 template <typename Tin, typename Tout>
 Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int range,
-                            detail::Padding padding, Tin neutral_element,
+                            Padding padding, Tin neutral_element,
                             const std::string& func, int iterBetSwaps)
   : detail::Skeleton("Stencil<Tout(Tin)>"), _iterBetSwaps(iterBetSwaps)
 {
@@ -98,7 +98,7 @@ Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int range,
 
 template <typename Tin, typename Tout>
 Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int west,
-                            unsigned int east, detail::Padding padding,
+                            unsigned int east, Padding padding,
                             Tin neutral_element, const std::string& func,
                             int iterBetSwaps)
   : detail::Skeleton("Stencil<Tout(Tin)>"), _iterBetSwaps(iterBetSwaps)
@@ -109,7 +109,7 @@ Stencil<Tout(Tin)>::Stencil(const Source& source, unsigned int west,
 
 template <typename Tin, typename Tout>
 void Stencil<Tout(Tin)>::add(const Source& source, unsigned int range,
-                             detail::Padding padding, Tin neutral_element,
+                             Padding padding, Tin neutral_element,
                              const std::string& func)
 {
   add(source, range, range, range, range, padding, neutral_element, func);
@@ -118,7 +118,7 @@ void Stencil<Tout(Tin)>::add(const Source& source, unsigned int range,
 template <typename Tin, typename Tout>
 void Stencil<Tout(Tin)>::add(const Source& source, unsigned int north,
                              unsigned int west, unsigned int south,
-                             unsigned int east, detail::Padding padding,
+                             unsigned int east, Padding padding,
                              Tin neutral_element, const std::string& func)
 {
     _stencilInfos.emplace_back(source, north, west, south, east, padding,

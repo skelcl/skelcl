@@ -46,7 +46,7 @@
 #include <string>
 #include <vector>
 
-#include "./detail/Padding.h"
+#include "./Padding.h"
 #include "./detail/Skeleton.h"
 #include "./detail/Program.h"
 

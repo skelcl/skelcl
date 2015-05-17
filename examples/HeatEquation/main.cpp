@@ -14,7 +14,7 @@
 #include <SkelCL/IndexMatrix.h>
 #include <SkelCL/MapOverlap.h>
 #include <SkelCL/Stencil.h>
-#include <SkelCL/detail/Padding.h>
+#include <SkelCL/Padding.h>
 
 using namespace skelcl;
 
@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
 
   if (useMapOverlap) {
     MapOverlap<float(float)> s(std::ifstream { "./MapOverlap.cl" }, 1,
-                               detail::Padding::NEUTRAL, 0, "func");
+                               Padding::NEUTRAL, 0, "func");
 
     start = getTime();
     for (int i = 0; i < iterations; i++)
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
     image.resize(image.size());
   } else {
     Stencil<float(float)> s(std::ifstream { "./Stencil.cl" }, 1, 1, 1, 1,
-                            detail::Padding::NEUTRAL, 0, "func", swaps);
+                            Padding::NEUTRAL, 0, "func", swaps);
 
     start = getTime();
     image = s(iterations, image);

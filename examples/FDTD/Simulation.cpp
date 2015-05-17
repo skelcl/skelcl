@@ -8,7 +8,7 @@
 #include <chrono>
 
 #include "Simulation.h"
-#include "SkelCL/detail/Padding.h" // FIXME: includes to detail shold not be necessary
+#include "SkelCL/Padding.h"
 #include "SkelCL/detail/Distribution.h"
 
 #define __sq(x) ((x)*(x))
@@ -213,11 +213,11 @@ Simulation::Simulation(const size_t size, const int resolution, const int swaps,
   eFieldEquation = new Stencil<data_t(data_t)>(
       stc_in, "eFieldEquation",
       detail::stencilShape(detail::any(0), detail::north(1), detail::west(1)),
-      detail::Padding::NEUTRAL, zero);
+      Padding::NEUTRAL, zero);
   hFieldEquation = new Stencil<data_t(data_t)>(
       stc_in, "hFieldEquation",
       detail::stencilShape(detail::any(0), detail::south(1), detail::east(1)),
-      detail::Padding::NEUTRAL, zero);
+      Padding::NEUTRAL, zero);
 }
 
 Simulation::~Simulation()

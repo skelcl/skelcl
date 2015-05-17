@@ -41,6 +41,7 @@ set (SKELCL_HEADERS
       ../include/SkelCL/MapOverlap.h
       ../include/SkelCL/Matrix.h
       ../include/SkelCL/Out.h
+      ../include/SkelCL/Padding.h
       ../include/SkelCL/Reduce.h
       ../include/SkelCL/Scan.h
       ../include/SkelCL/Source.h
@@ -79,7 +80,6 @@ set (SKELCL_HEADERS
       ../include/SkelCL/detail/OLDistributionDef.h
       #../include/SkelCL/detail/OverlapDistribution.h
       #../include/SkelCL/detail/OverlapDistributionDef.h
-      ../include/SkelCL/detail/Padding.h
       ../include/SkelCL/detail/PlatformID.h
       ../include/SkelCL/detail/Program.h
       ../include/SkelCL/detail/OmniTuneClient.h

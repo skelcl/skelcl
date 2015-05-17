@@ -49,7 +49,7 @@ namespace detail {
 
 template <template <typename> class C, typename T>
 OLDistribution<C<T>>::OLDistribution(const unsigned int overlapRadius,
-                                     const detail::Padding padding,
+                                     const Padding padding,
                                      const T neutral_element,
                                      const DeviceList& deviceList)
   : Distribution<C<T>>(deviceList), _overlap_radius(overlapRadius),
@@ -128,7 +128,7 @@ const unsigned int& OLDistribution<C<T>>::getOverlapRadius() const
 }
 
 template <template <typename> class C, typename T>
-const detail::Padding& OLDistribution<C<T>>::getPadding() const
+const Padding& OLDistribution<C<T>>::getPadding() const
 {
   return this->_padding;
 }
@@ -192,7 +192,7 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 
 template <typename T>
 void startUpload(Vector<T>& vector, Event* events, unsigned int overlapRadius,
-                 detail::Padding padding, const T& neutralElement,
+                 Padding padding, const T& neutralElement,
                  const detail::DeviceList& devices)
 {
 
@@ -260,7 +260,7 @@ void startUpload(Vector<T>& vector, Event* events, unsigned int overlapRadius,
 
 template <typename T>
 void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
-                 detail::Padding padding, const T& neutralElement,
+                 Padding padding, const T& neutralElement,
                  const detail::DeviceList& devices)
 {
   ASSERT(events != nullptr);
@@ -272,12 +272,12 @@ void startUpload(Matrix<T>& matrix, Event* events, unsigned int overlapRadius,
   std::vector<T> paddingTop;
   std::vector<T> paddingBottom;
 
-  if (padding == detail::Padding::NEUTRAL) {
+  if (padding == Padding::NEUTRAL) {
     paddingTop.resize(newSize, neutralElement);
     paddingBottom.resize(newSize, neutralElement);
   }
 
-  if (padding == detail::Padding::NEAREST) {
+  if (padding == Padding::NEAREST) {
     paddingTop.resize(newSize);
     auto firstRowBegin = matrix.row_begin(0);
     auto firstRowEnd = matrix.row_end(0);

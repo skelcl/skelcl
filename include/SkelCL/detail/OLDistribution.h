@@ -59,8 +59,8 @@ template <typename> class OLDistribution;
 template <template<typename> class C, typename T>
 class OLDistribution<C<T>> : public Distribution<C<T>> {
 public:
-	OLDistribution(unsigned int overlapRadius = 1, detail::Padding padding =
-			detail::Padding::NEAREST, T neutral_element = T(),
+	OLDistribution(unsigned int overlapRadius = 1, Padding padding =
+			Padding::NEAREST, T neutral_element = T(),
 			const DeviceList& deviceList = globalDeviceList);
 
 	template<typename U>
@@ -81,7 +81,7 @@ public:
 
 	const unsigned int& getOverlapRadius() const;
 
-	const detail::Padding& getPadding() const;
+	const Padding& getPadding() const;
 
 	const T& getNeutralElement() const;
 
@@ -90,7 +90,7 @@ private:
 
 	unsigned int _overlap_radius;
 
-	detail::Padding _padding;
+	Padding _padding;
 
 	T _neutral_element;
 };
@@ -124,8 +124,8 @@ public:
 	unsigned int getOverlapRadius() const
 	{ ASSERT(false); return 0; }
 
-	detail::Padding getPadding() const
-	{ ASSERT(false); return detail::Padding::NEUTRAL; }
+	Padding getPadding() const
+	{ ASSERT(false); return Padding::NEUTRAL; }
 
 	IndexPoint getNeutralElement() const
 	{ ASSERT(false); return IndexPoint{}; }
@@ -145,12 +145,12 @@ size_t sizeForDevice(const std::shared_ptr<Device>& devicePtr,
 
 template <typename T>
 void startUpload(Vector<T>& vector, Event* events, unsigned int overlapRadius,
-                 detail::Padding padding, const T& neutralElement,
+                 Padding padding, const T& neutralElement,
                  const detail::DeviceList& devices);
 
 template <typename T>
 void startUpload(Matrix<T>& vector, Event* events, unsigned int overlapRadius,
-                 detail::Padding padding, const T& neutralElement,
+                 Padding padding, const T& neutralElement,
                  const detail::DeviceList& devices);
 
 template <typename T>

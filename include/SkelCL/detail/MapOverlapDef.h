@@ -72,7 +72,7 @@ namespace skelcl {
 template <typename Tin, typename Tout>
 MapOverlap<Tout(Tin)>::MapOverlap(const Source& source,
                                   unsigned int overlap_range,
-                                  detail::Padding padding, Tin neutral_element,
+                                  Padding padding, Tin neutral_element,
                                   const std::string& func)
   : detail::Skeleton("MapOverlap<Tout(Tin)>"), _userSource(source),
     _funcName(func), _overlap_range(overlap_range), _padding(padding),
@@ -193,7 +193,7 @@ detail::Program MapOverlap<Tout(Tin)>::createAndBuildProgram() const
   temp << "#define SCL_OVERLAP_RANGE (" << _overlap_range << ")\n"
        << "#define SCL_TILE_WIDTH (get_local_size(0) + "
        << "2*" << _overlap_range << ")\n";
-  if (_padding == detail::Padding::NEUTRAL) {
+  if (_padding == Padding::NEUTRAL) {
     temp << "#define NEUTRAL (" << _neutral_element << ")\n";
   }
 

@@ -42,7 +42,7 @@
 #include <istream>
 #include <string>
 
-#include "detail/Padding.h"
+#include "Padding.h"
 #include "detail/Skeleton.h"
 #include "detail/Program.h"
 
@@ -117,7 +117,7 @@ public:
   ///                 invoked by the Map skeleton.
   ///
   MapOverlap<Tout(Tin)>(const Source& source, unsigned int overlap_range = 1,
-                        detail::Padding padding = detail::Padding::NEAREST,
+                        Padding padding = detail::Padding::NEAREST,
                         Tin neutral_element = Tin(),
                         const std::string& func = std::string("func"));
   
@@ -182,7 +182,7 @@ private:
   std::string _userSource;
   std::string _funcName;
   unsigned int _overlap_range;
-  detail::Padding _padding;
+  Padding _padding;
   Tin _neutral_element;
   detail::Program _program;
 };

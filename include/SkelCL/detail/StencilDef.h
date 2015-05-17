@@ -79,7 +79,7 @@ template <typename Tin, typename Tout>
 Stencil<Tout(Tin)>::Stencil(const Source& source,
                             const std::string& func,
                             const StencilShape& shape,
-                            detail::Padding padding,
+                            Padding padding,
                             Tin paddingElement) :
   detail::Skeleton("Stencil<Tout(Tin)>"), _shape(shape), _padding(padding),
   _paddingElement(paddingElement), _userSource(source), _funcName(func),
@@ -293,7 +293,7 @@ detail::Program Stencil<Tout(Tin)>::createAndBuildProgram() const {
        << "#define SCL_L_ID (SCL_L_ROW * SCL_L_COL_COUNT + SCL_L_COL)\n"
        << "#define SCL_ROWS (SCL_ELEMENTS / SCL_COLS)\n";
 
-  if (_padding == detail::Padding::NEUTRAL)
+  if (_padding == Padding::NEUTRAL)
     temp << "#define NEUTRAL " << _paddingElement << "\n";
 
   // create program
@@ -373,19 +373,19 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
 
   } else {
     // Append macros to define the padding type.
-    if (_padding == detail::Padding::NEUTRAL) {
+    if (_padding == Padding::NEUTRAL) {
       s.append(R"(
 #define STENCIL_PADDING_NEUTRAL         1
 #define STENCIL_PADDING_NEAREST         0
 #define STENCIL_PADDING_NEAREST_INITIAL 0
 )");
-    } else if (_padding == detail::Padding::NEAREST) {
+    } else if (_padding == Padding::NEAREST) {
       s.append(R"(
 #define STENCIL_PADDING_NEUTRAL         0
 #define STENCIL_PADDING_NEAREST         1
 #define STENCIL_PADDING_NEAREST_INITIAL 0
 )");
-    } else if (_padding == detail::Padding::NEAREST_INITIAL) {
+    } else if (_padding == Padding::NEAREST_INITIAL) {
       s.append(R"(
 #define STENCIL_PADDING_NEUTRAL         0
 #define STENCIL_PADDING_NEAREST         0
@@ -422,7 +422,7 @@ const StencilShape& Stencil<Tout(Tin)>::getShape() const {
 }
 
 template <typename Tin, typename Tout>
-const detail::Padding& Stencil<Tout(Tin)>::getPadding() const {
+const Padding& Stencil<Tout(Tin)>::getPadding() const {
   return this->_padding;
 }
 

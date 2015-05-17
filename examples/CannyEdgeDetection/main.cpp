@@ -14,7 +14,7 @@
 #include <SkelCL/MapOverlap.h>
 #include <SkelCL/Stencil.h>
 #include <SkelCL/StencilSequence.h>
-#include <SkelCL/detail/Padding.h>
+#include <SkelCL/Padding.h>
 
 #include <chrono>
 
@@ -180,14 +180,14 @@ int main(int argc, char** argv)
   if (useMapOverlap) {
     // Map Overlap.
     skelcl::MapOverlap<float(float)> m(std::ifstream{"./MapOverlapGauss.cl"},
-                                       range.getValue(), detail::Padding::NEUTRAL,
+                                       range.getValue(), Padding::NEUTRAL,
                                        255, "func");
     skelcl::MapOverlap<float(float)> n(std::ifstream{"./MapOverlapSobel.cl"}, 1,
-                                       detail::Padding::NEAREST, 0, "func");
+                                       Padding::NEAREST, 0, "func");
     skelcl::MapOverlap<float(float)> o(std::ifstream{"./MapOverlapNMS.cl"}, 1,
-                                       detail::Padding::NEUTRAL, 0, "func");
+                                       Padding::NEUTRAL, 0, "func");
     skelcl::MapOverlap<float(float)> p(std::ifstream{"./MapOverlapThreshold.cl"}, 1,
-                                       detail::Padding::NEAREST, 255, "func");
+                                       Padding::NEAREST, 255, "func");
 
     outputImage = m(inputImage, kernelVec, range.getValue());
     outputImage.copyDataToHost();
@@ -206,16 +206,16 @@ int main(int argc, char** argv)
   } else {
     Stencil<float(float)> gauss(std::ifstream {"./StencilGauss.cl"}, "func",
                                 detail::stencilShape(detail::any(range)),
-                                detail::Padding::NEUTRAL, 255);
+                                Padding::NEUTRAL, 255);
     Stencil<float(float)> sobel(std::ifstream {"./StencilSobel.cl"}, "func",
                                 detail::stencilShape(detail::any(1)),
-                                detail::Padding::NEAREST);
+                                Padding::NEAREST);
     Stencil<float(float)> nms(std::ifstream {"./StencilNMS.cl"}, "func",
                               detail::stencilShape(detail::any(1)),
-                              detail::Padding::NEUTRAL, 1);
+                              Padding::NEUTRAL, 1);
     Stencil<float(float)> threshold(std::ifstream {"./StencilThreshold.cl"}, "func",
                                     detail::stencilShape(detail::any(0)),
-                                    detail::Padding::NEAREST);
+                                    Padding::NEAREST);
 
     StencilSequence<float(float)> sequence;
 

@@ -48,14 +48,14 @@
 #include <SkelCL/MapOverlap.h>
 #include <SkelCL/Stencil.h>
 #include <SkelCL/StencilSequence.h>
-#include <SkelCL/detail/Padding.h>
+#include <SkelCL/Padding.h>
 
 #include <chrono>
 
 using namespace skelcl;
 
 // Border handling behaviour.
-static const detail::Padding paddingType = detail::Padding::NEUTRAL;
+static const Padding paddingType = detail::Padding::NEUTRAL;
 
 long long getTime()
 {
@@ -237,7 +237,7 @@ int main(int argc, char** argv) {
                              stencilShape(any(0),
                                           north(range),
                                           south(range)),
-                             detail::Padding::NEUTRAL, 255);
+                             Padding::NEUTRAL, 255);
 
       image = s(image, kernelVec, range.getValue());
     } else {
@@ -246,7 +246,7 @@ int main(int argc, char** argv) {
                                               south(rangeSouth),
                                               west(rangeWest),
                                               east(rangeEast)),
-                                 detail::Padding::NEUTRAL, 255);
+                                 Padding::NEUTRAL, 255);
 
       if (iterations > 1) {
         StencilSequence<float(float)> sequence;
