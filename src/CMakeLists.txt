@@ -105,3 +105,10 @@ set (SKELCL_HEADERS
 # specify library target
 add_library (SkelCL ${SKELCL_SOURCES} ${SKELCL_HEADERS})
 target_link_libraries (SkelCL ${SKELCL_COMMON_LIBS})
+
+install (TARGETS SkelCL
+         LIBRARY DESTINATION lib)
+
+install (DIRECTORY ../include/SkelCL
+         DESTINATION include)
+

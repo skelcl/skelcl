@@ -42,6 +42,7 @@
 
 #include <functional>
 #include <sstream>
+#include <string>
 #include <stdexcept>
 
 #include "Description.h"
@@ -147,6 +148,31 @@ public:
 private:
   T                             _value;
 };
+
+template <>
+class ArgImpl<std::string> : public BaseArg {
+public:
+  ArgImpl(const Flags& flags,
+          const Description& des);
+
+  ArgImpl(const Flags& flags,
+          const Description& des,
+          const DefaultValue<std::string>& defaultValue);
+
+  void parse(const std::string& value);
+
+  bool hasArgument() const;
+
+  void printValue(std::ostream& output) const;
+
+  const std::string& getValue() const;
+
+  operator std::string() const;
+
+private:
+  std::string _value;
+};
+
 
 template <typename T>
 class ArgCustomParseFunctionImpl : public BaseArg {

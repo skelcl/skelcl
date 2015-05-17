@@ -59,8 +59,8 @@ __kernel void SCL_REDUCE_1 (
         
     const unsigned int modul = GLOBAL_SIZE;
 
-    int res = SCL_IN[my_pos];
-    int i   = my_pos + modul;
+    SCL_TYPE_0 res = SCL_IN[my_pos];
+    int        i   = my_pos + modul;
         
     while ( i < DATA_SIZE )
     {

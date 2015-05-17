@@ -102,6 +102,45 @@ bool BaseArg::isSet() const
   return _set;
 }
 
+// ArgImpl<std::string>
+
+ArgImpl<std::string>::ArgImpl(const Flags& flags, const Description& des)
+  : BaseArg(flags, des, true, false), _value()
+{
+}
+
+ArgImpl<std::string>::ArgImpl(const Flags& flags, const Description& des,
+                              const DefaultValue<std::string>& defaultValue)
+  : BaseArg(flags, des, false, true), _value(defaultValue.getValue())
+{
+}
+
+void ArgImpl<std::string>::parse(const std::string& value)
+{
+  _value = value;
+  _set = true;
+}
+
+bool ArgImpl<std::string>::hasArgument() const
+{
+  return helper::hasArgument<std::string>::value;
+}
+
+void ArgImpl<std::string>::printValue(std::ostream& output) const
+{
+  output << std::boolalpha << _value;
+}
+
+const std::string& ArgImpl<std::string>::getValue() const
+{
+  return _value;
+}
+
+ArgImpl<std::string>::operator std::string() const
+{
+  return _value;
+}
+
 } // namespace cmdline
 
 } // namespace pvsutil

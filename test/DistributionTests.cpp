@@ -43,6 +43,8 @@
 #include <SkelCL/Vector.h>
 
 #include "Test.h"
+/// \cond
+/// Don't show this test in doxygen
 
 class DistributionTest : public ::testing::Test {
 protected:
@@ -374,4 +376,6 @@ TEST_F(DistributionTest, CopyDistribution6)
     EXPECT_EQ( iter->get(), dist.device(i++).get() );
   }
 }
+
+/// \endcond
 

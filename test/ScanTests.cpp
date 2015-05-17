@@ -46,6 +46,8 @@
 #include <SkelCL/Scan.h>
 
 #include "Test.h"
+/// \cond
+/// Don't show this test in doxygen
 
 class ScanTest : public ::testing::Test {
 protected:
@@ -103,4 +105,6 @@ TEST_F(ScanTest, SmallScan) {
     EXPECT_EQ(i, output[i]);
   }
 }
+
+/// \endcond
 

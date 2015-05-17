@@ -78,7 +78,7 @@ namespace skelcl {
 template <typename Tin, typename Tout>
 Stencil<Tout(Tin)>::Stencil(const Source& source,
                             const std::string& func,
-                            const detail::StencilShape& shape,
+                            const StencilShape& shape,
                             detail::Padding padding,
                             Tin paddingElement) :
   detail::Skeleton("Stencil<Tout(Tin)>"), _shape(shape), _padding(padding),
@@ -417,7 +417,7 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
 }
 
 template <typename Tin, typename Tout>
-const detail::StencilShape& Stencil<Tout(Tin)>::getShape() const {
+const StencilShape& Stencil<Tout(Tin)>::getShape() const {
   return this->_shape;
 }
 

@@ -43,6 +43,8 @@
 #include <SkelCL/Map.h>
 
 #include "Test.h"
+/// \cond
+/// Don't show this test in doxygen
 
 class IndexMatrixTest : public ::testing::Test {
 protected:
@@ -100,3 +102,6 @@ TEST_F(IndexMatrixTest, SimpleMap) {
     }
   }
 }
+
+/// \endcond
+

@@ -43,7 +43,7 @@
 
 namespace skelcl {
 
-namespace detail {
+//namespace detail {
 
 StencilDirection::StencilDirection(StencilDirection::type val) : _val(val) {}
 
@@ -95,6 +95,11 @@ West west(size_t size) {
     return West(size);
 }
 
-} // namespace detail
+void setStencilDirections(StencilShape &/*shape*/)
+{
+    // bottom case
+}
+
+//} // namespace detail
 
 } // namespace skelcl

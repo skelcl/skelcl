@@ -42,6 +42,8 @@
 #include <SkelCL/Matrix.h>
 
 #include "Test.h"
+/// \cond
+/// Don't show this test in doxygen
 
 class MatrixTest : public ::testing::Test {
 protected:
@@ -95,4 +97,6 @@ TEST_F(MatrixTest, CreateMatrixFrom2DVector) {
   }
 
 }
+
+/// \endcond
 

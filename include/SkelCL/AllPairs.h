@@ -35,6 +35,7 @@
 /// \file AllPairs.h
 ///
 ///	\author Malte Friese <malte.friese@uni-muenster.de>
+///	\author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
 
 #ifndef ALLPAIRS_H
@@ -48,220 +49,211 @@
 
 namespace skelcl {
 
+/// \cond
+/// Don't show this forward declarations in doxygen
 template <typename> class Matrix;
 template <typename> class Reduce;
 template <typename> class Zip;
 template <typename> class Out;
 
 template<typename> class AllPairs;
+/// \endcond
 
 ///
-/// \class AllPairs
+/// \defgroup allpairs AllPairs Skeleton
 ///
-/// \brief An instance of the AllPairs skeleton describes all calculation of
+/// \brief The AllPairs skeleton describes a calculation of pairs of row vectors
+///        and column vectors with a user defined function which can be
+///        performed on one or more devices.
+///
+/// \ingroup skeletons
+///
+
+///
+/// \brief An instance of the AllPairs class describes a calculation of
 ///        pairs of row vectors and column vectors with a user defined function
 ///        which can be performed on a device.
 ///
-/// \tparam Tleft  Type of the left input data of the skeleton
-///         Tright Type of the right input data of the skeleton
-///         Tout   Type of the output data of the skeleton
-///
-/// On creation the AllPairs skeleton is customized with either a given reduce and
-/// zip skeleton or with source code defining a function. The source code function header receives
+/// On creation the AllPairs skeleton is customized with either a given
+/// Reduce<T(T)> and Zip<Tout(Tleft, Tright)> skeleton or with source code
+/// defining a function. The source code function header receives
 /// two vectors of the same length and the length as an integer as follows:
-/// Tout func(lmatrix_t* row, rmatrix_t* col, const unsigned int dim). The i-th element of the
-/// row-vector row of type lmatrix_t can be accessed via the API-Function getElementFromRow(row, i) and the i-th element of
-/// the column-vector col of type rmatrix_t can be accessed via the API-function getElementFromColumn(col, i).
-/// The AllPairs skeleton can then be called by passing two matrix containers.
-/// The AllPairs skeleton will compute the results of all pairs of row-vectors from the left matrix
-/// and column-vectors from the right matrix and store them in a result matrix.
-/// More formally: When M is a matrix of size heigt x dim and N is a matrix of size dim x width
-/// and F is the customized function that receives a row-vector from M and and a column-vector from N and calcutes
-/// a scalar value.
-/// Then P is the result matrix of size height x width.
-/// Every P[i,j] is the scalar result from F(M_i, N_j), where M_i is
-/// the ith row vector in M for i in [0,..,height-1] and N_j is the jth column vector in N for j
-/// in [0,...,width-1].
-/// When a zip and a reduce skeleton was passed, then function F = Reduce(Zip(M_i,N_j)).
-/// Passing a zip and reduce skeleton yields a better runtime than defining a function as source code.
+/// \code
+/// Tout func(lmatrix_t* row, rmatrix_t* col, const unsigned int dim).
+/// \endcode
+/// The i-th element of the row-vector row of type \c lmatrix_t can be
+/// accessed via the API-Function \c getElementFromRow(row, i) and the i-th
+/// element of the column-vector col of type \c rmatrix_t can be accessed via
+/// the API-function \c getElementFromColumn(col, i).
+///
+/// The AllPairs skeleton can be executed by passing two matrix containers.
+/// The AllPairs skeleton will compute the results of all pairs of row-vectors
+/// from the left matrix and column-vectors from the right matrix and store them
+/// in a result matrix.
+/// More formally: \c M is a matrix of size \c heigt \c x \c dim and \c N
+/// is a matrix of size \c dim \c x \c width and \c F is the customized function
+/// that receives a row-vector from \c M, a column-vector from \c N and
+/// calculates a scalar value.
+/// Then \c P is the result matrix of size \c height \c x \c width.
+/// Every \c P[i,j] is the scalar result from \c F(M_i, N_j), where \c M_i is
+/// the ith row vector in \c M for i in [0,..,\c height-1] and \c N_j is the
+/// jth column vector in \c N for j in [0,...,\c width-1].
+/// When a Zip<Tout(Tleft, Tright)> and a Reduce<T(T)> skeleton is used to
+/// customize the allpairs skeleton, then function \c F is
+/// \c Reduce(Zip(M_i,N_j)).
+/// Passing a Zip<Tout(Tleft, Tright)> and Reduce<T(T)> skeleton yields a better
+/// runtime than defining a function as source code, as local memory is used
+/// automatically.
+///
+/// \tparam Tleft  Type of the left input data of the skeleton.
+/// \tparam Tright Type of the right input data of the skeleton.
+/// \tparam Tout   Type of the output data of the skeleton.
+///
+/// \ingroup skeletons
+/// \ingroup allpairs
 ///
 template<typename Tleft,
          typename Tright,
          typename Tout>
 class AllPairs<Tout(Tleft, Tright)> : public detail::Skeleton {
+public:
+  ///
+  /// \brief Constructor taking a Reduce and a Zip skeleton used to
+  ///        customize the AllPairs skeleton.
+  ///
+  /// \param reduce   Reduce skeleton
+  /// \param zip      Zip skeleton
+  ///
+  AllPairs<Tout(Tleft, Tright)>(const Reduce<Tout(Tout)>& reduce,
+                                const Zip<Tout(Tleft, Tright)>& zip);
 
-    public:
-    ///
-    /// \brief Constructor taking a Reduce and a Zip skeleton used to
-    ///        customize the AllPairs skeleton.
-    ///
-    /// \param reduce   Reduce skeleton
-    ///
-    ///        zip      Zip skeleton
-    ///
-    ///        funcName Name of the 'main' function (the starting point)
-    ///                 of the given source code
-    ///
-    AllPairs<Tout(Tleft, Tright)>(const Reduce<Tout(Tout)>& reduce, const Zip<Tout(Tleft, Tright)>& zip);
+  ///
+  /// \brief Constructor taking the source code used to customize the
+  ///        AllPairs skeleton.
+  ///
+  /// \param source   Source code used to customize the skeleton
+  /// \param func     Name of the 'main' function (the starting point)
+  ///                 of the given source code
+  ///
+  AllPairs<Tout(Tleft, Tright)>(const std::string& source,
+                                const std::string& func = std::string("func"));
 
-    ///
-    /// \brief Constructor taking the source code used to customize the
-    ///        AllPairs skeleton.
-    ///
-    /// \param source   Source code used to customize the skeleton
-    ///
-    ///        funcName Name of the 'main' function (the starting point)
-    ///                 of the given source code
-    ///
-    AllPairs<Tout(Tleft, Tright)>(const std::string& source, const std::string& func = std::string("func"));
+  ///
+  /// \brief Executes the skeleton on the data provided as arguments left, right
+  ///        and args. The resulting data is stored in a newly created output
+  ///        matrix.
+  ///
+  /// \tparam Args  The types of the arguments which are passed to the
+  ///               user-defined function in addition to the input container.
+  ///
+  /// \param left  The first (left) input data for the skeleton managed inside
+  ///              a matrix.
+  ///              If no distribution is set for this container as well as for
+  ///              the right container as default the Block distribution is
+  ///              selected.
+  ///              If no distribution is set for this container and a
+  ///              distribution is set for the right container the implementation
+  ///              will try to select a suitable distribution for allpairs
+  ///              computations.
+  ///
+  ///  \param right The second (right) input data for the skeleton managed
+  ///               inside a matrix.
+  ///               If no distribution is set for this matrix as well as for
+  ///               the left matrix as default the Copy distribution is
+  ///               selected.
+  ///               If no distribution is set for this matrix and a
+  ///               distribution is set for the left matrix the implementation
+  ///               will try to select a suitable distribution for allpairs
+  ///               computations
+  ///
+  /// \param args   The values of the arguments which are passed to the
+  ///               user-defined function in addition to the input container.
+  ///
+  /// \return A newly created Matrix storing the elements which get computed
+  ///         by performing the allpairs computation.
+  ///
+  template <typename... Args>
+  Matrix<Tout> operator()(const Matrix<Tleft>& left,
+                          const Matrix<Tright>& right, Args&&... args);
 
-    ///
-    /// \brief Function call operator. Executes the skeleton on the data provided
-    ///        as arguments left, right and args. The resulting data is returned
-    ///        as a moved copy.
-    ///
-    /// \param left  The first (left) input data for the skeleton managed inside
-    ///              a matrix.
-    ///              If no distribution is set for this container as well as for
-    ///              the right container as default the Block distribution is
-    ///              selected.
-    ///              If no distribution is set for this container and a
-    ///              distribution is set for the right container the implementation
-    ///              will try to select a suitable distribution for allpairs computations
-    ///
-    ///        right The second (right) input data for the skeleton managed inside
-    ///              a matrix.
-    ///              If no distribution is set for this matrix as well as for
-    ///              the left matrix as default the Copy distribution is
-    ///              selected.
-    ///              If no distribution is set for this matrix and a
-    ///              distribution is set for the left matrix the implementation
-    ///              will try to select a suitable distribution for allpairs computations
-    ///
-    ///        args  Additional arguments which are passed to the function
-    ///              named by funcName and defined in the source code at creation.
-    ///              The individual arguments must be passed in the same order
-    ///              here as they were defined in the funcName function
-    ///              declaration.
-    ///
-    template <typename... Args>
-    Matrix<Tout> operator()(const Matrix<Tleft>& left,
-                            const Matrix<Tright>& right,
-                            Args&&... args);
+  ///
+  /// \brief Executes the skeleton on the provided containers. The
+  ///        resulting data is stored in the provided output container and a
+  ///        reference to this container is returned.
+  ///
+  /// \tparam Args  The types of the arguments which are passed to the
+  ///               user-defined function in addition to the input container.
+  ///
+  /// \param output The output matrix in which the resulting data is stored.
+  ///               The type of this argument is not the type of the matrix
+  ///               itself, but instead a wrapping class tagging that this
+  ///               container is written into. The utility function skelcl::out
+  ///               can be used to create this wrapper for an arbitrary
+  ///               container.
+  ///
+  ///  \param left The first (left) input data for the skeleton managed inside
+  ///              a matrix.
+  ///              If no distribution is set for this matrix as well as for
+  ///              the right matrix as default the Block distribution is
+  ///              selected.
+  ///              If no distribution is set for this matrix and a
+  ///              distribution is set for the right matrix the implementation
+  ///              will try to select a suitable distribution for allpairs
+  ///              computations
+  ///
+  ///  \param right The second (right) input data for the skeleton managed
+  ///               inside a matrix.
+  ///               If no distribution is set for this matrix as well as for
+  ///               the left matrix as default the Copy distribution is
+  ///               selected.
+  ///               If no distribution is set for this matrix and a
+  ///               distribution is set for the left matrix the implementation
+  ///               will try to select a suitable distribution for allpairs
+  ///               computations
+  ///
+  /// \param args   The values of the arguments which are passed to the
+  ///               user-defined function in addition to the input container.
+  //
+  /// \return       A reference to the provided output Matrix. This Matrix
+  ///               contains the elements which gets computed by performing the
+  ///               allpairs computation.
+  ///
+  template <typename... Args>
+  Matrix<Tout>& operator()(Out< Matrix<Tout> > output,
+                           const Matrix<Tleft>& left,
+                           const Matrix<Tright>& right,
+                           Args&&... args);
 
-    ///
-    /// \brief Function call operator. Executes the skeleton on the data provided
-    ///        as arguments left, right and args. The resulting data is stored
-    ///        in the provided output matrix. A reference to the output
-    ///        matrix is returned to allow for chaining skeleton calls.
-    ///
-    /// \param output The matrix storing the result of the execution of the
-    ///               skeleton. A reference to this matrix is also returned.
-    ///               The matrix might be resized to fit the result.
-    ///               The distribution of the matrix might change.
-    ///
-    ///        left  The first (left) input data for the skeleton managed inside
-    ///              a matrix.
-    ///              If no distribution is set for this matrix as well as for
-    ///              the right matrix as default the Block distribution is
-    ///              selected.
-    ///              If no distribution is set for this matrix and a
-    ///              distribution is set for the right matrix the implementation
-    ///              will try to select a suitable distribution for allpairs computations
-    ///
-    ///        right The second (right) input data for the skeleton managed inside
-    ///              a matrix.
-    ///              If no distribution is set for this matrix as well as for
-    ///              the left matrix as default the Copy distribution is
-    ///              selected.
-    ///              If no distribution is set for this matrix and a
-    ///              distribution is set for the left matrix the implementation
-    ///              will try to select a suitable distribution for allpairs computations
-    ///
-    ///        args   Additional arguments which are passed to the function
-    ///               named by funcName and defined in the source code at creation.
-    ///               The individual arguments must be passed in the same order
-    ///               here as they where defined in the funcName function
-    ///               declaration.
-    ///
-    template <typename... Args>
-    Matrix<Tout>& operator()(Out< Matrix<Tout> > output,
-                             const Matrix<Tleft>& left,
-                             const Matrix<Tright>& right,
-                             Args&&... args);
+private:
+  template <typename... Args>
+  void execute(Matrix<Tout>& output, const Matrix<Tleft>& left,
+               const Matrix<Tright>& right, Args&&... args);
 
-    private:
-    ///
-    /// \brief Queries the actual execution of the allpairs skeleton's kernel
-    ///
-    /// \param output The ouput matrix
-    ///        left   The first (left) input matrix
-    ///        right  The second (right) input matrix
-    ///        args   Additional arguments
-    ///
-    template <typename... Args>
-    void execute(Matrix<Tout>& output,
-                 const Matrix<Tleft>& left,
-                 const Matrix<Tright>& right,
-                 Args&&... args);
+  detail::Program createAndBuildProgramSpecial() const;
 
-    ///
-    /// \brief Create a program object from a given reduce skeleton and a given zip skeleton
-    ///
-    /// \return A program object customized with the given reduce and zip skeletons
-    ///         as well as the allpairs skeleton's kernel implementation
-    ///
-    detail::Program createAndBuildProgramSpecial() const;
+  detail::Program createAndBuildProgramGeneral() const;
 
-    ///
-    /// \brief Create a program object from the provided user defined source string
-    ///
-    /// \return A program object customized with the source code defined by
-    ///         the application developer as well as the allpairs skeleton's
-    ///         kernel implementation
-    ///
-    detail::Program createAndBuildProgramGeneral() const;
+  void prepareInput(const Matrix<Tleft>& left, const Matrix<Tright>& right);
 
-    ///
-    /// \brief Prepares the inputs for kernel execution
-    ///
-    /// \param left  The first (left) input matrix to be prepared
-    ///        right The second (right) input matrix to be prepared
-    ///
-    void prepareInput(const Matrix<Tleft>& left,
-                      const Matrix<Tright>& right);
+  void prepareOutput(Matrix<Tout>& output, const Matrix<Tleft>& left,
+                     const Matrix<Tright>& right);
 
-    ///
-    /// \brief Prepares the output for kernel execution
-    ///
-    /// \param output The matrix to be prepared
-    ///        left   The first (left) input matrix is used to determine the
-    ///               distribution to select for the output matrix as well as
-    ///               it's size
-    ///        right  The second (right) input matrix is used to determine the
-    ///               distribution to select for the output matrix as well as
-    ///               it's size
-    ///
-    void prepareOutput(Matrix<Tout>& output,
-                       const Matrix<Tleft>& left,
-                       const Matrix<Tright>& right);
+  // used by special implementation
+  std::string _srcReduce;
+  std::string _srcZip;
+  std::string _funcReduce;
+  std::string _funcZip;
+  std::string _idReduce;
 
-    // used by special implementation
-    std::string _srcReduce;
-    std::string _srcZip;
-    std::string _funcReduce;
-    std::string _funcZip;
-    std::string _idReduce;
+  // used by general implementation
+  std::string _srcUser;
+  std::string _funcUser;
 
-    // used by general implementation
-    std::string _srcUser;
-    std::string _funcUser;
-
-    // used by both implementations
-    unsigned int _C;
-    unsigned int _R;
-    unsigned int _S;
-    detail::Program _program;
+  // used by both implementations
+  unsigned int _C;
+  unsigned int _R;
+  unsigned int _S;
+  detail::Program _program;
 };
 
 } // namespace skelcl

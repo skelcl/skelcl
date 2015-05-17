@@ -46,6 +46,8 @@
 #include <SkelCL/MapOverlap.h>
 
 #include "Test.h"
+/// \cond
+/// Don't show this test in doxygen
 
 #include <iostream>
 
@@ -167,6 +169,7 @@ TEST_F(MapOverlapTest, SimpleMultiDeviceMapOverlap2) {
 #endif
 
 
+#if 0
 const auto print = [](skelcl::Matrix<int>& m, std::string name) {
   std::cout << name << "\n";
   auto i = 0u;
@@ -179,6 +182,7 @@ const auto print = [](skelcl::Matrix<int>& m, std::string name) {
     }
   }
 };
+#endif
 
 TEST_F(MapOverlapTest, SimpleMatrixRightShift) {
   skelcl::MapOverlap<int(int)> m{
@@ -505,3 +509,6 @@ TEST_F(MapOverlapTest, SimpleMatrixMultiDeviceMapOverlap2) {
   EXPECT_EQ(input[input.size()-2]+input[input.size()-1]+0, output.back());
 }
 #endif
+
+/// \endcond
+

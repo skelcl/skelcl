@@ -139,13 +139,20 @@ public:
   IndexPoint();
 
   /// 
-  /// \brief Copy constructor. Creates an IndexPoint with the same values as the
+  /// \brief Creates an IndexPoint with the same values as the
   ///        given IndexPoint.
   ///
   /// \param indexPoint The IndexPoint from with the values are used to create
   ///                   the new IndexPoint.
   /// 
   IndexPoint(const indexPoint_type& indexPoint);
+
+  ///
+  /// \brief Default copy constructor.
+  ///
+  /// \param rhs The IndexPoint to copy from.
+  ///
+  IndexPoint(const IndexPoint& rhs) = default;
 
   /// 
   /// \brief Creates an IndexPoint with the given values so that the IndexPoint
@@ -160,14 +167,24 @@ public:
   /// \brief Move constructor. Creates an IndexPoint with the same values as the
   ///        given IndexPoint.
   ///
-  /// \param indexPoint The IndexPoint from with the values are used to create
-  ///                   the new IndexPoint.
+  /// \param indexPoint The IndexPoint which values are used to create the new
+  ///                   IndexPoint.
   /// 
-  IndexPoint(IndexPoint&& rhs);
-  IndexPoint(const IndexPoint& rhs) = default;
-  IndexPoint& operator=(const IndexPoint& rhs) = default;
+  IndexPoint(IndexPoint&& indexPoint);
+
+  ///
+  /// \brief Move assignment operator. Assign IndexPoint rhs to this.
+  ///        
+  /// \param rhs The IndexPoint which values are assigned to this.
+  ///
   IndexPoint& operator=(IndexPoint&& rhs);
-  //~IndexPoint() = default;
+
+  ///
+  /// \brief Copy assignment operator. Assign rhs to this.
+  ///
+  /// \param rhs The IndexPoint which values are assigned to this.
+  ///
+  IndexPoint& operator=(const IndexPoint& rhs);
 
   /// 
   /// \brief Equality operator. Two IndexPoint objects are equal if and only if

@@ -138,8 +138,8 @@ void StencilSequence<Tout(Tin)>::execute(const Matrix<Tin>& input,
   const unsigned int numDevices = input.distribution().devices().size();
   const unsigned int numOps = iterations * _sequence.size();
 
-  const detail::StencilDirection::type sumSouthBorders = getSumSouthBorders();
-  const detail::StencilDirection::type sumNorthBorders = getSumNorthBorders();
+  const StencilDirection::type sumSouthBorders = getSumSouthBorders();
+  const StencilDirection::type sumNorthBorders = getSumNorthBorders();
 
   int opsCounter = 0;
   int iterationsSinceLastSync = 0;
@@ -187,8 +187,8 @@ void StencilSequence<Tout(Tin)>::execute(const Matrix<Tin>& input,
 }
 
 template <typename Tin, typename Tout>
-detail::StencilDirection::type StencilSequence<Tout(Tin)>::getSumSouthBorders() const {
-  detail::StencilDirection::type sum = 0;
+StencilDirection::type StencilSequence<Tout(Tin)>::getSumSouthBorders() const {
+  StencilDirection::type sum = 0;
 
   for (auto stencil : _sequence)
     sum += stencil->_shape.getSouth();
@@ -197,8 +197,8 @@ detail::StencilDirection::type StencilSequence<Tout(Tin)>::getSumSouthBorders() 
 }
 
 template <typename Tin, typename Tout>
-detail::StencilDirection::type StencilSequence<Tout(Tin)>::getSumNorthBorders() const {
-  detail::StencilDirection::type sum = 0;
+StencilDirection::type StencilSequence<Tout(Tin)>::getSumNorthBorders() const {
+  StencilDirection::type sum = 0;
 
   for (auto stencil : _sequence)
     sum += stencil->_shape.getNorth();

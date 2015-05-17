@@ -47,6 +47,8 @@
 #include <SkelCL/detail/Util.h>
 
 #include "Test.h"
+/// \cond
+/// Don't show this test in doxygen
 
 class ProgramTest : public ::testing::Test {
 protected:
@@ -84,4 +86,6 @@ __kernel void SCL_MAP(
   program.adjustTypes<int, char>();
   program.build();
 }
+
+/// \endcond
 

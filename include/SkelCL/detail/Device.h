@@ -258,6 +258,8 @@ public:
 
   bool isType(Type t) const;
 
+  std::string typeAsString() const;
+
   ///
   /// \brief Returns the name of the device as a string
   ///
@@ -328,6 +330,13 @@ public:
   /// \return A reference to the OpenCL Device object
   ///
   const cl::Device& clDevice() const;
+
+  ///
+  /// \brief Get access to the OpenCL Platform object associated with the device
+  ///
+  /// \return A reference to the OpenCL Platform object associated with the device
+  ///
+  cl::Platform clPlatform() const;
 
   bool supportsDouble() const;
 

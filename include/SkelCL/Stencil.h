@@ -59,7 +59,7 @@ public:
   // Construct a new stencil.
   Stencil(const Source& source,
           const std::string& func,
-          const detail::StencilShape& shape,
+          const StencilShape& shape,
           detail::Padding padding, Tin paddingElement = static_cast<Tin>(NULL));
 
   // Execute stencil, returning output.
@@ -74,7 +74,7 @@ public:
                            Args&&... args) const;
 
   // Returns the stencil shape used.
-  const detail::StencilShape& getShape() const;
+  const StencilShape& getShape() const;
 
   // Returns the padding method used.
   const detail::Padding& getPadding() const;
@@ -117,7 +117,7 @@ private:
                      Args&&... args) const;
 
   // Member variables.
-  const detail::StencilShape& _shape;
+  const StencilShape& _shape;
   detail::Padding _padding;
   Tin _paddingElement;
 

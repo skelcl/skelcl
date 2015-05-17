@@ -48,30 +48,50 @@
 
 namespace skelcl {
 
+/// \cond
+/// Don't show this forward declarations in doxygen
 class Source;
 template <typename> class Out;
 
 template<typename> class Zip;
+/// \endcond
 
 ///
-/// \class Zip
+/// \defgroup zip Zip Skeleton
 ///
-/// \brief An instance of the Zip skeleton describes a calculation which can
-///        be performed on a device.
+/// \brief The Zip skeleton describes a calculation on two containers performed
+///        in parallel on one or more devices. It invokes a binary user-defined
+///        function on its two input containers in a parallel fashion.
 ///
-/// \tparam Tleft  Type of the left input data of the skeleton
-///         Tright Type of the right input data of the skeleton
-///         Tout   Type of the output data of the skeleton
+/// \ingroup skeletons
+///
+
+///
+/// \brief An instance of the Zip class describes a calculation which can
+///        be performed on one or more devices.
+///
+/// This is the most general version of the Zip skeleton.
+/// It can be customized with a user-defined function taking arbitrary types as
+/// arguments (no classes are currently possible) and produces an arbitrary
+/// typed output.
 ///
 /// On creation the Zip skeleton is customized with source code defining
-/// a (at least) binary function.
-/// The Zip skeleton can than be called by passing two containers of the same
-/// type. The given function is executed ones for every pair of item of the two
-/// input containers.
+/// a binary function.
+/// The Zip skeleton can be executed by passing two containers. The given
+/// function is executed ones for every pair of item of the two input
+/// containers.
+///
 /// More formally: When x and y are two containers of length n and m with items
 /// x[0] .. x[n-1] and y[0] .. y[m-1], where m is equal or greater than n,
 /// f is the provided function, the Zip skeleton calculates the output container
 /// z as follows: z[i] = f(x[i], y[i]) for every i in 0 .. n-1.
+///
+/// \tparam Tleft  Type of the left input data of the skeleton
+/// \tparam Tright Type of the right input data of the skeleton
+/// \tparam Tout   Type of the output data of the skeleton
+///
+/// \ingroup skeletons
+/// \ingroup zip
 ///
 template<typename Tleft,
          typename Tright,
@@ -84,7 +104,7 @@ public:
   ///
   /// \param source   Source code used to customize the skeleton
   ///
-  ///        funcName Name of the 'main' function (the starting point)
+  /// \param funcName Name of the 'main' function (the starting point)
   ///                 of the given source code
   ///
   Zip<Tout(Tleft, Tright)>(const Source& source,
@@ -109,7 +129,7 @@ public:
   ///              the right distribution the Block distribution is set for both
   ///              containers.
   ///
-  ///        right The second (right) input data for the skeleton managed inside
+  /// \param right The second (right) input data for the skeleton managed inside
   ///              a container. The actual Type of this argument must be a
   ///              subtype of the Container class.
   ///              If no distribution is set for this container as well as for
@@ -122,7 +142,7 @@ public:
   ///              the left distribution the Block distribution is set for both
   ///              containers.
   ///
-  ///        args  Additional arguments which are passed to the function
+  /// \param args  Additional arguments which are passed to the function
   ///              named by funcName and defined in the source code at created.
   ///              The individual arguments must be passed in the same order
   ///              here as they where defined in the funcName function
@@ -145,7 +165,7 @@ public:
   ///               The container might be resized to fit the result.
   ///               The distribution of the container might change.
   ///
-  ///        left   The first (left) input data for the skeleton managed inside
+  /// \param left   The first (left) input data for the skeleton managed inside
   ///               a container. The actual Type of this argument must be a
   ///               subtype of the Container class.
   ///               If no distribution is set for this container as well as for
@@ -158,7 +178,7 @@ public:
   ///               of the right distribution the Block distribution is set for
   ///               both containers.
   ///
-  ///        right  The second (right) input data for the skeleton managed
+  /// \param right  The second (right) input data for the skeleton managed
   ///               inside a container. The actual Type of this argument must be
   ///               a subtype of the Container class.
   ///               If no distribution is set for this container as well as for
@@ -171,7 +191,7 @@ public:
   ///               of the left distribution the Block distribution is set for
   ///               both containers.
   ///
-  ///        args   Additional arguments which are passed to the function
+  /// \param args   Additional arguments which are passed to the function
   ///               named by funcName and defined in the source code at created.
   ///               The individual arguments must be passed in the same order
   ///               here as they where defined in the funcName function
@@ -184,23 +204,21 @@ public:
                       const C<Tright>& right,
                       Args&&... args);
 
-  const std::string& source() const {
-      return _source;
-  }
-
-  const std::string& func() const {
-      return _funcName;
-  }
+  ///
+  /// \brief Return the source code of the user defined function.
+  ///
+  /// \return The source code of the user defined function.
+  ///
+  const std::string& source() const;
+ 
+  ///
+  /// \brief Return the name of the user defined function.
+  ///
+  /// \return The name of the user defined function.
+  ///
+  const std::string& func() const;
 
 private:
-  ///
-  /// \brief Queries the actual execution of the zip skeleton's kernel
-  ///
-  /// \param output The ouput container
-  ///        left   The first (left) input container
-  ///        right  The second (right) input container
-  ///        args   Additional arguments
-  ///
   template <template <typename> class C,
             typename... Args>
   void execute(C<Tout>& output,
@@ -208,41 +226,15 @@ private:
                const C<Tright>& right,
                Args&&... args);
 
-  ///
-  /// \brief Prepares the inputs for kernel execution
-  ///
-  /// \param left  The first (left) input container to be prepared
-  ///        right The second (right) input container to be prepared
-  ///
   template <template <typename> class C>
   void prepareInput(const C<Tleft>& left,
                     const C<Tright>& right);
 
-  ///
-  /// \brief Prepares the output for kernel execution
-  ///
-  /// \param output The container to be prepared
-  ///        left   The first (left) input vector is used to determine the 
-  ///               distribution to select for the output vector as well as
-  ///               it's size
-  ///        right  The second (right) input vector is used to determine the
-  ///               distribution to select for the output vector as well as
-  ///               it's size
-  ///
   template <template <typename> class C>
   void prepareOutput(C<Tout>& output,
                      const C<Tleft>& left,
                      const C<Tright>& right);
   
-  ///
-  /// \brief Create a program object from the provided source string
-  ///
-  /// \param source The source code defined by the application developer
-  ///
-  /// \return A program object customized with the source code defined by
-  ///         the application developer, as well as the zip skeleton's
-  ///         kernel implementation
-  ///
   detail::Program createAndBuildProgram(const std::string& source,
                                         const std::string& funcName) const;
 
@@ -251,14 +243,86 @@ private:
   const detail::Program _program;
 };
 
+///
+/// \brief An instance of the Zip class describes a calculation which can
+///        be performed on one or more devices.
+///
+/// This is a more specialized version of the general Zip<Tout(Tleft, Tright)>
+/// skeleton.
+/// It can be customized with a user-defined function taking arbitrary types as
+/// arguments (no classes are currently possible) and produces no output.
+///
+/// On creation the Zip skeleton is customized with source code defining
+/// a binary function.
+/// The Zip skeleton can be executed by passing two containers. The given
+/// function is executed ones for every pair of item of the two input
+/// containers.
+///
+/// More formally: When x and y are two containers of length n and m with items
+/// x[0] .. x[n-1] and y[0] .. y[m-1], where m is equal or greater than n,
+/// f is the provided function, the Zip skeleton calculates the output container
+/// z as follows: z[i] = f(x[i], y[i]) for every i in 0 .. n-1.
+///
+/// \tparam Tleft  Type of the left input data of the skeleton
+/// \tparam Tright Type of the right input data of the skeleton
+/// \tparam Tout   Type of the output data of the skeleton
+///
+/// \ingroup skeletons
+/// \ingroup zip
+///
 template<typename Tleft,
          typename Tright>
 class Zip<void(Tleft, Tright)> : public detail::Skeleton {
 public:
+  ///
+  /// \brief Constructor taking the source code used to customize the Zip
+  ///        skeleton.
+  ///
+  /// \param source   Source code used to customize the skeleton
+  ///
+  /// \param funcName Name of the 'main' function (the starting point)
+  ///                 of the given source code
+  ///
   Zip<void(Tleft, Tright)>(const Source& source,
                            const std::string& funcName
                                               = std::string("func"));
 
+  ///
+  /// \brief Function call operator. Executes the skeleton on the data provided
+  ///        as arguments left, right and args.
+  ///
+  /// \param left  The first (left) input data for the skeleton managed inside
+  ///              a container. The actual Type of this argument must be a
+  ///              subtype of the Container class.
+  ///              If no distribution is set for this container as well as for
+  ///              the right container as default the Block distribution is
+  ///              selected.
+  ///              If no distribution is set for this container and a
+  ///              distribution is set for the right container the distribution
+  ///              from the right container is adopted.
+  ///              If a distribution is set and differs from the distribution of
+  ///              the right distribution the Block distribution is set for both
+  ///              containers.
+  ///
+  /// \param right The second (right) input data for the skeleton managed inside
+  ///              a container. The actual Type of this argument must be a
+  ///              subtype of the Container class.
+  ///              If no distribution is set for this container as well as for
+  ///              the left container as default the Block distribution is
+  ///              selected.
+  ///              If no distribution is set for this container and a
+  ///              distribution is set for the left container the distribution
+  ///              from the left container is adopted.
+  ///              If a distribution is set and differs from the distribution of
+  ///              the left distribution the Block distribution is set for both
+  ///              containers.
+  ///
+  /// \param args  Additional arguments which are passed to the function
+  ///              named by funcName and defined in the source code at created.
+  ///              The individual arguments must be passed in the same order
+  ///              here as they where defined in the funcName function
+  ///              declaration.
+  ///
   template <template <typename> class C,
             typename... Args>
   void operator()(const C<Tleft>& left,

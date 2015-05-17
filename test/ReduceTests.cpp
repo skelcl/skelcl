@@ -49,6 +49,8 @@
 #include <iostream>
 
 #include "Test.h"
+/// \cond
+/// Don't show this test in doxygen
 
 typedef skelcl::detail::Device::Type device_type;
 
@@ -166,4 +168,6 @@ TEST_F(ReduceTest, nSizesReduce2)
     EXPECT_EQ(input.size(), output[0]);
   }
 }
+
+/// \endcond
 

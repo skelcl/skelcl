@@ -49,33 +49,38 @@
 
 namespace skelcl {
 
+/// \cond
+/// Don't show this forward declarations in doxygen
 class Index;
 class IndexPoint;
 class Source;
 template <typename> class Out;
 namespace detail { class Program; }
 
-/// 
-/// \brief This class implements the Map skeleton, which describes calculations
-///        performed on one or more devices. It invokes a unary used-defined
-///        function on a container in a parallel fashion.
+template<typename> class Map;
+/// \endcond
+
 ///
-/// \tparam The Map class takes one template argument describing the
-///         declaration of the user-defined function.
+/// \defgroup map Map Skeletons
+/// 
+/// \brief This group of classes implements the Map skeleton, which describes
+///        calculations performed on one or more devices. It invokes a unary
+///        used-defined function on a container in a parallel fashion.
+///
+/// The most general version of the Map skeleton can be customized with a
+/// user-defined function taking an arbitrary types argument (no classes are
+/// currently possible) and produces an arbitrary typed output.
 ///
 /// On creation the Map skeleton is customized with source code defining a
-/// unary function. An instance of this class acts like a function object,
-/// i.e. it can be called like a function. When this happens a container is
-/// passed as input to the Map skeleton which then invokes the provided
-/// function on every element of the container in a parallel fashion on one or
-/// more devices (depending of the distribution of the container).
+/// unary function. An instance of this class is a function object, i.e. it can
+/// be called like a function. When this happens a container is passed as input
+/// to the Map skeleton which then invokes the provided function on every
+/// element of the container in a parallel fashion on one or more devices
+/// (depending of the distribution of the container).
 ///
 /// More formally: When c is a container of length n with items c[0] .. c[n-1],
 /// and f is the provided unary function, the Map skeleton performs the
 /// calculation f(x[i]) for ever i in 0 .. n-1.
-///
-/// Several versions of this skeleton exist, depending on the declaration of the
-/// user defined function. Some of them produce an output, while others do not.
 ///
 /// As all skeletons, the Map skeleton allows for passing additional arguments,
 /// i.e. arguments besides the input container, to the user defined function.
@@ -83,17 +88,43 @@ namespace detail { class Program; }
 /// than just one argument (it is no unary function any more). Accordingly the
 /// number, types and order of arguments used when calling the map skeleton has
 /// to match the declaration of the user-defined function.
-/// 
-template<typename> class Map;
+///
+/// \ingroup skeletons
+///
 
 /// 
-/// \brief This is the most general version of the Map skeleton.
-///        It can be customized with a user-defined function taking an arbitrary
-///        types argument (no classes are currently possible) and produces an
-///        arbitrary typed output.
+/// \brief This class implements the Map skeleton, which describes calculations
+///        performed on one or more devices. It invokes a unary used-defined
+///        function on a container in a parallel fashion.
+//
+/// This is the most general version of the Map skeleton.
+/// It can be customized with a user-defined function taking an arbitrary
+/// types argument (no classes are currently possible) and produces an
+/// arbitrary typed output.
+///
+/// On creation the Map skeleton is customized with source code defining a
+/// unary function. An instance of this class is a function object, i.e. it can
+/// be called like a function. When this happens a container is passed as input
+/// to the Map skeleton which then invokes the provided function on every
+/// element of the container in a parallel fashion on one or more devices
+/// (depending of the distribution of the container).
+///
+/// More formally: When c is a container of length n with items c[0] .. c[n-1],
+/// and f is the provided unary function, the Map skeleton performs the
+/// calculation f(c[i]) for every i in 0 .. n-1.
+///
+/// As all skeletons, the Map skeleton allows for passing additional arguments,
+/// i.e. arguments besides the input container, to the user defined function.
+/// The user-defined function has to written in such a way, that it expects more
+/// than just one argument (it is no unary function any more). Accordingly the
+/// number, types and order of arguments used when calling the map skeleton has
+/// to match the declaration of the user-defined function.
 ///
 /// \tparam Tin   The type of the elements stored in the input container.
 /// \tparam Tout  The type of the elements stored in the output container.
+///
+/// \ingroup skeletons
+/// \ingroup map
 /// 
 template<typename Tin, typename Tout>
 class Map<Tout(Tin)> : public detail::Skeleton,
@@ -105,7 +136,7 @@ public:
   ///
   /// \param source   The source code of the user-defined function. 
   /// \param funcName The name of the user-defined function which should be
-  ///                 invoked by the Map skeleton
+  ///                 invoked by the Map skeleton.
   /// 
   Map<Tout(Tin)>(const Source& source,
                  const std::string& funcName = std::string("func"));
@@ -117,7 +148,7 @@ public:
   ///
   /// \tparam C     The incomplete type of the container used as input and
   ///               output. The complete types are C<Tin> for the input and
-  ///               C<Tout> for the output.
+  ///               C<Tout> for the output. C is either Vector or Matrix.
   /// \tparam Args  The types of the arguments which are passed to the
   ///               user-defined function in addition to the input container.
   ///
@@ -149,9 +180,9 @@ public:
   /// \param output The output container in which the resulting data is stored.
   ///               The type of this argument is not the type of the container
   ///               itself, but instead a wrapping class tagging that this
-  ///               container is written into. The utility function skelcl::out
-  ///               can be used to create this wrapper for an arbitrary
-  ///               container.
+  ///               container is written into. The utility function
+  ///               skelcl::out() can be used to create this wrapper for an
+  ///               arbitrary container.
   /// \param input  The input container on which the user-defined function is
   ///               invoked.
   /// \param args   The values of the arguments which are passed to the
@@ -169,56 +200,48 @@ public:
                       Args&&... args) const;
 
 private:
-  /// 
-  /// \brief Starts the execution of the map skeleton's kernel.
-  ///
-  /// \tparam C     The incomplete type of the container used as input and
-  ///               output. The complete types are C<Tin> for the input and
-  ///               C<Tout> for the output.
-  /// \tparam Args  The types of the arguments which are passed to the
-  ///               user-defined function in addition to the input container.
-  ///
-  /// \param output A reference to the output container in which the resulting
-  ///               data is stored.
-  /// \param input  The input container on which the user-defined function is
-  ///               invoked.
-  /// \param args   The values of the arguments which are passed to the
-  ///               user-defined function in addition to the input container.
-  /// 
   template <template <typename> class C,
             typename... Args>
   void execute(C<Tout>& output,
                const C<Tin>& input,
                Args&&... args) const;
 
-  /// 
-  /// \brief  Utility function creating a program for the Map skeleton from the
-  ///         source code (represented as a string) and the function name as
-  ///         provided to the constructor of this class.
-  ///
-  /// \param source   The source code defining the user-defined function of the
-  ///                 Map skeleton represented as a string.
-  /// \param funcName The name of the user-defined function which should be
-  ///                 invoked by the Map skeleton.
-  ///
-  /// \return A valid program object which has already been built for the
-  ///         available devices. The program contains the kernel which gets
-  ///         executed inside the execute function of this class. If the source
-  ///         code defined by the user is not valid this function might
-  ///         terminate the execution of the program and present the built log
-  ///         of the used OpenCL implementation.
-  /// 
   detail::Program createAndBuildProgram(const std::string& source,
                                         const std::string& funcName) const;
 };
 
 /// 
-/// \brief  This version of the Map skeleton is used, when the user-defined
-///         function has the return type void, i.e. it doesn't produce a return
-///         value.
+/// \brief  This version of the Map<Tout(Tin)> skeleton is used, when the
+///         user-defined function has the return type void, i.e. it doesn't
+///         produce a return value.
 ///
-/// \tparam Tin The type of the elements stored in the input container.
+/// This is a more specialized version of the general Map<Tout(Tin)> skeleton.
+/// It can be customized with a user-defined function taking an arbitrary
+/// types argument (no classes are currently possible) and produces no output.
 ///
+/// On creation the Map skeleton is customized with source code defining a
+/// unary function. An instance of this class is a function object, i.e. it can
+/// be called like a function. When this happens a container is passed as input
+/// to the Map skeleton which then invokes the provided function on every
+/// element of the container in a parallel fashion on one or more devices
+/// (depending of the distribution of the container).
+///
+/// More formally: When c is a container of length n with items c[0] .. c[n-1],
+/// and f is the provided unary function, the Map skeleton performs the
+/// calculation f(x[i]) for ever i in 0 .. n-1.
+///
+/// As all skeletons, the Map skeleton allows for passing additional arguments,
+/// i.e. arguments besides the input container, to the user defined function.
+/// The user-defined function has to written in such a way, that it expects more
+/// than just one argument (it is no unary function any more). Accordingly the
+/// number, types and order of arguments used when calling the map skeleton has
+/// to match the declaration of the user-defined function.
+///
+/// \tparam Tin   The type of the elements stored in the input container.
+///
+/// \ingroup skeletons
+/// \ingroup map
+/// 
 template<typename Tin>
 class Map<void(Tin)> : public detail::Skeleton,
                        private detail::MapHelper<void(Tin)> {
@@ -238,7 +261,7 @@ public:
   /// \brief Executes the skeleton on the provided input container.
   ///
   /// \tparam C     The incomplete type of the input container. The complete
-  ///               type is C<Tin>.
+  ///               type is C<Tin>. C is either Vector or Matrix.
   /// \tparam Args  The types of the arguments which are passed to the
   ///               user-defined function in addition to the input container.
   ///
@@ -253,53 +276,46 @@ public:
                   Args&&... args) const;
 
 private:
-  /// 
-  /// \brief Starts the execution of the map skeleton's kernel.
-  ///
-  /// \tparam C     The incomplete type of the input container. The complete
-  ///               type is C<Tin>.
-  /// \tparam Args  The types of the arguments which are passed to the
-  ///               user-defined function in addition to the input container.
-  ///
-  /// \param input  The input container on which the user-defined function is
-  ///               invoked.
-  /// \param args   The values of the arguments which are passed to the
-  ///               user-defined function in addition to the input container.
-  /// 
   template <template <typename> class C,
             typename... Args>
   void execute(const C<Tin>& input,
                Args&&... args) const;
 
-  /// 
-  /// \brief  Utility function creating a program for the Map skeleton from the
-  ///         source code (represented as a string) and the function name as
-  ///         provided to the constructor of this class.
-  ///
-  /// \param source   The source code defining the user-defined function of the
-  ///                 Map skeleton represented as a string.
-  /// \param funcName The name of the user-defined function which should be
-  ///                 invoked by the Map skeleton.
-  ///
-  /// \return A valid program object which has already been built for the
-  ///         available devices. The program contains the kernel which gets
-  ///         executed inside the execute function of this class. If the source
-  ///         code defined by the user is not valid this function might
-  ///         terminate the execution of the program and present the built log
-  ///         of the used OpenCL implementation.
-  /// 
   detail::Program createAndBuildProgram(const std::string& source,
                                         const std::string& funcName) const;
 };
 
 /// 
-/// \brief  This version of the Map skeleton is executed over an one-dimensional
-///         index space defined by an IndexVector. It can be customized with a
-///         user-defined function taking an Index (an integer value) and
-///         producing an arbitrary typed output for every element of the index
-///         space.
+/// \brief  This version of the Map<Tout(Tin)> skeleton is executed over an
+///         one-dimensional index space defined by an IndexVector.
+///
+/// This is a more specialized version of the general Map<Tout(Tin)> skeleton.
+/// It can be customized with a user-defined function taking an Index
+/// (an integer value) and producing an arbitrary typed output for every element
+/// of the index space.
+///
+/// On creation the Map skeleton is customized with source code defining a
+/// unary function. An instance of this class is a function object, i.e. it can
+/// be called like a function. When this happens a container is passed as input
+/// to the Map skeleton which then invokes the provided function on every
+/// element of the container in a parallel fashion on one or more devices
+/// (depending of the distribution of the container).
+///
+/// More formally: When c is a container of length n with items c[0] .. c[n-1],
+/// and f is the provided unary function, the Map skeleton performs the
+/// calculation f(x[i]) for ever i in 0 .. n-1.
+///
+/// As all skeletons, the Map skeleton allows for passing additional arguments,
+/// i.e. arguments besides the input container, to the user defined function.
+/// The user-defined function has to written in such a way, that it expects more
+/// than just one argument (it is no unary function any more). Accordingly the
+/// number, types and order of arguments used when calling the map skeleton has
+/// to match the declaration of the user-defined function.
 ///
 /// \tparam Tout  The type of the elements stored in the output Vector.
+///
+/// \ingroup skeletons
+/// \ingroup map
 /// 
 template<typename Tout>
 class Map<Tout(Index)> : public detail::Skeleton,
@@ -348,7 +364,7 @@ public:
   /// \param output The output Vector in which the resulting data is stored.
   ///               The type of this argument is not the type of the Vector
   ///               itself, but instead a wrapping class tagging that this
-  ///               Vector is written into. The utility function skelcl::out
+  ///               Vector is written into. The utility function skelcl::out()
   ///               can be used to create this wrapper for an arbitrary
   ///               Vector.
   /// \param input  The input Vector describing an index space on which the
@@ -367,50 +383,45 @@ public:
                            Args&&... args) const;
 
 private:
-  /// 
-  /// \brief Starts the execution of the map skeleton's kernel.
-  ///
-  /// \tparam Args  The types of the arguments which are passed to the
-  ///               user-defined function in addition to the input Vector.
-  ///
-  /// \param output A reference to the output Vector in which the resulting
-  ///               data is stored.
-  /// \param input  The input Vector describing an index space on which the
-  ///               user-defined function is invoked.
-  /// \param args   The values of the arguments which are passed to the
-  ///               user-defined function in addition to the input Vector.
-  /// 
   template <typename... Args>
   void execute(Vector<Tout>& output,
                const Vector<Index>& input,
                Args&&... args) const;
-
-  /// 
-  /// \brief  Utility function creating a program for the Map skeleton from the
-  ///         source code (represented as a string) and the function name as
-  ///         provided to the constructor of this class.
-  ///
-  /// \param source   The source code defining the user-defined function of the
-  ///                 Map skeleton represented as a string.
-  /// \param funcName The name of the user-defined function which should be
-  ///                 invoked by the Map skeleton.
-  ///
-  /// \return A valid program object which has already been built for the
-  ///         available devices. The program contains the kernel which gets
-  ///         executed inside the execute function of this class. If the source
-  ///         code defined by the user is not valid this function might
-  ///         terminate the execution of the program and present the built log
-  ///         of the used OpenCL implementation.
-  /// 
+  
   detail::Program createAndBuildProgram(const std::string& source,
                                         const std::string& funcName) const;
 };
 
 /// 
-/// \brief  This version of the Map skeleton is executed over an one-dimensional
-///         index space defined by an IndexVector. It can be customized with a
-///         user-defined function taking an Index (an integer value). For this
-///         version the user-defined function must be void, i.e. return nothing.
+/// \brief  This version of the Map<Tout(Tin)> skeleton is executed over an
+///         one-dimensional index space defined by an IndexVector.
+///         This version is used when the user-function has return type void.
+///
+/// This is a more specialized version of the general Map<Tout(Tin)> skeleton.
+/// It can be customized with a user-defined function taking an Index
+/// (an integer value). For this version the user-defined function must be void,
+/// i.e. return nothing.
+///
+/// On creation the Map skeleton is customized with source code defining a
+/// unary function. An instance of this class is a function object, i.e. it can
+/// be called like a function. When this happens a container is passed as input
+/// to the Map skeleton which then invokes the provided function on every
+/// element of the container in a parallel fashion on one or more devices
+/// (depending of the distribution of the container).
+///
+/// More formally: When c is a container of length n with items c[0] .. c[n-1],
+/// and f is the provided unary function, the Map skeleton performs the
+/// calculation f(x[i]) for ever i in 0 .. n-1.
+///
+/// As all skeletons, the Map skeleton allows for passing additional arguments,
+/// i.e. arguments besides the input container, to the user defined function.
+/// The user-defined function has to written in such a way, that it expects more
+/// than just one argument (it is no unary function any more). Accordingly the
+/// number, types and order of arguments used when calling the map skeleton has
+/// to match the declaration of the user-defined function.
+///
+/// \ingroup skeletons
+/// \ingroup map
 /// 
 template<>
 class SKELCL_DLL Map<void(Index)> : public detail::Skeleton,
@@ -443,50 +454,45 @@ public:
                   Args&&... args) const;
 
 private:
-  /// 
-  /// \brief Starts the execution of the map skeleton's kernel.
-  ///
-  /// \tparam Args  The types of the arguments which are passed to the
-  ///               user-defined function in addition to the input Vector.
-  ///
-  /// \param input  The input Vector describing an index space on which the
-  ///               user-defined function is invoked.
-  /// \param args   The values of the arguments which are passed to the
-  ///               user-defined function in addition to the input Vector.
-  /// 
   template <typename... Args>
   void execute(const Vector<Index>& input,
                Args&&... args) const;
 
-  /// 
-  /// \brief  Utility function creating a program for the Map skeleton from the
-  ///         source code (represented as a string) and the function name as
-  ///         provided to the constructor of this class.
-  ///
-  /// \param source   The source code defining the user-defined function of the
-  ///                 Map skeleton represented as a string.
-  /// \param funcName The name of the user-defined function which should be
-  ///                 invoked by the Map skeleton.
-  ///
-  /// \return A valid program object which has already been built for the
-  ///         available devices. The program contains the kernel which gets
-  ///         executed inside the execute function of this class. If the source
-  ///         code defined by the user is not valid this function might
-  ///         terminate the execution of the program and present the built log
-  ///         of the used OpenCL implementation.
-  /// 
   detail::Program createAndBuildProgram(const std::string& source,
                                         const std::string& funcName) const;
 };
 
 /// 
-/// \brief  This version of the Map skeleton is executed over an two-dimensional
-///         index space defined by an IndexMatrix. It can be customized with a
-///         user-defined function taking an IndexPoint (a pair of integer
-///         values) and producing an arbitrary typed output for every element of
-///         the index space.
+/// \brief  This version of the Map<Tout(Tin)> skeleton is executed over an
+///         two-dimensional index space defined by an IndexMatrix.
+///
+/// This is a more specialized version of the general Map<Tout(Tin)> skeleton.
+/// It can be customized with a user-defined function taking an IndexPoint (a
+/// pair of integer values) and producing an arbitrary typed output for every
+/// element of the index space.
+///
+/// On creation the Map skeleton is customized with source code defining a
+/// unary function. An instance of this class is a function object, i.e. it can
+/// be called like a function. When this happens a container is passed as input
+/// to the Map skeleton which then invokes the provided function on every
+/// element of the container in a parallel fashion on one or more devices
+/// (depending of the distribution of the container).
+///
+/// More formally: When c is a container of length n with items c[0] .. c[n-1],
+/// and f is the provided unary function, the Map skeleton performs the
+/// calculation f(x[i]) for ever i in 0 .. n-1.
+///
+/// As all skeletons, the Map skeleton allows for passing additional arguments,
+/// i.e. arguments besides the input container, to the user defined function.
+/// The user-defined function has to written in such a way, that it expects more
+/// than just one argument (it is no unary function any more). Accordingly the
+/// number, types and order of arguments used when calling the map skeleton has
+/// to match the declaration of the user-defined function.
 ///
 /// \tparam Tout  The type of the elements stored in the output Matrix.
+///
+/// \ingroup skeletons
+/// \ingroup map
 /// 
 template<typename Tout>
 class Map<Tout(IndexPoint)> : public detail::Skeleton,
@@ -535,7 +541,7 @@ public:
   /// \param output The output Matrix in which the resulting data is stored.
   ///               The type of this argument is not the type of the Matrix
   ///               itself, but instead a wrapping class tagging that this
-  ///               Matrix is written into. The utility function skelcl::out
+  ///               Matrix is written into. The utility function skelcl::out()
   ///               can be used to create this wrapper for an arbitrary
   ///               Matrix.
   /// \param input  The input Matrix describing an index space on which the
@@ -554,51 +560,72 @@ public:
                            Args&&... args) const;
   
 private:
-  /// 
-  /// \brief Starts the execution of the map skeleton's kernel.
-  ///
-  /// \tparam Args  The types of the arguments which are passed to the
-  ///               user-defined function in addition to the input Matrix.
-  ///
-  /// \param output A reference to the output Matrix in which the resulting
-  ///               data is stored.
-  /// \param input  The input Matrix describing an index space on which the
-  ///               user-defined function is invoked.
-  /// \param args   The values of the arguments which are passed to the
-  ///               user-defined function in addition to the input Matrix.
-  /// 
   template <typename... Args>
   void execute(Matrix<Tout>& output,
                const Matrix<IndexPoint>& input,
                Args&&... args) const;
   
-  /// 
-  /// \brief  Utility function creating a program for the Map skeleton from the
-  ///         source code (represented as a string) and the function name as
-  ///         provided to the constructor of this class.
-  ///
-  /// \param source   The source code defining the user-defined function of the
-  ///                 Map skeleton represented as a string.
-  /// \param funcName The name of the user-defined function which should be
-  ///                 invoked by the Map skeleton.
-  ///
-  /// \return A valid program object which has already been built for the
-  ///         available devices. The program contains the kernel which gets
-  ///         executed inside the execute function of this class. If the source
-  ///         code defined by the user is not valid this function might
-  ///         terminate the execution of the program and present the built log
-  ///         of the used OpenCL implementation.
-  /// 
   detail::Program createAndBuildProgram(const std::string& source,
                                         const std::string& funcName) const;
 };
 
+/// 
+/// \brief  This version of the Map<Tout(Tin)> skeleton is executed over an
+///         two-dimensional index space defined by an IndexMatrix.
+///         This version is used when the user-function has return type void.
+///
+/// This is a more specialized version of the general Map<Tout(Tin)> skeleton.
+/// It can be customized with a user-defined function taking an IndexPoint (a
+/// pair of integer values). For this version the user-defined function must be
+/// void, i.e. return nothing.
+///
+/// On creation the Map skeleton is customized with source code defining a
+/// unary function. An instance of this class is a function object, i.e. it can
+/// be called like a function. When this happens a container is passed as input
+/// to the Map skeleton which then invokes the provided function on every
+/// element of the container in a parallel fashion on one or more devices
+/// (depending of the distribution of the container).
+///
+/// More formally: When c is a container of length n with items c[0] .. c[n-1],
+/// and f is the provided unary function, the Map skeleton performs the
+/// calculation f(x[i]) for ever i in 0 .. n-1.
+///
+/// As all skeletons, the Map skeleton allows for passing additional arguments,
+/// i.e. arguments besides the input container, to the user defined function.
+/// The user-defined function has to written in such a way, that it expects more
+/// than just one argument (it is no unary function any more). Accordingly the
+/// number, types and order of arguments used when calling the map skeleton has
+/// to match the declaration of the user-defined function.
+///
+/// \ingroup skeletons
+/// \ingroup map
+/// 
 template<>
 class SKELCL_DLL Map<void(IndexPoint)>
   : public detail::Skeleton, private detail::MapHelper<void(IndexPoint)> {
 public:
+  /// 
+  /// \brief Constructor taking the source code used of the user-defined
+  ///        function as argument.
+  ///
+  /// \param source   The source code of the user-defined function. 
+  /// \param funcName The name of the user-defined function which should be
+  ///                 invoked by the Map skeleton.
+  /// 
   Map(const Source& source, const std::string& funcName = std::string("func"));
   
+  /// 
+  /// \brief Executes the skeleton on the index space described by the input
+  ///        Matrix.
+  ///
+  /// \tparam Args  The types of the arguments which are passed to the
+  ///               user-defined function in addition to the input Matrix.
+  ///
+  /// \param input  The input Matrix describing an index space on which the
+  ///               user-defined function is invoked.
+  /// \param args   The values of the arguments which are passed to the
+  ///               user-defined function in addition to the input Matrix.
+  /// 
   template <typename... Args>
   void operator()(const Matrix<IndexPoint>& input,
                   Args&&... args) const;
