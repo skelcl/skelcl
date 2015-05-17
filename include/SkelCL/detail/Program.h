@@ -93,6 +93,8 @@ public:
 
   cl::Kernel kernel(const Device& device, const std::string& name) const;
 
+  const std::string& getCode() const;
+
 private:
   void createProgramsFromSource();
 

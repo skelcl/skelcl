@@ -130,6 +130,10 @@ void Program::transferArguments(const std::string& from,
   _source.transferArguments(from, indexFrom, to);
 }
 
+const std::string& Program::getCode() const {
+  return _source.code();
+}
+
 void Program::renameFunction(const std::string& from,
                              const std::string& to)
 {

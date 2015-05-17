@@ -41,13 +41,15 @@ namespace stencil {
 
 // Request a workgroup size from the proxy server and set the response
 // to local.
-void requestWgSize(cl_uint *const local) {
+void requestWgSize(const std::string &deviceName,
+                   const std::string &source,
+                   cl_uint *const local) {
   init();
 
   // Create input arguments.
   std::vector<Glib::VariantBase> _args;
-  _args.push_back(Glib::Variant<std::string>::create("foo"));
-  _args.push_back(Glib::Variant<std::string>::create("bar bar black sheep"));
+  _args.push_back(Glib::Variant<std::string>::create(deviceName));
+  _args.push_back(Glib::Variant<std::string>::create(source));
   Glib::VariantContainerBase args
       = Glib::VariantContainerBase::create_tuple(_args);
 
@@ -64,9 +66,12 @@ void requestWgSize(cl_uint *const local) {
   local[1] = var.get();
 }
 
-void getLocalSize(cl_uint *const local) {
+void getLocalSize(const cl::Kernel &kernel,
+                  const cl::Device &device,
+                  const std::string &source,
+                  cl_uint *const local) {
   try {
-    requestWgSize(local);
+    requestWgSize(device.getInfo<CL_DEVICE_NAME>(), source, local);
   } catch (Glib::Error e) {
     // Fall-back state, set default values.
     LOG_ERROR(e.what());
@@ -74,7 +79,16 @@ void getLocalSize(cl_uint *const local) {
     local[1] = STENCIL_WORKGROUP_SIZE_R;
   }
 
-  LOG_PROF("OmniTune workgroup size (", local[0], ", ", local[1], ")");
+  // Ensure that workgroup size is within kernel-enforced maximum.
+  const size_t max = kernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device);
+  while (local[0] * local[1] > max) {
+      OMNILOG("Target workgroup size of (", local[0], ", ", local[1],
+              ") exceeds kernel maximum of ", max, ". Shrinking.");
+      local[0] /= 2;
+      local[1] /= 2;
+  }
+
+  OMNILOG("Workgroup size (", local[0], ", ", local[1], ")");
 }
 
 }  // namespace stencil

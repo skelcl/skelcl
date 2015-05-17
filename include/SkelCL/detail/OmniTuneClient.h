@@ -18,13 +18,20 @@
 #include <giomm/dbusproxy.h>
 #pragma GCC diagnostic pop
 
+#include "SkelCL/detail/Device.h"
+
+#define OMNILOG(...) LOG_INFO("OMNITUNE: ", __VA_ARGS__)
+
 namespace omnitune {
 
 void init();
 
 namespace stencil {
 
-void getLocalSize(cl_uint *const local);
+void getLocalSize(const cl::Kernel &kernel,
+                  const cl::Device &device,
+                  const std::string &source,
+                  cl_uint *const local);
 
 }  // namespace stenicl
 

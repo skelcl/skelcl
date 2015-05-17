@@ -137,7 +137,8 @@ void Stencil<Tout(Tin)>::execute(const Matrix<Tin>& input,
 
     cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_STENCIL"));
 
-    omnitune::stencil::getLocalSize(&local[0]);
+    omnitune::stencil::getLocalSize(kernel, devicePtr->clDevice(),
+                                    _program.getCode(), &local[0]);
     getGlobalSize(&local[0], output, devicePtr->id(), numDevices,
                   opsUntilNextSync, opsSinceLastSync, sumSouthBorders,
                   sumNorthBorders, &global[0]);
