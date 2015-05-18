@@ -49,7 +49,7 @@
 namespace skelcl {
 
 template<typename > class Stencil;
-template<typename > class StencilSequence;
+template<typename... > class StencilSequence;
 
 template<typename Tin, typename Tout>
 class Stencil<Tout(Tin)> : public detail::Skeleton {
@@ -61,6 +61,9 @@ public:
           const std::string& func,
           const StencilShape& shape,
           Padding padding, Tin paddingElement = static_cast<Tin>(NULL));
+
+
+  Stencil(const Stencil&) = default;
 
   // Execute stencil, returning output.
   template <typename... Args>

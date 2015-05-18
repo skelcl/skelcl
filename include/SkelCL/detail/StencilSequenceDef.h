@@ -72,6 +72,55 @@
 
 namespace skelcl {
 
+template <typename T>
+template <typename... Args>
+const Matrix<T>& StencilSequence<T>::operator()(Out<Matrix<T>> /*output*/,
+                                                const Matrix<T>& input,
+                                                Args&&... /*args*/) const
+{
+  return input;
+}
+
+template <typename T0, typename T1, typename... Ts>
+StencilSequence<T0, T1, Ts...>::StencilSequence(const Stencil<T0(T1)>& s,
+                                                StencilSequence<T1, Ts...> seq)
+  : head(s), tail(seq) {
+  LOG_DEBUG_INFO("Create new StencilSequence object (", this, ")");
+};
+
+template <typename T0, typename T1, typename... Ts>
+template <typename T>
+StencilSequence<T, T0, T1, Ts...>
+  StencilSequence<T0, T1, Ts...>::operator<<(const Stencil<T(T0)>& s)
+{
+  return StencilSequence<T, T0, T1, Ts...>(s, *this);
+}
+
+template <typename T0, typename T1, typename... Ts>
+template <typename... Args>
+Matrix<T0>
+  StencilSequence<T0, T1, Ts...>::operator()(const Matrix<TLast>& input,
+                                              Args&&... args) const
+{
+  Matrix<T0> output;
+  this->operator()(out(output), input, std::forward<Args>(args)...);
+  return output;
+}
+
+template <typename T0, typename T1, typename... Ts>
+template <typename... Args>
+Matrix<T0>&
+  StencilSequence<T0, T1, Ts...>::operator()(Out<Matrix<T0>> output,
+                                             const Matrix<TLast>& input,
+                                             Args&&... args) const
+{
+  Matrix<T1> tmp;
+  auto& firstOutput = tail(out(tmp), input, std::forward<Args>(args)...);
+  head(output, firstOutput, std::forward<Args>(args)...);
+  return output.container();
+}
+
+/*
 template <typename Tin, typename Tout>
 StencilSequence<Tout(Tin)>::StencilSequence()
     : detail::Skeleton("StencilSequence<Tout(Tin)>"), _sequence() {
@@ -213,6 +262,7 @@ unsigned int StencilSequence<Tout(Tin)>::getIterationsUntilNextSync(
   return std::min(static_cast<unsigned int>(STENCIL_ITERATIONS_BETWEEN_SWAPS),
                   iterationsRemaining);
 }
+*/
 
 }  // namespace skelcl
 

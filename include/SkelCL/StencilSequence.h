@@ -57,8 +57,69 @@ namespace skelcl {
 
 template<typename > class Matrix;
 template<typename > class Out;
-template<typename > class StencilSequence;
+//template<typename > class StencilSequence;
 
+template <typename...> class StencilSequence;
+
+namespace detail {
+  template <typename...> struct LastT;
+
+  template <typename T>
+  struct LastT<T> { typedef T type; };
+
+  template <typename T0, typename T1, typename ...Ts>
+  struct LastT<T0, T1, Ts...> { typedef typename LastT<T1, Ts...>::type type; };
+} // namespace detail
+
+template <typename T0, typename T1>
+StencilSequence<T0, T1> makeStencilSequence(const Stencil<T0(T1)>& s) {
+  return StencilSequence<T0, T1>(s, StencilSequence<T1>{});
+}
+
+class StencilSequence_t {
+public:
+  template <typename T0, typename T1>
+  StencilSequence<T0, T1> operator<<(const Stencil<T0(T1)>& s) {
+    return makeStencilSequence(s);
+  }
+};
+StencilSequence_t StencilSeq;
+
+template <typename T>
+class StencilSequence<T> {
+public:
+  template <typename... Args>
+  const Matrix<T>& operator()(Out<Matrix<T>> output,
+                              const Matrix<T>& input,
+                              Args&&... args) const;
+};
+
+template <typename T0, typename T1, typename... Ts>
+class StencilSequence<T0, T1, Ts...> {
+  typedef typename detail::LastT<T1, Ts...>::type TLast;
+public:
+  StencilSequence(const Stencil<T0(T1)>& s, StencilSequence<T1, Ts...> seq);
+
+  StencilSequence(const StencilSequence&) = default;
+
+  template <typename T>
+  StencilSequence<T, T0, T1, Ts...> operator<<(const Stencil<T(T0)>& s);
+
+  template <typename... Args>
+  Matrix<T0> operator()(const Matrix<TLast>& input,
+                        Args&&... args) const;
+
+  template <typename... Args>
+  Matrix<T0>& operator()(Out<Matrix<T0>> output,
+                         const Matrix<TLast>& input,
+                         Args&&... args) const;
+
+private:
+  Stencil<T0(T1)> head;
+  StencilSequence<T1, Ts...> tail;
+};
+
+/*
 template<typename Tin, typename Tout>
 class StencilSequence<Tout(Tin)> : public detail::Skeleton {
 
@@ -109,6 +170,7 @@ private:
 
   std::vector<Stencil<Tout(Tin)> *> _sequence;
 };
+*/
 
 } //namespace skelcl
 

@@ -212,11 +212,11 @@ Simulation::Simulation(const size_t size, const int resolution, const int swaps,
   motionEquation = new Map<data_t(data_t)>(map_in, "motionEquation");
   eFieldEquation = new Stencil<data_t(data_t)>(
       stc_in, "eFieldEquation",
-      detail::stencilShape(detail::any(0), detail::north(1), detail::west(1)),
+      stencilShape(any(0), north(1), west(1)),
       Padding::NEUTRAL, zero);
   hFieldEquation = new Stencil<data_t(data_t)>(
       stc_in, "hFieldEquation",
-      detail::stencilShape(detail::any(0), detail::south(1), detail::east(1)),
+      stencilShape(any(0), south(1), east(1)),
       Padding::NEUTRAL, zero);
 }
 
@@ -305,14 +305,14 @@ void Simulation::run()
 
     dev->wait();
     start = std::chrono::high_resolution_clock::now();
-    (*eFieldEquation)(out(E), out(E), H, E, t * _p.dt);
+    (*eFieldEquation)(out(E), H, E, t * _p.dt);
     dev->wait();
     end = std::chrono::high_resolution_clock::now();
     LOG_INFO("efield_eq:", std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1e6);
 
     dev->wait();
     start = std::chrono::high_resolution_clock::now();
-    (*hFieldEquation)(out(H), out(H), E, H);
+    (*hFieldEquation)(out(H), E, H);
     dev->wait();
     end = std::chrono::high_resolution_clock::now();
     auto gend = std::chrono::high_resolution_clock::now();

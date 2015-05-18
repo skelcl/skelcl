@@ -64,11 +64,11 @@ public:
 
   Program(const std::string& source, const std::string& hash = "");
 
-  Program(const Program&) = delete;
+  Program(const Program&) = default;
 
   Program(Program&&);
 
-  Program& operator=(const Program&) = delete;
+  Program& operator=(const Program&) = default;
 
   Program& operator=(Program&&);
 

@@ -115,8 +115,9 @@ int main(int argc, char** argv)
     grid.resize(grid.size());
   } else {
     // Stencil.
-    skelcl::Stencil<int(int)> s(std::ifstream{"./Stencil.cl"}, 1, 1, 1, 1,
-                                Padding::NEUTRAL, 0, "func", swaps);
+    skelcl::Stencil<int(int)> s(std::ifstream{"./Stencil.cl"}, "func",
+                                stencilShape(any(1)),
+                                Padding::NEUTRAL, 0);
     start = getTime();
     grid = s(iterations, grid);
   }

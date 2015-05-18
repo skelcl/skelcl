@@ -205,24 +205,19 @@ int main(int argc, char** argv)
     tempImage.copyDataToHost();
   } else {
     Stencil<float(float)> gauss(std::ifstream {"./StencilGauss.cl"}, "func",
-                                detail::stencilShape(detail::any(range)),
+                                stencilShape(any(range)),
                                 Padding::NEUTRAL, 255);
     Stencil<float(float)> sobel(std::ifstream {"./StencilSobel.cl"}, "func",
-                                detail::stencilShape(detail::any(1)),
+                                stencilShape(any(1)),
                                 Padding::NEAREST);
     Stencil<float(float)> nms(std::ifstream {"./StencilNMS.cl"}, "func",
-                              detail::stencilShape(detail::any(1)),
+                              stencilShape(any(1)),
                               Padding::NEUTRAL, 1);
     Stencil<float(float)> threshold(std::ifstream {"./StencilThreshold.cl"}, "func",
-                                    detail::stencilShape(detail::any(0)),
+                                    stencilShape(any(0)),
                                     Padding::NEAREST);
 
-    StencilSequence<float(float)> sequence;
-
-    sequence.add(&gauss);
-    sequence.add(&sobel);
-    sequence.add(&nms);
-    sequence.add(&threshold);
+    auto sequence = StencilSeq << gauss << sobel << nms << threshold;
 
     outputImage = sequence(inputImage, kernelVec, range.getValue());
   }

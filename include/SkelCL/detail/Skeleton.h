@@ -55,9 +55,9 @@ public:
 
   Skeleton(const std::string name, const unsigned workGroupSize);
 
-  Skeleton(const Skeleton& rhs) = default;
+  Skeleton(const Skeleton&) = default;
 
-  Skeleton& operator=(const Skeleton& rhs) = default;
+  Skeleton& operator=(const Skeleton&) = default;
 
   virtual ~Skeleton();
 
