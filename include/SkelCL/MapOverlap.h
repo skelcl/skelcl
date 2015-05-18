@@ -117,7 +117,7 @@ public:
   ///                 invoked by the Map skeleton.
   ///
   MapOverlap<Tout(Tin)>(const Source& source, unsigned int overlap_range = 1,
-                        Padding padding = detail::Padding::NEAREST,
+                        Padding padding = Padding::NEAREST,
                         Tin neutral_element = Tin(),
                         const std::string& func = std::string("func"));
   

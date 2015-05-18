@@ -42,7 +42,7 @@
 #define OL_DISTRIBUTION_H_
 
 #include "Distribution.h"
-#include "Padding.h"
+#include "../Padding.h"
 #include "../Index.h"
 
 namespace skelcl {

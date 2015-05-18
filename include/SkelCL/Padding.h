@@ -44,15 +44,11 @@
 
 namespace skelcl {
 
-namespace detail {
-
 enum class Padding {
   NEUTRAL,
   NEAREST,
   NEAREST_INITIAL
 };
-
-} // namespace detail
 
 } // namespace skelcl
 

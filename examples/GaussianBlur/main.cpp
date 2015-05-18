@@ -55,7 +55,7 @@
 using namespace skelcl;
 
 // Border handling behaviour.
-static const Padding paddingType = detail::Padding::NEUTRAL;
+static const Padding paddingType = Padding::NEUTRAL;
 
 long long getTime()
 {

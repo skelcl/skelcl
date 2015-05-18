@@ -42,7 +42,7 @@
 #define STENCILDISTRIBUTION_H_
 
 #include "Distribution.h"
-#include "Padding.h"
+#include "../Padding.h"
 
 #include <climits>
 
