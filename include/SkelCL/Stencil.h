@@ -86,6 +86,12 @@ public:
   /// region (only used if Padding == NEUTRAL)
   const Tin& getPaddingElement() const;
 
+  template <typename T>
+  StencilSequence<Tout, Tin, T> operator<<(const Stencil<Tin(T)>& s) const;
+
+  template <typename T>
+  StencilSequence<T, Tout, Tin> operator>>(const Stencil<T(Tout)>& s) const;
+
 private:
   template <typename... Args>
   void execute(const Matrix<Tin>& input, Matrix<Tout>& output,

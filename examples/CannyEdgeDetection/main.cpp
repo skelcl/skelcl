@@ -217,9 +217,10 @@ int main(int argc, char** argv)
                                     stencilShape(any(0)),
                                     Padding::NEAREST);
 
-    auto sequence = StencilSeq << gauss << sobel << nms << threshold;
+    auto seq = gauss >> sobel >> nms >> threshold;
+    //auto seq = threshold << nms << sobel << gauss;
 
-    outputImage = sequence(inputImage, kernelVec, range.getValue());
+    seq(out(outputImage), inputImage, kernelVec, range.getValue());
   }
 
   auto end = getTime();

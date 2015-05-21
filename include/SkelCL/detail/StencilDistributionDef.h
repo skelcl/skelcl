@@ -296,6 +296,9 @@ void swap(const Vector<T>& vector, Event* events, unsigned int north,
 	LOG_DEBUG_INFO("Vector Version , north: ", north, " and south: ", south,
 			" are not considered for the upload.");
 
+	(void)iterations;
+	(void)iterationsBeforeFirstSwap;
+
 	size_t deviceOffset = 0;
 	size_t devSize = devices.size();
 	size_t hostOffset = 0;

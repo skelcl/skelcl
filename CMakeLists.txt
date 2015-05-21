@@ -20,16 +20,6 @@ if (${UNIX})
       CACHE STRING "More strict flags used to compile the SkelCL sources.")
 endif (${UNIX})
 
-# Add compiler and linker flags for OmniTune compatability.
-# FIXME: Use the CMake equivalent of `pkg-config --cflags glibmm-2.4 giomm-2.4` and `pkg-config --libs glibmm-2.4 giomm-2.4` for portability.
-set (OMNITUNE_CXX_FLAGS "-pthread -I/usr/include/giomm-2.4 -I/usr/lib64/giomm-2.4/include -I/usr/include/glibmm-2.4 -I/usr/lib64/glibmm-2.4/include -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/sigc++-2.0 -I/usr/lib64/sigc++-2.0/include"
-     CACHE STRING "Compiler flags for OmniTune compatability.")
-set (OMNITUNE_LD_FLAGS "-lgiomm-2.4 -lgio-2.0 -lglibmm-2.4 -lgobject-2.0 -lglib-2.0 -lsigc-2.0"
-     CACHE STRING "Compiler flags for OmniTune compatability.")
-add_definitions(${OMNITUNE_CXX_FLAGS})
-add_definitions(${OMNITUNE_LD_FLAGS})
-set (CMAKE_SHARED_LINKER_FLAGS "${OMNITUNE_LD_FLAGS}")
-
 # include custom cmake modules (e.g. FindOpenCL.cmake)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules)
 
@@ -55,13 +45,21 @@ option (BUILD_TOOLS
         "Build additional tools." ON)
 
 # opencl dirs
-find_package (OpenCL)
+find_package (OpenCL REQUIRED)
+
+# Add compiler and linker flags for OmniTune compatability.
+find_package (Glibmm REQUIRED)
+find_package (GIOmm REQUIRED)
+
 
 # skelcl common dirs and libraries
 set (SKELCL_COMMON_INCLUDE_DIR
       "${PROJECT_SOURCE_DIR}/include"
       "${PROJECT_SOURCE_DIR}/libraries/pvsutil/include"
       "${PROJECT_SOURCE_DIR}/libraries/stooling/include"
+      "${Glibmm_INCLUDE_DIRS}"
+      "${GIOmm_INCLUDE_DIRS}"
+      #"${GObject_INCLUDE_DIRS}"
       "${STOOLING_COMMON_INCLUDE_DIR}" CACHE INTERNAL
      "Common include directories used by SkelCL.")
 set (SKELCL_COMMON_LIBS
@@ -69,6 +67,9 @@ set (SKELCL_COMMON_LIBS
       crypto
       pvsutil
       stooling
+      "${Glibmm_LIBRARIES}"
+      "${GIOmm_LIBRARIES}"
+      #"${GObject_LIBRARIES}"
       "${STOOLING_COMMON_LIBS}" CACHE INTERNAL
      "Common libraries used by SkelCL.")
 set (SKELCL_COMMON_LIB_DIR

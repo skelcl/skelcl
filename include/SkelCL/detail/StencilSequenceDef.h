@@ -72,52 +72,114 @@
 
 namespace skelcl {
 
-template <typename T>
-template <typename... Args>
+template<typename T>
+template<typename... Args>
 const Matrix<T>& StencilSequence<T>::operator()(Out<Matrix<T>> /*output*/,
                                                 const Matrix<T>& input,
-                                                Args&&... /*args*/) const
+                                                Args&& ... /*args*/) const
 {
   return input;
 }
 
-template <typename T0, typename T1, typename... Ts>
+template<typename T0, typename T1, typename... Ts>
 StencilSequence<T0, T1, Ts...>::StencilSequence(const Stencil<T0(T1)>& s,
                                                 StencilSequence<T1, Ts...> seq)
-  : head(s), tail(seq) {
+        : _head(s), _tail(seq)
+{
   LOG_DEBUG_INFO("Create new StencilSequence object (", this, ")");
 };
 
-template <typename T0, typename T1, typename... Ts>
-template <typename T>
-StencilSequence<T, T0, T1, Ts...>
-  StencilSequence<T0, T1, Ts...>::operator<<(const Stencil<T(T0)>& s)
-{
-  return StencilSequence<T, T0, T1, Ts...>(s, *this);
-}
 
-template <typename T0, typename T1, typename... Ts>
-template <typename... Args>
+template<typename T0, typename T1, typename... Ts>
+template<typename... Args>
 Matrix<T0>
-  StencilSequence<T0, T1, Ts...>::operator()(const Matrix<TLast>& input,
-                                              Args&&... args) const
+StencilSequence<T0, T1, Ts...>::operator()(const Matrix<TLast>& input,
+                                           Args&& ... args) const
 {
   Matrix<T0> output;
   this->operator()(out(output), input, std::forward<Args>(args)...);
   return output;
 }
 
-template <typename T0, typename T1, typename... Ts>
-template <typename... Args>
+template<typename T0, typename T1, typename... Ts>
+template<typename... Args>
 Matrix<T0>&
-  StencilSequence<T0, T1, Ts...>::operator()(Out<Matrix<T0>> output,
-                                             const Matrix<TLast>& input,
-                                             Args&&... args) const
+StencilSequence<T0, T1, Ts...>::operator()(Out<Matrix<T0>> output,
+                                           const Matrix<TLast>& input,
+                                           Args&& ... args) const
 {
   Matrix<T1> tmp;
-  auto& firstOutput = tail(out(tmp), input, std::forward<Args>(args)...);
-  head(output, firstOutput, std::forward<Args>(args)...);
+  auto& tailOutput = _tail(out(tmp), input, std::forward<Args>(args)...);
+  _head(output, tailOutput, std::forward<Args>(args)...);
   return output.container();
+}
+
+template<typename T0, typename T1, typename... Ts>
+template<typename... Args>
+Matrix<T0>
+StencilSequence<T0, T1, Ts...>::operator()(int iterations,
+                                           const Matrix<TLast>& input,
+                                           Args&& ... args) const
+{
+  static_assert(std::is_same<T0, TLast>::value,
+                "First and last type have to be the same for performing "
+                "iterations.");
+  if (iterations == 1) {
+    return this->operator()(input, std::forward<Args>(args)...);
+  } else {
+    auto oneIterOutput = this->operator()(input, std::forward<Args>(args)...);
+    return this->operator()(iterations-1, oneIterOutput,
+                            std::forward<Args>(args)...);
+  }
+}
+
+template<typename T0, typename T1, typename... Ts>
+template<typename... Args>
+Matrix<T0>&
+StencilSequence<T0, T1, Ts...>::operator()(int iterations,
+                                           Out<Matrix<T0>> output,
+                                           const Matrix<TLast>& input,
+                                           Args&& ... args) const
+{
+  static_assert(std::is_same<T0, TLast>::value,
+                "First and last type have to be the same for performing "
+                        "iterations.");
+
+  if (iterations == 1) {
+    return this->operator()(output, input, std::forward<Args>(args)...);
+  } else {
+    auto oneIterOutput = this->operator()(output, input,
+                                      std::forward<Args>(args)...);
+    return this->operator()(iterations-1, output, oneIterOutput,
+                            std::forward<Args>(args)...);
+  }
+}
+
+
+template<typename T0, typename T1, typename... Ts>
+template<typename T>
+StencilSequence<T, T0, T1, Ts...>
+StencilSequence<T0, T1, Ts...>::operator>>(const Stencil<T(T0)>& s) {
+  return StencilSequence<T, T0, T1, Ts...>(s, *this);
+}
+
+template<typename T0, typename T1, typename... Ts>
+template<typename T>
+StencilSequence<T0, T1, Ts..., T>
+StencilSequence<T0, T1, Ts...>::operator<<(const Stencil<TLast(T)>& s) {
+  return detail::append(*this, s);
+}
+
+template<typename T0, typename T1, typename... Ts>
+const Stencil<T0(T1)>& StencilSequence<T0, T1, Ts...>::head() const
+{
+  return _head;
+}
+
+template <typename T0, typename T1, typename... Ts>
+const StencilSequence<T1, Ts...>& StencilSequence<T0, T1, Ts...>::tail() const
+{
+  return _tail;
 }
 
 /*

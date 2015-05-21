@@ -57,6 +57,7 @@
 #include <pvsutil/Assert.h>
 #include <pvsutil/Logger.h>
 #include <pvsutil/Timer.h>
+#include <SkelCL/StencilSequence.h>
 
 #include "../Distributions.h"
 #include "../Matrix.h"
@@ -429,6 +430,24 @@ const Padding& Stencil<Tout(Tin)>::getPadding() const {
 template <typename Tin, typename Tout>
 const Tin& Stencil<Tout(Tin)>::getPaddingElement() const {
   return this->_paddingElement;
+}
+
+template <typename Tin, typename Tout>
+template <typename T>
+StencilSequence<Tout, Tin, T>
+  Stencil<Tout(Tin)>::operator<<(const Stencil<Tin(T)>& s) const
+{
+  return StencilSequence<Tout, Tin, T>(*this,
+           StencilSequence<Tin, T>(s,
+             StencilSequence<T>()));
+}
+
+template <typename Tin, typename Tout>
+template <typename T>
+StencilSequence<T, Tout, Tin>
+  Stencil<Tout(Tin)>::operator>>(const Stencil<T(Tout)>& s) const
+{
+  return s << *this;
 }
 
 }  // namespace

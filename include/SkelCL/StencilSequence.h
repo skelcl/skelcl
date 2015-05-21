@@ -69,22 +69,24 @@ namespace detail {
 
   template <typename T0, typename T1, typename ...Ts>
   struct LastT<T0, T1, Ts...> { typedef typename LastT<T1, Ts...>::type type; };
+
+  template <typename T, typename... Ts>
+  StencilSequence<Ts..., T>
+    append(const StencilSequence<Ts...>& seq,
+           const Stencil<typename LastT<Ts...>::type(T)>& s)
+  {
+    return StencilSequence<Ts..., T>(seq.head(), append(seq.tail(), s));
+  }
+
+  template <typename T0, typename T1>
+  StencilSequence<T0, T1> append(const StencilSequence<T0>& /*seq*/,
+                                 const Stencil<T0(T1)>& s)
+  {
+    return StencilSequence<T0, T1>(s, StencilSequence<T1>());
+  }
 } // namespace detail
 
-template <typename T0, typename T1>
-StencilSequence<T0, T1> makeStencilSequence(const Stencil<T0(T1)>& s) {
-  return StencilSequence<T0, T1>(s, StencilSequence<T1>{});
-}
-
-class StencilSequence_t {
-public:
-  template <typename T0, typename T1>
-  StencilSequence<T0, T1> operator<<(const Stencil<T0(T1)>& s) {
-    return makeStencilSequence(s);
-  }
-};
-StencilSequence_t StencilSeq;
-
+// base case
 template <typename T>
 class StencilSequence<T> {
 public:
@@ -96,14 +98,12 @@ public:
 
 template <typename T0, typename T1, typename... Ts>
 class StencilSequence<T0, T1, Ts...> {
-  typedef typename detail::LastT<T1, Ts...>::type TLast;
 public:
+  typedef typename detail::LastT<T1, Ts...>::type TLast;
+
   StencilSequence(const Stencil<T0(T1)>& s, StencilSequence<T1, Ts...> seq);
 
   StencilSequence(const StencilSequence&) = default;
-
-  template <typename T>
-  StencilSequence<T, T0, T1, Ts...> operator<<(const Stencil<T(T0)>& s);
 
   template <typename... Args>
   Matrix<T0> operator()(const Matrix<TLast>& input,
@@ -114,9 +114,30 @@ public:
                          const Matrix<TLast>& input,
                          Args&&... args) const;
 
+  template <typename... Args>
+  Matrix<T0> operator()(int iterations,
+                        const Matrix<TLast>& input,
+                        Args&&... args) const;
+
+  template <typename... Args>
+  Matrix<T0>& operator()(int iterations,
+                         Out<Matrix<T0>> output,
+                         const Matrix<TLast>& input,
+                         Args&&... args) const;
+
+  template <typename T>
+  StencilSequence<T, T0, T1, Ts...> operator>>(const Stencil<T(T0)>& s);
+
+  template <typename T>
+  StencilSequence<T0, T1, Ts..., T> operator<<(const Stencil<TLast(T)>& s);
+
+  const Stencil<T0(T1)>& head() const;
+
+  const StencilSequence<T1, Ts...>& tail() const;
+
 private:
-  Stencil<T0(T1)> head;
-  StencilSequence<T1, Ts...> tail;
+  Stencil<T0(T1)> _head;
+  StencilSequence<T1, Ts...> _tail;
 };
 
 /*
