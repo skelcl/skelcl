@@ -48,10 +48,10 @@
 
 namespace skelcl {
 
-template<typename > class Stencil;
-template<typename... > class StencilSequence;
+template <typename> class Stencil;
+template <typename...> class StencilSequence;
 
-template<typename Tin, typename Tout>
+template <typename Tin, typename Tout>
 class Stencil<Tout(Tin)> : public detail::Skeleton {
 public:
   friend class StencilSequence<Tout(Tin)>;
@@ -86,27 +86,33 @@ public:
   /// region (only used if Padding == NEUTRAL)
   const Tin& getPaddingElement() const;
 
+  // combine two stencils to create a StencilSequence
   template <typename T>
   StencilSequence<Tout, Tin, T> operator<<(const Stencil<Tin(T)>& s) const;
 
   template <typename T>
   StencilSequence<T, Tout, Tin> operator>>(const Stencil<T(Tout)>& s) const;
 
-private:
-  template <typename... Args>
+
+  template <typename T, typename... Args>
   void execute(const Matrix<Tin>& input, Matrix<Tout>& output,
-               const Matrix<Tin>& initial,
+               const Matrix<T>& initial,
                const unsigned int opsUntilNextSync,
                const unsigned int opsSinceLastSync,
                const unsigned int sumSouthBorders,
                const unsigned int sumNorthBorders,
                Args&&... args) const;
 
-  // Utility methods.
+private:
+  // Utility methods
   detail::Program createAndBuildProgram() const;
+
   void prepareInput(const Matrix<Tin>& input) const;
+
   void prepareOutput(Matrix<Tout>& output, const Matrix<Tin>& input) const;
+
   void getTileSize(const cl_uint *local, unsigned int *tile) const;
+
   void getGlobalSize(const cl_uint *local,
                      const Matrix<Tout>& output,
                      const size_t deviceId,
@@ -116,6 +122,7 @@ private:
                      const unsigned int sumSouthBorders,
                      const unsigned int sumNorthBorders,
                      cl_uint *global) const;
+
   template <typename... Args>
   void setKernelArgs(Matrix<Tout>& output,
                      const Matrix<Tin>& input,

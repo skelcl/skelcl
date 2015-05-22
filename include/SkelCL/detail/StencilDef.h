@@ -84,14 +84,16 @@ Stencil<Tout(Tin)>::Stencil(const Source& source,
                             Tin paddingElement) :
   detail::Skeleton("Stencil<Tout(Tin)>"), _shape(shape), _padding(padding),
   _paddingElement(paddingElement), _userSource(source), _funcName(func),
-  _program(createAndBuildProgram()) {
+  _program(createAndBuildProgram())
+{
     LOG_DEBUG_INFO("Created new Stencil object (", this, ")");
 }
 
 template <typename Tin, typename Tout>
 template <typename... Args>
 Matrix<Tout> Stencil<Tout(Tin)>::operator()(const Matrix<Tin>& input,
-                                            Args&&... args) const {
+                                            Args&&... args) const
+{
   Matrix<Tout> output;
   this->operator()(out(output), input, std::forward<Args>(args)...);
   return output;
@@ -102,7 +104,8 @@ template <typename Tin, typename Tout>
 template <typename... Args>
 Matrix<Tout>& Stencil<Tout(Tin)>::operator()(Out<Matrix<Tout>> output,
                                              const Matrix<Tin>& input,
-                                             Args&&... args) const {
+                                             Args&&... args) const
+{
   ASSERT(input.rowCount() > 0);
   ASSERT(input.columnCount() > 0);
 
@@ -113,15 +116,16 @@ Matrix<Tout>& Stencil<Tout(Tin)>::operator()(Out<Matrix<Tout>> output,
 }
 
 template <typename Tin, typename Tout>
-template <typename... Args>
+template <typename T, typename... Args>
 void Stencil<Tout(Tin)>::execute(const Matrix<Tin>& input,
                                  Matrix<Tout>& output,
-                                 const Matrix<Tin>& initial,
+                                 const Matrix<T>& initial,
                                  const unsigned int opsUntilNextSync,
                                  const unsigned int opsSinceLastSync,
                                  const unsigned int sumSouthBorders,
                                  const unsigned int sumNorthBorders,
-                                 Args&&... args) const {
+                                 Args&&... args) const
+{
   const size_t numDevices = input.distribution().devices().size();
 
   pvsutil::Timer t; // Time how long it takes to prepare input and output data.
@@ -175,7 +179,8 @@ void Stencil<Tout(Tin)>::execute(const Matrix<Tin>& input,
 
 template <typename Tin, typename Tout>
 void Stencil<Tout(Tin)>::getTileSize(const cl_uint *const local,
-                                     cl_uint *const tile) const {
+                                     cl_uint *const tile) const
+{
   tile[0] = local[0] + _shape.getNorth() + _shape.getSouth();
   tile[1] = local[1] + _shape.getEast() + _shape.getWest();
 }
@@ -189,7 +194,8 @@ void Stencil<Tout(Tin)>::getGlobalSize(const cl_uint *const local,
                                        const unsigned int opsSinceLastSync,
                                        const unsigned int sumSouthBorders,
                                        const unsigned int sumNorthBorders,
-                                       cl_uint *const global) const {
+                                       cl_uint *const global) const
+{
   cl_uint grid[2];
 
   // Determine the size of the grid being operated on, and the offset
@@ -219,13 +225,15 @@ void Stencil<Tout(Tin)>::getGlobalSize(const cl_uint *const local,
 
 template <typename Tin, typename Tout>
 template <typename... Args>
-void Stencil<Tout(Tin)>::setKernelArgs(Matrix<Tout>& output,
-                                       const Matrix<Tin>& input,
-                                       const Matrix<Tin>& initial,
-                                       const cl_uint *const localSize,
-                                       const std::shared_ptr<detail::Device>& devicePtr,
-                                       cl::Kernel& kernel,
-                                       Args&&... args) const {
+void Stencil<Tout(Tin)>::
+  setKernelArgs(Matrix<Tout>& output,
+                const Matrix<Tin>& input,
+                const Matrix<Tin>& initial,
+                const cl_uint *const localSize,
+                const std::shared_ptr<detail::Device>& devicePtr,
+                cl::Kernel& kernel,
+                Args&&... args) const
+{
   cl_uint tile[2];
 
   auto& inputBuffer = input.deviceBuffer(*devicePtr);
@@ -250,7 +258,8 @@ void Stencil<Tout(Tin)>::setKernelArgs(Matrix<Tout>& output,
 }
 
 template <typename Tin, typename Tout>
-void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& input) const {
+void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& input) const
+{
   detail::StencilDistribution<Matrix<Tin>> dist(
       _shape.getNorth(), _shape.getWest(), _shape.getSouth(),
       _shape.getEast(), 1);
@@ -262,7 +271,8 @@ void Stencil<Tout(Tin)>::prepareInput(const Matrix<Tin>& input) const {
 
 template <typename Tin, typename Tout>
 void Stencil<Tout(Tin)>::prepareOutput(Matrix<Tout>& output,
-                                       const Matrix<Tin>& input) const {
+                                       const Matrix<Tin>& input) const
+{
   if (output.rowCount() != input.rowCount()) {
     output.resize(typename Matrix<Tout>::size_type(input.rowCount(),
                                                    input.columnCount()));
@@ -273,7 +283,8 @@ void Stencil<Tout(Tin)>::prepareOutput(Matrix<Tout>& output,
 }
 
 template <typename Tin, typename Tout>
-detail::Program Stencil<Tout(Tin)>::createAndBuildProgram() const {
+detail::Program Stencil<Tout(Tin)>::createAndBuildProgram() const
+{
   ASSERT_MESSAGE(!_userSource.empty(),
                  "Tried to create program with empty user source.");
 
@@ -401,10 +412,10 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
   }
 
   // Build the program.
-  auto program = detail::Program(s,
-                                 detail::util::hash(
-                                     "//Stencil\n" + Matrix<Tout>::deviceFunctions()
-                                     + _userSource + _funcName));
+  auto program =
+    detail::Program(s, detail::util::hash("//Stencil\n"
+                         + Matrix<Tout>::deviceFunctions()
+                         + _userSource + _funcName));
   // Set the parameters and function names.
   if (!program.loadBinary()) {
     program.transferParameters(_funcName, 1, "SCL_STENCIL");
@@ -418,17 +429,20 @@ __kernel void SCL_STENCIL(__global SCL_TYPE_0* SCL_IN,
 }
 
 template <typename Tin, typename Tout>
-const StencilShape& Stencil<Tout(Tin)>::getShape() const {
+const StencilShape& Stencil<Tout(Tin)>::getShape() const
+{
   return this->_shape;
 }
 
 template <typename Tin, typename Tout>
-const Padding& Stencil<Tout(Tin)>::getPadding() const {
+const Padding& Stencil<Tout(Tin)>::getPadding() const
+{
   return this->_padding;
 }
 
 template <typename Tin, typename Tout>
-const Tin& Stencil<Tout(Tin)>::getPaddingElement() const {
+const Tin& Stencil<Tout(Tin)>::getPaddingElement() const
+{
   return this->_paddingElement;
 }
 

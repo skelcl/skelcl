@@ -217,10 +217,12 @@ int main(int argc, char** argv)
                                     stencilShape(any(0)),
                                     Padding::NEAREST);
 
-    auto seq = gauss >> sobel >> nms >> threshold;
+    auto seq = gauss >> gauss;//sobel >> nms >> threshold;
     //auto seq = threshold << nms << sobel << gauss;
 
-    seq(out(outputImage), inputImage, kernelVec, range.getValue());
+    outputImage = seq(1, inputImage, kernelVec, range.getValue());
+
+    //seq(1, out(outputImage), inputImage, kernelVec, range.getValue());
   }
 
   auto end = getTime();

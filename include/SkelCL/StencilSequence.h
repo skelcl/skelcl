@@ -38,6 +38,7 @@
 ///
 /// \author Stefan Breuer<s_breu03@uni-muenster.de>
 /// \author Chris Cummins <chrisc.101@gmail.com>
+/// \author Michel Steuwer <michel.steuwer@ed.ac.uk>
 ///
 #ifndef STENCIL_SEQUENCE_H_
 #define STENCIL_SEQUENCE_H_
@@ -57,44 +58,8 @@ namespace skelcl {
 
 template<typename > class Matrix;
 template<typename > class Out;
-//template<typename > class StencilSequence;
-
+namespace detail { template <typename...> struct LastT; }
 template <typename...> class StencilSequence;
-
-namespace detail {
-  template <typename...> struct LastT;
-
-  template <typename T>
-  struct LastT<T> { typedef T type; };
-
-  template <typename T0, typename T1, typename ...Ts>
-  struct LastT<T0, T1, Ts...> { typedef typename LastT<T1, Ts...>::type type; };
-
-  template <typename T, typename... Ts>
-  StencilSequence<Ts..., T>
-    append(const StencilSequence<Ts...>& seq,
-           const Stencil<typename LastT<Ts...>::type(T)>& s)
-  {
-    return StencilSequence<Ts..., T>(seq.head(), append(seq.tail(), s));
-  }
-
-  template <typename T0, typename T1>
-  StencilSequence<T0, T1> append(const StencilSequence<T0>& /*seq*/,
-                                 const Stencil<T0(T1)>& s)
-  {
-    return StencilSequence<T0, T1>(s, StencilSequence<T1>());
-  }
-} // namespace detail
-
-// base case
-template <typename T>
-class StencilSequence<T> {
-public:
-  template <typename... Args>
-  const Matrix<T>& operator()(Out<Matrix<T>> output,
-                              const Matrix<T>& input,
-                              Args&&... args) const;
-};
 
 template <typename T0, typename T1, typename... Ts>
 class StencilSequence<T0, T1, Ts...> {
@@ -135,63 +100,75 @@ public:
 
   const StencilSequence<T1, Ts...>& tail() const;
 
+  // fried classes do not work with template specialization ...
+  // ..., therefore, the next three functions are public
+  StencilDirection::type getSumSouthBorders() const;
+
+  StencilDirection::type getSumNorthBorders() const;
+
+  template <typename... Args>
+  const Matrix<T0>& execute(Matrix<T0>& output,
+                            const Matrix<TLast>& input,
+                            const Matrix<TLast>& initial,
+                            StencilDirection::type sumNorthBorders,
+                            StencilDirection::type sumSouthBorders,
+                            int iterationsSinceLastSync,
+                            int iterationsUntilNextSync,
+                            Args&&... args) const;
+
 private:
+  int getIterationsUntilNextSync(int iterationsRemaining) const;
+
+  template <typename... Args>
+  void execute(Out<Matrix<T0>> output,
+               const Matrix<TLast>& input,
+               Args&&... args) const;
+
+  template <typename... Args>
+  void prepareAndExecuteIter(int iterations,
+                             Out<Matrix<T0>> output,
+                             const Matrix<TLast>& input,
+                             Args&&... args) const;
+
+  template <typename... Args>
+  void executeIter(int iterationsLeft,
+                   int iteration,
+                   StencilDirection::type sumNorthBorders,
+                   StencilDirection::type sumSouthBorders,
+                   int iterationsSinceLastSync,
+                   int iterationsUntilNextSync,
+                   Matrix<T0>& buffer0,
+                   Matrix<T0>& buffer1,
+                   const Matrix<TLast>& input,
+                   Args&&... args) const;
+
   Stencil<T0(T1)> _head;
   StencilSequence<T1, Ts...> _tail;
 };
 
-/*
-template<typename Tin, typename Tout>
-class StencilSequence<Tout(Tin)> : public detail::Skeleton {
-
+// base case
+template <typename T>
+class StencilSequence<T> {
 public:
-  StencilSequence<Tout(Tin)>();
+  template <typename... Args>
+  const Matrix<T>& operator()(Out<Matrix<T>> output,
+                              const Matrix<T>& input,
+                              Args&&... args) const;
 
-  // Add a new stencil to the sequence.
-  void add(Stencil<Tout(Tin)> *const stencil);
-
-  // Run sequence for 1 iterations.
-  template<typename ... Args>
-  Matrix<Tout> operator()(const Matrix<Tin>& input,
-                          Args&&... args) const;
-
-  // Run sequence for n iterations.
-  template<typename ... Args>
-  Matrix<Tout> operator()(const unsigned int iterations,
-                          const Matrix<Tin>& input,
-                          Args&&... args) const;
-
-  // Run sequence for n iterations (in-place).
-  template<typename ... Args>
-  Matrix<Tout>& operator()(const unsigned int iterations,
-                           Out<Matrix<Tin>> output,
-                           const Matrix<Tin>& input,
+  template <typename... Args>
+  const Matrix<T>& execute(Matrix<T>& output,
+                           const Matrix<T>& input,
+                           const Matrix<T>& initial,
+                           StencilDirection::type sumNorthBorders,
+                           StencilDirection::type sumSouthBorders,
+                           int iterationsSinceLastSync,
+                           int iterationsUntilNextSync,
                            Args&&... args) const;
 
-private:
-  template<typename ... Args>
-  Matrix<Tout>& operator()(const unsigned int iterations,
-                           Out<Matrix<Tin>> output,
-                           Out<Matrix<Tin>> temp,
-                           const Matrix<Tin>& input,
-                           Args&&... args) const;
-
-  template<typename ... Args>
-  void execute(const Matrix<Tin>& input,
-               Matrix<Tout>& temp,
-               Matrix<Tout>& output,
-               const unsigned int iterations,
-               Args&&... args) const;
-
-  unsigned int getIterationsUntilNextSync(
-      const unsigned int iterationsRemaining) const;
-
-  StencilDirection::type getSumNorthBorders() const;
   StencilDirection::type getSumSouthBorders() const;
 
-  std::vector<Stencil<Tout(Tin)> *> _sequence;
+  StencilDirection::type getSumNorthBorders() const;
 };
-*/
 
 } //namespace skelcl
 
