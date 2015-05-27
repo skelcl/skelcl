@@ -40,7 +40,7 @@ jobject Java_opencl_executor_GlobalArg_createOutput(JNIEnv* env, jclass cls,
 jfloat Java_opencl_executor_GlobalArg_at(JNIEnv* env, jobject obj, jint index)
 {
   auto ptr = getHandle<GlobalArg>(env, obj);
-  auto vec = ptr->data();
+  auto& vec = ptr->data();
   vec.copyDataToHost();
   auto dataPtr = reinterpret_cast<float*>(vec.hostBuffer().data());
   return dataPtr[index];
@@ -50,7 +50,7 @@ jfloatArray Java_opencl_executor_GlobalArg_asFloatArray(JNIEnv* env,
                                                         jobject obj)
 {
   auto ptr = getHandle<GlobalArg>(env, obj);
-  auto vec = ptr->data();
+  auto& vec = ptr->data();
 
   auto res = env->NewFloatArray(vec.size() / sizeof(float));
   if (res == nullptr) return nullptr;
@@ -63,7 +63,7 @@ jfloatArray Java_opencl_executor_GlobalArg_asFloatArray(JNIEnv* env,
 jintArray Java_opencl_executor_GlobalArg_asIntArray(JNIEnv* env, jobject obj)
 {
   auto ptr = getHandle<GlobalArg>(env, obj);
-  auto vec = ptr->data();
+  auto& vec = ptr->data();
 
   auto res = env->NewIntArray(vec.size() / sizeof(int));
   if (res == nullptr) return nullptr;
