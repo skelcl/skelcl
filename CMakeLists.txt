@@ -38,7 +38,7 @@ option (BUILD_SHARED_LIBS
 option (BUILD_EXAMPLES
         "Build all examples automatically with the library." ON)
 option (BUILD_EXECUTOR
-        "Build executor tool." ON)
+  "Build executor tool." OFF)
 option (BUILD_TESTS
         "Build all tests automatically with the library." ON)
 option (THROW_ON_FAILURE
