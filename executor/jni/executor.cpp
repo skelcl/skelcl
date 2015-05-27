@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <iostream>
 
 #include "opencl_executor_Executor.h"
 #include "handle.h"
@@ -39,8 +40,9 @@ jdouble
   
     return runtime;
   } catch(...) {
-    jclass jClass = env->FindClass("java/lang/RuntimeException");
-    env->ThrowNew(jClass, "Executor failed");
+    jclass jClass = env->FindClass("opencl/executor/Executor$ExecutorFailureException");
+    if(!jClass) std::cerr << "[JNI ERROR] Cannot find the exception class" << std::endl;
+    env->ThrowNew(jClass, "Executor failure");
   }
   return 0;
 }
