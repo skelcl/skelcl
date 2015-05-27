@@ -47,6 +47,10 @@
 #include <CL/cl.hpp>
 #undef  __CL_ENABLE_EXCEPTIONS
 
+#ifdef THROW_ON_FAILURE
+#include <stdexcept>
+#endif
+
 #include "detail/pvsutilDll.h"
 
 namespace pvsutil {
@@ -101,8 +105,13 @@ private:
 #define LOG_ERROR(...)\
   LOG(pvsutil::Logger::Severity::Error, __VA_ARGS__)
 
-#define ABORT_WITH_ERROR(err)\
-  LOG_ERROR(err); std::exit(EXIT_FAILURE);
+#ifdef THROW_ON_FAILURE
+# define ABORT_WITH_ERROR(err)\
+   LOG_ERROR(err); throw new std::runtime_error("Fatal error");
+#else
+# define ABORT_WITH_ERROR(err)\
+   LOG_ERROR(err); std::exit(EXIT_FAILURE);
+#endif
 
 #define LOG_WARNING(...)\
   LOG(pvsutil::Logger::Severity::Warning, __VA_ARGS__)

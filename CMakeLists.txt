@@ -41,6 +41,8 @@ option (BUILD_EXECUTOR
         "Build executor tool." ON)
 option (BUILD_TESTS
         "Build all tests automatically with the library." ON)
+option (THROW_ON_FAILURE
+        "Throw an exception on failure instead of using std::exit." OFF)
 
 # opencl dirs
 find_package (OpenCL)
@@ -71,6 +73,11 @@ if (NOT CMAKE_BUILD_TYPE)
   set (CMAKE_BUILD_TYPE Debug)
 endif (NOT CMAKE_BUILD_TYPE)
 
+if (THROW_ON_FAILURE)
+  message(STATUS "Enabling exception on failure")
+  add_definitions( -DTHROW_ON_FAILURE )
+endif (THROW_ON_FAILURE) 
+
 # add subdirectory to build library
 add_subdirectory (src)
 
@@ -94,4 +101,5 @@ if (BUILD_TESTS)
   enable_testing ()
   add_subdirectory (test)
 endif (BUILD_TESTS)
+
 

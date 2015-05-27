@@ -203,7 +203,7 @@ void Program::build(const std::string& options)
     if (err.err() == CL_BUILD_PROGRAM_FAILURE) {
       LOG_ERROR(err);
       printBuildLog();
-      abort();
+      ABORT_WITH_ERROR(err);
     } else {
       ABORT_WITH_ERROR(err);
     }

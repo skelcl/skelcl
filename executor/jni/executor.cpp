@@ -15,27 +15,34 @@ jdouble
                                         jint globalSize1, jint globalSize2, jint globalSize3,
                                         jobjectArray jArgs)
 {
-  auto kernelSourcePtr = env->GetStringUTFChars(jKernelSource, nullptr);
-  std::string kernelSource{kernelSourcePtr};
-  auto kernelNamePtr = env->GetStringUTFChars(jKernelName, nullptr);
-  std::string kernelName{kernelNamePtr};
-  auto buildOptionsPtr = env->GetStringUTFChars(jBuildOptions, nullptr);
-  std::string buildOptions{buildOptionsPtr};
+  try {
+    auto kernelSourcePtr = env->GetStringUTFChars(jKernelSource, nullptr);
+    std::string kernelSource{kernelSourcePtr};
+    auto kernelNamePtr = env->GetStringUTFChars(jKernelName, nullptr);
+    std::string kernelName{kernelNamePtr};
+    auto buildOptionsPtr = env->GetStringUTFChars(jBuildOptions, nullptr);
+    std::string buildOptions{buildOptionsPtr};
 
-  std::vector<KernelArg*> args(env->GetArrayLength(jArgs));
-  int i = 0;
-  for (auto& p : args) {
-    auto obj = env->GetObjectArrayElement(jArgs, i);
-    p = getHandle<KernelArg>(env, obj);
-    ++i;
+    std::vector<KernelArg*> args(env->GetArrayLength(jArgs));
+    int i = 0;
+    for (auto& p : args) {
+      auto obj = env->GetObjectArrayElement(jArgs, i);
+      p = getHandle<KernelArg>(env, obj);
+      ++i;
+    }
+
+    auto runtime = execute(kernelSource, kernelName, buildOptions,
+     localSize1, localSize2, localSize3, globalSize1, globalSize2, globalSize3, args);
+
+    env->ReleaseStringUTFChars(jKernelSource, kernelSourcePtr);
+    env->ReleaseStringUTFChars(jKernelName, kernelNamePtr);
+  
+    return runtime;
+  } catch(...) {
+    jclass jClass = env->FindClass("java/lang/RuntimeException");
+    env->ThrowNew(jClass, "Executor failed");
   }
-
-  auto runtime = execute(kernelSource, kernelName, buildOptions,
-   localSize1, localSize2, localSize3, globalSize1, globalSize2, globalSize3, args);
-
-  env->ReleaseStringUTFChars(jKernelSource, kernelSourcePtr);
-  env->ReleaseStringUTFChars(jKernelName, kernelNamePtr);
-  return runtime;
+  return 0;
 }
 
 void Java_opencl_executor_Executor_init(JNIEnv *, jclass,
