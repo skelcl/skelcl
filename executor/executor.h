@@ -77,6 +77,12 @@ void shutdownSkelCL();
 
 std::string getPlatformName();
 
+unsigned long getDeviceLocalMemSize();
+
+unsigned long getDeviceGlobalMemSize();
+
+unsigned long getDeviceMaxMemAllocSize();
+
 std::string getDeviceName();
 
 std::string getDeviceType();

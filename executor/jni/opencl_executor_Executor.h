@@ -25,6 +25,30 @@ JNIEXPORT void JNICALL Java_opencl_executor_Executor_init
 
 /*
  * Class:     opencl_executor_Executor
+ * Method:    getDeviceLocalMemSize
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_opencl_executor_Executor_getDeviceLocalMemSize
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     opencl_executor_Executor
+ * Method:    getDeviceGlobalMemSize
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_opencl_executor_Executor_getDeviceGlobalMemSize
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     opencl_executor_Executor
+ * Method:    getDeviceMaxMemAllocSize
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_opencl_executor_Executor_getDeviceMaxMemAllocSize
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     opencl_executor_Executor
  * Method:    getPlatformName
  * Signature: ()Ljava/lang/String;
  */

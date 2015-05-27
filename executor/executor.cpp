@@ -139,6 +139,24 @@ std::string getPlatformName()
   return devicePtr->clPlatform().getInfo<CL_PLATFORM_NAME>();
 }
 
+unsigned long getDeviceLocalMemSize()
+{
+  auto& devicePtr = skelcl::detail::globalDeviceList.front();
+  return devicePtr->localMemSize();
+}
+
+unsigned long getDeviceGlobalMemSize()
+{
+  auto& devicePtr = skelcl::detail::globalDeviceList.front();
+  return devicePtr->globalMemSize();
+}
+
+unsigned long getDeviceMaxMemAllocSize()
+{
+  auto& devicePtr = skelcl::detail::globalDeviceList.front();
+  return devicePtr->maxMemAllocSize();
+}
+
 std::string getDeviceName()
 {
   auto& devicePtr = skelcl::detail::globalDeviceList.front();

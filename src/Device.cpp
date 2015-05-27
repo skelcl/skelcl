@@ -39,6 +39,7 @@
 
 #include <functional>
 #include <stdexcept>
+#include <algorithm>
 #include <sstream>
 #include <string>
 
@@ -374,6 +375,11 @@ unsigned int Device::maxClockFrequency() const
 unsigned int Device::maxComputeUnits() const
 {
   return _device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>();
+}
+
+unsigned long Device::maxMemAllocSize() const
+{
+  return _device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>();
 }
 
 size_t Device::maxWorkGroupSize() const

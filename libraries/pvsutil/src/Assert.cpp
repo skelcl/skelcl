@@ -58,7 +58,7 @@ void ASSERT_IMPL(const char* file,
     defaultLogger.log(Logger::Severity::Error, file, line,
                       "Assertion `", expressionString,
                       "' failed.");
-    abort();
+    std::exit(EXIT_FAILURE);
   }
 }
 
@@ -90,7 +90,7 @@ void ASSERT_IMPL(const char* file,
                         &buffer[0]);
     }
     va_end(args);
-    abort();
+    std::exit(EXIT_FAILURE);
   }
 }
 

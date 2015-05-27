@@ -289,6 +289,13 @@ public:
   unsigned int maxComputeUnits() const;
 
   ///
+  /// \brief Returns the maximal size of memory object allocation in bytes
+  ///
+  /// \return The maximal size of memory object allocation in bytes
+  ///
+  unsigned long maxMemAllocSize() const;
+
+  ///
   /// \brief Returns the maximal number of OpenCL Work Items in one OpenCL Work
   ///        Group for the device
   ///

@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <limits>
 
 #include "opencl_executor_Executor.h"
 #include "handle.h"
@@ -48,6 +49,27 @@ jstring Java_opencl_executor_Executor_getPlatformName(JNIEnv * env, jclass)
 {
   auto name = getPlatformName();
   return env->NewStringUTF(name.c_str());
+}
+
+jlong Java_opencl_executor_Executor_getDeviceLocalMemSize(JNIEnv *, jclass)
+{
+  const auto value = getDeviceLocalMemSize();
+  ASSERT_MESSAGE(value <= std::numeric_limits<long>::max(), "JNI cast overflow");
+  return static_cast<long>(value);
+}
+
+jlong Java_opencl_executor_Executor_getDeviceGlobalMemSize(JNIEnv *, jclass)
+{
+  const auto value = getDeviceGlobalMemSize();
+  ASSERT_MESSAGE(value <= std::numeric_limits<long>::max(), "JNI cast overflow");
+  return static_cast<long>(value);
+}
+
+jlong Java_opencl_executor_Executor_getDeviceMaxMemAllocSize(JNIEnv *, jclass)
+{
+  const auto value = getDeviceMaxMemAllocSize();
+  ASSERT_MESSAGE(value <= std::numeric_limits<long>::max(), "JNI cast overflow");
+  return static_cast<long>(value);
 }
 
 jstring Java_opencl_executor_Executor_getDeviceName(JNIEnv * env, jclass)

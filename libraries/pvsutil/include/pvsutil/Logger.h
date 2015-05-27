@@ -102,7 +102,7 @@ private:
   LOG(pvsutil::Logger::Severity::Error, __VA_ARGS__)
 
 #define ABORT_WITH_ERROR(err)\
-  LOG_ERROR(err); abort()
+  LOG_ERROR(err); std::exit(EXIT_FAILURE);
 
 #define LOG_WARNING(...)\
   LOG(pvsutil::Logger::Severity::Warning, __VA_ARGS__)
