@@ -60,6 +60,7 @@ set (STOOLING_COMMON_INCLUDE_DIR
 # llvm version 3.5 or greater
 if ("${LLVM_VERSION}" VERSION_GREATER "3.4.9")
 set (STOOLING_COMMON_LIBS
+      curses
       clang
       clangTooling
       clangRewrite
@@ -99,6 +100,7 @@ set (STOOLING_COMMON_LIBS
      )
 elseif ("${LLVM_VERSION}" VERSION_GREATER "3.2.0")
 set (STOOLING_COMMON_LIBS
+      curses
       clang
       clangTooling
       clangRewriteCore
