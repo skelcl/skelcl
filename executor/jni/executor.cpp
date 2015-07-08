@@ -8,13 +8,16 @@
 #include "../executor.h"
 
 jdouble
-  Java_opencl_executor_Executor_execute(JNIEnv* env, jclass,
-                                        jstring jKernelSource,
-                                        jstring jKernelName,
-                                        jstring jBuildOptions,
-                                        jint localSize1, jint localSize2, jint localSize3,
-                                        jint globalSize1, jint globalSize2, jint globalSize3,
-                                        jobjectArray jArgs)
+  executeOrBencmark(JNIEnv* env, jclass,
+                    jstring jKernelSource,
+                    jstring jKernelName,
+                    jstring jBuildOptions,
+                    jint localSize1, jint localSize2, jint localSize3,
+                    jint globalSize1, jint globalSize2, jint globalSize3,
+                    jobjectArray jArgs,
+                    bool isBenchmark,
+                    jint iterations,
+                    jdouble timeout)
 {
   try {
     auto kernelSourcePtr = env->GetStringUTFChars(jKernelSource, nullptr);
@@ -32,8 +35,15 @@ jdouble
       ++i;
     }
 
-    auto runtime = execute(kernelSource, kernelName, buildOptions,
-     localSize1, localSize2, localSize3, globalSize1, globalSize2, globalSize3, args);
+    double runtime;
+
+    if (isBenchmark)
+      runtime = benchmark(kernelSource, kernelName, buildOptions,
+        localSize1, localSize2, localSize3, globalSize1, globalSize2, globalSize3,
+        args, iterations, timeout);
+   else
+      runtime = execute(kernelSource, kernelName, buildOptions,
+        localSize1, localSize2, localSize3, globalSize1, globalSize2, globalSize3, args);
 
     env->ReleaseStringUTFChars(jKernelSource, kernelSourcePtr);
     env->ReleaseStringUTFChars(jKernelName, kernelNamePtr);
@@ -45,6 +55,36 @@ jdouble
     env->ThrowNew(jClass, "Executor failure");
   }
   return 0;
+}
+
+jdouble
+  Java_opencl_executor_Executor_execute(JNIEnv* env, jclass jClass,
+                                        jstring jKernelSource,
+                                        jstring jKernelName,
+                                        jstring jBuildOptions,
+                                        jint localSize1, jint localSize2, jint localSize3,
+                                        jint globalSize1, jint globalSize2, jint globalSize3,
+                                        jobjectArray jArgs)
+{
+  return executeOrBencmark(env, jClass, jKernelSource, jKernelName, jBuildOptions,
+        localSize1, localSize2, localSize3, globalSize1, globalSize2, globalSize3,
+        jArgs, false, 0, 0.0);
+}
+
+jdouble
+  Java_opencl_executor_Executor_benchmark(JNIEnv* env, jclass jClass,
+                                        jstring jKernelSource,
+                                        jstring jKernelName,
+                                        jstring jBuildOptions,
+                                        jint localSize1, jint localSize2, jint localSize3,
+                                        jint globalSize1, jint globalSize2, jint globalSize3,
+                                        jobjectArray jArgs,
+                                        jint iterations,
+                                        jdouble timeout)
+{
+  return executeOrBencmark(env, jClass, jKernelSource, jKernelName, jBuildOptions,
+        localSize1, localSize2, localSize3, globalSize1, globalSize2, globalSize3,
+        jArgs,true, iterations, timeout);
 }
 
 void Java_opencl_executor_Executor_init(JNIEnv *, jclass,

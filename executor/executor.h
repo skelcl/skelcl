@@ -102,4 +102,11 @@ double execute(const std::string& kernelCode, const std::string& kernelName,
                int globalSize1, int globalSize2, int globalSize3,
                const std::vector<KernelArg*>& args);
 
+double benchmark(const std::string& kernelCode, const std::string& kernelName,
+               const std::string& buildOptions,
+               int localSize1, int localSize2, int localSize3,
+               int globalSize1, int globalSize2, int globalSize3,
+               const std::vector<KernelArg*>& args,
+               int iterations, double timeout);
+
 #endif // EXECUTOR_H_

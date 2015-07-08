@@ -1,4 +1,5 @@
 #include "executor.h"
+#include <algorithm>
 
 namespace {
  
@@ -223,5 +224,46 @@ double execute(const std::string& kernelCode, const std::string& kernelName,
   auto kernel = buildKernel(kernelCode, kernelName, buildOptions);
   return executeKernel(kernel, localSize1, localSize2, localSize3,
                        globalSize1, globalSize2, globalSize3, args);
+}
+
+double benchmark(const std::string& kernelCode, const std::string& kernelName,
+               const std::string& buildOptions,
+               int localSize1, int localSize2, int localSize3,
+               int globalSize1, int globalSize2, int globalSize3,
+               const std::vector<KernelArg*>& args,
+               int iterations, double timeout)
+{
+  auto kernel = buildKernel(kernelCode, kernelName, buildOptions);
+
+  double *allRuntimes = new double[iterations];
+
+  for (int i = 0; i < iterations; i++) {
+    std::cout << "Iteration: " << i << '\n';
+
+    double runtime = executeKernel(kernel, localSize1, localSize2, localSize3,
+                       globalSize1, globalSize2, globalSize3, args);
+
+    allRuntimes[i] = runtime;
+
+    std::cout << "Runtime: " << runtime << " ms\n";
+
+    if (runtime >= timeout) {
+      delete[] allRuntimes;
+      return runtime;
+    }
+  }
+
+  std::sort(allRuntimes, allRuntimes + iterations);
+
+  double median;
+
+  if (iterations % 2 == 0)
+    median = (allRuntimes[iterations/2] + allRuntimes[iterations/2 - 1]) / 2.0;
+  else 
+    median = allRuntimes[iterations/2];
+
+  delete[] allRuntimes;
+
+  return median;
 }
 
