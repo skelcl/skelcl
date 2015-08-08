@@ -70,9 +70,15 @@ const clang::driver::ArgStringList* getCC1Arguments(
 #if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 3)
     compilation->PrintJob(error_stream, compilation->getJobs(), "; ", true);
 #else
+# if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 5)
 		for (auto& j : jobs) {
 			j->Print(error_stream, "; ", true);
 		}
+# else
+    for (auto& j : jobs) {
+      j.Print(error_stream, "; ", true);
+    }
+# endif
 #endif
     diagnostics->Report(clang::diag::err_fe_expected_compiler_job)
         << error_stream.str();
@@ -81,12 +87,20 @@ const clang::driver::ArgStringList* getCC1Arguments(
 
   // The one job we find should be to invoke clang again.
   auto cmd = cast<clang::driver::Command>(*jobs.begin());
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 5)
   if (StringRef(cmd->getCreator().getName()) != "clang") {
+#else
+  if (StringRef(cmd.getCreator().getName()) != "clang") {
+#endif
     diagnostics->Report(clang::diag::err_fe_expected_clang_command);
     return NULL;
   }
 
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 5)
   return &cmd->getArguments();
+#else
+  return &cmd.getArguments();
+#endif
 }
 
 /// \brief Returns a clang build invocation initialized from the CC1 flags.
@@ -176,9 +190,15 @@ bool CustomToolInvocation::runInvocation(
 #if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 3)
     compilation->PrintJob(llvm::errs(), compilation->getJobs(), "\n", true);
 #else
-		for (auto& j : compilation->getJobs()) {
-			j->Print(llvm::errs(), "\n", true);
-		}
+# if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 5)
+    for (auto& j : compilation->getJobs()) {
+      j->Print(llvm::errs(), "\n", true);
+    }
+# else
+    for (auto& j : compilation->getJobs()) {
+      j.Print(llvm::errs(), "\n", true);
+    }
+# endif
 #endif
     llvm::errs() << "\n";
   }
@@ -218,7 +238,11 @@ void CustomToolInvocation::addFileMappingsTo(SourceManager& sources) {
   // FIXME: figure out what '0' stands for.
   auto fromFile = _files.getVirtualFile(_fileName,
       static_cast<long>(input->getBufferSize()), 0);
+#if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 5)
   sources.overrideFileContents(fromFile, input);
+#else
+  sources.overrideFileContents(fromFile, std::move(input));
+#endif
 }
 
 } // namespace stooling

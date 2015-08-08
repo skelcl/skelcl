@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
 if (${WIN32})
-	message ("Build on Windows not (yet) supported.")
+  message ("Build on Windows not (yet) supported.")
 endif (${WIN32})
 
 # set compiler and options
@@ -32,18 +32,46 @@ option (BUILD_TESTS
 # libclang dirs
 set (LLVM_HOME_DIR "${PROJECT_SOURCE_DIR}/libraries/llvm" CACHE STRING
      "Home directory of libclang and LLVM.")
-set (LLVM_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/libraries/llvm/include" CACHE STRING
-     "Include directory of libclang.")
-set (LLVM_LIB_DIR "${PROJECT_SOURCE_DIR}/libraries/llvm/lib" CACHE STRING
-     "Library directory of libclang.")
 
-execute_process(COMMAND "${LLVM_HOME_DIR}/bin/llvm-config" "--version"
-                OUTPUT_VARIABLE LLVM_VERSION)
-if ("${LLVM_VERSION}" STREQUAL "")
-  message(FATAL_ERROR "No LLVM version found. Please make LLVM available at: ${LLVM_HOME_DIR}. (The file 'bin/llvm-config' and the folders 'include' and 'lib' are required.)")
+# determine which llvm-config to use
+if (EXISTS "${LLVM_HOME_DIR}/bin/llvm-config")
+  set (LLVM_CONFIG "${LLVM_HOME_DIR}/bin/llvm-config" CACHE STRING "llvm-config executable")
+  message(STATUS "Use local version of LLVM in ${LLVM_HOME_DIR}")
 else()
-  message(STATUS "LLVM version found: ${LLVM_VERSION}")
+  execute_process(COMMAND "llvm-config" "--version"
+                   RESULT_VARIABLE SYSTEM_LLVM_CONFIG)
+  if ("${SYSTEM_LLVM_CONFIG}" STREQUAL "0")
+    set (LLVM_CONFIG "llvm-config" CACHE STRING "llvm-config executable")
+    message(STATUS "Use system wide version of LLVM")
+  else()
+    message(FATAL_ERROR "No LLVM version found. Please make LLVM available at: ${LLVM_HOME_DIR}. (The file 'bin/llvm-config' and the folders 'include' and 'lib' are required.)")
+  endif()
 endif()
+
+execute_process(COMMAND "${LLVM_CONFIG}" "--version"
+                OUTPUT_VARIABLE LLVM_VERSION)
+message(STATUS "LLVM version found: ${LLVM_VERSION}")
+
+execute_process(COMMAND "${LLVM_CONFIG}" "--includedir"
+               OUTPUT_VARIABLE LLVM_INCLUDE_DIR
+               OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+execute_process(COMMAND "${LLVM_CONFIG}" "--libdir"
+               OUTPUT_VARIABLE LLVM_LIB_DIR
+               OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+execute_process(COMMAND "${LLVM_CONFIG}" "--cflags" "--cxxflags"
+               OUTPUT_VARIABLE LLVM_CXX_FLAGS_
+               OUTPUT_STRIP_TRAILING_WHITESPACE)
+string(REPLACE "\n" " " LLVM_CXX_FLAGS ${LLVM_CXX_FLAGS_})
+#set(STOOLING_CXX_FLAGS "${STOOLING_CXX_FLAGS} ${LLVM_CXX_FLAGS}")
+
+execute_process(COMMAND "${LLVM_CONFIG}" "--ldflags" "--libs" "--system-libs"
+               OUTPUT_VARIABLE LLVM_LINKER_FLAGS_
+               OUTPUT_STRIP_TRAILING_WHITESPACE)
+string(REPLACE "\n" " " LLVM_LINKER_FLAGS ${LLVM_LINKER_FLAGS_})
+
+message(STATUS "${LLVM_LINKER_FLAGS}")
 
 # add libraries
 if (NOT TARGET pvsutil)
@@ -60,7 +88,6 @@ set (STOOLING_COMMON_INCLUDE_DIR
 # llvm version 3.5 or greater
 if ("${LLVM_VERSION}" VERSION_GREATER "3.4.9")
 set (STOOLING_COMMON_LIBS
-      ncurses
       clang
       clangTooling
       clangRewrite
@@ -81,26 +108,11 @@ set (STOOLING_COMMON_LIBS
       clangAST
       clangLex
       clangBasic
-      LLVMBitReader
-      LLVMBitWriter
-      LLVMTransformUtils
-      LLVMipa
-      LLVMAnalysis
-      LLVMTarget
-      LLVMMCParser
-      LLVMMC
-      LLVMOption
-      LLVMObject
-      LLVMCore
-      LLVMSupport
-      dl
-      z
       CACHE INTERNAL
      "Common libraries used by stooling."
      )
 elseif ("${LLVM_VERSION}" VERSION_GREATER "3.2.0")
 set (STOOLING_COMMON_LIBS
-      ncurses
       clang
       clangTooling
       clangRewriteCore
@@ -121,20 +133,6 @@ set (STOOLING_COMMON_LIBS
       clangAST
       clangLex
       clangBasic
-      LLVMBitReader
-      LLVMBitWriter
-      LLVMTransformUtils
-      LLVMipa
-      LLVMAnalysis
-      LLVMTarget
-      LLVMMCParser
-      LLVMMC
-      LLVMOption
-      LLVMObject
-      LLVMCore
-      LLVMSupport
-      dl
-      z
       CACHE INTERNAL
      "Common libraries used by stooling."
      )
@@ -159,7 +157,7 @@ if (BUILD_TESTS)
     add_subdirectory (libraries/gtest)
   endif (NOT TARGET gtest)
 
-	enable_testing ()
+  enable_testing ()
   add_subdirectory (test)
 endif (BUILD_TESTS)
 
