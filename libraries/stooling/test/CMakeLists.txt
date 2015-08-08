@@ -12,6 +12,7 @@ link_directories (${STOOLING_COMMON_LIB_DIR})
 macro (add_testcase _name)
   add_executable (${_name} ${_name}.cpp)
   target_link_libraries (${_name} stooling gtest_main ${STOOLING_COMMON_LIBS})
+  target_link_libraries (${_name} ${LLVM_LINKER_FLAGS})
   add_test (${_name} ${CMAKE_CURRENT_BINARY_DIR}/${_name})
 endmacro()
 

@@ -71,8 +71,6 @@ execute_process(COMMAND "${LLVM_CONFIG}" "--ldflags" "--libs" "--system-libs"
                OUTPUT_STRIP_TRAILING_WHITESPACE)
 string(REPLACE "\n" " " LLVM_LINKER_FLAGS ${LLVM_LINKER_FLAGS_})
 
-message(STATUS "${LLVM_LINKER_FLAGS}")
-
 # add libraries
 if (NOT TARGET pvsutil)
   add_subdirectory (libraries/pvsutil)
@@ -85,8 +83,35 @@ set (STOOLING_COMMON_INCLUDE_DIR
       "${LLVM_INCLUDE_DIR}" CACHE INTERNAL
      "Common include directories used by stooling.")
 
+# llvm version 3.6 or greater
+if ("${LLVM_VERSION}" VERSION_GREATER "3.5.9")
+set (STOOLING_COMMON_LIBS
+      clang
+      clangTooling
+      clangToolingCore
+      clangRewrite
+      clangRewriteFrontend
+      clangFrontendTool
+      clangFrontend
+      clangParse
+      clangSema
+      clangAnalysis
+      clangDriver
+      clangStaticAnalyzerCheckers
+      clangStaticAnalyzerFrontend
+      clangStaticAnalyzerCore
+      clangEdit
+      clangFormat
+      clangSerialization
+      clangASTMatchers
+      clangAST
+      clangLex
+      clangBasic
+      CACHE INTERNAL
+     "Common libraries used by stooling."
+     )
 # llvm version 3.5 or greater
-if ("${LLVM_VERSION}" VERSION_GREATER "3.4.9")
+elseif ("${LLVM_VERSION}" VERSION_GREATER "3.4.9")
 set (STOOLING_COMMON_LIBS
       clang
       clangTooling
