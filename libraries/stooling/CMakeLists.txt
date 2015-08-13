@@ -66,10 +66,17 @@ execute_process(COMMAND "${LLVM_CONFIG}" "--cflags" "--cxxflags"
 string(REPLACE "\n" " " LLVM_CXX_FLAGS ${LLVM_CXX_FLAGS_})
 #set(STOOLING_CXX_FLAGS "${STOOLING_CXX_FLAGS} ${LLVM_CXX_FLAGS}")
 
+if ("${LLVM_VERSION}" VERSION_GREATER "3.5.9")
 execute_process(COMMAND "${LLVM_CONFIG}" "--ldflags" "--libs" "--system-libs"
                OUTPUT_VARIABLE LLVM_LINKER_FLAGS_
                OUTPUT_STRIP_TRAILING_WHITESPACE)
 string(REPLACE "\n" " " LLVM_LINKER_FLAGS ${LLVM_LINKER_FLAGS_})
+else ()
+execute_process(COMMAND "${LLVM_CONFIG}" "--ldflags" "--libs"
+               OUTPUT_VARIABLE LLVM_LINKER_FLAGS_
+               OUTPUT_STRIP_TRAILING_WHITESPACE)
+string(REPLACE "\n" " " LLVM_LINKER_FLAGS ${LLVM_LINKER_FLAGS_})
+endif()
 
 # add libraries
 if (NOT TARGET pvsutil)
