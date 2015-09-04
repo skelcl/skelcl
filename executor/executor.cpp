@@ -158,6 +158,12 @@ unsigned long getDeviceMaxMemAllocSize()
   return devicePtr->maxMemAllocSize();
 }
 
+unsigned long getDeviceMaxWorkGroupSize()
+{
+  auto& devicePtr = skelcl::detail::globalDeviceList.front();
+  return devicePtr->maxWorkGroupSize();
+}
+
 std::string getDeviceName()
 {
   auto& devicePtr = skelcl::detail::globalDeviceList.front();

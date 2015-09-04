@@ -57,6 +57,14 @@ JNIEXPORT jlong JNICALL Java_opencl_executor_Executor_getDeviceMaxMemAllocSize
 
 /*
  * Class:     opencl_executor_Executor
+ * Method:    getDeviceMaxWorkGroupSize
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_opencl_executor_Executor_getDeviceMaxWorkGroupSize
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     opencl_executor_Executor
  * Method:    getPlatformName
  * Signature: ()Ljava/lang/String;
  */

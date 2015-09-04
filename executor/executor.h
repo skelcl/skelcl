@@ -83,6 +83,8 @@ unsigned long getDeviceGlobalMemSize();
 
 unsigned long getDeviceMaxMemAllocSize();
 
+unsigned long getDeviceMaxWorkGroupSize();
+
 std::string getDeviceName();
 
 std::string getDeviceType();

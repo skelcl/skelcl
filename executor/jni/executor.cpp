@@ -121,6 +121,13 @@ jlong Java_opencl_executor_Executor_getDeviceMaxMemAllocSize(JNIEnv *, jclass)
   return static_cast<long>(value);
 }
 
+jlong Java_opencl_executor_Executor_getDeviceMaxWorkGroupSize(JNIEnv *, jclass)
+{
+  const auto value = getDeviceMaxWorkGroupSize();
+  ASSERT_MESSAGE(value <= std::numeric_limits<long>::max(), "JNI cast overflow");
+  return static_cast<long>(value);
+}
+
 jstring Java_opencl_executor_Executor_getDeviceName(JNIEnv * env, jclass)
 {
   auto name = getDeviceName();
