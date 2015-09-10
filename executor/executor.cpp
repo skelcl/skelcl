@@ -244,14 +244,14 @@ double benchmark(const std::string& kernelCode, const std::string& kernelName,
   double *allRuntimes = new double[iterations];
 
   for (int i = 0; i < iterations; i++) {
-    std::cout << "Iteration: " << i << '\n';
+    //std::cout << "Iteration: " << i << '\n';
 
     double runtime = executeKernel(kernel, localSize1, localSize2, localSize3,
                        globalSize1, globalSize2, globalSize3, args);
 
     allRuntimes[i] = runtime;
 
-    std::cout << "Runtime: " << runtime << " ms\n";
+    //std::cout << "Runtime: " << runtime << " ms\n";
 
     if (runtime >= timeout) {
       delete[] allRuntimes;

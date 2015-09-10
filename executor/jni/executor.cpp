@@ -2,6 +2,8 @@
 #include <vector>
 #include <limits>
 #include <iostream>
+#include <algorithm>
+#include <thread>
 
 #include "opencl_executor_Executor.h"
 #include "handle.h"
@@ -55,6 +57,60 @@ jdouble
     env->ThrowNew(jClass, "Executor failure");
   }
   return 0;
+}
+
+void 
+  Java_opencl_executor_Executor_nativeMatrixMultiply(JNIEnv *env, jclass jClass, 
+                                                     jfloatArray a, 
+                                                     jfloatArray b,
+                                                     jfloatArray out,
+                                                     jint N, jint M, jint K)
+{
+  float *aa = (float *)env->GetFloatArrayElements( a, NULL);
+  float *bb = (float *)env->GetFloatArrayElements( b, NULL);
+  float *cc = (float *)env->GetFloatArrayElements( out, NULL);
+
+  /*for (int i=0; i<N; i++) {
+
+    float kk[N];
+    for (int j=0; j<N; j++) 
+      kk[j] = 0;
+
+    for (int k=0; k<N; k++)
+      for (int j=0; j<N; j++)
+        kk[j] += aa[i*N+k] * bb[k*N+j];
+
+    for (int j=0; j<N; j++)
+       cc[i*N+j] = kk[j];
+  }*/
+  std::vector < std::thread > threads;
+
+  auto mmult = [&](int from, int to) {
+    float kk[N];
+    for (int i=from; i<to; i++) {
+      for (int j=0; j<N; j++) 
+        kk[j] = 0;
+
+      for (int k=0; k<N; k++)
+        for (int j=0; j<N; j++)
+          kk[j] += aa[i*N+k] * bb[k*N+j];
+
+      for (int j=0; j<N; j++)
+         cc[i*N+j] = kk[j];
+    }
+  };
+
+  int nthreads = std::thread::hardware_concurrency();
+  int chunk = N / nthreads;
+  for (unsigned int tid = 0; tid < nthreads; tid++) {
+    threads.push_back(std::thread([=]{mmult(tid*chunk, (tid+1)*chunk);}));
+  }
+  for (auto & t : threads) t.join();
+
+
+  env->ReleaseFloatArrayElements(a, aa, 0);
+  env->ReleaseFloatArrayElements(b, bb, 0);
+  env->ReleaseFloatArrayElements(out, cc, 0); 
 }
 
 jdouble
