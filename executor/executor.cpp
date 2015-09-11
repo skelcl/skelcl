@@ -273,3 +273,87 @@ double benchmark(const std::string& kernelCode, const std::string& kernelName,
   return median;
 }
 
+double evaluate(const std::string& kernelCode, const std::string& kernelName,
+                const std::string& buildOptions,
+                int localSize1, int localSize2, int localSize3,
+                int globalSize1, int globalSize2, int globalSize3,
+                const std::vector<KernelArg*>& args,
+                int iterations, double timeout)
+{
+  auto& devPtr = skelcl::detail::globalDeviceList.front();
+  cl_uint clLocalSize1 = localSize1;
+  cl_uint clGlobalSize1 = globalSize1;
+  cl_uint clLocalSize2 = localSize2;
+  cl_uint clGlobalSize2 = globalSize2;
+  cl_uint clLocalSize3 = localSize3;
+  cl_uint clGlobalSize3 = globalSize3;
+
+  // Copy the buffers only once
+  for (auto& arg : args) {
+    arg->upload();
+  }
+
+
+  { // run a single workgroup on dummy data
+    auto kernel = buildKernel(
+        std::string{"#define WORKGROUP_GUARD {for(int i = 0; i < get_work_dim(); ++i) if(get_group_id(i)!=0) return;}\n"} + kernelCode,
+           kernelName, buildOptions
+        );
+    
+    int i = 0;
+    for (auto& arg : args) {
+      arg->setAsKernelArg(kernel, i);
+      ++i;
+    }
+
+    auto event = devPtr->enqueue(kernel,
+                                 cl::NDRange(clGlobalSize1,
+                                             clGlobalSize2, clGlobalSize3),
+                                 cl::NDRange(clLocalSize1,
+                                             clLocalSize2, clLocalSize3));
+
+    auto time = getRuntimeInMilliseconds(event);
+    std::cout << "Single workgroup: " << time << std::endl;
+    if (time > timeout) return -time;
+  }
+
+
+  { // actual run
+    std::vector<double> allRuntimes;
+    allRuntimes.resize(iterations);
+
+    auto kernel = buildKernel(kernelCode, kernelName, buildOptions); 
+    int i = 0;
+    for (auto& arg : args) {
+      arg->setAsKernelArg(kernel, i);
+      ++i;
+    }
+
+    for (int i = 0; i < iterations; i++) {
+      auto event = devPtr->enqueue(kernel,
+                                   cl::NDRange(clGlobalSize1,
+                                               clGlobalSize2, clGlobalSize3),
+                                   cl::NDRange(clLocalSize1,
+                                               clLocalSize2, clLocalSize3));
+      auto runtime = getRuntimeInMilliseconds(event);
+      if(runtime > timeout) {
+        for (auto& arg : args) arg->download();
+        return runtime;
+      }
+      allRuntimes[i] = runtime;
+    }
+  
+    for (auto& arg : args) arg->download();
+
+    std::sort(std::begin(allRuntimes), std::end(allRuntimes));
+
+    double median;
+
+    if (iterations % 2 == 0)
+      median = (allRuntimes[iterations/2] + allRuntimes[iterations/2 - 1]) / 2.0;
+    else 
+      median = allRuntimes[iterations/2];
+
+    return median;
+  }
+}
