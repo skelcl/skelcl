@@ -1,5 +1,6 @@
 #include "executor.h"
 #include <algorithm>
+#include <cassert>
 
 namespace {
  
@@ -288,17 +289,40 @@ double evaluate(const std::string& kernelCode, const std::string& kernelName,
   cl_uint clLocalSize3 = localSize3;
   cl_uint clGlobalSize3 = globalSize3;
 
+  cl_int err = CL_SUCCESS;
+
   // Copy the buffers only once
   for (auto& arg : args) {
     arg->upload();
   }
-
 
   { // run a single workgroup on dummy data
     auto kernel = buildKernel(
         std::string{"#define WORKGROUP_GUARD {for(int i = 0; i < get_work_dim(); ++i) if(get_group_id(i)!=0) return;}\n"} + kernelCode,
            kernelName, buildOptions
         );
+
+    size_t wg_size = -1;
+    err = kernel.getWorkGroupInfo(devPtr->clDevice(), CL_KERNEL_WORK_GROUP_SIZE ,&wg_size);
+    if(err != CL_SUCCESS) {
+      std::cerr << "ERROR " << err << std::endl;
+      return -1;
+    }
+
+    cl_ulong private_mem = -1;
+    err = kernel.getWorkGroupInfo(devPtr->clDevice(), CL_KERNEL_PRIVATE_MEM_SIZE, &private_mem);
+    if(err != CL_SUCCESS) {
+      std::cerr << "ERROR " << err << std::endl;
+      return -1;
+    }
+
+   std::cout << "Amount of private memory: " << private_mem << std::endl;
+
+    
+
+    if(wg_size < localSize1 * localSize2 * localSize3) {
+      return -1;
+    }
     
     int i = 0;
     for (auto& arg : args) {
