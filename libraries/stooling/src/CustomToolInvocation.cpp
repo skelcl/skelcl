@@ -9,6 +9,7 @@
 #pragma GCC diagnostic ignored "-Wswitch-enum"
 #pragma GCC diagnostic ignored "-Wshadow"
 #pragma GCC diagnostic ignored "-Wsign-promo"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wshift-sign-overflow"
 #endif
@@ -43,7 +44,7 @@ using namespace clang;
 
 namespace {
 
-clang::driver::Driver* newDriver(clang::DiagnosticsEngine* diagnostics,
+static clang::driver::Driver* newDriver(clang::DiagnosticsEngine* diagnostics,
                                  const char* binaryName)
 {
   const std::string defaultOutputName = "a.out";
@@ -58,7 +59,7 @@ clang::driver::Driver* newDriver(clang::DiagnosticsEngine* diagnostics,
   return compilerDriver;
 }
 
-const clang::driver::ArgStringList* getCC1Arguments(
+const clang::driver::ArgStringList getCC1Arguments(
     clang::DiagnosticsEngine* diagnostics,
     clang::driver::Compilation* compilation)
 {
@@ -83,7 +84,8 @@ const clang::driver::ArgStringList* getCC1Arguments(
 #endif
     diagnostics->Report(clang::diag::err_fe_expected_compiler_job)
         << error_stream.str();
-    return NULL;
+    std::abort();
+    return {};
   }
 
   // The one job we find should be to invoke clang again.
@@ -94,13 +96,14 @@ const clang::driver::ArgStringList* getCC1Arguments(
   if (StringRef(cmd.getCreator().getName()) != "clang") {
 #endif
     diagnostics->Report(clang::diag::err_fe_expected_clang_command);
-    return NULL;
+    std::abort();
+    return {};
   }
 
 #if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 5)
-  return &cmd->getArguments();
+  return cmd->getArguments();
 #else
-  return &cmd.getArguments();
+  return cmd.getArguments();
 #endif
 }
 
@@ -110,6 +113,7 @@ clang::CompilerInvocation* newInvocation(
     const clang::driver::ArgStringList& CC1Args) {
   assert(!CC1Args.empty() && "Must at least contain the program name!");
   auto invocation = new clang::CompilerInvocation;
+  std::cout << "size: " << CC1Args.size() << "\n";
   clang::CompilerInvocation::CreateFromArgs(
       *invocation, CC1Args.data() + 1, CC1Args.data() + CC1Args.size(),
       *diagnostics);
@@ -166,11 +170,8 @@ bool CustomToolInvocation::run(clang::FrontendAction* action)
   const OwningPtr<clang::driver::Compilation> compilation(
       driver->BuildCompilation(llvm::makeArrayRef(argv)));
   auto CC1Args = getCC1Arguments(&diagnostics, compilation.get());
-  if (CC1Args == NULL) {
-    return false;
-  }
   OwningPtr<clang::CompilerInvocation> invocation(
-      newInvocation(&diagnostics, *CC1Args));
+      newInvocation(&diagnostics, CC1Args));
   return runInvocation(action, compilation.get(),
 #if (LLVM_VERSION_MAJOR >= 3 && LLVM_VERSION_MINOR <= 4)
                        invocation.take()

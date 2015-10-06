@@ -12,6 +12,7 @@
 #pragma GCC diagnostic ignored "-Wmissing-noreturn"
 #pragma GCC diagnostic ignored "-Wcast-align"
 #pragma GCC diagnostic ignored "-Wsign-promo"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #ifdef __clang__
 # pragma GCC diagnostic ignored "-Wshift-sign-overflow"
 # if (__clang_major__ >= 3 && __clang_minor__ >= 3)
