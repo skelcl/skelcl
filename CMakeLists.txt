@@ -26,12 +26,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake-mod
 # project name
 project (SkelCL)
 
-# add libraries
-if (NOT TARGET pvsutil)
- add_subdirectory (libraries/pvsutil)
-endif (NOT TARGET pvsutil)
-add_subdirectory (libraries/stooling)
-
 # specify options and provide common variables
 option (BUILD_SHARED_LIBS
         "Build shared libraries (DLLs)." ON)
@@ -43,6 +37,17 @@ option (BUILD_TESTS
         "Build all tests automatically with the library." ON)
 option (THROW_ON_FAILURE
         "Throw an exception on failure instead of using std::exit." OFF)
+option (BUILD_STOOLING
+        "Build Stooling library. (required by SkelCL)" ON)
+
+# add libraries
+if (NOT TARGET pvsutil)
+ add_subdirectory (libraries/pvsutil)
+endif (NOT TARGET pvsutil)
+
+if (BUILD_STOOLING)
+  add_subdirectory (libraries/stooling)
+endif (BUILD_STOOLING)
 
 # opencl dirs
 find_package (OpenCL)
