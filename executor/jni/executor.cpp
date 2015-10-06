@@ -4,6 +4,7 @@
 #include <iostream>
 #include <algorithm>
 #include <thread>
+#include <cassert>
 
 #include "opencl_executor_Executor.h"
 #include "handle.h"
@@ -81,7 +82,7 @@ void
                                                      jfloatArray a, 
                                                      jfloatArray b,
                                                      jfloatArray out,
-                                                     jint N, jint M, jint K)
+                                                     jint N, jint, jint)
 {
   float *aa = (float *)env->GetFloatArrayElements( a, NULL);
   float *bb = (float *)env->GetFloatArrayElements( b, NULL);
