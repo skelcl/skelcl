@@ -6,27 +6,34 @@ include_directories (${SKELCL_COMMON_INCLUDE_DIR})
 link_directories (${SKELCL_COMMON_LIB_DIR})
 
 # set files used to build library
-set (SKELCL_SOURCES
+
+set (SKELCL_CORE_SOURCES
       Device.cpp
       DeviceBuffer.cpp
       DeviceID.cpp
       DeviceList.cpp
       DeviceProperties.cpp
       Event.cpp
+      KernelUtil.cpp
+      Local.cpp
+      PlatformID.cpp
+      SkelCL.cpp
+      Source.cpp
+      Util.cpp
+      )
+
+add_library (SkelCLCore ${SKELCL_CORE_SOURCES})
+target_link_libraries (SkelCLCore ${SKELCL_CORE_COMMON_LIBS})
+
+set (SKELCL_SOURCES
       Index.cpp
       IndexMatrix.cpp
       IndexVector.cpp
-      KernelUtil.cpp
-      Local.cpp
       Map.cpp
       MatrixSize.cpp
-      PlatformID.cpp
       Program.cpp
-      Significances.cpp
-      SkelCL.cpp
       Skeleton.cpp
-      Source.cpp
-      Util.cpp
+      Significances.cpp
     )
 
 set (SKELCL_HEADERS
@@ -97,7 +104,7 @@ set (SKELCL_HEADERS
 
 # specify library target
 add_library (SkelCL ${SKELCL_SOURCES} ${SKELCL_HEADERS})
-target_link_libraries (SkelCL ${SKELCL_COMMON_LIBS})
+target_link_libraries (SkelCL SkelCLCore ${SKELCL_COMMON_LIBS})
 
 install (TARGETS SkelCL
          LIBRARY DESTINATION lib)

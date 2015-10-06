@@ -38,7 +38,7 @@ option (BUILD_SHARED_LIBS
 option (BUILD_EXAMPLES
         "Build all examples automatically with the library." ON)
 option (BUILD_EXECUTOR
-  "Build executor tool." OFF)
+        "Build executor tool." OFF)
 option (BUILD_TESTS
         "Build all tests automatically with the library." ON)
 option (THROW_ON_FAILURE
@@ -54,10 +54,14 @@ set (SKELCL_COMMON_INCLUDE_DIR
       "${PROJECT_SOURCE_DIR}/libraries/stooling/include"
       "${STOOLING_COMMON_INCLUDE_DIR}" CACHE INTERNAL
      "Common include directories used by SkelCL.")
-set (SKELCL_COMMON_LIBS
+set (SKELCL_CORE_COMMON_LIBS
       ${OPENCL_LIBRARIES}
       crypto
-      pvsutil
+      pvsutil CACHE INTERNAL
+      "Common libraries used by the SkelCL core."
+      )
+set (SKELCL_COMMON_LIBS
+      ${SKELCL_CORE_COMMON_LIBS}
       stooling
       "${STOOLING_COMMON_LIBS}" CACHE INTERNAL
      "Common libraries used by SkelCL.")

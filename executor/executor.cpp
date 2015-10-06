@@ -183,11 +183,26 @@ cl::Kernel buildKernel(const std::string& kernelCode,
 {
   auto& devPtr = skelcl::detail::globalDeviceList.front();
 
-  auto p = skelcl::detail::Program(kernelCode,
-                                   skelcl::detail::util::hash(kernelCode));
-  p.build(buildOptions);
+  auto p = cl::Program(devPtr->clContext(), cl::Program::Sources(1, std::make_pair(kernelCode.c_str(), kernelCode.length())));
 
-  return cl::Kernel(p.kernel(*devPtr, kernelName));
+  try {
+    // build program for given device
+    p.build(std::vector<cl::Device>(1, devPtr->clDevice()), buildOptions.c_str());
+
+  } catch (cl::Error& err) {
+    if (err.err() == CL_BUILD_PROGRAM_FAILURE) {
+      LOG_ERROR(err);
+
+      auto  buildLog = p.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devPtr->clDevice() );
+      LOG(pvsutil::Logger::Severity::LogAlways, "Build log:\n", buildLog);
+      
+      ABORT_WITH_ERROR(err);
+    } else {
+      ABORT_WITH_ERROR(err);
+    }
+  }
+
+  return cl::Kernel(p, kernelName.c_str());
 }
 
 double executeKernel(cl::Kernel kernel,
@@ -302,7 +317,7 @@ double evaluate(const std::string& kernelCode, const std::string& kernelName,
            kernelName, buildOptions
         );
 
-    size_t wg_size = -1;
+    auto wg_size = -1;
     err = kernel.getWorkGroupInfo(devPtr->clDevice(), CL_KERNEL_WORK_GROUP_SIZE ,&wg_size);
     if(err != CL_SUCCESS) {
       std::cerr << "ERROR " << err << std::endl;

@@ -6,7 +6,6 @@
 
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
-#include <SkelCL/detail/Program.h>
 #include <SkelCL/detail/DeviceList.h>
 
 class KernelArg {

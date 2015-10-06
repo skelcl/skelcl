@@ -77,7 +77,7 @@ jdouble
 }
 
 void 
-  Java_opencl_executor_Executor_nativeMatrixMultiply(JNIEnv *env, jclass jClass, 
+  Java_opencl_executor_Executor_nativeMatrixMultiply(JNIEnv *env, jclass,
                                                      jfloatArray a, 
                                                      jfloatArray b,
                                                      jfloatArray out,
@@ -119,7 +119,7 @@ void
 
   int nthreads = std::thread::hardware_concurrency();
   int chunk = N / nthreads;
-  for (unsigned int tid = 0; tid < nthreads; tid++) {
+  for (auto tid = 0; tid < nthreads; tid++) {
     threads.push_back(std::thread([=]{mmult(tid*chunk, (tid+1)*chunk);}));
   }
   for (auto & t : threads) t.join();
