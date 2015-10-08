@@ -23,3 +23,8 @@ jobject Java_opencl_executor_ValueArg_create__I(JNIEnv* env, jclass cls,
   return helper<int>(env, cls, value);
 }
 
+jobject Java_opencl_executor_ValueArg_create__D(JNIEnv* env, jclass cls,
+                                                jdouble value)
+{
+  return helper<double>(env, cls, value);
+}

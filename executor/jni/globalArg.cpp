@@ -28,6 +28,19 @@ jobject Java_opencl_executor_GlobalArg_createInput___3I(JNIEnv* env, jclass cls,
   return obj;
 }
 
+jobject Java_opencl_executor_GlobalArg_createInput___3D(JNIEnv* env, jclass cls,
+                                                        jdoubleArray data)
+{
+  auto arrayPtr = env->GetDoubleArrayElements(data, nullptr);
+  auto ptr = GlobalArg::create(arrayPtr,
+                               env->GetArrayLength(data) * sizeof(double));
+  env->ReleaseDoubleArrayElements(data, arrayPtr, JNI_ABORT);
+
+  auto methodID = env->GetMethodID(cls, "<init>", "(J)V");
+  auto obj = env->NewObject(cls, methodID, ptr);
+  return obj;
+}
+
 jobject Java_opencl_executor_GlobalArg_createOutput(JNIEnv* env, jclass cls,
                                                     jint size)
 {
@@ -73,3 +86,15 @@ jintArray Java_opencl_executor_GlobalArg_asIntArray(JNIEnv* env, jobject obj)
   return res;
 }
 
+jdoubleArray Java_opencl_executor_GlobalArg_asDoubleArray(JNIEnv* env, jobject obj)
+{
+  auto ptr = getHandle<GlobalArg>(env, obj);
+  auto& vec = ptr->data();
+
+  auto res = env->NewDoubleArray(vec.size() / sizeof(double));
+  if (res == nullptr) return nullptr;
+
+  env->SetDoubleArrayRegion(res, 0, vec.size() / sizeof(double),
+                         reinterpret_cast<double*>(vec.hostBuffer().data()));
+  return res;
+}
