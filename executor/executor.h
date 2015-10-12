@@ -88,6 +88,8 @@ std::string getDeviceName();
 
 std::string getDeviceType();
 
+bool supportsDouble();
+
 cl::Kernel buildKernel(const std::string& kernelCode,
                        const std::string& kernelName,
                        const std::string& buildOptions);

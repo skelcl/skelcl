@@ -232,6 +232,12 @@ jstring Java_opencl_executor_Executor_getDeviceType(JNIEnv * env, jclass)
   return env->NewStringUTF(type.c_str());
 }
 
+jboolean Java_opencl_executor_Executor_supportsDouble(JNIEnv *, jclass)
+{
+  auto supports = supportsDouble();
+  return static_cast<bool>(supports);
+}
+
 void Java_opencl_executor_Executor_init__(JNIEnv *, jclass)
 {
   initSkelCL("ANY");

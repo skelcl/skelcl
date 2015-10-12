@@ -177,6 +177,12 @@ std::string getDeviceType()
   return devicePtr->typeAsString();
 }
 
+bool supportsDouble()
+{
+  auto& devicePtr = skelcl::detail::globalDeviceList.front();
+  return devicePtr->supportsDouble();
+}
+
 cl::Kernel buildKernel(const std::string& kernelCode,
                        const std::string& kernelName,
                        const std::string& buildOptions)
