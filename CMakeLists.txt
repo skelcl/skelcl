@@ -65,11 +65,19 @@ set (SKELCL_CORE_COMMON_LIBS
       pvsutil CACHE INTERNAL
       "Common libraries used by the SkelCL core."
       )
-set (SKELCL_COMMON_LIBS
-      ${SKELCL_CORE_COMMON_LIBS}
-      stooling
-      "${STOOLING_COMMON_LIBS}" CACHE INTERNAL
-     "Common libraries used by SkelCL.")
+if (BUILD_STOOLING)
+  set (SKELCL_COMMON_LIBS
+        ${SKELCL_CORE_COMMON_LIBS}
+        stooling
+        "${STOOLING_COMMON_LIBS}" CACHE INTERNAL
+       "Common libraries used by SkelCL.")
+else (BUILD_STOOLING) 
+  set (SKELCL_COMMON_LIBS
+        ${SKELCL_CORE_COMMON_LIBS}
+        "${STOOLING_COMMON_LIBS}" CACHE INTERNAL
+       "Common libraries used by SkelCL.")
+
+endif (BUILD_STOOLING)
 set (SKELCL_COMMON_LIB_DIR
       "${OPENCL_LIB_DIR}"
       "${PROJECT_BINARY_DIR}/libraries/pvsutil/lib"
