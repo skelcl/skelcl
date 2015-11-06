@@ -58,7 +58,6 @@
 #include <SkelCL/detail/DeviceBuffer.h>
 #include <SkelCL/detail/DeviceList.h>
 #include <SkelCL/detail/Distribution.h>
-#include <SkelCL/detail/Event.h>
 
 namespace skelcl {
 

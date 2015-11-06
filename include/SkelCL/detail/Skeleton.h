@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
+
 ///
 /// \file Skeleton.h
 ///
@@ -101,7 +101,7 @@ protected:
   size_t _workGroupSize;
 
 private:
-  
+
   void printEventTimings() const;
 };
 
@@ -155,4 +155,3 @@ void Skeleton::updateModifiedStatus(T&& /*t*/, Args&&... args) const
 } // namespace skelcl
 
 #endif // SKELETON_H_
-

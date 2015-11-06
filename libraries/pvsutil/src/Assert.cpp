@@ -41,6 +41,10 @@
 #include <cstdio>
 #include <memory>
 
+#ifdef THROW_ON_FAILURE
+#include <stdexcept>
+#endif
+
 #include "pvsutil/Assert.h"
 
 #include "pvsutil/Logger.h"
@@ -58,7 +62,11 @@ void ASSERT_IMPL(const char* file,
     defaultLogger.log(Logger::Severity::Error, file, line,
                       "Assertion `", expressionString,
                       "' failed.");
-    abort();
+#ifdef THROW_ON_FAILURE
+    throw new std::runtime_error("Fatal error");
+#else
+    std::exit(EXIT_FAILURE);
+#endif
   }
 }
 
@@ -90,7 +98,11 @@ void ASSERT_IMPL(const char* file,
                         &buffer[0]);
     }
     va_end(args);
-    abort();
+#ifdef THROW_ON_FAILURE
+    throw new std::runtime_error("Fatal error");
+#else
+    std::exit(EXIT_FAILURE);
+#endif
   }
 }
 

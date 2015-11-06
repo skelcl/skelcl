@@ -249,8 +249,7 @@ int main(int argc, char** argv) {
                                  Padding::NEUTRAL, 255);
 
       if (iterations > 1) {
-        StencilSequence<float(float)> sequence;
-        sequence.add(&blur);
+        auto sequence = blur.toSeq();
 
         image = sequence(iterations, image, kernelVec, range.getValue());
       } else {

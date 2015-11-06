@@ -14,7 +14,7 @@ add_library (executor-jni executor.cpp
                           jni/localArg.cpp
                           jni/valueArg.cpp)
 
-target_link_libraries (executor-jni SkelCL ${SKELCL_COMMON_LIBS})
+target_link_libraries (executor-jni SkelCLCore ${SKELCL_CORE_COMMON_LIBS} pthread)
 
 add_executable (executor main.cpp)
 target_link_libraries (executor executor-jni)

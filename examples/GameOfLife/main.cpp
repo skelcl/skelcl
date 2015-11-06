@@ -119,7 +119,7 @@ int main(int argc, char** argv)
                                 stencilShape(any(1)),
                                 Padding::NEUTRAL, 0);
     start = getTime();
-    grid = s(iterations, grid);
+    grid = s.toSeq()(iterations, grid);
   }
 
   grid.copyDataToHost();

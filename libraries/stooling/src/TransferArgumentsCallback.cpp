@@ -13,8 +13,9 @@
 #pragma GCC diagnostic ignored "-Wmissing-noreturn"
 #pragma GCC diagnostic ignored "-Wcast-align"
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
-#if (__GNUC__ >= 4 && __GNUC_MINOR__ >= 8)
+#if ( (__GNUC__ >= 4 && __GNUC_MINOR__ >= 8 ) || (__GNUC__ >= 5) )
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #endif
 

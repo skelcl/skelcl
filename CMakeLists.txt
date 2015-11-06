@@ -26,30 +26,37 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake-mod
 # project name
 project (SkelCL)
 
-# add libraries
-if (NOT TARGET pvsutil)
- add_subdirectory (libraries/pvsutil)
-endif (NOT TARGET pvsutil)
-add_subdirectory (libraries/stooling)
-
 # specify options and provide common variables
 option (BUILD_SHARED_LIBS
         "Build shared libraries (DLLs)." ON)
 option (BUILD_EXAMPLES
         "Build all examples automatically with the library." ON)
 option (BUILD_EXECUTOR
-        "Build executor tool." ON)
+        "Build executor tool." OFF)
 option (BUILD_TESTS
         "Build all tests automatically with the library." ON)
 option (BUILD_TOOLS
         "Build additional tools." ON)
+option (THROW_ON_FAILURE
+        "Throw an exception on failure instead of using std::exit." OFF)
+option (BUILD_STOOLING
+        "Build Stooling library. (required by SkelCL)" ON)
+
+# add libraries
+if (NOT TARGET pvsutil)
+ add_subdirectory (libraries/pvsutil)
+endif (NOT TARGET pvsutil)
+
+if (BUILD_STOOLING)
+  add_subdirectory (libraries/stooling)
+endif (BUILD_STOOLING)
 
 # opencl dirs
 find_package (OpenCL REQUIRED)
 
 # Add compiler and linker flags for OmniTune compatability.
-find_package (Glibmm REQUIRED)
-find_package (GIOmm REQUIRED)
+# find_package (Glibmm REQUIRED)
+# find_package (GIOmm REQUIRED)
 
 
 # skelcl common dirs and libraries
@@ -57,21 +64,31 @@ set (SKELCL_COMMON_INCLUDE_DIR
       "${PROJECT_SOURCE_DIR}/include"
       "${PROJECT_SOURCE_DIR}/libraries/pvsutil/include"
       "${PROJECT_SOURCE_DIR}/libraries/stooling/include"
-      "${Glibmm_INCLUDE_DIRS}"
-      "${GIOmm_INCLUDE_DIRS}"
+      # "${Glibmm_INCLUDE_DIRS}"
+      # "${GIOmm_INCLUDE_DIRS}"
       #"${GObject_INCLUDE_DIRS}"
       "${STOOLING_COMMON_INCLUDE_DIR}" CACHE INTERNAL
      "Common include directories used by SkelCL.")
-set (SKELCL_COMMON_LIBS
+set (SKELCL_CORE_COMMON_LIBS
       ${OPENCL_LIBRARIES}
       crypto
-      pvsutil
-      stooling
-      "${Glibmm_LIBRARIES}"
-      "${GIOmm_LIBRARIES}"
-      #"${GObject_LIBRARIES}"
-      "${STOOLING_COMMON_LIBS}" CACHE INTERNAL
-     "Common libraries used by SkelCL.")
+      pvsutil CACHE INTERNAL
+      "Common libraries used by the SkelCL core."
+      )
+if (BUILD_STOOLING)
+  set (SKELCL_COMMON_LIBS
+        ${SKELCL_CORE_COMMON_LIBS}
+        stooling
+        "${STOOLING_COMMON_LIBS}" CACHE INTERNAL
+       "Common libraries used by SkelCL.")
+else (BUILD_STOOLING)
+  set (SKELCL_COMMON_LIBS
+        ${SKELCL_CORE_COMMON_LIBS}
+        "${STOOLING_COMMON_LIBS}" CACHE INTERNAL
+       "Common libraries used by SkelCL.")
+
+endif (BUILD_STOOLING)
+
 set (SKELCL_COMMON_LIB_DIR
       "${OPENCL_LIB_DIR}"
       "${PROJECT_BINARY_DIR}/libraries/pvsutil/lib"
@@ -83,6 +100,11 @@ set (SKELCL_COMMON_LIB_DIR
 if (NOT CMAKE_BUILD_TYPE)
   set (CMAKE_BUILD_TYPE Debug)
 endif (NOT CMAKE_BUILD_TYPE)
+
+if (THROW_ON_FAILURE)
+  message(STATUS "Enabling exception on failure")
+  add_definitions( -DTHROW_ON_FAILURE )
+endif (THROW_ON_FAILURE)
 
 # add subdirectory to build library
 add_subdirectory (src)

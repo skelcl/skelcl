@@ -38,10 +38,10 @@ int main(int argc, char** argv)
                                                        "GPU, ACCELERATOR"),
                                            Default(device_type::ANY));
 
-        auto swaps = Arg<int>(Flags(Short('S'), Long("iterations-between-swaps")),
-                              Description("The number of iterations "
-                                          "between swaps"),
-                              Default(-1));
+        // auto swaps = Arg<int>(Flags(Short('S'), Long("iterations-between-swaps")),
+        //                       Description("The number of iterations "
+        //                                   "between swaps"),
+        //                       Default(-1));
 
         auto width = Arg<size_t>(Flags(Short('w'), Long("width")),
                                  Description("Dataset width."),
@@ -55,8 +55,7 @@ int main(int argc, char** argv)
                                  Description("Use complex kernel."),
                                  Default(false));
 
-        cmd.add(&verbose, &iterations, &deviceCount, &deviceType, &swaps,
-                &width, &height, &complex);
+        cmd.add(&verbose, &iterations, &deviceCount, &deviceType, &width, &height, &complex);
         cmd.parse(argc, argv);
 
         if (verbose)
@@ -71,17 +70,14 @@ int main(int argc, char** argv)
                 for (size_t x = 0; x < input.columnCount(); x++)
                         input[y][x] = static_cast<DATA_T>(rand());
 
-        const std::string simple_k("simple");
-        const std::string complex_k("complex");
-
         // Create stencil.
-        Stencil<DATA_T(DATA_T)> s(std::ifstream{"./kernels.cl"},
-                                  NORTH, WEST, SOUTH, EAST,
-                                  Padding::NEUTRAL, 0,
-                                  complex ? complex_k : simple_k, swaps);
+        Stencil<DATA_T(DATA_T)> s(std::ifstream{"./kernels.cl"}, complex ? "complex" : "simple",
+                                  stencilShape(north(NORTH),west(WEST),south(SOUTH),east(EAST)),
+                                  Padding::NEUTRAL, 0);
+                                  // , swaps);
 
         // Run stencil.
-        Matrix<DATA_T> output = s(iterations, input);
+        Matrix<DATA_T> output = s.toSeq()(iterations, input);
 
         // Copy data back to host.
         output.copyDataToHost();

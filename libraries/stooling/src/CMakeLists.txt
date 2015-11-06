@@ -6,7 +6,7 @@ include_directories (
   ${STOOLING_COMMON_INCLUDE_DIR}
                     )
 
-                  link_directories (${STOOLING_COMMON_LIB_DIR})
+link_directories (${STOOLING_COMMON_LIB_DIR})
 
 # set files used to build library
 set (STOOLING_SOURCES
@@ -25,6 +25,7 @@ set (STOOLING_SOURCES
 # specify library target
 add_library (stooling ${STOOLING_SOURCES})
 target_link_libraries (stooling ${STOOLING_COMMON_LIBS})
+target_link_libraries (stooling ${LLVM_LINKER_FLAGS})
 
 install (TARGETS stooling
          LIBRARY DESTINATION lib)

@@ -6,7 +6,6 @@
 
 #include <SkelCL/SkelCL.h>
 #include <SkelCL/Vector.h>
-#include <SkelCL/detail/Program.h>
 #include <SkelCL/detail/DeviceList.h>
 
 class KernelArg {
@@ -77,9 +76,19 @@ void shutdownSkelCL();
 
 std::string getPlatformName();
 
+unsigned long getDeviceLocalMemSize();
+
+unsigned long getDeviceGlobalMemSize();
+
+unsigned long getDeviceMaxMemAllocSize();
+
+unsigned long getDeviceMaxWorkGroupSize();
+
 std::string getDeviceName();
 
 std::string getDeviceType();
+
+bool supportsDouble();
 
 cl::Kernel buildKernel(const std::string& kernelCode,
                        const std::string& kernelName,
@@ -95,5 +104,19 @@ double execute(const std::string& kernelCode, const std::string& kernelName,
                int localSize1, int localSize2, int localSize3,
                int globalSize1, int globalSize2, int globalSize3,
                const std::vector<KernelArg*>& args);
+
+double benchmark(const std::string& kernelCode, const std::string& kernelName,
+               const std::string& buildOptions,
+               int localSize1, int localSize2, int localSize3,
+               int globalSize1, int globalSize2, int globalSize3,
+               const std::vector<KernelArg*>& args,
+               int iterations, double timeout);
+
+double evaluate(const std::string& kernelCode, const std::string& kernelName,
+                const std::string& buildOptions,
+                int localSize1, int localSize2, int localSize3,
+                int globalSize1, int globalSize2, int globalSize3,
+                const std::vector<KernelArg*>& args,
+                int iterations, double timeout);
 
 #endif // EXECUTOR_H_

@@ -43,8 +43,11 @@
 
 #include <limits.h>
 
-#include "./detail/Skeleton.h"
-#include "./detail/StencilShape.h"
+#include "Source.h"
+
+#include "detail/Program.h"
+#include "detail/Skeleton.h"
+#include "detail/StencilShape.h"
 
 namespace skelcl {
 
@@ -92,6 +95,8 @@ public:
 
   template <typename T>
   StencilSequence<T, Tout, Tin> operator>>(const Stencil<T(Tout)>& s) const;
+
+  StencilSequence<Tout, Tin> toSeq() const;
 
 
   template <typename T, typename... Args>

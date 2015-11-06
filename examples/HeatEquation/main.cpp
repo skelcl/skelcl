@@ -67,18 +67,16 @@ int main(int argc, char** argv) {
                               Description("Number of devices used by SkelCL."),
                               Default(1));
 
-  auto swaps = Arg<int>(Flags(Short('S'), Long("iterations-between-swaps")),
-                        Description("The number of iterations "
-                                    "between swaps"),
-                        Default(-1));
+  // auto swaps = Arg<int>(Flags(Short('S'), Long("iterations-between-swaps")),
+  //                       Description("The number of iterations "
+  //                                   "between swaps"),
+  //                       Default(-1));
 
   auto size = Arg<size_t>(Flags(Short('s'), Long("size")),
                           Description("Size of the grid"),
                           Default<size_t>(4096));
 
-
-  cmd.add(&verbose, &iterations, &useMapOverlap, &deviceType, &deviceCount,
-          &swaps, &size);
+  cmd.add(&verbose, &iterations, &useMapOverlap, &deviceType, &deviceCount, &size);
   cmd.parse(argc, argv);
 
   if (verbose) {
@@ -129,11 +127,12 @@ int main(int argc, char** argv) {
 
     image.resize(image.size());
   } else {
-    Stencil<float(float)> s(std::ifstream { "./Stencil.cl" }, 1, 1, 1, 1,
-                            Padding::NEUTRAL, 0, "func", swaps);
+    Stencil<float(float)> s(std::ifstream { "./Stencil.cl" }, "func",
+                            stencilShape(any(1)),
+                            Padding::NEUTRAL, 0);
 
     start = getTime();
-    image = s(iterations, image);
+    image = s.toSeq()(iterations, image);
   }
   image.copyDataToHost();
 
