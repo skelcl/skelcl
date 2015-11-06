@@ -138,13 +138,19 @@ void Stencil<Tout(Tin)>::execute(const Matrix<Tin>& input,
   LOG_PROF(_name, "[", this, "] prepare ", t.stop(), " ms");
 
   for (auto& devicePtr : input.distribution().devices()) {
-    cl_uint local[2], global[3];
+    cl_uint global[3];
 
     cl::Kernel kernel(_program.kernel(*devicePtr, "SCL_STENCIL"));
 
+    cl_uint workgroupSize = static_cast<cl_uint>(
+        detail::kernelUtil::determineWorkgroupSizeForKernel(kernel,
+                                                            *devicePtr));
+
     // omnitune::stencil::getLocalSize(kernel, devicePtr->clDevice(),
                                     // _program.getCode(), &local[0]);
-    local[0] = 256; // default wg size
+
+    // auto max = kernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device);
+    cl_uint local[2] = {static_cast<cl_uint>(sqrt(workgroupSize)), local[0]};
     getGlobalSize(&local[0], output, devicePtr->id(), numDevices,
                   opsUntilNextSync, opsSinceLastSync, sumSouthBorders,
                   sumNorthBorders, &global[0]);
