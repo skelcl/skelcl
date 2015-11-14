@@ -129,8 +129,8 @@ int main(int argc, char** argv)
                                  Description("Enable verbose logging."),
                                  Default(false));
 
-  cmd.add(&deviceCount, &deviceType, &enableLogging);
-  cmd.parse(argc, argv);
+  cmd.add(deviceCount, deviceType, enableLogging)
+     .parse(argc, argv);
 
   if (enableLogging) {
     pvsutil::defaultLogger.setLoggingLevel(
@@ -141,4 +141,3 @@ int main(int argc, char** argv)
   mandelbrot();
   return 0;
 }
-

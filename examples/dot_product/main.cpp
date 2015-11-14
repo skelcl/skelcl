@@ -92,8 +92,8 @@ int main(int argc, char** argv)
                                            "version."),
                                Default(false));
 
-  cmd.add(&deviceCount, &deviceType, &enableLogging, &size, &checkResult);
-  cmd.parse(argc, argv);
+  cmd.add(deviceCount, deviceType, enableLogging, size, checkResult)
+     .parse(argc, argv);
 
   if (enableLogging) {
     pvsutil::defaultLogger.setLoggingLevel(
@@ -125,4 +125,3 @@ int main(int argc, char** argv)
 
   return 0;
 }
-

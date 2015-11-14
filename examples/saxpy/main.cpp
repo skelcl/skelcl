@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
-  
+
 ///
 /// \author Michel Steuwer <michel.steuwer@uni-muenster.de>
 ///
@@ -72,7 +72,7 @@ float fillScalar()
 
 void saxpy(int size, bool checkResult)
 {
-  
+
   // Y <- a * X + Y
   Zip<float(float, float)> saxpy("float func(float x, float y, float a){"
                                  "  return a*x + y;"
@@ -100,7 +100,7 @@ void saxpy(int size, bool checkResult)
       LOG_ERROR(errors, " errors detected.");
     }
   }
-  
+
   LOG_INFO("Time: ", time, " ms");
 }
 
@@ -134,9 +134,9 @@ int main(int argc, char** argv)
                                Description("Check SkelCL computation against "
                                            "sequential computed version."),
                                Default(false));
-  
-  cmd.add(&deviceCount, &deviceType, &enableLogging, &size, &checkResult);
-  cmd.parse(argc, argv);
+
+  cmd.add(deviceCount, deviceType, enableLogging, size, checkResult)
+     .parse(argc, argv);
 
   if (enableLogging) {
     pvsutil::defaultLogger.setLoggingLevel(
@@ -147,4 +147,3 @@ int main(int argc, char** argv)
   saxpy(size, checkResult);
   return 0;
 }
-

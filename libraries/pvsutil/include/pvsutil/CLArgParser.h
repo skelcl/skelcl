@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
+
 ///
 /// \file CLArgParser.h
 ///
@@ -74,13 +74,13 @@ public:
 
   // add multiple Arg<T> to the parser
   template <class... Args>
-  void add(cmdline::BaseArg* arg, Args... args);
+  CLArgParser& add(cmdline::BaseArg& arg, Args&&... args);
 
   void parse(int argc, char** argv);
 
 private:
 
-  void add();
+  CLArgParser& add();
 
   void registerArg(cmdline::BaseArg& arg);
 
@@ -111,13 +111,12 @@ private:
 };
 
 template <class... Args>
-void CLArgParser::add(cmdline::BaseArg* arg, Args... args)
+CLArgParser& CLArgParser::add(cmdline::BaseArg& arg, Args&&... args)
 {
-  this->registerArg(*arg);
-  add(std::forward<Args>(args)...);
+  this->registerArg(arg);
+  return add(std::forward<Args>(args)...);
 }
 
 } // namespace pvsutil
 
 #endif // PARSER_H_
-

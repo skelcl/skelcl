@@ -84,7 +84,7 @@ Matrix<T> readPPM(const std::string& inFile)
 
   auto line = getNextLine(infile);
   std::stringstream(line) >> numcols >> numrows;
-   
+
   getNextLine(infile); // skip the next line (max value)
 
   Matrix<T> inputImage({numrows, numcols});
@@ -126,7 +126,7 @@ int main(int argc, char** argv)
                                  Description("Filename of the input file"),
                                  Default(std::string("lena.pgm")));
 
-  cmd.add(&deviceCount, &deviceType, &range, &inFile);
+  cmd.add(deviceCount, deviceType, range, inFile);
   cmd.parse(argc, argv);
 
   // initialize skelcl
@@ -156,4 +156,3 @@ int main(int argc, char** argv)
 
   writePPM(inputImage, outFile.str());
 }
-
