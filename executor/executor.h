@@ -15,6 +15,7 @@ public:
   virtual void setAsKernelArg(cl::Kernel kernel, int i) = 0;
   virtual void upload() = 0;
   virtual void download() = 0;
+  virtual void clear();
 };
 
 class GlobalArg : public KernelArg {
@@ -28,6 +29,8 @@ public:
   void download();
 
   const skelcl::Vector<char>& data() const;
+
+  void clear();
   
 private:
   GlobalArg(skelcl::Vector<char>&& skelclVectorP, bool isOutputP);

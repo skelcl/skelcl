@@ -465,7 +465,7 @@ public:
   /// \b Complexity Linear in \c count
   /// \param count The new size of the Vector
   /// \param value  The value to initialize the elements of the Vector with
-  void assign(size_type count, const T& value);
+  void assign(size_type count, const T& value = T());
 
   /// \brief Appends a copy of the given element value to the end of the Vector.
   ///
