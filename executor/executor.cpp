@@ -280,12 +280,13 @@ double benchmark(const std::string& kernelCode, const std::string& kernelName,
   for (int i = 0; i < iterations; i++) {
     //std::cout << "Iteration: " << i << '\n';
 
-    double runtime = executeKernel(kernel, localSize1, localSize2, localSize3,
-                       globalSize1, globalSize2, globalSize3, args);
-
     for(auto& arg:args){
       arg->clear();
     }
+    
+    double runtime = executeKernel(kernel, localSize1, localSize2, localSize3,
+                       globalSize1, globalSize2, globalSize3, args);
+    
 
     allRuntimes[i] = runtime;
 
