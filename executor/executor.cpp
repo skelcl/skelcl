@@ -61,7 +61,7 @@ void GlobalArg::clear()
 {
   if(isOutput){
     skelclVector.assign(skelclVector.size());
-    skelclVector.forceCreateDeviceBuffers();
+    skelclVector.dataOnHostModified();
   }
 }
 
@@ -283,7 +283,7 @@ double benchmark(const std::string& kernelCode, const std::string& kernelName,
     for(auto& arg:args){
       arg->clear();
     }
-    
+
     double runtime = executeKernel(kernel, localSize1, localSize2, localSize3,
                        globalSize1, globalSize2, globalSize3, args);
     
