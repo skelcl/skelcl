@@ -29,6 +29,10 @@ KernelArg::~KernelArg()
 {
 }
 
+void KernelArg::clear()
+{
+}
+
 GlobalArg::GlobalArg(skelcl::Vector<char>&& skelclVectorP, bool isOutputP)
   : skelclVector(std::move(skelclVectorP)), isOutput(isOutputP)
 {
@@ -51,6 +55,14 @@ KernelArg* GlobalArg::create(size_t size, bool isOutput)
 const skelcl::Vector<char>& GlobalArg::data() const
 {
   return skelclVector;
+}
+
+void GlobalArg::clear()
+{
+  if(isOutput){
+    skelclVector.assign(skelclVector.size());
+    skelclVector.dataOnHostModified();
+  }
 }
 
 void GlobalArg::setAsKernelArg(cl::Kernel kernel, int i)
@@ -268,8 +280,13 @@ double benchmark(const std::string& kernelCode, const std::string& kernelName,
   for (int i = 0; i < iterations; i++) {
     //std::cout << "Iteration: " << i << '\n';
 
+    for(auto& arg:args){
+      arg->clear();
+    }
+
     double runtime = executeKernel(kernel, localSize1, localSize2, localSize3,
                        globalSize1, globalSize2, globalSize3, args);
+    
 
     allRuntimes[i] = runtime;
 
