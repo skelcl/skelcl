@@ -30,7 +30,7 @@
  * license, please contact the author at michel.steuwer@uni-muenster.de      *
  *                                                                           *
  *****************************************************************************/
- 
+
 ///
 /// \file CLArgParser.cpp
 ///
@@ -145,14 +145,15 @@ void CLArgParser::printVersion()
   exit(0);
 }
 
-void CLArgParser::add()
+CLArgParser& CLArgParser::add()
 {
+  return *this;
 }
 
 void CLArgParser::registerArg(cmdline::BaseArg& arg)
 {
   _args.push_back(&arg);
-  
+
   if (arg.isMandatory()) {
     _mandatoryArgs.push_back(&arg);
   }
@@ -183,4 +184,3 @@ void CLArgParser::printArg(std::ostream& output, cmdline::BaseArg& arg)
 }
 
 } // namespace pvsutil
-

@@ -77,15 +77,15 @@ bool isEqual(T lhs, T rhs) {
 
 // multiply two matrices
 template<typename T>
-double matrixMult(const size_t rowCountA, const size_t columnCountA, 
+double matrixMult(const size_t rowCountA, const size_t columnCountA,
                   const size_t columnCountB, const bool checkResult,
-                  const std::string& zipFunc, const std::string& reduceFunc, 
+                  const std::string& zipFunc, const std::string& reduceFunc,
                   const std::string& func) {
-  
+
   size_t rowCountB = columnCountA;
-  LOG_INFO("started: multiplication of matrices A (", rowCountA, " x ", 
+  LOG_INFO("started: multiplication of matrices A (", rowCountA, " x ",
            columnCountA, ") and B (", rowCountB, " x ", columnCountB, ")");
-  
+
   // initialize skeletons
   std::string suffix = detail::util::typeToString<T>();
   AllPairs<T(T, T)> *allpairs;
@@ -101,19 +101,19 @@ double matrixMult(const size_t rowCountA, const size_t columnCountA,
 
   Matrix<T> left( {rowCountA, columnCountA} );
   Matrix<T> right( {rowCountB, columnCountB} );
-  
+
   init(left.begin(), left.end());
   init(right.begin(), right.end());
- 
+
   pvsutil::Timer timer;
 
   Matrix<T> output = (*allpairs)(left, right);
-  
+
   output.copyDataToHost();
   double elapsedTime = timer.stop();
-  
-  LOG_INFO("finished: matrix C (", output.rowCount(), " x ", 
-           output.columnCount(), ") calculated, ", "elapsed time: ", 
+
+  LOG_INFO("finished: matrix C (", output.rowCount(), " x ",
+           output.columnCount(), ") calculated, ", "elapsed time: ",
            elapsedTime, " ms");
 
   if (checkResult) {
@@ -145,7 +145,7 @@ double matrixMultFloat(const size_t rowCountA, const size_t columnCountA,
 {
   std::string zipFunc = "float func(float x, float y){ return x*y; }";
   std::string reduceFunc = "float func(float x, float y){ return x+y; }";
-  return matrixMult<float>(rowCountA, columnCountA, columnCountB, checkResult, 
+  return matrixMult<float>(rowCountA, columnCountA, columnCountB, checkResult,
                            zipFunc, reduceFunc, "");
 }
 
@@ -233,8 +233,8 @@ int main(int argc, char* argv[])
                                 Description("Use alternative kernel"),
                                 Default(false));
 
-  cmd.add(&rowCountA, &colCountA, &colCountB, &checkResult, &repetitions,
-          &deviceType, &deviceCount, &useDoublePrecision, &useAltKernel);
+  cmd.add(rowCountA, colCountA, colCountB, checkResult, repetitions,
+          deviceType, deviceCount, useDoublePrecision, useAltKernel);
 
   cmd.parse(argc, argv);
 
@@ -261,4 +261,3 @@ int main(int argc, char* argv[])
 
   return 0;
 }
-
