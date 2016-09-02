@@ -70,7 +70,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     echo "Skip intallation of gtest, because the 'libraries/gtest' directory already exists."
   else
     set -ex #echo on
-    wget http://googletest.googlecode.com/files/gtest-1.7.0.zip
+    wget -O gtest-1.7.0.zip https://github.com/google/googletest/archive/release-1.7.0.zip
     unzip -q gtest-1.7.0.zip
     mv gtest-1.7.0 $DIR/libraries/gtest
     rm gtest-1.7.0.zip
